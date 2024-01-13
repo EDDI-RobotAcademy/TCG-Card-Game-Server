@@ -1,13 +1,9 @@
 use std::fmt;
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::Arc;
-use std::time::Duration;
-use tokio::sync::Mutex;
-use tokio::time::timeout;
 
-use crate::thread_control::entity::closure::Closure;
-use crate::thread_control::entity::custom_future::CustomFuture;
+use crate::thread_worker::entity::closure::Closure;
+use crate::thread_worker::entity::custom_future::CustomFuture;
 
 pub struct ThreadWorker {
     name: String,
