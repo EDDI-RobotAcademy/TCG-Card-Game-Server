@@ -31,6 +31,16 @@ impl ThreadWorkerServiceImpl {
 #[async_trait]
 impl ThreadWorkerServiceTrait for ThreadWorkerServiceImpl {
 
+    fn save_async_thread_worker<F>(&mut self, name: &str, will_be_execute_function: F)
+        where
+            F: FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + 'static,
+    {
+        println!("save async closure service");
+        let closure = Closure::Async(Box::new(will_be_execute_function));
+
+        self.repository.lock().unwrap().save_thread_worker(name, Some(closure));
+    }
+
     fn save_sync_thread_worker<F>(&mut self, name: &str, will_be_execute_function: F)
         where
             F: FnOnce() -> () + 'static,
@@ -39,7 +49,16 @@ impl ThreadWorkerServiceTrait for ThreadWorkerServiceImpl {
         let closure = Closure::Sync(Box::new(will_be_execute_function));
         self.repository.lock().unwrap().save_thread_worker(name, Some(closure));
     }
-    
+
+    async fn start_thread_worker(&self, name: &str) {
+        let repository_lock = self.repository.lock().unwrap();
+
+        task::block_in_place(move || {
+            Handle::current().block_on(async move {
+                repository_lock.start_thread_worker(name).await;
+            });
+        });
+    }
 }
 
 #[cfg(test)]
