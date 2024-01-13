@@ -1,8 +1,5 @@
-use std::future::Future;
-use std::pin::Pin;
 use async_trait::async_trait;
-use crate::thread_control::entity::closure::Closure;
-use crate::thread_control::entity::thread_worker::ThreadWorker;
+use crate::thread_worker::entity::closure::Closure;
 
 #[async_trait]
 pub trait ThreadWorkerRepositoryTrait {

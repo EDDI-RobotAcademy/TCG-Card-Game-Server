@@ -5,10 +5,10 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::runtime::Handle;
 use tokio::task;
-use crate::thread_control::entity::closure::Closure;
-use crate::thread_control::repository::thread_worker_repository::ThreadWorkerRepositoryTrait;
-use crate::thread_control::repository::thread_worker_repository_impl::ThreadWorkerRepositoryImpl;
-use crate::thread_control::service::thread_worker_service::ThreadWorkerServiceTrait;
+use crate::thread_worker::entity::closure::Closure;
+use crate::thread_worker::repository::thread_worker_repository::ThreadWorkerRepositoryTrait;
+use crate::thread_worker::repository::thread_worker_repository_impl::ThreadWorkerRepositoryImpl;
+use crate::thread_worker::service::thread_worker_service::ThreadWorkerServiceTrait;
 
 pub struct ThreadWorkerServiceImpl {
     repository: Arc<Mutex<ThreadWorkerRepositoryImpl>>,

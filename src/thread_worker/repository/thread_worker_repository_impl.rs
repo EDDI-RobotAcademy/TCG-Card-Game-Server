@@ -1,16 +1,13 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
-use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use async_trait::async_trait;
 use lazy_static::lazy_static;
-use tokio::runtime::Handle;
-use tokio::{spawn, task};
-use crate::thread_control::entity::closure::Closure;
-use crate::thread_control::entity::thread_worker::ThreadWorker;
-use crate::thread_control::repository::thread_worker_repository::ThreadWorkerRepositoryTrait;
+use tokio::spawn;
+use crate::thread_worker::entity::closure::Closure;
+use crate::thread_worker::entity::thread_worker::ThreadWorker;
+use crate::thread_worker::repository::thread_worker_repository::ThreadWorkerRepositoryTrait;
 
 pub struct ThreadWorkerRepositoryImpl {
     thread_worker_list: Arc<Mutex<HashMap<String, ThreadWorker>>>,
