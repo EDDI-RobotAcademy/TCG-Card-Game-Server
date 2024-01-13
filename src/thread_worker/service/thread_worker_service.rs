@@ -11,6 +11,6 @@ pub trait ThreadWorkerServiceTrait {
     fn save_sync_thread_worker<F>(&mut self, name: &str, will_be_execute_function: F)
         where
             F: FnOnce() -> () + 'static;
-
+    async fn start_thread_worker(&self, name: &str);
 }
 

@@ -51,6 +51,18 @@ impl ThreadWorkerRepositoryTrait for ThreadWorkerRepositoryImpl {
         thread_worker_list.insert(name.to_string(), thread_worker);
     }
 
+    async fn start_thread_worker(&self, name: &str) {
+
+        if let Some(worker) = self.thread_worker_list.lock().unwrap().get_mut(name) {
+            println!("check worker name: {}", worker.name());
+            if let Some(closure) = worker.get_will_be_execute_function() {
+                println!("found closure!");
+                spawn(closure.0);
+            }
+        } else {
+            panic!("Thread worker not found: {}", name);
+        }
+    }
 }
 
 #[cfg(test)]
