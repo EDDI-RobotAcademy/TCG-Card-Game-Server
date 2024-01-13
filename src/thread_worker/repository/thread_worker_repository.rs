@@ -11,5 +11,5 @@ pub trait ThreadWorkerRepositoryTrait {
         name: &str,
         will_be_execute_function: Option<Closure>,
     );
-
+    async fn start_thread_worker(&self, name: &str);
 }
