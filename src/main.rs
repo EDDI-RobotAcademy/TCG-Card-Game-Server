@@ -1,10 +1,13 @@
 use std::future::Future;
 use std::pin::Pin;
+use std::time::Duration;
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
 use crate::client_socket_accept::controller::client_socket_accept_controller_impl::ClientSocketAcceptControllerImpl;
 use crate::common::env::env_detector::EnvDetector;
 use crate::common::ip_address::local_ip_finder::IPAddress;
 use crate::domain_initializer::initializer::DomainInitializer;
+use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
+use crate::receiver::controller::server_receiver_controller_impl::ServerReceiverControllerImpl;
 use crate::server_socket::service::server_socket_service::ServerSocketService;
 use crate::server_socket::service::server_socket_service_impl::ServerSocketServiceImpl;
 use crate::thread_worker::service::thread_worker_service::ThreadWorkerServiceTrait;
@@ -15,6 +18,7 @@ mod common;
 mod domain_initializer;
 mod server_socket;
 mod client_socket_accept;
+mod receiver;
 
 #[tokio::main]
 async fn main() {
@@ -56,4 +60,20 @@ async fn main() {
 
     thread_worker_service_guard.save_async_thread_worker("Acceptor", Box::new(acceptor_function.clone()));
     thread_worker_service_guard.start_thread_worker("Acceptor").await;
+
+    let receiver_function = || -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        Box::pin(async {
+            let server_receiver_controller_mutex = ServerReceiverControllerImpl::get_instance();
+            let mut receiver_guard = server_receiver_controller_mutex.lock().await;
+            println!("Receiver instance found. Executing client_receive().");
+            let _ = receiver_guard.client_receive().await;
+        })
+    };
+
+    thread_worker_service_guard.save_async_thread_worker("Receiver", Box::new(receiver_function.clone()));
+    thread_worker_service_guard.start_thread_worker("Receiver").await;
+
+    loop {
+        tokio::time::sleep(Duration::from_secs(10)).await;
+    }
 }
