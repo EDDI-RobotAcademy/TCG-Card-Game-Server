@@ -1,4 +1,6 @@
 use serde_json::Value as JsonValue;
+use crate::account::service::account_service::AccountService;
+use crate::account::service::account_service_impl::AccountServiceImpl;
 use crate::account::service::request::account_register_request::AccountRegisterRequest;
 use crate::request_generator::account_register_req::create_register_request;
 
@@ -12,15 +14,23 @@ trait RequestGenerator {
 }
 
 // TODO: 이 부분도 같이 ugly 해졌는데 추후 고칠 필요 있음
-pub fn create_account_request_and_call_service(data: &JsonValue) -> Option<RequestType> {
+pub async fn create_account_request_and_call_service(data: &JsonValue) -> Option<RequestType> {
     println!("protocol 번호 분석");
     if let Some(protocol_number) = data.get("protocolNumber").and_then(|v| v.as_i64()) {
         match protocol_number {
             1 => {
-                let request = create_register_request(&data).map(RequestType::ACCOUNT_REGISTER);
-                println!("request: {:?}", request.unwrap());
-                None
+                if let Some(request) = create_register_request(&data) {
+                    let account_service_mutex = AccountServiceImpl::get_instance();
+                    let mut account_service = account_service_mutex.lock().await;
 
+                    account_service
+                        .account_register(request)
+                        .await;
+
+                    None
+                } else {
+                    None
+                }
             },
             _ => None,
         }

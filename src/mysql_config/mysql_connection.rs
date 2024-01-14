@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use std::sync::Arc;
 use diesel::{Connection, MysqlConnection};
 use dotenv::dotenv;
@@ -6,7 +7,8 @@ use crate::common::env::env_detector::EnvDetector;
 use tokio::sync::Mutex as AsyncMutex;
 
 pub struct MysqlDatabaseConnection {
-    mysql_connection: Arc<AsyncMutex<MysqlConnection>>,
+    // mysql_connection: Arc<AsyncMutex<MysqlConnection>>,
+    mysql_connection: MysqlConnection,
 }
 
 impl MysqlDatabaseConnection {
@@ -17,9 +19,10 @@ impl MysqlDatabaseConnection {
         let mysql_connection = MysqlConnection::establish(&database_url)
             .expect(&format!("연결에 실패했습니다. {}", database_url));
 
-        let mysql_connection_mutex = Arc::new(AsyncMutex::new(mysql_connection));
-
-        MysqlDatabaseConnection { mysql_connection: mysql_connection_mutex }
+        // let mysql_connection_mutex = Arc::new(AsyncMutex::new(mysql_connection));
+        //
+        // MysqlDatabaseConnection { mysql_connection: mysql_connection_mutex }
+        MysqlDatabaseConnection { mysql_connection }
     }
 
     pub fn get_instance() -> Arc<AsyncMutex<MysqlDatabaseConnection>> {
@@ -28,5 +31,13 @@ impl MysqlDatabaseConnection {
                 Arc::new(AsyncMutex::new(MysqlDatabaseConnection::new()));
         }
         INSTANCE.clone()
+    }
+}
+
+impl Deref for MysqlDatabaseConnection {
+    type Target = MysqlConnection;
+
+    fn deref(&self) -> &Self::Target {
+        &self.mysql_connection
     }
 }

@@ -18,5 +18,6 @@ serde = { version = "*", features = ["derive"] }
 serde-pickle = "*"
 serde_json = "*"
 
+tokio-diesel = "*"
 diesel = { version = "*", features = ["mysql"] }
 bcrypt = "*"
