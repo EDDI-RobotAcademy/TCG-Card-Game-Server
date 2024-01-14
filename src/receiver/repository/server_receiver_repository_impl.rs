@@ -9,6 +9,7 @@ use crate::receiver::repository::server_receiver_repository::ServerReceiverRepos
 use crate::domain_initializer::initializer::AcceptorReceiverChannel;
 
 use serde_json::Value as JsonValue;
+use crate::request_generator::test_generator::create_account_request_and_call_service;
 
 pub struct ServerReceiverRepositoryImpl {
     receive_data: ReceiveData,
@@ -19,7 +20,7 @@ impl ServerReceiverRepositoryImpl {
     pub fn new() -> Self {
         ServerReceiverRepositoryImpl {
             receive_data: ReceiveData::new(),
-            acceptor_receiver_channel_arc: None
+            acceptor_receiver_channel_arc: None,
         }
     }
 
@@ -61,7 +62,8 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
                                 Ok(decoded_object) => {
                                     println!("Received content: {:?}", decoded_object);
 
-                                    explore_json_value(decoded_object);
+                                    // TODO: 이 부분이 지저분해져서 사실 loop 로직이 controller로 가야했음
+                                    create_account_request_and_call_service(&decoded_object);
                                 },
                                 Err(err) => {
                                     println!("Error decoding JSON: {:?}", err);
@@ -86,27 +88,27 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
     }
 }
 
-fn explore_json_value(value: JsonValue) {
-    match value {
-        JsonValue::Bool(v) => println!("Boolean: {:?}", v),
-        JsonValue::Number(v) => println!("Number: {:?}", v),
-        JsonValue::String(v) => println!("String: {:?}", v),
-        JsonValue::Array(array) => {
-            println!("Array: {:?}", array);
-            for item in array {
-                explore_json_value(item);
-            }
-        }
-        JsonValue::Object(map) => {
-            println!("Object: {:?}", map);
-            for (key, value) in map {
-                println!("Key: {:?}", key);
-                explore_json_value(value);
-            }
-        }
-        JsonValue::Null => println!("Null"),
-    }
-}
+// fn explore_json_value(value: JsonValue) {
+//     match value {
+//         JsonValue::Bool(v) => println!("Boolean: {:?}", v),
+//         JsonValue::Number(v) => println!("Number: {:?}", v),
+//         JsonValue::String(v) => println!("String: {:?}", v),
+//         JsonValue::Array(array) => {
+//             println!("Array: {:?}", array);
+//             for item in array {
+//                 explore_json_value(item);
+//             }
+//         }
+//         JsonValue::Object(map) => {
+//             println!("Object: {:?}", map);
+//             for (key, value) in map {
+//                 println!("Key: {:?}", key);
+//                 explore_json_value(value);
+//             }
+//         }
+//         JsonValue::Null => println!("Null"),
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
