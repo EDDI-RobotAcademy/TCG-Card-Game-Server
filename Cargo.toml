@@ -17,3 +17,6 @@ dotenv = "*"
 serde = { version = "*", features = ["derive"] }
 serde-pickle = "*"
 serde_json = "*"
+
+diesel = { version = "*", features = ["mysql"] }
+bcrypt = "*"

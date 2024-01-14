@@ -21,6 +21,7 @@ mod client_socket_accept;
 mod receiver;
 mod request_generator;
 mod account;
+mod mysql_config;
 
 #[tokio::main]
 async fn main() {
