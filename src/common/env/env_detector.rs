@@ -14,7 +14,7 @@ impl EnvDetector {
     }
 
     pub fn get_port() -> Option<String> {
-        Self::get_var("TARET_PORT")
+        Self::get_var("TARGET_PORT")
     }
 }
 
