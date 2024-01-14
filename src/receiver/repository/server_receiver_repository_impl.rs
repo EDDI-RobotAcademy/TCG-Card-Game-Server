@@ -63,7 +63,7 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
                                     println!("Received content: {:?}", decoded_object);
 
                                     // TODO: 이 부분이 지저분해져서 사실 loop 로직이 controller로 가야했음
-                                    create_account_request_and_call_service(&decoded_object);
+                                    create_account_request_and_call_service(&decoded_object).await;
                                 },
                                 Err(err) => {
                                     println!("Error decoding JSON: {:?}", err);

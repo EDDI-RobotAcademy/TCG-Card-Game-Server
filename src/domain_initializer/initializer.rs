@@ -2,6 +2,7 @@ use std::sync::Arc;
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio::sync::mpsc;
+use crate::account::service::account_service_impl::AccountServiceImpl;
 
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
 use crate::client_socket_accept::controller::client_socket_accept_controller_impl::ClientSocketAcceptControllerImpl;
@@ -27,8 +28,12 @@ impl DomainInitializer {
         let _ = ThreadWorkerServiceImpl::get_instance();
     }
 
-    pub fn init_mysql_database(&self) {
-        let _ = MysqlDatabaseConnection::get_instance();
+    // pub fn init_mysql_database(&self) {
+    //     let _ = MysqlDatabaseConnection::get_instance();
+    // }
+
+    pub fn init_account_domain(&self) {
+        let _ = AccountServiceImpl::get_instance();
     }
 
     pub async fn init_client_socket_accept_domain(&self, acceptor_channel_arc: Arc<AcceptorReceiverChannel>) {
@@ -49,7 +54,9 @@ impl DomainInitializer {
         let acceptor_reciever_channel = AcceptorReceiverChannel::new(1);
         let acceptor_reciever_channel_arc = Arc::new(acceptor_reciever_channel.clone());
 
-        self.init_mysql_database();
+        // self.init_mysql_database();
+
+        self.init_account_domain();
 
         self.init_server_socket_domain();
         self.init_thread_worker_domain();
