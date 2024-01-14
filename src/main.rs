@@ -19,6 +19,8 @@ mod domain_initializer;
 mod server_socket;
 mod client_socket_accept;
 mod receiver;
+mod request_generator;
+mod account;
 
 #[tokio::main]
 async fn main() {
