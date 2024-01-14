@@ -16,6 +16,8 @@ impl EnvDetector {
     pub fn get_port() -> Option<String> {
         Self::get_var("TARGET_PORT")
     }
+
+    pub fn get_mysql_url() -> Option<String> { Self::get_var("DATABASE_URL") }
 }
 
 

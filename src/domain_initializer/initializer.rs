@@ -10,6 +10,7 @@ use crate::server_socket::service::server_socket_service_impl::ServerSocketServi
 use crate::thread_worker::service::thread_worker_service_impl::ThreadWorkerServiceImpl;
 
 use crate::common::mpsc::mpsc_creator::mpsc_channel::define_channel;
+use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
 
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
 use crate::receiver::controller::server_receiver_controller_impl::ServerReceiverControllerImpl;
@@ -24,6 +25,10 @@ impl DomainInitializer {
     }
     pub fn init_thread_worker_domain(&self) {
         let _ = ThreadWorkerServiceImpl::get_instance();
+    }
+
+    pub fn init_mysql_database(&self) {
+        let _ = MysqlDatabaseConnection::get_instance();
     }
 
     pub async fn init_client_socket_accept_domain(&self, acceptor_channel_arc: Arc<AcceptorReceiverChannel>) {
@@ -43,6 +48,8 @@ impl DomainInitializer {
     pub async fn init_every_domain(&self) {
         let acceptor_reciever_channel = AcceptorReceiverChannel::new(1);
         let acceptor_reciever_channel_arc = Arc::new(acceptor_reciever_channel.clone());
+
+        self.init_mysql_database();
 
         self.init_server_socket_domain();
         self.init_thread_worker_domain();
