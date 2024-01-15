@@ -5,7 +5,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
 use crate::receiver::service::server_receiver_service::ServerReceiverService;
 use crate::receiver::service::server_receiver_service_impl::ServerReceiverServiceImpl;
-use crate::domain_initializer::initializer::AcceptorReceiverChannel;
+use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel};
 
 pub struct ServerReceiverControllerImpl {
     server_receiver_service: Arc<AsyncMutex<ServerReceiverServiceImpl>>,
@@ -42,8 +42,8 @@ impl ServerReceiverController for ServerReceiverControllerImpl {
         server_receiver_service_guard.client_receive().await;
     }
 
-    async fn inject_accept_channel(&mut self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
+    async fn inject_acceptor_receiver_channel(&mut self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
         let mut server_receiver_service_guard = self.server_receiver_service.lock().await;
-        server_receiver_service_guard.inject_accept_channel(acceptor_receiver_channel_arc).await;
+        server_receiver_service_guard.inject_acceptor_receiver_channel(acceptor_receiver_channel_arc).await;
     }
 }

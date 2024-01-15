@@ -22,6 +22,7 @@ mod receiver;
 mod request_generator;
 mod account;
 mod mysql_config;
+mod transmitter;
 
 #[tokio::main]
 async fn main() {

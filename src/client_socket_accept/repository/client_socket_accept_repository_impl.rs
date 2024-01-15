@@ -7,19 +7,21 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 use crate::client_socket_accept::entity::client_socket::ClientSocket;
 use crate::client_socket_accept::repository::client_socket_accept_repository::ClientSocketAcceptRepository;
-use crate::domain_initializer::initializer::AcceptorReceiverChannel;
+use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel};
 
 #[derive(Clone)]
 pub struct ClientSocketAcceptRepositoryImpl {
     client_list: Arc<AsyncMutex<HashMap<String, ClientSocket>>>,
     acceptor_receiver_channel_arc: Option<Arc<AcceptorReceiverChannel>>,
+    acceptor_transmitter_channel_arc: Option<Arc<AcceptorTransmitterChannel>>
 }
 
 impl ClientSocketAcceptRepositoryImpl {
     pub fn new() -> Self {
         ClientSocketAcceptRepositoryImpl {
             client_list: Arc::new(AsyncMutex::new(HashMap::new())),
-            acceptor_receiver_channel_arc: None
+            acceptor_receiver_channel_arc: None,
+            acceptor_transmitter_channel_arc: None
         }
     }
 
@@ -69,8 +71,12 @@ impl ClientSocketAcceptRepository for ClientSocketAcceptRepositoryImpl {
         }
     }
 
-    async fn inject_accept_channel(&mut self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
+    async fn inject_acceptor_receiver_channel(&mut self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
         self.acceptor_receiver_channel_arc = Option::from(acceptor_receiver_channel_arc);
+    }
+
+    async fn inject_acceptor_transmitter_channel(&mut self, acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>) {
+        self.acceptor_transmitter_channel_arc = Option::from(acceptor_transmitter_channel_arc);
     }
 }
 
