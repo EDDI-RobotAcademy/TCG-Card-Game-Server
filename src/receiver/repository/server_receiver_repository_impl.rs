@@ -6,7 +6,7 @@ use tokio::net::TcpStream;
 use tokio::sync::{Mutex as AsyncMutex, Mutex};
 use crate::receiver::entity::receive_data::ReceiveData;
 use crate::receiver::repository::server_receiver_repository::ServerReceiverRepository;
-use crate::domain_initializer::initializer::AcceptorReceiverChannel;
+use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel};
 
 use serde_json::Value as JsonValue;
 use crate::request_generator::test_generator::create_account_request_and_call_service;
@@ -75,8 +75,7 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
         println!("Server Receiver Repository: receive() end");
     }
 
-
-    async fn inject_accept_channel(&mut self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
+    async fn inject_acceptor_receiver_channel(&mut self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
         self.acceptor_receiver_channel_arc = Option::from(acceptor_receiver_channel_arc);
     }
 }

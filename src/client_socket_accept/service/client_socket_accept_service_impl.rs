@@ -7,7 +7,7 @@ use crate::client_socket_accept::repository::client_socket_accept_repository_imp
 use crate::client_socket_accept::service::client_socket_accept_service::ClientSocketAcceptService;
 use crate::server_socket::repository::server_socket_repository::ServerSocketRepository;
 use crate::server_socket::repository::server_socket_repository_impl::ServerSocketRepositoryImpl;
-use crate::domain_initializer::initializer::AcceptorReceiverChannel;
+use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel};
 
 #[derive(Clone)]
 pub struct ClientSocketAcceptServiceImpl {
@@ -57,9 +57,14 @@ impl ClientSocketAcceptService for ClientSocketAcceptServiceImpl {
         }
     }
 
-    async fn inject_accept_channel(&self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
+    async fn inject_acceptor_receiver_channel(&self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
         let mut client_socket_accept_service_guard = self.client_socket_accept_repository.lock().await;
-        client_socket_accept_service_guard.inject_accept_channel(acceptor_receiver_channel_arc).await;
+        client_socket_accept_service_guard.inject_acceptor_receiver_channel(acceptor_receiver_channel_arc).await;
+    }
+
+    async fn inject_acceptor_transmitter_channel(&mut self, acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>) {
+        let mut client_socket_accept_service_guard = self.client_socket_accept_repository.lock().await;
+        client_socket_accept_service_guard.inject_acceptor_transmitter_channel(acceptor_transmitter_channel_arc).await;
     }
 }
 

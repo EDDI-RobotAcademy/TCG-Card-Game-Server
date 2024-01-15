@@ -17,6 +17,7 @@ use crate::receiver::controller::server_receiver_controller::ServerReceiverContr
 use crate::receiver::controller::server_receiver_controller_impl::ServerReceiverControllerImpl;
 
 define_channel!(AcceptorReceiverChannel, Arc<Mutex<TcpStream>>);
+define_channel!(AcceptorTransmitterChannel, Arc<Mutex<TcpStream>>);
 
 pub struct DomainInitializer;
 
@@ -36,23 +37,35 @@ impl DomainInitializer {
         let _ = AccountServiceImpl::get_instance();
     }
 
-    pub async fn init_client_socket_accept_domain(&self, acceptor_channel_arc: Arc<AcceptorReceiverChannel>) {
-        let client_socket_accept_controller_mutex = ClientSocketAcceptControllerImpl::get_instance();
-        let client_socket_accept_controller = client_socket_accept_controller_mutex.lock().await;
+    pub async fn init_client_socket_accept_domain(&self,
+                                                  acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>,
+                                                  acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>) {
 
-        client_socket_accept_controller.inject_accept_channel(acceptor_channel_arc).await;
+        let client_socket_accept_controller_mutex = ClientSocketAcceptControllerImpl::get_instance();
+        let mut client_socket_accept_controller = client_socket_accept_controller_mutex.lock().await;
+
+        client_socket_accept_controller.inject_acceptor_receiver_channel(acceptor_receiver_channel_arc).await;
+        client_socket_accept_controller.inject_acceptor_transmitter_channel(acceptor_transmitter_channel_arc).await;
+        // client_socket_accept_controller.inject_acceptor_transmitter_channel()
     }
 
-    pub async fn init_receiver_domain(&self, acceptor_channel_arc: Arc<AcceptorReceiverChannel>) {
+    pub async fn init_receiver_domain(&self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
         let server_receiver_controller_mutex = ServerReceiverControllerImpl::get_instance();
         let mut server_receiver_controller = server_receiver_controller_mutex.lock().await;
 
-        server_receiver_controller.inject_accept_channel(acceptor_channel_arc).await;
+        server_receiver_controller.inject_acceptor_receiver_channel(acceptor_receiver_channel_arc).await;
+    }
+
+    pub async fn init_transmitter_domain(&self, acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>) {
+
     }
 
     pub async fn init_every_domain(&self) {
         let acceptor_reciever_channel = AcceptorReceiverChannel::new(1);
         let acceptor_reciever_channel_arc = Arc::new(acceptor_reciever_channel.clone());
+
+        let acceptor_transmitter_channel = AcceptorTransmitterChannel::new(1);
+        let acceptor_transmitter_channel_arc = Arc::new(acceptor_transmitter_channel.clone());
 
         // self.init_mysql_database();
 
@@ -60,8 +73,9 @@ impl DomainInitializer {
 
         self.init_server_socket_domain();
         self.init_thread_worker_domain();
-        self.init_client_socket_accept_domain(acceptor_reciever_channel_arc.clone()).await;
+        self.init_client_socket_accept_domain(acceptor_reciever_channel_arc.clone(), acceptor_transmitter_channel_arc.clone()).await;
         self.init_receiver_domain(acceptor_reciever_channel_arc.clone()).await;
+        self.init_transmitter_domain(acceptor_transmitter_channel_arc.clone()).await;
     }
 }
 
