@@ -51,8 +51,11 @@ impl ClientSocketAcceptRepository for ClientSocketAcceptRepositoryImpl {
                     client_list_gaurd.insert(client.address().to_string(), client.clone());
 
                     if let Some(acceptor_receiver_channel) = &self.acceptor_receiver_channel_arc {
+                        tokio::time::sleep(Duration::from_millis(100)).await;
+
                         let stream = client.stream();
                         let _ = acceptor_receiver_channel.send(stream).await;
+                        println!("send socket info with ipc channel")
                     } else {
                         eprintln!("Acceptor channel is not initialized");
                     }

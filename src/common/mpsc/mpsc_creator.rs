@@ -23,7 +23,13 @@ pub mod mpsc_channel {
                 }
 
                 pub async fn receive(&self) -> Option<$type> {
-                    self.receiver.lock().await.recv().await
+                    // self.receiver.lock().await.recv().await
+
+                    let mut guard = self.receiver.lock().await;
+                    let data = guard.recv().await;
+
+                    drop(guard);
+                    data
                 }
             }
 

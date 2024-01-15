@@ -42,49 +42,75 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
     async fn receive(&mut self) {
         println!("Server Receiver Repository: receive()");
 
-        if let Some(acceptor_channel) = &self.acceptor_receiver_channel_arc {
-            while let Some(stream_arc) = acceptor_channel.receive().await {
+        let acceptor_channel = self.acceptor_receiver_channel_arc.clone();
+
+        let join_handle = tokio::task::spawn(async move {
+            while let Some(stream_arc) = acceptor_channel.clone().expect("Need to inject channel").receive().await {
                 let stream_result = stream_arc.lock().await.peer_addr();
 
-                match stream_result {
-                    Ok(peer_addr) => {
+                tokio::select! {
+                _ = futures::future::ready(stream_result.as_ref().clone()) => {
+                    if let Some(peer_addr) = stream_result.ok() {
                         println!("Connected client address: {}", peer_addr);
-                        let mut stream = stream_arc.lock().await;
+                        let stream = stream_arc.clone();
 
-                        while let Ok(bytes_read) = stream.read(self.receive_data.receive_content_mut()).await {
-                            if bytes_read == 0 {
-                                break;
-                            }
-
-                            let stored_data = &self.receive_data.get_receive_content()[..bytes_read];
-
-                            match serde_json::from_slice::<serde_json::Value>(stored_data) {
-                                Ok(decoded_object) => {
-                                    println!("Received content: {:?}", decoded_object);
-
-                                    // TODO: 이 부분이 지저분해져서 사실 loop 로직이 controller로 가야했음
-                                    create_account_request_and_call_service(&decoded_object).await;
-                                },
-                                Err(err) => {
-                                    println!("Error decoding JSON: {:?}", err);
-                                }
-                            }
-
-                        }
-                    },
-                    Err(err) => {
-                        eprintln!("Failed to get peer address: {}", err);
+                        tokio::spawn(async move {
+                            handle_client(stream).await;
+                        });
+                    } else {
+                        eprintln!("Failed to get peer address");
                     }
                 }
+                else => {
+                    eprintln!("Failed to get peer address");
+                }
             }
-        }
+            }
 
-        println!("Server Receiver Repository: client close socket");
+            println!("Server Receiver Repository: client close socket");
+        });
+
+        join_handle.await.expect("Failed to await spawned task");
+
+        println!("Server Receiver Repository: receive() end");
     }
 
 
     async fn inject_accept_channel(&mut self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
         self.acceptor_receiver_channel_arc = Option::from(acceptor_receiver_channel_arc);
+    }
+}
+
+async fn handle_client(stream: Arc<Mutex<TcpStream>>) {
+    let mut buffer = vec![0; 1024]; // Adjust the buffer size as needed
+
+    loop {
+        match stream.lock().await.read(&mut buffer).await {
+            Ok(bytes_read) => {
+                if bytes_read == 0 {
+                    break;
+                }
+
+                let stored_data = &buffer[..bytes_read];
+
+                match serde_json::from_slice::<serde_json::Value>(stored_data) {
+                    Ok(decoded_object) => {
+                        println!("Received content: {:?}", decoded_object);
+
+                        // TODO: This part could be cleaner; the loop logic should ideally go to the controller
+                        create_account_request_and_call_service(&decoded_object).await;
+                    }
+                    Err(err) => {
+                        println!("Error decoding JSON: {:?}", err);
+                    }
+                }
+            }
+            Err(err) => {
+                // Handle read error
+                println!("Error reading from stream: {:?}", err);
+                break;
+            }
+        }
     }
 }
 
