@@ -1,4 +1,6 @@
 use std::sync::Arc;
+use ipc_channel::ipc;
+use ipc_channel::ipc::{IpcReceiver, IpcSender};
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio::sync::mpsc;
@@ -15,6 +17,9 @@ use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
 
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
 use crate::receiver::controller::server_receiver_controller_impl::ServerReceiverControllerImpl;
+use crate::response_generator::response_type::ResponseType;
+use crate::transmitter::controller::transmitter_controller::TransmitterController;
+use crate::transmitter::controller::transmitter_controller_impl::TransmitterControllerImpl;
 
 define_channel!(AcceptorReceiverChannel, Arc<Mutex<TcpStream>>);
 define_channel!(AcceptorTransmitterChannel, Arc<Mutex<TcpStream>>);
@@ -49,15 +54,25 @@ impl DomainInitializer {
         // client_socket_accept_controller.inject_acceptor_transmitter_channel()
     }
 
-    pub async fn init_receiver_domain(&self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
+    pub async fn init_receiver_domain(&self,
+                                      acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>,
+                                      receiver_transmitter_tx: IpcSender<ResponseType>) {
         let server_receiver_controller_mutex = ServerReceiverControllerImpl::get_instance();
         let mut server_receiver_controller = server_receiver_controller_mutex.lock().await;
 
         server_receiver_controller.inject_acceptor_receiver_channel(acceptor_receiver_channel_arc).await;
+        server_receiver_controller.inject_receiver_transmitter_channel(receiver_transmitter_tx).await;
     }
 
-    pub async fn init_transmitter_domain(&self, acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>) {
+    pub async fn init_transmitter_domain(&self,
+                                         acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>,
+                                         receiver_transmitter_rx: IpcReceiver<ResponseType>) {
 
+        let transmitter_controller_mutex = TransmitterControllerImpl::get_instance();
+        let mut transmitter_controller = transmitter_controller_mutex.lock().await;
+
+        // transmitter_controller.inject_acceptor_receiver_channel(acceptor_transmitter_channel_arc).await;
+        transmitter_controller.inject_receiver_transmitter_channel(receiver_transmitter_rx).await;
     }
 
     pub async fn init_every_domain(&self) {
@@ -67,15 +82,18 @@ impl DomainInitializer {
         let acceptor_transmitter_channel = AcceptorTransmitterChannel::new(1);
         let acceptor_transmitter_channel_arc = Arc::new(acceptor_transmitter_channel.clone());
 
-        // self.init_mysql_database();
+        let (receiver_transmitter_tx, receiver_transmitter_rx) =
+            ipc::channel().expect("Failed to create IPC channel");
 
         self.init_account_domain();
 
         self.init_server_socket_domain();
         self.init_thread_worker_domain();
-        self.init_client_socket_accept_domain(acceptor_reciever_channel_arc.clone(), acceptor_transmitter_channel_arc.clone()).await;
-        self.init_receiver_domain(acceptor_reciever_channel_arc.clone()).await;
-        self.init_transmitter_domain(acceptor_transmitter_channel_arc.clone()).await;
+        self.init_client_socket_accept_domain(
+            acceptor_reciever_channel_arc.clone(), acceptor_transmitter_channel_arc.clone()).await;
+        self.init_receiver_domain(acceptor_reciever_channel_arc.clone(), receiver_transmitter_tx).await;
+        self.init_transmitter_domain(
+            acceptor_transmitter_channel_arc.clone(), receiver_transmitter_rx).await;
     }
 }
 

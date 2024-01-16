@@ -21,3 +21,5 @@ serde_json = "*"
 tokio-diesel = "*"
 diesel = { version = "*", features = ["mysql"] }
 bcrypt = "*"
+
+ipc-channel = "*"

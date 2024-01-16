@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use async_trait::async_trait;
+use ipc_channel::ipc::IpcSender;
 use lazy_static::lazy_static;
 use tokio::io::AsyncReadExt;
 use tokio::net::TcpStream;
@@ -10,10 +11,12 @@ use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTr
 
 use serde_json::Value as JsonValue;
 use crate::request_generator::test_generator::create_account_request_and_call_service;
+use crate::response_generator::response_type::ResponseType;
 
 pub struct ServerReceiverRepositoryImpl {
     receive_data: ReceiveData,
     acceptor_receiver_channel_arc: Option<Arc<AcceptorReceiverChannel>>,
+    receiver_transmitter_tx: Option<IpcSender<ResponseType>>
 }
 
 impl ServerReceiverRepositoryImpl {
@@ -21,6 +24,7 @@ impl ServerReceiverRepositoryImpl {
         ServerReceiverRepositoryImpl {
             receive_data: ReceiveData::new(),
             acceptor_receiver_channel_arc: None,
+            receiver_transmitter_tx: None
         }
     }
 
@@ -40,7 +44,7 @@ impl ServerReceiverRepositoryImpl {
 #[async_trait]
 impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
     async fn receive(&mut self) {
-        println!("Server Receiver Repository: receive()");
+        println!("ServerReceiverRepositoryImpl: receive()");
 
         let acceptor_channel = self.acceptor_receiver_channel_arc.clone();
 
@@ -76,7 +80,13 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
     }
 
     async fn inject_acceptor_receiver_channel(&mut self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
+        println!("ServerReceiverRepositoryImpl: inject_acceptor_receiver_channel()");
         self.acceptor_receiver_channel_arc = Option::from(acceptor_receiver_channel_arc);
+    }
+
+    async fn inject_receiver_transmitter_channel(&mut self, receiver_transmitter_tx: IpcSender<ResponseType>) {
+        println!("ServerReceiverRepositoryImpl: inject_receiver_transmitter_channel()");
+        self.receiver_transmitter_tx = Option::from(receiver_transmitter_tx);
     }
 }
 
