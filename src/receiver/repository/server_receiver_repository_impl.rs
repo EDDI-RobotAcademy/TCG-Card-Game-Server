@@ -47,6 +47,7 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
         println!("ServerReceiverRepositoryImpl: receive()");
 
         let acceptor_channel = self.acceptor_receiver_channel_arc.clone();
+        let receiver_transmitter_tx_clone = self.receiver_transmitter_tx.clone();
 
         let join_handle = tokio::task::spawn(async move {
             while let Some(stream_arc) = acceptor_channel.clone().expect("Need to inject channel").receive().await {
@@ -57,9 +58,10 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
                     if let Some(peer_addr) = stream_result.ok() {
                         println!("Connected client address: {}", peer_addr);
                         let stream = stream_arc.clone();
+                        let receiver_transmitter_tx_inner = receiver_transmitter_tx_clone.clone();
 
                         tokio::spawn(async move {
-                            handle_client(stream).await;
+                            handle_client(stream, receiver_transmitter_tx_inner).await;
                         });
                     } else {
                         eprintln!("Failed to get peer address");
@@ -90,7 +92,7 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
     }
 }
 
-async fn handle_client(stream: Arc<Mutex<TcpStream>>) {
+async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: Option<IpcSender<ResponseType>>) {
     let mut buffer = vec![0; 1024]; // Adjust the buffer size as needed
 
     loop {
@@ -107,7 +109,14 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>) {
                         println!("Received content: {:?}", decoded_object);
 
                         // TODO: This part could be cleaner; the loop logic should ideally go to the controller
-                        create_account_request_and_call_service(&decoded_object).await;
+                        let response_option = create_account_request_and_call_service(&decoded_object).await;
+                        let response = response_option.unwrap();
+
+                        if let Some(tx) = &receiver_transmitter_tx {
+                            if let Err(err) = tx.send(response) {
+                                println!("Error sending response through channel: {:?}", err);
+                            }
+                        }
                     }
                     Err(err) => {
                         println!("Error decoding JSON: {:?}", err);

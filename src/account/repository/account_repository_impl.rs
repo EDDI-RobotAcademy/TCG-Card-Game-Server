@@ -1,9 +1,12 @@
 use std::sync::Arc;
 use async_trait::async_trait;
-use diesel::{Connection, MysqlConnection, RunQueryDsl};
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+
+use diesel::query_dsl::methods::{FilterDsl, FindDsl};
+use diesel::{Connection, MysqlConnection, QueryDsl, ExpressionMethods, RunQueryDsl, OptionalExtension};
+
 use crate::account::entity::account::Account;
 use crate::account::repository::account_repository::AccountRepository;
 use crate::common::env::env_detector::EnvDetector;
@@ -34,7 +37,7 @@ impl AccountRepositoryImpl {
 #[async_trait]
 impl AccountRepository for AccountRepositoryImpl {
 
-    async fn save(&self, account: Account) {
+    async fn save(&self, account: Account) -> Result<(), diesel::result::Error> {
         use crate::account::entity::account::accounts::dsl::*;
 
         println!("AccountRepositoryImpl: save()");
@@ -45,9 +48,16 @@ impl AccountRepository for AccountRepositoryImpl {
 
         match diesel::insert_into(accounts)
             .values(&account)
-            .execute(&mut connection) {
-            Ok(_) => println!("Account saved successfully."),
-            Err(e) => eprintln!("Error saving account: {:?}", e),
+            .execute(&mut connection)
+        {
+            Ok(_) => {
+                println!("Account saved successfully.");
+                Ok(())
+            }
+            Err(e) => {
+                eprintln!("Error saving account: {:?}", e);
+                Err(e)
+            }
         }
     }
 }

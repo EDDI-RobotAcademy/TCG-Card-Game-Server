@@ -6,8 +6,8 @@ use crate::account::repository::account_repository::AccountRepository;
 use crate::account::repository::account_repository_impl::AccountRepositoryImpl;
 use crate::account::service::account_service::AccountService;
 use crate::account::service::request::account_register_request::AccountRegisterRequest;
-use crate::receiver::service::server_receiver_service::ServerReceiverService;
-use crate::receiver::service::server_receiver_service_impl::ServerReceiverServiceImpl;
+use crate::account::service::response::account_register_response::AccountRegisterResponse;
+
 
 
 pub struct AccountServiceImpl {
@@ -36,15 +36,17 @@ impl AccountServiceImpl {
 
 #[async_trait]
 impl AccountService for AccountServiceImpl {
-    async fn account_register(&self, account_register_request: AccountRegisterRequest) {
+    async fn account_register(&self, account_register_request: AccountRegisterRequest) -> AccountRegisterResponse {
         println!("AccountServiceImpl: account_register()");
 
         let account_repository = self.repository.lock().await;
+        let result = account_repository.save(account_register_request.to_account().unwrap()).await;
 
-        if let Ok(account) = account_register_request.to_account() {
-            account_repository.save(account).await;
+        if result.is_ok() {
+            AccountRegisterResponse::new(true)
         } else {
-            eprintln!("계정 생성 중 에러 발생!");
+            eprintln!("계정 생성 중 에러 발생");
+            AccountRegisterResponse::new(false)
         }
     }
 }
