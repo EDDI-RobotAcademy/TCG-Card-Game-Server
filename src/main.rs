@@ -12,6 +12,8 @@ use crate::server_socket::service::server_socket_service::ServerSocketService;
 use crate::server_socket::service::server_socket_service_impl::ServerSocketServiceImpl;
 use crate::thread_worker::service::thread_worker_service::ThreadWorkerServiceTrait;
 use crate::thread_worker::service::thread_worker_service_impl::ThreadWorkerServiceImpl;
+use crate::transmitter::controller::transmitter_controller::TransmitterController;
+use crate::transmitter::controller::transmitter_controller_impl::TransmitterControllerImpl;
 
 mod thread_worker;
 mod common;
@@ -77,6 +79,18 @@ async fn main() {
 
     thread_worker_service_guard.save_async_thread_worker("Receiver", Box::new(receiver_function.clone()));
     thread_worker_service_guard.start_thread_worker("Receiver").await;
+
+    let receiver_function = || -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        Box::pin(async {
+            let transmitter_controller_mutex = TransmitterControllerImpl::get_instance();
+            let mut transmitter_guard = transmitter_controller_mutex.lock().await;
+            println!("Transmitter instance found. Executing transmit_to_client().");
+            let _ = transmitter_guard.transmit_to_client().await;
+        })
+    };
+
+    thread_worker_service_guard.save_async_thread_worker("Transmitter", Box::new(receiver_function.clone()));
+    thread_worker_service_guard.start_thread_worker("Transmitter").await;
 
     loop {
         tokio::time::sleep(Duration::from_secs(10)).await;
