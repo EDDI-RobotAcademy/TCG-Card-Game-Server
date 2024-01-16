@@ -1,7 +1,9 @@
 use std::sync::Arc;
+use std::time::Duration;
 use async_trait::async_trait;
 use ipc_channel::ipc::IpcReceiver;
 use lazy_static::lazy_static;
+use tokio::io::AsyncWriteExt;
 use tokio::sync::{Mutex as AsyncMutex, Mutex};
 use crate::domain_initializer::initializer::{AcceptorTransmitterChannel, ReceiverTransmitterChannel};
 use crate::response_generator::response_type::ResponseType;
@@ -39,43 +41,44 @@ impl TransmitterRepository for TransmitterRepositoryImpl {
         println!("TransmitterRepositoryImpl: transmit()");
 
         let acceptor_channel = self.acceptor_transmitter_channel_arc.clone();
+        let receiver_channel = self.receiver_transmitter_channel_arc.clone();
 
-        // let join_handle = tokio::task::spawn(async move {
-        //     while let Some(stream_arc) = acceptor_channel.clone().expect("Need to inject channel").receive().await {
-        //         println!("Transmitter transmit() loop");
-        //
-        //         let acceptor_transmitter_channel_arc = self.acceptor_transmitter_channel_arc.clone();
-        //         let receiver_transmitter_tx = self.receiver_transmitter_tx.as_ref();
-        //
-        //         tokio::spawn(async move {
-        //             let acceptor_transmitter_channel = acceptor_transmitter_channel_arc;
-        //
-        //             // Wrap the receiver in a Mutex to make it thread-safe
-        //             let receiver_transmitter_tx = receiver_transmitter_tx.map(|rx| Arc::new(Mutex::new(rx)));
-        //
-        //             let receiver_transmitter_tx = receiver_transmitter_tx.map(|rx| {
-        //                 Arc::new(Mutex::new(rx.unwrap_or_else(Default::default)))
-        //             });
-        //
-        //
-        //
-        //             // Lock the Mutex to get the inner receiver
-        //             let receiver_transmitter_tx = receiver_transmitter_tx.lock().await;
-        //
-        //             // Use the receiver as needed
-        //
-        //             tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-        //         });
-        //     }
-        //
-        //     println!("Transmitter transmit() end");
-        // });
-        //
-        // join_handle.await.expect("Failed to await spawned task");
-        loop {
-            println!("Transmitter transmit() test");
-            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-        }
+        let join_handle = tokio::task::spawn(async move {
+            while let Some(stream_arc) = acceptor_channel.clone().expect("Need to inject channel").receive().await {
+                println!("Transmitter transmit() loop");
+
+                if let Some(receiver_transmitter_channel) = receiver_channel.clone() {
+                    let response = receiver_transmitter_channel.receive().await;
+
+                    if let Some(response) = response {
+                        let mut client_socket_stream = stream_arc.lock().await;
+
+                        // Acquire the lock on the Mutex to access the underlying data
+                        let response_data = response.lock().await;
+
+                        // Convert the response to JSON
+                        let json_data = serde_json::to_string(&*response_data).expect("Failed to serialize to JSON");
+
+                        // Print the data being transmitted
+                        println!("Transmitting data: {}", json_data);
+
+                        // Send the JSON data through the client socket stream
+                        client_socket_stream.write_all(json_data.as_bytes()).await.expect("Failed to write to client");
+                    }
+                }
+
+                tokio::time::sleep(Duration::from_millis(500)).await;
+            }
+
+            println!("Transmitter transmit() end");
+        });
+
+        join_handle.await.expect("Failed to await spawned task");
+
+        // loop {
+        //     println!("Transmitter transmit() test");
+        //     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        // }
 
         println!("TransmitterRepositoryImpl: transmit() end");
     }

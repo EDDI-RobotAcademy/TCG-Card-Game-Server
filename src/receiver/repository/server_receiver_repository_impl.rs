@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 use async_trait::async_trait;
 use ipc_channel::ipc::IpcSender;
 use lazy_static::lazy_static;
@@ -110,10 +111,23 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: O
 
                         // TODO: This part could be cleaner; the loop logic should ideally go to the controller
                         let response_option = create_account_request_and_call_service(&decoded_object).await;
-                        let response = response_option.unwrap();
+                        // let response = response_option.unwrap();
+                        //
+                        // if let Some(tx) = &receiver_transmitter_tx {
+                        //     tx.send(Arc::new(AsyncMutex::new(response))).await;
+                        // } else {
+                        //     println!("Error sending response through channel");
+                        // }
+
+                        if let Some(response) = &response_option {
+                            println!("Generated Response Type: {:?}", response);
+                        } else {
+                            println!("Failed to generate Response Type");
+                        }
 
                         if let Some(tx) = &receiver_transmitter_tx {
-                            tx.send(Arc::new(AsyncMutex::new(response))).await;
+                            tx.send(Arc::new(AsyncMutex::new(response_option.unwrap()))).await;
+                            println!("handle_client: Sent response to Transmitter through channel");
                         } else {
                             println!("Error sending response through channel");
                         }
@@ -129,6 +143,8 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: O
                 break;
             }
         }
+
+        tokio::time::sleep(Duration::from_millis(500)).await;
     }
 }
 
