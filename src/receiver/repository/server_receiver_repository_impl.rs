@@ -7,7 +7,7 @@ use tokio::net::TcpStream;
 use tokio::sync::{Mutex as AsyncMutex, Mutex};
 use crate::receiver::entity::receive_data::ReceiveData;
 use crate::receiver::repository::server_receiver_repository::ServerReceiverRepository;
-use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel};
+use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel, ReceiverTransmitterChannel};
 
 use serde_json::Value as JsonValue;
 use crate::request_generator::test_generator::create_account_request_and_call_service;
@@ -16,7 +16,7 @@ use crate::response_generator::response_type::ResponseType;
 pub struct ServerReceiverRepositoryImpl {
     receive_data: ReceiveData,
     acceptor_receiver_channel_arc: Option<Arc<AcceptorReceiverChannel>>,
-    receiver_transmitter_tx: Option<IpcSender<ResponseType>>
+    receiver_transmitter_channel_arc: Option<Arc<ReceiverTransmitterChannel>>
 }
 
 impl ServerReceiverRepositoryImpl {
@@ -24,7 +24,7 @@ impl ServerReceiverRepositoryImpl {
         ServerReceiverRepositoryImpl {
             receive_data: ReceiveData::new(),
             acceptor_receiver_channel_arc: None,
-            receiver_transmitter_tx: None
+            receiver_transmitter_channel_arc: None
         }
     }
 
@@ -47,30 +47,30 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
         println!("ServerReceiverRepositoryImpl: receive()");
 
         let acceptor_channel = self.acceptor_receiver_channel_arc.clone();
-        let receiver_transmitter_tx_clone = self.receiver_transmitter_tx.clone();
+        let receiver_transmitter_tx_clone = self.receiver_transmitter_channel_arc.clone();
 
         let join_handle = tokio::task::spawn(async move {
             while let Some(stream_arc) = acceptor_channel.clone().expect("Need to inject channel").receive().await {
                 let stream_result = stream_arc.lock().await.peer_addr();
 
                 tokio::select! {
-                _ = futures::future::ready(stream_result.as_ref().clone()) => {
-                    if let Some(peer_addr) = stream_result.ok() {
-                        println!("Connected client address: {}", peer_addr);
-                        let stream = stream_arc.clone();
-                        let receiver_transmitter_tx_inner = receiver_transmitter_tx_clone.clone();
+                    _ = futures::future::ready(stream_result.as_ref().clone()) => {
+                        if let Some(peer_addr) = stream_result.ok() {
+                            println!("Connected client address: {}", peer_addr);
+                            let stream = stream_arc.clone();
+                            let receiver_transmitter_tx_inner = receiver_transmitter_tx_clone.clone();
 
-                        tokio::spawn(async move {
-                            handle_client(stream, receiver_transmitter_tx_inner).await;
-                        });
-                    } else {
+                            tokio::spawn(async move {
+                                handle_client(stream, receiver_transmitter_tx_inner).await;
+                            });
+                        } else {
+                            eprintln!("Failed to get peer address");
+                        }
+                    }
+                    else => {
                         eprintln!("Failed to get peer address");
                     }
                 }
-                else => {
-                    eprintln!("Failed to get peer address");
-                }
-            }
             }
 
             println!("Server Receiver Repository: client close socket");
@@ -86,13 +86,13 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
         self.acceptor_receiver_channel_arc = Option::from(acceptor_receiver_channel_arc);
     }
 
-    async fn inject_receiver_transmitter_channel(&mut self, receiver_transmitter_tx: IpcSender<ResponseType>) {
+    async fn inject_receiver_transmitter_channel(&mut self, receiver_transmitter_channel_arc: Arc<ReceiverTransmitterChannel>) {
         println!("ServerReceiverRepositoryImpl: inject_receiver_transmitter_channel()");
-        self.receiver_transmitter_tx = Option::from(receiver_transmitter_tx);
+        self.receiver_transmitter_channel_arc = Option::from(receiver_transmitter_channel_arc);
     }
 }
 
-async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: Option<IpcSender<ResponseType>>) {
+async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: Option<Arc<ReceiverTransmitterChannel>>) {
     let mut buffer = vec![0; 1024]; // Adjust the buffer size as needed
 
     loop {
@@ -113,9 +113,9 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: O
                         let response = response_option.unwrap();
 
                         if let Some(tx) = &receiver_transmitter_tx {
-                            if let Err(err) = tx.send(response) {
-                                println!("Error sending response through channel: {:?}", err);
-                            }
+                            tx.send(Arc::new(AsyncMutex::new(response))).await;
+                        } else {
+                            println!("Error sending response through channel");
                         }
                     }
                     Err(err) => {

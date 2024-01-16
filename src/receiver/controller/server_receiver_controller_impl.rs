@@ -6,7 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
 use crate::receiver::service::server_receiver_service::ServerReceiverService;
 use crate::receiver::service::server_receiver_service_impl::ServerReceiverServiceImpl;
-use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel};
+use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel, ReceiverTransmitterChannel};
 use crate::response_generator::response_type::ResponseType;
 
 pub struct ServerReceiverControllerImpl {
@@ -50,10 +50,10 @@ impl ServerReceiverController for ServerReceiverControllerImpl {
         server_receiver_service_guard.inject_acceptor_receiver_channel(acceptor_receiver_channel_arc).await;
     }
 
-    async fn inject_receiver_transmitter_channel(&mut self, receiver_transmitter_tx: IpcSender<ResponseType>) {
+    async fn inject_receiver_transmitter_channel(&mut self, receiver_transmitter_channel_arc: Arc<ReceiverTransmitterChannel>) {
         println!("ServerReceiverControllerImpl: inject_receiver_transmitter_channel()");
 
         let mut server_receiver_service_guard = self.server_receiver_service.lock().await;
-        server_receiver_service_guard.inject_receiver_transmitter_channel(receiver_transmitter_tx).await;
+        server_receiver_service_guard.inject_receiver_transmitter_channel(receiver_transmitter_channel_arc).await;
     }
 }
