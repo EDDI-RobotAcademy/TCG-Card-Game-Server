@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use ipc_channel::ipc::IpcReceiver;
 use lazy_static::lazy_static;
 use tokio::sync::{Mutex as AsyncMutex, Mutex};
-use crate::domain_initializer::initializer::AcceptorTransmitterChannel;
+use crate::domain_initializer::initializer::{AcceptorTransmitterChannel, ReceiverTransmitterChannel};
 use crate::response_generator::response_type::ResponseType;
 
 use crate::transmitter::entity::transmit_data::TransmitData;
@@ -12,7 +12,7 @@ use crate::transmitter::repository::transmitter_repository::TransmitterRepositor
 pub struct TransmitterRepositoryImpl {
     transmit_data: TransmitData,
     acceptor_transmitter_channel_arc: Option<Arc<AcceptorTransmitterChannel>>,
-    receiver_transmitter_tx: Option<IpcReceiver<ResponseType>>
+    receiver_transmitter_channel_arc: Option<Arc<ReceiverTransmitterChannel>>
 }
 
 impl TransmitterRepositoryImpl {
@@ -20,7 +20,7 @@ impl TransmitterRepositoryImpl {
         TransmitterRepositoryImpl {
             transmit_data: TransmitData::new(),
             acceptor_transmitter_channel_arc: None,
-            receiver_transmitter_tx: None
+            receiver_transmitter_channel_arc: None
         }
     }
 
@@ -86,10 +86,10 @@ impl TransmitterRepository for TransmitterRepositoryImpl {
         self.acceptor_transmitter_channel_arc = Option::from(acceptor_transmitter_channel_arc);
     }
 
-    async fn inject_receiver_transmitter_channel(&mut self, receiver_transmitter_tx: IpcReceiver<ResponseType>) {
+    async fn inject_receiver_transmitter_channel(&mut self, receiver_transmitter_channel_arc: Arc<ReceiverTransmitterChannel>) {
         println!("TransmitterRepository: inject_receiver_transmitter_channel()");
 
-        self.receiver_transmitter_tx = Option::from(receiver_transmitter_tx);
+        self.receiver_transmitter_channel_arc = Option::from(receiver_transmitter_channel_arc);
     }
 }
 
