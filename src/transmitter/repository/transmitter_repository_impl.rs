@@ -2,7 +2,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use ipc_channel::ipc::IpcReceiver;
 use lazy_static::lazy_static;
-use tokio::sync::Mutex as AsyncMutex;
+use tokio::sync::{Mutex as AsyncMutex, Mutex};
 use crate::domain_initializer::initializer::AcceptorTransmitterChannel;
 use crate::response_generator::response_type::ResponseType;
 
@@ -40,36 +40,42 @@ impl TransmitterRepository for TransmitterRepositoryImpl {
 
         let acceptor_channel = self.acceptor_transmitter_channel_arc.clone();
 
-        let join_handle = tokio::task::spawn(async move {
-            while let Some(stream_arc) = acceptor_channel.clone().expect("Need to inject channel").receive().await {
-                println!("Transmitter transmit() loop");
-
-                // Clone channels for use in the spawned task
-                let acceptor_transmitter_channel_arc = self.acceptor_transmitter_channel_arc.clone();
-                let receiver_transmitter_tx = self.receiver_transmitter_tx.clone().map(|rx| rx.clone());
-
-                // Spawn a new async task to handle the socket
-                tokio::spawn(async move {
-                    // Access shared data with a Mutex
-                    let acceptor_transmitter_channel = acceptor_transmitter_channel_arc.lock().await;
-
-                    // Your logic to handle the socket goes here
-                    // You can use acceptor_transmitter_channel and receiver_transmitter_tx
-
-                    // For example, waiting for receiver to be ready
-                    while receiver_transmitter_tx.is_none() {
-                        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-                    }
-
-                    // Now you can use receiver_transmitter_tx to send responses
-
-                });
-            }
-
-            println!("Transmitter transmit() end");
-        });
-
-        join_handle.await.expect("Failed to await spawned task");
+        // let join_handle = tokio::task::spawn(async move {
+        //     while let Some(stream_arc) = acceptor_channel.clone().expect("Need to inject channel").receive().await {
+        //         println!("Transmitter transmit() loop");
+        //
+        //         let acceptor_transmitter_channel_arc = self.acceptor_transmitter_channel_arc.clone();
+        //         let receiver_transmitter_tx = self.receiver_transmitter_tx.as_ref();
+        //
+        //         tokio::spawn(async move {
+        //             let acceptor_transmitter_channel = acceptor_transmitter_channel_arc;
+        //
+        //             // Wrap the receiver in a Mutex to make it thread-safe
+        //             let receiver_transmitter_tx = receiver_transmitter_tx.map(|rx| Arc::new(Mutex::new(rx)));
+        //
+        //             let receiver_transmitter_tx = receiver_transmitter_tx.map(|rx| {
+        //                 Arc::new(Mutex::new(rx.unwrap_or_else(Default::default)))
+        //             });
+        //
+        //
+        //
+        //             // Lock the Mutex to get the inner receiver
+        //             let receiver_transmitter_tx = receiver_transmitter_tx.lock().await;
+        //
+        //             // Use the receiver as needed
+        //
+        //             tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        //         });
+        //     }
+        //
+        //     println!("Transmitter transmit() end");
+        // });
+        //
+        // join_handle.await.expect("Failed to await spawned task");
+        loop {
+            println!("Transmitter transmit() test");
+            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        }
 
         println!("TransmitterRepositoryImpl: transmit() end");
     }

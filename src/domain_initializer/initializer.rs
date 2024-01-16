@@ -23,6 +23,7 @@ use crate::transmitter::controller::transmitter_controller_impl::TransmitterCont
 
 define_channel!(AcceptorReceiverChannel, Arc<Mutex<TcpStream>>);
 define_channel!(AcceptorTransmitterChannel, Arc<Mutex<TcpStream>>);
+define_channel!(ReceiverTransmitterChannel, Arc<Mutex<ResponseType>>);
 
 pub struct DomainInitializer;
 
@@ -56,12 +57,12 @@ impl DomainInitializer {
 
     pub async fn init_receiver_domain(&self,
                                       acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>,
-                                      receiver_transmitter_tx: IpcSender<ResponseType>) {
+                                      receiver_transmitter_channel_arc: Arc<ReceiverTransmitterChannel>) {
         let server_receiver_controller_mutex = ServerReceiverControllerImpl::get_instance();
         let mut server_receiver_controller = server_receiver_controller_mutex.lock().await;
 
         server_receiver_controller.inject_acceptor_receiver_channel(acceptor_receiver_channel_arc).await;
-        server_receiver_controller.inject_receiver_transmitter_channel(receiver_transmitter_tx).await;
+        server_receiver_controller.inject_receiver_transmitter_channel(receiver_transmitter_channel_arc).await;
     }
 
     pub async fn init_transmitter_domain(&self,
@@ -82,8 +83,11 @@ impl DomainInitializer {
         let acceptor_transmitter_channel = AcceptorTransmitterChannel::new(1);
         let acceptor_transmitter_channel_arc = Arc::new(acceptor_transmitter_channel.clone());
 
-        let (receiver_transmitter_tx, receiver_transmitter_rx) =
-            ipc::channel().expect("Failed to create IPC channel");
+        let receiver_transmitter_channel = ReceiverTransmitterChannel::new(1);
+        let receiver_transmitter_channel_arc = Arc::new(receiver_transmitter_channel.clone());
+        // let (receiver_transmitter_tx, receiver_transmitter_rx) =
+        //     ipc::channel().expect("Failed to create IPC channel");
+        // let receiver_transmitter_rx_arc = Arc::new(receiver_transmitter_rx);
 
         self.init_account_domain();
 
@@ -91,9 +95,10 @@ impl DomainInitializer {
         self.init_thread_worker_domain();
         self.init_client_socket_accept_domain(
             acceptor_reciever_channel_arc.clone(), acceptor_transmitter_channel_arc.clone()).await;
-        self.init_receiver_domain(acceptor_reciever_channel_arc.clone(), receiver_transmitter_tx).await;
-        self.init_transmitter_domain(
-            acceptor_transmitter_channel_arc.clone(), receiver_transmitter_rx).await;
+        self.init_receiver_domain(
+            acceptor_reciever_channel_arc.clone(), receiver_transmitter_channel_arc.clone()).await;
+        // self.init_transmitter_domain(
+        //     acceptor_transmitter_channel_arc.clone(), receiver_transmitter_rx).await;
     }
 }
 
