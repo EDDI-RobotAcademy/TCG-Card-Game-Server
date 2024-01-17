@@ -30,6 +30,8 @@ impl Account {
         })
     }
 
+    pub fn id(&self) -> i32 { self.id }
+
     pub fn user_id(&self) -> &str {
         &self.user_id
     }
