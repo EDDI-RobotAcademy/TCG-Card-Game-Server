@@ -23,3 +23,4 @@ diesel = { version = "*", features = ["mysql"] }
 bcrypt = "*"
 
 ipc-channel = "*"
+uuid = "*"
