@@ -17,6 +17,7 @@ use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
 
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
 use crate::receiver::controller::server_receiver_controller_impl::ServerReceiverControllerImpl;
+use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::response_generator::response_type::ResponseType;
 use crate::transmitter::controller::transmitter_controller::TransmitterController;
 use crate::transmitter::controller::transmitter_controller_impl::TransmitterControllerImpl;
@@ -76,6 +77,10 @@ impl DomainInitializer {
         transmitter_controller.inject_receiver_transmitter_channel(receiver_transmitter_channel_arc).await;
     }
 
+    pub async fn init_redis_in_memory_domain(&self) {
+        let _ = RedisInMemoryServiceImpl::get_instance();
+    }
+
     pub async fn init_every_domain(&self) {
         /* IPC Channel List */
         let acceptor_reciever_channel = AcceptorReceiverChannel::new(1);
@@ -99,6 +104,9 @@ impl DomainInitializer {
             acceptor_reciever_channel_arc.clone(), receiver_transmitter_channel_arc.clone()).await;
         self.init_transmitter_domain(
             acceptor_transmitter_channel_arc.clone(), receiver_transmitter_channel_arc.clone()).await;
+
+        /* Redis In-Memory DB Domain */
+        self.init_redis_in_memory_domain().await;
     }
 }
 
