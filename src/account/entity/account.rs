@@ -5,9 +5,9 @@ use diesel::{Insertable, Queryable, table};
 #[table_name = "accounts"]
 pub struct Account {
     #[column_name = "id"]
-    pub id: Option<i32>,
-    user_id: String,
-    password: String,
+    pub id: i32,
+    pub user_id: String,
+    pub password: String,
 }
 
 table! {
@@ -24,9 +24,18 @@ impl Account {
         let hashed_password = hash(password, 12)?;
 
         Ok(Account {
-            id: None,
+            id: 0,
             user_id: user_id.to_string(),
             password: hashed_password,
         })
+    }
+
+    pub fn user_id(&self) -> &str {
+        &self.user_id
+    }
+
+    // Getter for password
+    pub fn password(&self) -> &str {
+        &self.password
     }
 }
