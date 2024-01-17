@@ -202,7 +202,7 @@ mod tests {
             let acceptor_channel_arc_clone = acceptor_receiver_channel_arc.clone();
 
             let mut repository_guard = repository_mutex.lock().await;
-            repository_guard.inject_accept_channel(acceptor_channel_arc_clone).await;
+            repository_guard.inject_acceptor_receiver_channel(acceptor_channel_arc_clone).await;
 
             acceptor_receiver_channel_arc.send(Arc::new(Mutex::new(stream))).await;
             repository_guard.receive().await;

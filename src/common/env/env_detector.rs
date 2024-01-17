@@ -18,6 +18,8 @@ impl EnvDetector {
     }
 
     pub fn get_mysql_url() -> Option<String> { Self::get_var("DATABASE_URL") }
+
+    pub fn get_redis_password() -> Option<String> { Self::get_var("REDIS_PASSWORD") }
 }
 
 

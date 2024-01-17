@@ -26,6 +26,7 @@ mod account;
 mod mysql_config;
 mod transmitter;
 mod response_generator;
+mod redis;
 
 #[tokio::main]
 async fn main() {

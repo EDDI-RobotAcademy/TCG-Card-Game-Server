@@ -119,7 +119,7 @@ mod tests {
             let acceptor_receiver_channel_arc_clone = acceptor_receiver_channel_arc.clone();
 
             let mut repository_gaurd = repository.lock().await;
-            repository_gaurd.inject_accept_channel(acceptor_receiver_channel_arc_clone).await;
+            repository_gaurd.inject_acceptor_receiver_channel(acceptor_receiver_channel_arc_clone).await;
             repository_gaurd.accept_client(&listener_clone).await;
         });
 
