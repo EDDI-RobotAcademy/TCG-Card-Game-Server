@@ -7,7 +7,12 @@ use tokio::sync::Mutex as AsyncMutex;
 use diesel::query_dsl::methods::{FilterDsl, FindDsl};
 use diesel::{Connection, MysqlConnection, QueryDsl, ExpressionMethods, RunQueryDsl, OptionalExtension};
 
+use diesel::dsl::Eq;
+use diesel::sql_types::Text;
+
 use crate::account::entity::account::Account;
+use crate::account::entity::account::accounts::columns;
+use crate::account::entity::account::accounts::dsl::accounts;
 use crate::account::repository::account_repository::AccountRepository;
 use crate::common::env::env_detector::EnvDetector;
 use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
@@ -59,5 +64,26 @@ impl AccountRepository for AccountRepositoryImpl {
                 Err(e)
             }
         }
+    }
+
+    async fn find_by_user_id(&self, user_id: &str) -> Result<Option<Account>, diesel::result::Error> {
+        use crate::account::entity::account::accounts::dsl::*;
+        use diesel::query_dsl::filter_dsl::FilterDsl;
+        use diesel::sql_types::{Integer, Text};
+        use diesel::prelude::*;
+
+        println!("AccountRepositoryImpl: find_by_user_id()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        let select_clause = accounts.select((columns::id, columns::user_id, columns::password));
+        let where_clause = FilterDsl::filter(accounts, columns::user_id.eq(user_id));
+        let found_account = where_clause
+            .select((columns::id, columns::user_id, columns::password))
+            .first::<Account>(&mut connection)?;
+
+        Ok(Option::from(found_account))
     }
 }

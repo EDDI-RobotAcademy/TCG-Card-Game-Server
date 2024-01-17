@@ -11,7 +11,7 @@ use crate::receiver::repository::server_receiver_repository::ServerReceiverRepos
 use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel, ReceiverTransmitterChannel};
 
 use serde_json::Value as JsonValue;
-use crate::request_generator::test_generator::create_account_request_and_call_service;
+use crate::request_generator::test_generator::create_request_and_call_service;
 use crate::response_generator::response_type::ResponseType;
 
 pub struct ServerReceiverRepositoryImpl {
@@ -110,7 +110,7 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: O
                         println!("Received content: {:?}", decoded_object);
 
                         // TODO: This part could be cleaner; the loop logic should ideally go to the controller
-                        let response_option = create_account_request_and_call_service(&decoded_object).await;
+                        let response_option = create_request_and_call_service(&decoded_object).await;
                         // let response = response_option.unwrap();
                         //
                         // if let Some(tx) = &receiver_transmitter_tx {
