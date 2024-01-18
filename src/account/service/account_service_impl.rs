@@ -12,6 +12,7 @@ use crate::account::service::account_service::AccountService;
 
 use crate::account::service::request::account_login_request::AccountLoginRequest;
 use crate::account::service::request::account_register_request::AccountRegisterRequest;
+use crate::account::service::request::account_session_login_request::AccountSessionLoginRequest;
 
 use crate::account::service::response::account_login_response::AccountLoginResponse;
 use crate::account::service::response::account_register_response::AccountRegisterResponse;
@@ -95,6 +96,20 @@ impl AccountService for AccountServiceImpl {
 
         // 로그인 실패 시 기본 응답 반환
         AccountLoginResponse::new("".to_string())
+    }
+
+    // TODO: Session Domain 혹은 Authentication Domain 을 별도로 구성하는 것이 더 좋을 것이다.
+    async fn account_session_login(&self, account_session_login_request: AccountSessionLoginRequest) -> AccountLoginResponse {
+        println!("AccountServiceImpl: account_session_login()");
+
+        let mut redis_repository_gaurd = self.redis_in_memory_repository.lock().await;
+        let account_unique_id = redis_repository_gaurd.get(account_session_login_request.get_session_id()).await;
+
+        if let Some(id) = account_unique_id {
+            AccountLoginResponse::new(account_session_login_request.get_session_id().to_string())
+        } else {
+            AccountLoginResponse::new("".to_string())
+        }
     }
 }
 

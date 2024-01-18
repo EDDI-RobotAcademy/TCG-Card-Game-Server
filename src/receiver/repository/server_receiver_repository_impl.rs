@@ -111,13 +111,6 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: O
 
                         // TODO: This part could be cleaner; the loop logic should ideally go to the controller
                         let response_option = create_request_and_call_service(&decoded_object).await;
-                        // let response = response_option.unwrap();
-                        //
-                        // if let Some(tx) = &receiver_transmitter_tx {
-                        //     tx.send(Arc::new(AsyncMutex::new(response))).await;
-                        // } else {
-                        //     println!("Error sending response through channel");
-                        // }
 
                         if let Some(response) = &response_option {
                             println!("Generated Response Type: {:?}", response);
@@ -147,28 +140,6 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: O
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
 }
-
-// fn explore_json_value(value: JsonValue) {
-//     match value {
-//         JsonValue::Bool(v) => println!("Boolean: {:?}", v),
-//         JsonValue::Number(v) => println!("Number: {:?}", v),
-//         JsonValue::String(v) => println!("String: {:?}", v),
-//         JsonValue::Array(array) => {
-//             println!("Array: {:?}", array);
-//             for item in array {
-//                 explore_json_value(item);
-//             }
-//         }
-//         JsonValue::Object(map) => {
-//             println!("Object: {:?}", map);
-//             for (key, value) in map {
-//                 println!("Key: {:?}", key);
-//                 explore_json_value(value);
-//             }
-//         }
-//         JsonValue::Null => println!("Null"),
-//     }
-// }
 
 #[cfg(test)]
 mod tests {

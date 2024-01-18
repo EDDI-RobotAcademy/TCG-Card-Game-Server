@@ -3,6 +3,7 @@ use crate::account::service::account_service::AccountService;
 use crate::account::service::account_service_impl::AccountServiceImpl;
 use crate::account::service::request::account_register_request::AccountRegisterRequest;
 use crate::request_generator::account_request_generator::{create_login_request, create_register_request};
+use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::response_generator::response_type::ResponseType;
 
 #[derive(Debug)]
@@ -45,7 +46,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 } else {
                     None
                 }
-            }
+            },
+            3 => {
+                if let Some(request) = create_session_login_request(&data) {
+                    let account_service_mutex = AccountServiceImpl::get_instance();
+                    let mut account_service = account_service_mutex.lock().await;
+
+                    let response = account_service.account_session_login(request).await;
+                    let response_type = Some(ResponseType::ACCOUNT_LOGIN(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             _ => None,
         }
     } else {
