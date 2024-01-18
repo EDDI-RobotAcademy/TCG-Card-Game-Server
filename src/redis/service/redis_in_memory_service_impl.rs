@@ -36,7 +36,7 @@ impl RedisInMemoryService for RedisInMemoryServiceImpl {
         println!("RedisInMemoryServiceImpl: save_key_and_value()");
 
         let mut redis_in_memory_repository_guard = self.redis_in_memory_repository.lock().await;
-        redis_in_memory_repository_guard.set(key, value).await;
+        redis_in_memory_repository_guard.set_with_expired_time(key, value, Some(3600)).await;
     }
     async fn get_value_with_key(&mut self, key: &str) -> Option<String> {
         println!("RedisInMemoryServiceImpl: get_value_with_key()");
