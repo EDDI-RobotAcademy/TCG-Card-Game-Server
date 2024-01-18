@@ -76,7 +76,7 @@ impl AccountService for AccountServiceImpl {
                 // 로그인 성공
                 let redis_token = Uuid::new_v4();
                 let mut redis_repository_gaurd = self.redis_in_memory_repository.lock().await;
-                redis_repository_gaurd.set(&*redis_token.to_string(), &found_account.id.to_string()).await;
+                redis_repository_gaurd.set_with_expired_time(&*redis_token.to_string(), &found_account.id.to_string(), Some(3600)).await;
 
                 return AccountLoginResponse::new(redis_token.to_string());
             } else {
