@@ -43,42 +43,38 @@ impl TransmitterRepository for TransmitterRepositoryImpl {
         let acceptor_channel = self.acceptor_transmitter_channel_arc.clone();
         let receiver_channel = self.receiver_transmitter_channel_arc.clone();
 
-        let join_handle = tokio::task::spawn(async move {
-            while let Some(stream_arc) = acceptor_channel.clone().expect("Need to inject channel").receive().await {
+        while let Some(stream_arc) = acceptor_channel.clone().expect("Need to inject channel").receive().await {
+            let receiver_channel_clone = receiver_channel.clone();  // Clone receiver_channel
+
+            // 변경된 부분: tokio::task::spawn을 사용하여 각 클라이언트에 대한 통신을 별도의 태스크로 분리
+            tokio::task::spawn(async move {
                 println!("Transmitter transmit() loop");
 
-                if let Some(receiver_transmitter_channel) = receiver_channel.clone() {
-                    let response = receiver_transmitter_channel.receive().await;
+                if let Some(receiver_transmitter_channel) = receiver_channel_clone {
+                    loop {
+                        // 변경된 부분: 각 클라이언트에 대한 비동기 통신 작업을 별도의 태스크로 생성하여 동시에 수행
+                        let response = receiver_transmitter_channel.receive().await;
+                        println!("Transmitter receive channel data from Receiver");
 
-                    if let Some(response) = response {
-                        let mut client_socket_stream = stream_arc.lock().await;
+                        if let Some(response) = response {
+                            let mut client_socket_stream = stream_arc.lock().await;
+                            println!("Transmitter lock socket");
 
-                        // Acquire the lock on the Mutex to access the underlying data
-                        let response_data = response.lock().await;
+                            let response_data = response.lock().await;
+                            let json_data = serde_json::to_string(&*response_data).expect("Failed to serialize to JSON");
 
-                        // Convert the response to JSON
-                        let json_data = serde_json::to_string(&*response_data).expect("Failed to serialize to JSON");
+                            println!("Transmitting data: {}", json_data);
 
-                        // Print the data being transmitted
-                        println!("Transmitting data: {}", json_data);
+                            client_socket_stream.write_all(json_data.as_bytes()).await.expect("Failed to write to client");
+                        }
 
-                        // Send the JSON data through the client socket stream
-                        client_socket_stream.write_all(json_data.as_bytes()).await.expect("Failed to write to client");
+                        tokio::time::sleep(Duration::from_millis(500)).await;
                     }
                 }
 
-                tokio::time::sleep(Duration::from_millis(500)).await;
-            }
-
-            println!("Transmitter transmit() end");
-        });
-
-        join_handle.await.expect("Failed to await spawned task");
-
-        // loop {
-        //     println!("Transmitter transmit() test");
-        //     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-        // }
+                println!("Transmitter transmit() loop finished");
+            });
+        }
 
         println!("TransmitterRepositoryImpl: transmit() end");
     }
