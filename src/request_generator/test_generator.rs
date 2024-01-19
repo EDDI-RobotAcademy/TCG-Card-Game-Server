@@ -2,7 +2,10 @@ use serde_json::Value as JsonValue;
 use crate::account::service::account_service::AccountService;
 use crate::account::service::account_service_impl::AccountServiceImpl;
 use crate::account::service::request::account_register_request::AccountRegisterRequest;
+use crate::client_program::service::client_program_service::ClientProgramService;
+use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
 use crate::request_generator::account_request_generator::{create_login_request, create_register_request};
+use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::response_generator::response_type::ResponseType;
 
@@ -54,6 +57,19 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = account_service.account_session_login(request).await;
                     let response_type = Some(ResponseType::ACCOUNT_LOGIN(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            4444 => {
+                if let Some(request) = create_client_program_exit_request(&data) {
+                    let client_program_service_mutex = ClientProgramServiceImpl::get_instance();
+                    let mut client_program_service = client_program_service_mutex.lock().await;
+
+                    let response = client_program_service.client_exit_program(request).await;
+                    let response_type = Some(ResponseType::PROGRAM_EXIT(response));
 
                     response_type
                 } else {

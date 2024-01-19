@@ -1,5 +1,4 @@
 use serde_json::Value as JsonValue;
-use crate::account::service::request::account_login_request::AccountLoginRequest;
 use crate::account::service::request::account_session_login_request::AccountSessionLoginRequest;
 
 pub fn create_session_login_request(data: &JsonValue) -> Option<AccountSessionLoginRequest> {
