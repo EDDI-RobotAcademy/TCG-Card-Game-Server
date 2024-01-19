@@ -7,7 +7,12 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 use crate::client_socket_accept::entity::client_socket::ClientSocket;
 use crate::client_socket_accept::repository::client_socket_accept_repository::ClientSocketAcceptRepository;
+use crate::define_channel;
 use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel};
+use crate::response_generator::response_type::ResponseType;
+
+use tokio::sync::mpsc;
+define_channel!(ReceiverTransmitterChannel, Arc<Mutex<ResponseType>>);
 
 #[derive(Clone)]
 pub struct ClientSocketAcceptRepositoryImpl {
@@ -47,7 +52,11 @@ impl ClientSocketAcceptRepository for ClientSocketAcceptRepositoryImpl {
             match listener.accept().await {
                 Ok((stream, peer_addr)) => {
                     println!("Accepted client from: {}", peer_addr);
-                    let client = ClientSocket::new(peer_addr.to_string(), stream);
+
+                    let each_client_receiver_transmitter_channel = ReceiverTransmitterChannel::new(1);
+                    let each_client_receiver_transmitter_channel_arc = Arc::new(each_client_receiver_transmitter_channel.clone());
+
+                    let client = ClientSocket::new(peer_addr.to_string(), stream, each_client_receiver_transmitter_channel_arc);
                     let mut client_list_gaurd = self.client_list.lock().await;
 
                     client_list_gaurd.insert(client.address().to_string(), client.clone());
@@ -58,9 +67,6 @@ impl ClientSocketAcceptRepository for ClientSocketAcceptRepositoryImpl {
                         let stream = client.stream();
                         let _ = acceptor_receiver_channel.send(stream).await;
                         println!("send socket info to receiver with ipc channel");
-
-
-
                     } else {
                         eprintln!("Acceptor Receiver channel is not initialized");
                     }
