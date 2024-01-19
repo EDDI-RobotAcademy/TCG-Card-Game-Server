@@ -118,6 +118,13 @@ impl TransmitterRepository for TransmitterRepositoryImpl {
                             println!("Transmitting data: {}", json_data);
 
                             client_socket_stream.write_all(json_data.as_bytes()).await.expect("Failed to write to client");
+
+                            if let ResponseType::PROGRAM_EXIT(exit_response) = &*response_data {
+                                if exit_response.does_client_exit_success() {
+                                    println!("종료 요청 수신: 전용 Transmitter 종료");
+                                    break;
+                                }
+                            }
                         }
 
                         tokio::time::sleep(Duration::from_millis(500)).await;
