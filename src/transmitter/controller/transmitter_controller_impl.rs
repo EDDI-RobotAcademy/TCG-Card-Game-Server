@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use ipc_channel::ipc::IpcReceiver;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
-use crate::domain_initializer::initializer::{AcceptorTransmitterChannel, ReceiverTransmitterChannel};
+use crate::domain_initializer::initializer::{AcceptorTransmitterChannel, ReceiverTransmitterLegacyChannel};
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
 use crate::receiver::controller::server_receiver_controller_impl::ServerReceiverControllerImpl;
 use crate::receiver::service::server_receiver_service_impl::ServerReceiverServiceImpl;
@@ -54,7 +54,7 @@ impl TransmitterController for TransmitterControllerImpl {
         transmitter_gaurd.inject_acceptor_transmitter_channel(acceptor_transmitter_channel_arc).await;
     }
 
-    async fn inject_receiver_transmitter_channel(&mut self, receiver_transmitter_channel_arc: Arc<ReceiverTransmitterChannel>) {
+    async fn inject_receiver_transmitter_channel(&mut self, receiver_transmitter_channel_arc: Arc<ReceiverTransmitterLegacyChannel>) {
         println!("TransmitterControllerImpl: inject_receiver_transmitter_channel()");
 
         let mut transmitter_gaurd = self.transmitter_service.lock().await;

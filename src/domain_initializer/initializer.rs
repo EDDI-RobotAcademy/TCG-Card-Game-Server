@@ -1,30 +1,34 @@
 use std::sync::Arc;
-use ipc_channel::ipc;
-use ipc_channel::ipc::{IpcReceiver, IpcSender};
+
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio::sync::mpsc;
+
 use crate::account::service::account_service_impl::AccountServiceImpl;
 
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
 use crate::client_socket_accept::controller::client_socket_accept_controller_impl::ClientSocketAcceptControllerImpl;
+use crate::client_socket_accept::entity::client_socket::ClientSocket;
 
 use crate::server_socket::service::server_socket_service_impl::ServerSocketServiceImpl;
 use crate::thread_worker::service::thread_worker_service_impl::ThreadWorkerServiceImpl;
 
 use crate::common::mpsc::mpsc_creator::mpsc_channel::define_channel;
-use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
 
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
 use crate::receiver::controller::server_receiver_controller_impl::ServerReceiverControllerImpl;
+
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
+
 use crate::response_generator::response_type::ResponseType;
+
 use crate::transmitter::controller::transmitter_controller::TransmitterController;
 use crate::transmitter::controller::transmitter_controller_impl::TransmitterControllerImpl;
 
-define_channel!(AcceptorReceiverChannel, Arc<Mutex<TcpStream>>);
+define_channel!(AcceptorReceiverChannel, ClientSocket);
+// define_channel!(AcceptorReceiverChannel, Arc<Mutex<TcpStream>>);
 define_channel!(AcceptorTransmitterChannel, Arc<Mutex<TcpStream>>);
-define_channel!(ReceiverTransmitterChannel, Arc<Mutex<ResponseType>>);
+define_channel!(ReceiverTransmitterLegacyChannel, Arc<Mutex<ResponseType>>);
 
 pub struct DomainInitializer;
 
@@ -58,7 +62,7 @@ impl DomainInitializer {
 
     pub async fn init_receiver_domain(&self,
                                       acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>,
-                                      receiver_transmitter_channel_arc: Arc<ReceiverTransmitterChannel>) {
+                                      receiver_transmitter_channel_arc: Arc<ReceiverTransmitterLegacyChannel>) {
         let server_receiver_controller_mutex = ServerReceiverControllerImpl::get_instance();
         let mut server_receiver_controller = server_receiver_controller_mutex.lock().await;
 
@@ -68,7 +72,7 @@ impl DomainInitializer {
 
     pub async fn init_transmitter_domain(&self,
                                          acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>,
-                                         receiver_transmitter_channel_arc: Arc<ReceiverTransmitterChannel>) {
+                                         receiver_transmitter_channel_arc: Arc<ReceiverTransmitterLegacyChannel>) {
 
         let transmitter_controller_mutex = TransmitterControllerImpl::get_instance();
         let mut transmitter_controller = transmitter_controller_mutex.lock().await;
@@ -89,7 +93,7 @@ impl DomainInitializer {
         let acceptor_transmitter_channel = AcceptorTransmitterChannel::new(1);
         let acceptor_transmitter_channel_arc = Arc::new(acceptor_transmitter_channel.clone());
 
-        let receiver_transmitter_channel = ReceiverTransmitterChannel::new(1);
+        let receiver_transmitter_channel = ReceiverTransmitterLegacyChannel::new(1);
         let receiver_transmitter_channel_arc = Arc::new(receiver_transmitter_channel.clone());
 
         /* Business Domain List */
