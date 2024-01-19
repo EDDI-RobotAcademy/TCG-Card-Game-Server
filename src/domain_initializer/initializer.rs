@@ -27,7 +27,8 @@ use crate::transmitter::controller::transmitter_controller_impl::TransmitterCont
 
 define_channel!(AcceptorReceiverChannel, ClientSocket);
 // define_channel!(AcceptorReceiverChannel, Arc<Mutex<TcpStream>>);
-define_channel!(AcceptorTransmitterChannel, Arc<Mutex<TcpStream>>);
+define_channel!(AcceptorTransmitterChannel, ClientSocket);
+// define_channel!(AcceptorTransmitterChannel, Arc<Mutex<TcpStream>>);
 define_channel!(ReceiverTransmitterLegacyChannel, Arc<Mutex<ResponseType>>);
 
 pub struct DomainInitializer;

@@ -66,7 +66,7 @@ impl ClientSocketAcceptRepository for ClientSocketAcceptRepositoryImpl {
 
                         // let stream = client.stream();
                         // let _ = acceptor_receiver_channel.send(stream).await;
-                        let _ = acceptor_receiver_channel.send(client).await;
+                        let _ = acceptor_receiver_channel.send(client.clone()).await;
                         println!("send socket info to receiver with ipc channel");
                     } else {
                         eprintln!("Acceptor Receiver channel is not initialized");
@@ -77,6 +77,7 @@ impl ClientSocketAcceptRepository for ClientSocketAcceptRepositoryImpl {
 
                         // let stream = client.stream();
                         // let _ = acceptor_transmitter_channel.send(stream).await;
+                        let _ = acceptor_transmitter_channel.send(client.clone()).await;
                         println!("send socket info to transmitter with ipc channel");
                     } else {
                         eprintln!("Acceptor Transmitter channel is not initialized");
