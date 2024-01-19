@@ -12,6 +12,7 @@ use crate::receiver::repository::server_receiver_repository::ServerReceiverRepos
 use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel, ReceiverTransmitterLegacyChannel};
 
 use serde_json::Value as JsonValue;
+use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::client_socket_accept::repository::client_socket_accept_repository_impl::ReceiverTransmitterChannel;
 use crate::request_generator::test_generator::create_request_and_call_service;
 use crate::response_generator::response_type::ResponseType;
@@ -84,45 +85,67 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
         //     println!("Server Receiver Repository: client close socket");
         // });
 
+        // let join_handle = tokio::task::spawn(async move {
+        //     // ClientSocket {
+        //     //     address: String,
+        //     //     stream: Arc<Mutex<TcpStream>>,
+        //     //     each_client_receiver_transmitter_channel: Arc<ReceiverTransmitterChannel>,
+        //     // }
+        //     while let Some(client_socket) = acceptor_channel.clone().expect("Need to inject channel").receive().await {
+        //         // let stream_result = stream_arc.lock().await.peer_addr();
+        //         let receiver_transmitter_channel_arc = client_socket.each_client_receiver_transmitter_channel();
+        //         let stream_arc = client_socket.stream();
+        //         let stream_result = stream_arc.lock().await.peer_addr();
+        //
+        //         tokio::select! {
+        //             _ = futures::future::ready(stream_result.as_ref().clone()) => {
+        //                 if let Some(peer_addr) = stream_result.ok() {
+        //                     println!("Connected client address: {}", peer_addr);
+        //                     let stream = stream_arc.clone();
+        //                     // let receiver_transmitter_tx_inner = receiver_transmitter_tx_clone.clone();
+        //                     let receiver_transmitter_tx_inner = receiver_transmitter_channel_arc.clone();
+        //
+        //                     tokio::spawn(async move {
+        //                         handle_client(stream, receiver_transmitter_tx_inner).await;
+        //                     });
+        //                 } else {
+        //                     eprintln!("Failed to get peer address");
+        //                 }
+        //             }
+        //             else => {
+        //                 eprintln!("Failed to get peer address");
+        //             }
+        //         }
+        //     }
+        //
+        //     println!("ServerReceiverRepository: Task Dead");
+        // });
+
         let join_handle = tokio::task::spawn(async move {
-            // ClientSocket {
-            //     address: String,
-            //     stream: Arc<Mutex<TcpStream>>,
-            //     each_client_receiver_transmitter_channel: Arc<ReceiverTransmitterChannel>,
-            // }
             while let Some(client_socket) = acceptor_channel.clone().expect("Need to inject channel").receive().await {
-                // let stream_result = stream_arc.lock().await.peer_addr();
                 let receiver_transmitter_channel_arc = client_socket.each_client_receiver_transmitter_channel();
                 let stream_arc = client_socket.stream();
                 let stream_result = stream_arc.lock().await.peer_addr();
 
-                tokio::select! {
-                    _ = futures::future::ready(stream_result.as_ref().clone()) => {
-                        if let Some(peer_addr) = stream_result.ok() {
-                            println!("Connected client address: {}", peer_addr);
-                            let stream = stream_arc.clone();
-                            // let receiver_transmitter_tx_inner = receiver_transmitter_tx_clone.clone();
-                            let receiver_transmitter_tx_inner = receiver_transmitter_channel_arc.clone();
+                if let Some(peer_addr) = stream_result.ok() {
+                    println!("Connected client address: {}", peer_addr);
+                    let stream = stream_arc.clone();
+                    let receiver_transmitter_tx_inner = receiver_transmitter_channel_arc.clone();
 
-                            tokio::spawn(async move {
-                                handle_client(stream, receiver_transmitter_tx_inner).await;
-                            });
-                        } else {
-                            eprintln!("Failed to get peer address");
-                        }
-                    }
-                    else => {
-                        eprintln!("Failed to get peer address");
-                    }
+                    tokio::spawn(async move {
+                        handle_client(stream, receiver_transmitter_tx_inner).await;
+                    });
+                } else {
+                    eprintln!("Failed to get peer address");
                 }
             }
 
-            println!("Server Receiver Repository: client close socket");
+            println!("ServerReceiverRepository: Task Dead");
         });
 
         join_handle.await.expect("Failed to await spawned task");
 
-        println!("Server Receiver Repository: receive() end");
+        println!("ServerReceiverRepository: receive() end");
     }
 
     async fn inject_acceptor_receiver_channel(&mut self, acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>) {
@@ -155,18 +178,26 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: A
                         // TODO: This part could be cleaner; the loop logic should ideally go to the controller
                         // Option<ResponseType>
                         let response_option = create_request_and_call_service(&decoded_object).await;
-
-                        // &ResponseType
-                        if let Some(response) = &response_option {
-                            println!("Generated Response Type: {:?}", response);
-                        } else {
-                            println!("Failed to generate Response Type");
-                        }
+                        let response_option_arc = response_option.clone();
 
                         // &Arc<ReceiverTransmitterChannel>
                         if let tx = &receiver_transmitter_tx {
                             tx.send(Arc::new(AsyncMutex::new(response_option.unwrap()))).await;
                             println!("handle_client: Sent response to Transmitter through channel");
+                        }
+
+                        if let Some(response) = &response_option_arc {
+                            match response {
+                                ResponseType::PROGRAM_EXIT(client_program_exit_response) => {
+                                    if client_program_exit_response.does_client_exit_success() {
+                                        println!("Program Exit Detected!");
+                                        break
+                                    }
+                                }
+                                _ => {
+                                    println!("Generated Response Type: {:?}", response);
+                                }
+                            }
                         }
                     }
                     Err(err) => {
@@ -183,6 +214,8 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: A
 
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
+
+    println!("Finish to handle client receive");
 }
 
 // async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: Option<Arc<ReceiverTransmitterChannel>>) {
