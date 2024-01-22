@@ -66,7 +66,7 @@ impl AccountRepository for AccountRepositoryImpl {
         }
     }
 
-    async fn find_by_user_id(&self, user_id: &str) -> Result<Option<Account>, diesel::result::Error> {
+    async fn find_by_user_id(&self, account_user_id: &str) -> Result<Option<Account>, diesel::result::Error> {
         use crate::account::entity::account::accounts::dsl::*;
         use diesel::query_dsl::filter_dsl::FilterDsl;
         use diesel::sql_types::{Integer, Text};
@@ -80,9 +80,13 @@ impl AccountRepository for AccountRepositoryImpl {
 
         let select_clause = accounts.select((columns::id, columns::user_id, columns::password));
         let where_clause = FilterDsl::filter(accounts, columns::user_id.eq(user_id));
-        let found_account = where_clause
+        let found_accounts = where_clause
             .select((columns::id, columns::user_id, columns::password))
-            .first::<Account>(&mut connection)?;
+            .load::<Account>(&mut connection)?;
+
+        let found_account = found_accounts
+            .into_iter()
+            .find(|account| account.user_id == account_user_id);
 
         Ok(Option::from(found_account))
     }
