@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 use bcrypt::{hash, verify};
+use diesel::dsl::not;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use uuid::Uuid;
@@ -55,14 +56,28 @@ impl AccountService for AccountServiceImpl {
         println!("AccountServiceImpl: account_register()");
 
         let account_repository = self.repository.lock().await;
-        let result = account_repository.save(account_register_request.to_account().unwrap()).await;
-
-        if result.is_ok() {
-            AccountRegisterResponse::new(true)
+        let account = account_register_request.to_account().unwrap();
+        println!("중복 확인 시작");
+        if account_repository.find_by_user_id(account.user_id()).await.unwrap().is_some() {
+            println!("중복된 아이디 존재");
+            AccountRegisterResponse::new(false)
+        } else if account_repository.find_by_user_id(account.user_id()).await.unwrap().is_none() {
+            println!("중복된 아이디 존재하지 않아 계정 저장 시작");
+            let result = account_repository.save(account_register_request.to_account().unwrap()).await;
+            if result.is_ok() {
+                    println!("계정 저장 완료");
+                    AccountRegisterResponse::new(true)
+                } else {
+                println!("계정 저장 실패");
+                AccountRegisterResponse::new(false)
+            }
         } else {
-            eprintln!("계정 생성 중 에러 발생");
+            println!("중복 확인 자체 실패");
             AccountRegisterResponse::new(false)
         }
+        // if result.is_ok() {
+        //     AccountRegisterResponse::new(true)
+        // }
     }
 
     async fn account_login(&self, account_login_request: AccountLoginRequest) -> AccountLoginResponse {
