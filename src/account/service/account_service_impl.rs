@@ -60,16 +60,14 @@ impl AccountService for AccountServiceImpl {
         // 중복 확인 작업
         if account_repository.find_by_user_id(account.user_id()).await.unwrap().is_some() {
             // 중복 아이디 존재하는 경우
-            AccountRegisterResponse::new(false)
-        } else {
-            // 중복 아이디 존재하지 않는 경우 계정 저장
-            let result = account_repository.save(account_register_request.to_account().unwrap()).await;
-            if result.is_ok() {
-                    AccountRegisterResponse::new(true)
-                } else {
-                AccountRegisterResponse::new(false)
-            }
+            return AccountRegisterResponse::new(false)
         }
+        // 중복 아이디 존재하지 않는 경우 계정 저장
+        let result = account_repository.save(account_register_request.to_account().unwrap()).await;
+        if result.is_ok() {
+            return AccountRegisterResponse::new(true)
+        }
+        return AccountRegisterResponse::new(false)
     }
 
     async fn account_login(&self, account_login_request: AccountLoginRequest) -> AccountLoginResponse {
