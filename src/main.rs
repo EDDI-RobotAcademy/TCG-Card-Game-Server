@@ -38,6 +38,11 @@ mod support_card;
 mod energy_card;
 mod no_ability_unit_card;
 mod unit_card;
+mod card_id;
+mod card_name;
+mod card_race;
+mod card_special_energy;
+mod card_grade;
 
 #[tokio::main]
 async fn main() {
