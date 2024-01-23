@@ -19,7 +19,7 @@ fn csv_read(file_path: &str) -> Result<Vec<Vec<String>>, Box<dyn Error>> {
     for result in rdr.records() {
         let record = result?;
         let record_values: Vec<String> = record.iter().map(|field| field.to_string()).collect();
-        
+
         csv_content.push(record_values);
     }
 
