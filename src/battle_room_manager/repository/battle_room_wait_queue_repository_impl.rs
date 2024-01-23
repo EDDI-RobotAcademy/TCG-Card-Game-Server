@@ -38,7 +38,7 @@ impl BattleRoomWaitQueueRepositoryImpl {
 
 #[async_trait]
 impl BattleRoomWaitQueueRepository for BattleRoomWaitQueueRepositoryImpl {
-    async fn enqueue_player_id(&self, account_unique_id: i32) -> Result<bool, diesel::result::Error> {
+    async fn enqueue_player_id_for_wait(&self, account_unique_id: i32) -> Result<bool, diesel::result::Error> {
         self.wait_queue.enqueue_player(account_unique_id).await;
 
         Ok(true)
@@ -58,7 +58,7 @@ mod tests {
         let result = repository_arc
             .lock()
             .await
-            .enqueue_player_id(1)
+            .enqueue_player_id_for_wait(1)
             .await;
 
         assert!(result.is_ok());
