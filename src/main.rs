@@ -28,6 +28,7 @@ mod transmitter;
 mod response_generator;
 mod redis;
 mod client_program;
+mod card;
 
 #[tokio::main]
 async fn main() {
