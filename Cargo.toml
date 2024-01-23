@@ -24,3 +24,5 @@ bcrypt = "*"
 
 ipc-channel = "*"
 uuid = "*"
+
+csv = "*"
