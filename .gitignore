@@ -22,3 +22,6 @@ Cargo.lock
 
 # Remove .env
 .env
+
+# Remove *.csv
+*.csv
