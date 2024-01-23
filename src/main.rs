@@ -28,6 +28,7 @@ mod transmitter;
 mod response_generator;
 mod redis;
 mod client_program;
+mod battle_room_manager;
 
 #[tokio::main]
 async fn main() {
