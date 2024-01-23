@@ -6,6 +6,7 @@ pub struct Unitcard {
     pub card_activation_energy: i32,       //기본 공격을 활성화 하기 위한 에너지
     pub unit_attack_point: i32,         // 공격력
     pub unit_health_point: i32,         // HP 피통
+    pub unit_job: i32,                  // 인벤에서 속성으로표시된거 성기사, 마검사 반신반인 등 job으로 함
     pub card_passive1: i32,            // 카드 패시브 1                                          // 카드마다 가지고 있는효과는 다르고 턴이지나도 불변?
     pub card_passive2: i32,             // 패시브 2
     pub card_passive3: i32,             // 패시브 3
