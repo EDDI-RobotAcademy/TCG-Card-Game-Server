@@ -3,11 +3,8 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 
-use crate::battle_room_manager::entity::battle_room_ready_queue::BattleRoomReadyQueue;
 use crate::battle_room_manager::entity::battle_room_wait_queue::BattleRoomWaitingQueue;
 use crate::battle_room_manager::repository::battle_room_wait_queue_repository::BattleRoomWaitQueueRepository;
-use crate::receiver::entity::receive_data::ReceiveData;
-use crate::receiver::repository::server_receiver_repository_impl::ServerReceiverRepositoryImpl;
 
 
 pub struct BattleRoomWaitQueueRepositoryImpl {
