@@ -3,13 +3,13 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 #[derive(Debug)]
-pub struct WaitingQueue {
+pub struct BattleRoomWaitingQueue {
     pub player_id_list: Mutex<Vec<i32>>,
 }
 
-impl WaitingQueue {
-    pub fn new() -> WaitingQueue {
-        WaitingQueue {
+impl BattleRoomWaitingQueue {
+    pub fn new() -> BattleRoomWaitingQueue {
+        BattleRoomWaitingQueue {
             player_id_list: Mutex::new(Vec::new()),
         }
     }
@@ -35,7 +35,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_enqueue_and_process_queue() {
-        let waiting_queue = Arc::new(WaitingQueue::new());
+        let waiting_queue = Arc::new(BattleRoomWaitingQueue::new());
 
         // 여러 프로듀서가 enqueue
         let waiting_queue_clone = Arc::clone(&waiting_queue);
@@ -59,22 +59,22 @@ mod tests {
 
     #[tokio::test]
     async fn test_process_queue_removes_excess_players() {
-        let waiting_queue = Arc::new(WaitingQueue::new());
+        let waiting_queue = Arc::new(BattleRoomWaitingQueue::new());
 
         // 여러 프로듀서가 enqueue
         let waiting_queue_clone = Arc::clone(&waiting_queue);
         tokio::spawn(async move {
             waiting_queue_clone.enqueue_player(1).await;
         })
-            .await
-            .unwrap();
+        .await
+        .unwrap();
 
         let waiting_queue_clone = Arc::clone(&waiting_queue);
         tokio::spawn(async move {
             waiting_queue_clone.enqueue_player(2).await;
         })
-            .await
-            .unwrap();
+        .await
+        .unwrap();
 
         // 대기열 처리
         waiting_queue.process_queue(1).await;
@@ -82,6 +82,6 @@ mod tests {
         // 대기열 확인 (빈자리가 없어서 맨 앞의 플레이어가 제거되어야 함)
         let guard = waiting_queue.player_id_list.lock().await;
         assert_eq!(guard.len(), 1);
-        assert_eq!(guard[0], 2); // Check the value directly
+        assert_eq!(guard[0], 2);
     }
 }
