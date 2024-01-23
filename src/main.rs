@@ -29,6 +29,15 @@ mod response_generator;
 mod redis;
 mod client_program;
 mod card;
+mod env_card;
+mod trap_card;
+mod token_card;
+mod tool_card;
+mod item_card;
+mod support_card;
+mod energy_card;
+mod no_ability_unit_card;
+mod unit_card;
 
 #[tokio::main]
 async fn main() {
