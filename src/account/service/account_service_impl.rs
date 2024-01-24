@@ -58,11 +58,11 @@ impl AccountService for AccountServiceImpl {
         let result = account_repository.save(account_register_request.to_account().unwrap()).await;
 
         if result.is_ok() {
-            AccountRegisterResponse::new(true)
-        } else {
-            eprintln!("계정 생성 중 에러 발생");
-            AccountRegisterResponse::new(false)
+            return AccountRegisterResponse::new(true)
         }
+
+        eprintln!("계정 생성 중 에러 발생");
+        return AccountRegisterResponse::new(false)
     }
 
     async fn account_login(&self, account_login_request: AccountLoginRequest) -> AccountLoginResponse {

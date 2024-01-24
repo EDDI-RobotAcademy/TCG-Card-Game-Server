@@ -1,11 +1,12 @@
+use std::error::Error;
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
 
-use crate::battle_room_manager::entity::battle_room_ready_queue::BattleRoomReadyQueue;
-use crate::battle_room_manager::repository::battle_room_ready_queue_repository::BattleRoomReadyQueueRepository;
+use crate::battle_room::entity::battle_room_ready_queue::BattleRoomReadyQueue;
+use crate::battle_room::repository::battle_room_ready_queue_repository::BattleRoomReadyQueueRepository;
 
 pub struct BattleRoomReadyQueueRepositoryImpl {
     ready_queue: BattleRoomReadyQueue,
@@ -29,7 +30,7 @@ impl BattleRoomReadyQueueRepositoryImpl {
 
 #[async_trait]
 impl BattleRoomReadyQueueRepository for BattleRoomReadyQueueRepositoryImpl {
-    async fn enqueue_player_id_for_ready(&self, account_unique_id: i32) -> Result<bool, diesel::result::Error> {
+    async fn enqueue_player_id_for_ready(&self, account_unique_id: i32) -> Result<bool, Box<dyn Error>> {
         self.ready_queue.enqueue_player(account_unique_id).await;
 
         Ok(true)
