@@ -14,7 +14,7 @@ use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTr
 use serde_json::Value as JsonValue;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::client_socket_accept::repository::client_socket_accept_repository_impl::ReceiverTransmitterChannel;
-use crate::request_generator::test_generator::create_request_and_call_service;
+use crate::request_generator::request_generator::create_request_and_call_service;
 use crate::response_generator::response_type::ResponseType;
 
 pub struct ServerReceiverRepositoryImpl {

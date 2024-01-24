@@ -63,6 +63,18 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            11 => {
+                // Account Deck info 를 요청한 것이므로 이에 대해 응답해야함 (Select Account Deck for Battle)
+                None
+            },
+            101 => {
+                // Request Battle Match
+                None
+            },
+            102 => {
+                // Is Ready For Battle
+                None
+            },
             4444 => {
                 if let Some(request) = create_client_program_exit_request(&data) {
                     let client_program_service_mutex = ClientProgramServiceImpl::get_instance();
