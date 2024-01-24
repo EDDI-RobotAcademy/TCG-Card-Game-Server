@@ -1,0 +1,4 @@
+pub mod battle_room_wait_queue_repository;
+pub mod battle_room_wait_queue_repository_impl;
+pub mod battle_room_ready_queue_repository;
+pub mod battle_room_ready_queue_repository_impl;

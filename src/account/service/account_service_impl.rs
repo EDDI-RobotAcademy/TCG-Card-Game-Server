@@ -67,7 +67,6 @@ impl AccountService for AccountServiceImpl {
         if result.is_ok() {
             return AccountRegisterResponse::new(true)
         }
-        return AccountRegisterResponse::new(false)
     }
 
     async fn account_login(&self, account_login_request: AccountLoginRequest) -> AccountLoginResponse {
