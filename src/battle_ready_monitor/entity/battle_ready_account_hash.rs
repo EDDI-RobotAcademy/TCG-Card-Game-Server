@@ -16,7 +16,7 @@ impl BattleReadyAccountHash {
         self.battle_ready_account_states.insert(user_id, state);
     }
 
-    fn get_user_ready_state(&self, user_id: i32) -> Option<&BattleReadyStatus> {
+    pub fn get_user_ready_state(&self, user_id: i32) -> Option<&BattleReadyStatus> {
         self.battle_ready_account_states.get(&user_id)
     }
 }
