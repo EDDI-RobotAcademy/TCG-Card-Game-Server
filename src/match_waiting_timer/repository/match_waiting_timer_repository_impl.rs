@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 
@@ -35,5 +36,11 @@ impl MatchWaitingTimerRepository for MatchWaitingTimerRepositoryImpl {
         println!("MatchWaitingTimerRepositoryImpl: set_match_waiting_timer()");
 
         self.match_waiting_timer.start_timer(account_unique_id);
+    }
+
+    async fn check_match_waiting_timer_expired(&mut self, account_unique_id: i32, duration: Duration) -> bool {
+        println!("MatchWaitingTimerRepositoryImpl: check_match_waiting_timer_expired()");
+
+        self.match_waiting_timer.check_timer(account_unique_id, duration)
     }
 }
