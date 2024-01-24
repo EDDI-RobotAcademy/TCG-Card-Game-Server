@@ -26,9 +26,7 @@ use crate::transmitter::controller::transmitter_controller::TransmitterControlle
 use crate::transmitter::controller::transmitter_controller_impl::TransmitterControllerImpl;
 
 define_channel!(AcceptorReceiverChannel, ClientSocket);
-// define_channel!(AcceptorReceiverChannel, Arc<Mutex<TcpStream>>);
 define_channel!(AcceptorTransmitterChannel, ClientSocket);
-// define_channel!(AcceptorTransmitterChannel, Arc<Mutex<TcpStream>>);
 define_channel!(ReceiverTransmitterLegacyChannel, Arc<Mutex<ResponseType>>);
 
 pub struct DomainInitializer;
@@ -88,8 +86,8 @@ impl DomainInitializer {
 
     pub async fn init_every_domain(&self) {
         /* IPC Channel List */
-        let acceptor_reciever_channel = AcceptorReceiverChannel::new(1);
-        let acceptor_reciever_channel_arc = Arc::new(acceptor_reciever_channel.clone());
+        let acceptor_receiver_channel = AcceptorReceiverChannel::new(1);
+        let acceptor_receiver_channel_arc = Arc::new(acceptor_receiver_channel.clone());
 
         let acceptor_transmitter_channel = AcceptorTransmitterChannel::new(1);
         let acceptor_transmitter_channel_arc = Arc::new(acceptor_transmitter_channel.clone());
@@ -104,9 +102,9 @@ impl DomainInitializer {
         self.init_server_socket_domain();
         self.init_thread_worker_domain();
         self.init_client_socket_accept_domain(
-            acceptor_reciever_channel_arc.clone(), acceptor_transmitter_channel_arc.clone()).await;
+            acceptor_receiver_channel_arc.clone(), acceptor_transmitter_channel_arc.clone()).await;
         self.init_receiver_domain(
-            acceptor_reciever_channel_arc.clone(), receiver_transmitter_channel_arc.clone()).await;
+            acceptor_receiver_channel_arc.clone(), receiver_transmitter_channel_arc.clone()).await;
         self.init_transmitter_domain(
             acceptor_transmitter_channel_arc.clone(), receiver_transmitter_channel_arc.clone()).await;
 
