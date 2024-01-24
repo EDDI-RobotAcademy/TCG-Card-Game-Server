@@ -19,11 +19,27 @@ impl BattleRoomWaitingQueue {
         guard.push(player_id);
     }
 
+    pub async fn dequeue_player(&self) -> Option<i32> {
+        let mut guard = self.player_id_list.lock().await;
+        guard.pop()
+    }
+
     pub async fn process_queue(&self, max_players: usize) {
         let mut guard = self.player_id_list.lock().await;
         while guard.len() > max_players {
             guard.remove(0);
         }
+    }
+
+    pub async fn dequeue_n_players(&self, count: usize) -> Vec<i32> {
+        let mut guard = self.player_id_list.lock().await;
+        let mut dequeued_players = Vec::new();
+
+        while guard.len() > count && dequeued_players.len() < count {
+            dequeued_players.push(guard.pop().unwrap());
+        }
+
+        dequeued_players
     }
 }
 
@@ -37,7 +53,6 @@ mod tests {
     async fn test_enqueue_and_process_queue() {
         let waiting_queue = Arc::new(BattleRoomWaitingQueue::new());
 
-        // 여러 프로듀서가 enqueue
         let waiting_queue_clone = Arc::clone(&waiting_queue);
         tokio::spawn(async move {
             waiting_queue_clone.enqueue_player(1).await;
@@ -48,10 +63,8 @@ mod tests {
             waiting_queue_clone.enqueue_player(2).await;
         }).await.unwrap();
 
-        // 비동기적으로 대기열 처리
         waiting_queue.process_queue(2).await;
 
-        // 대기열 확인
         let guard = waiting_queue.player_id_list.lock().await;
         assert_eq!(guard.len(), 2);
         assert_eq!(*guard, vec![1, 2]);
@@ -61,7 +74,6 @@ mod tests {
     async fn test_process_queue_removes_excess_players() {
         let waiting_queue = Arc::new(BattleRoomWaitingQueue::new());
 
-        // 여러 프로듀서가 enqueue
         let waiting_queue_clone = Arc::clone(&waiting_queue);
         tokio::spawn(async move {
             waiting_queue_clone.enqueue_player(1).await;
@@ -76,12 +88,63 @@ mod tests {
         .await
         .unwrap();
 
-        // 대기열 처리
         waiting_queue.process_queue(1).await;
 
-        // 대기열 확인 (빈자리가 없어서 맨 앞의 플레이어가 제거되어야 함)
         let guard = waiting_queue.player_id_list.lock().await;
         assert_eq!(guard.len(), 1);
         assert_eq!(guard[0], 2);
+    }
+
+    #[tokio::test]
+    async fn test_dequeue_player() {
+        let waiting_queue = Arc::new(BattleRoomWaitingQueue::new());
+
+        waiting_queue.enqueue_player(1).await;
+
+        let dequeued_player = waiting_queue.dequeue_player().await;
+        assert_eq!(dequeued_player, Some(1));
+    }
+
+    #[tokio::test]
+    async fn test_dequeue_players() {
+        let waiting_queue = Arc::new(BattleRoomWaitingQueue::new());
+
+        let waiting_queue_clone = Arc::clone(&waiting_queue);
+        tokio::spawn(async move {
+            waiting_queue_clone.enqueue_player(1).await;
+        })
+        .await
+        .unwrap();
+
+        let waiting_queue_clone = Arc::clone(&waiting_queue);
+        tokio::spawn(async move {
+            waiting_queue_clone.enqueue_player(2).await;
+        })
+        .await
+        .unwrap();
+
+        let mut dequeued_players = waiting_queue.dequeue_n_players(2).await;
+
+        dequeued_players.sort();
+
+        assert_eq!(dequeued_players, vec![1, 2]);
+
+        let guard = waiting_queue.player_id_list.lock().await;
+        assert!(guard.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_dequeue_players_single_player() {
+        let waiting_queue = Arc::new(BattleRoomWaitingQueue::new());
+
+        waiting_queue.enqueue_player(1).await;
+
+        let dequeued_players = waiting_queue.dequeue_n_players(2).await;
+
+        assert!(dequeued_players.is_empty());
+
+        let guard = waiting_queue.player_id_list.lock().await;
+        assert_eq!(guard.len(), 1);
+        assert_eq!(guard[0], 1);
     }
 }

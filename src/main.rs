@@ -30,6 +30,7 @@ mod redis;
 mod client_program;
 mod battle_room;
 mod account_deck;
+mod battle_ready_monitor;
 
 #[tokio::main]
 async fn main() {
