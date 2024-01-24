@@ -12,6 +12,8 @@ use crate::battle_room::repository::battle_room_wait_queue_repository_impl::Batt
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::request::battle_match_request::BattleMatchRequest;
 use crate::battle_room::service::response::battle_match_response::BattleMatchResponse;
+use crate::match_waiting_timer::repository::match_waiting_timer_repository::MatchWaitingTimerRepository;
+use crate::match_waiting_timer::repository::match_waiting_timer_repository_impl::MatchWaitingTimerRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
@@ -19,18 +21,21 @@ pub struct BattleRoomServiceImpl {
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     battle_room_ready_queue_repository: Arc<AsyncMutex<BattleRoomReadyQueueRepositoryImpl>>,
     battle_room_wait_queue_repository: Arc<AsyncMutex<BattleRoomWaitQueueRepositoryImpl>>,
+    match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
 }
 
 impl BattleRoomServiceImpl {
     pub fn new(redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
                battle_room_ready_queue_repository: Arc<AsyncMutex<BattleRoomReadyQueueRepositoryImpl>>,
-               battle_room_wait_queue_repository: Arc<AsyncMutex<BattleRoomWaitQueueRepositoryImpl>>
+               battle_room_wait_queue_repository: Arc<AsyncMutex<BattleRoomWaitQueueRepositoryImpl>>,
+               match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
             ) -> Self {
 
         BattleRoomServiceImpl {
             redis_in_memory_repository,
             battle_room_ready_queue_repository,
-            battle_room_wait_queue_repository
+            battle_room_wait_queue_repository,
+            match_waiting_timer_repository
         }
     }
 
@@ -42,7 +47,8 @@ impl BattleRoomServiceImpl {
                         BattleRoomServiceImpl::new(
                             RedisInMemoryRepositoryImpl::get_instance(),
                             BattleRoomReadyQueueRepositoryImpl::get_instance(),
-                            BattleRoomWaitQueueRepositoryImpl::get_instance())));
+                            BattleRoomWaitQueueRepositoryImpl::get_instance(),
+                            MatchWaitingTimerRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -60,6 +66,10 @@ impl BattleRoomService for BattleRoomServiceImpl {
         let account_unique_id: i32 = account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32");
 
         let battle_room_wait_queue_repository = self.battle_room_wait_queue_repository.lock().await;
+
+        let mut match_waiting_timer_repository = self.match_waiting_timer_repository.lock().await;
+        match_waiting_timer_repository.set_match_waiting_timer(account_unique_id).await;
+
         let response = battle_room_wait_queue_repository.enqueue_player_id_for_wait(account_unique_id).await;
 
         if response.is_ok() {
