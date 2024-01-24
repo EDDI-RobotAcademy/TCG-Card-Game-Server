@@ -1,10 +1,13 @@
 use serde_json::Value as JsonValue;
 use crate::account::service::account_service::AccountService;
 use crate::account::service::account_service_impl::AccountServiceImpl;
+use crate::account_deck::service::account_deck_service::AccountDeckService;
+use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
+use crate::request_generator::account_deck_request_generator::create_deck_register_request;
 use crate::request_generator::account_request_generator::{create_login_request, create_register_request};
 use crate::request_generator::battle_room_request_generator::create_battle_match_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
@@ -83,6 +86,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             14 => {
                 // Account Deck Card List (실제 카드 정보)
                 None
+            },
+            41 => {
+                // Account Deck Register (덱 이름을 입력받아 덱 생성)
+                if let Some(request) = create_deck_register_request(&data) {
+                    let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
+                    let mut account_deck_service = account_deck_service_mutex.lock().await;
+
+                    let response = account_deck_service.account_deck_register(request).await;
+                    let response_type = Some(ResponseType::ACCOUNT_DECK_REGISTER(response));
+
+                    response_type
+                } else {
+                    None
+                }
             },
             4444 => {
                 if let Some(request) = create_client_program_exit_request(&data) {
