@@ -1,6 +1,9 @@
 use std::future::Future;
 use std::pin::Pin;
+use std::sync::Arc;
 use std::time::Duration;
+use crate::battle_ready_monitor::controller::battle_ready_monitor_controller::BattleReadyMonitorController;
+use crate::battle_ready_monitor::controller::battle_ready_monitor_controller_impl::BattleReadyMonitorControllerImpl;
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
 use crate::client_socket_accept::controller::client_socket_accept_controller_impl::ClientSocketAcceptControllerImpl;
 use crate::common::env::env_detector::EnvDetector;
@@ -96,6 +99,18 @@ async fn main() {
 
     thread_worker_service_guard.save_async_thread_worker("Transmitter", Box::new(receiver_function.clone()));
     thread_worker_service_guard.start_thread_worker("Transmitter").await;
+
+    let battle_ready_monitor_function = || -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        Box::pin(async {
+            let battle_ready_monitor_controller_mutex = BattleReadyMonitorControllerImpl::get_instance();
+            let mut battle_ready_monitor_guard = battle_ready_monitor_controller_mutex.lock().await;
+            println!("Battle Ready Monitor instance found. Executing transmit_to_client().");
+            let _ = battle_ready_monitor_guard.start_monitor_for_battle_match().await;
+        })
+    };
+
+    thread_worker_service_guard.save_async_thread_worker("BattleReadyMonitor", Box::new(battle_ready_monitor_function.clone()));
+    thread_worker_service_guard.start_thread_worker("BattleReadyMonitor").await;
 
     loop {
         tokio::time::sleep(Duration::from_secs(10)).await;
