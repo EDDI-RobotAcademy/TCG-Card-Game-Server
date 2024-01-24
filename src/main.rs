@@ -29,6 +29,7 @@ mod response_generator;
 mod redis;
 mod client_program;
 mod battle_room;
+mod account_deck;
 
 #[tokio::main]
 async fn main() {
