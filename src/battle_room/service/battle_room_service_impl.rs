@@ -4,6 +4,9 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use crate::account::service::response::account_register_response::AccountRegisterResponse;
+use crate::battle_ready_monitor::entity::battle_ready_status::BattleReadyStatus;
+use crate::battle_ready_monitor::repository::battle_ready_monitor_repository::BattleReadyMonitorRepository;
+use crate::battle_ready_monitor::repository::battle_ready_monitor_repository_impl::BattleReadyMonitorRepositoryImpl;
 use crate::battle_room::repository::battle_room_ready_queue_repository::BattleRoomReadyQueueRepository;
 
 use crate::battle_room::repository::battle_room_ready_queue_repository_impl::BattleRoomReadyQueueRepositoryImpl;
@@ -19,21 +22,21 @@ use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepo
 
 pub struct BattleRoomServiceImpl {
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
-    battle_room_ready_queue_repository: Arc<AsyncMutex<BattleRoomReadyQueueRepositoryImpl>>,
+    battle_ready_monitor_repository: Arc<AsyncMutex<BattleReadyMonitorRepositoryImpl>>,
     battle_room_wait_queue_repository: Arc<AsyncMutex<BattleRoomWaitQueueRepositoryImpl>>,
     match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
 }
 
 impl BattleRoomServiceImpl {
     pub fn new(redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
-               battle_room_ready_queue_repository: Arc<AsyncMutex<BattleRoomReadyQueueRepositoryImpl>>,
+               battle_ready_monitor_repository: Arc<AsyncMutex<BattleReadyMonitorRepositoryImpl>>,
                battle_room_wait_queue_repository: Arc<AsyncMutex<BattleRoomWaitQueueRepositoryImpl>>,
                match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
             ) -> Self {
 
         BattleRoomServiceImpl {
             redis_in_memory_repository,
-            battle_room_ready_queue_repository,
+            battle_ready_monitor_repository,
             battle_room_wait_queue_repository,
             match_waiting_timer_repository
         }
@@ -46,7 +49,7 @@ impl BattleRoomServiceImpl {
                     AsyncMutex::new(
                         BattleRoomServiceImpl::new(
                             RedisInMemoryRepositoryImpl::get_instance(),
-                            BattleRoomReadyQueueRepositoryImpl::get_instance(),
+                            BattleReadyMonitorRepositoryImpl::get_instance(),
                             BattleRoomWaitQueueRepositoryImpl::get_instance(),
                             MatchWaitingTimerRepositoryImpl::get_instance())));
         }
@@ -70,6 +73,9 @@ impl BattleRoomService for BattleRoomServiceImpl {
         let mut match_waiting_timer_repository = self.match_waiting_timer_repository.lock().await;
         match_waiting_timer_repository.set_match_waiting_timer(account_unique_id).await;
 
+        let mut battle_ready_monitor_repository = self.battle_ready_monitor_repository.lock().await;
+        battle_ready_monitor_repository.save_battle_account_hash(account_unique_id, BattleReadyStatus::WAIT).await;
+
         let response = battle_room_wait_queue_repository.enqueue_player_id_for_wait(account_unique_id).await;
 
         if response.is_ok() {
@@ -79,12 +85,12 @@ impl BattleRoomService for BattleRoomServiceImpl {
         return BattleMatchResponse::new(false)
     }
 
-    async fn enqueue_player_id_to_ready_queue(&self, account_unique_id: i32) -> BattleMatchResponse {
-        println!("BattleRoomServiceImpl: enqueue_player_id_to_ready_queue()");
-
-        let battle_room_ready_queue_repository = self.battle_room_ready_queue_repository.lock().await;
-        battle_room_ready_queue_repository.enqueue_player_id_for_ready(account_unique_id).await;
-
-        BattleMatchResponse::new(false)
-    }
+    // async fn enqueue_player_id_to_ready_queue(&self, account_unique_id: i32) -> BattleMatchResponse {
+    //     println!("BattleRoomServiceImpl: enqueue_player_id_to_ready_queue()");
+    //
+    //     let battle_room_ready_queue_repository = self.battle_room_ready_queue_repository.lock().await;
+    //     battle_room_ready_queue_repository.enqueue_player_id_for_ready(account_unique_id).await;
+    //
+    //     BattleMatchResponse::new(false)
+    // }
 }
