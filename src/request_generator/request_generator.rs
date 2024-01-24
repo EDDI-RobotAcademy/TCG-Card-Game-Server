@@ -125,6 +125,8 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     let response_type = Some(ResponseType::ACCOUNT_DECK_LIST(response));
 
                     response_type
+                } else {
+                    None
                 }
             },
             4444 => {
