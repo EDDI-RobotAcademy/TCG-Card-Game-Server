@@ -1,7 +1,6 @@
 use serde_json::Value as JsonValue;
 use crate::account::service::account_service::AccountService;
 use crate::account::service::account_service_impl::AccountServiceImpl;
-use crate::account::service::request::account_register_request::AccountRegisterRequest;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
@@ -12,14 +11,6 @@ use crate::request_generator::client_program_request_generator::create_client_pr
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::response_generator::response_type::ResponseType;
 
-#[derive(Debug)]
-pub enum RequestType {
-    ACCOUNT_REGISTER(AccountRegisterRequest),
-}
-
-trait RequestGenerator {
-    fn generate(&self, value: JsonValue) -> Option<RequestType>;
-}
 
 // TODO: 이 부분도 같이 ugly 해졌는데 추후 고칠 필요 있음
 pub async fn create_request_and_call_service(data: &JsonValue) -> Option<ResponseType> {
