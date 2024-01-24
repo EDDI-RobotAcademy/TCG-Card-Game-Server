@@ -3,6 +3,7 @@ use crate::account::service::account_service::AccountService;
 use crate::account::service::account_service_impl::AccountServiceImpl;
 use crate::account_deck::service::account_deck_service::AccountDeckService;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
+use crate::battle_ready_monitor::service::battle_ready_monitor_service::BattleReadyMonitorService;
 use crate::battle_ready_monitor::service::battle_ready_monitor_service_impl::BattleReadyMonitorServiceImpl;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
@@ -87,7 +88,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     let battle_ready_service_mutex = BattleReadyMonitorServiceImpl::get_instance();
                     let mut battle_ready_service = battle_ready_service_mutex.lock().await;
 
-                    let response = battle_ready_service.enqueue_player_id_to_wait_queue(request).await;
+                    let response = battle_ready_service.check_ready_for_battle(request).await;
                     let response_type = Some(ResponseType::BATTLE_READY(response));
 
                     response_type

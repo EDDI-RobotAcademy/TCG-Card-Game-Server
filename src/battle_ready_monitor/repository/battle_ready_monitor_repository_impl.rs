@@ -41,9 +41,9 @@ impl BattleReadyMonitorRepository for BattleReadyMonitorRepositoryImpl {
         }
     }
 
-    async fn get_account_status(&mut self, account_unique_id: i32) -> Result<BattleReadyStatus, Box<dyn Error>> {
+    async fn get_account_status(&mut self, account_unique_id: i32) -> BattleReadyStatus {
         println!("BattleReadyMonitorRepositoryImpl: get_account_status()");
 
-        self.battle_ready_account_hash.get_user_ready_state(account_unique_id).await.unwrap()
+        *self.battle_ready_account_hash.get_user_ready_state(account_unique_id).unwrap()
     }
 }

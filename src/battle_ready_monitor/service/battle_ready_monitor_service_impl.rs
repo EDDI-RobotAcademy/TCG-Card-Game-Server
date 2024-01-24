@@ -89,8 +89,7 @@ impl BattleReadyMonitorService for BattleReadyMonitorServiceImpl {
         }
 
         let mut battle_ready_monitor_repository_mutex = self.battle_ready_monitor_repository.lock().await;
-        let result = battle_ready_monitor_repository_mutex.get_account_status(account_unique_id).await;
-        let response = result.unwrap();
+        let response = battle_ready_monitor_repository_mutex.get_account_status(account_unique_id).await;
 
         return match response {
             BattleReadyStatus::SUCCESS => {
