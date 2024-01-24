@@ -76,6 +76,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = battle_room_service.enqueue_player_id_to_wait_queue(request).await;
                     let response_type = Some(ResponseType::BATTLE_MATCH(response));
+                    println!("response_type: {:?}", response_type);
 
                     response_type
                 } else {
