@@ -85,7 +85,7 @@ impl BattleReadyMonitorService for BattleReadyMonitorServiceImpl {
         if (!matched_two_players.is_empty()) {
             println!("BattleReadyMonitorServiceImpl: 플레이어간 배틀 성사!!!");
             let mut battle_ready_monitor_repository_mutex = self.battle_ready_monitor_repository.lock().await;
-            battle_ready_monitor_repository_mutex.save_battle_account_hash(matched_two_players, BattleReadyStatus::SUCCESS).await;
+            battle_ready_monitor_repository_mutex.save_battle_account_list_hash(matched_two_players, BattleReadyStatus::SUCCESS).await;
         }
 
         let mut battle_ready_monitor_repository_mutex = self.battle_ready_monitor_repository.lock().await;
