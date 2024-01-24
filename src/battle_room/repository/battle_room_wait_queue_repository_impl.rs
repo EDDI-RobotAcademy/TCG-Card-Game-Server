@@ -41,6 +41,10 @@ impl BattleRoomWaitQueueRepository for BattleRoomWaitQueueRepositoryImpl {
 
         Ok(true)
     }
+
+    async fn dequeue_two_players_from_wait_queue(&self, count: usize) -> Vec<i32> {
+        self.wait_queue.dequeue_n_players(count).await
+    }
 }
 
 #[cfg(test)]
