@@ -9,7 +9,7 @@ use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
-use crate::request_generator::account_deck_request_generator::create_deck_register_request;
+use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_register_request};
 use crate::request_generator::account_request_generator::{create_login_request, create_register_request};
 use crate::request_generator::battle_ready_request_generator::create_battle_ready_request;
 use crate::request_generator::battle_room_request_generator::create_battle_match_request;
@@ -112,6 +112,18 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     response_type
                 } else {
                     None
+                }
+            },
+            42 => {
+                // Account Deck List (사용자 Redis Token 을 받아 생성)
+                if let Some(request) = create_deck_list_request(&data) {
+                    let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
+                    let mut account_deck_service = account_deck_service_mutex.lock().await;
+
+                    let response = account_deck_service.account_deck_list(request).await;
+                    let response_type = Some(ResponseType::ACCOUNT_DECK_LIST(response));
+
+                    response_type
                 }
             },
             4444 => {
