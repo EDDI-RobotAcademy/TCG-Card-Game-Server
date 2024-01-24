@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
@@ -38,5 +39,11 @@ impl BattleReadyMonitorRepository for BattleReadyMonitorRepositoryImpl {
         for account_id in accounts_vector {
             self.battle_ready_account_hash.set_user_ready_state(account_id, state);
         }
+    }
+
+    async fn get_account_status(&mut self, account_unique_id: i32) -> Result<BattleReadyStatus, Box<dyn Error>> {
+        println!("BattleReadyMonitorRepositoryImpl: get_account_status()");
+
+        self.battle_ready_account_hash.get_user_ready_state(account_unique_id).await.unwrap()
     }
 }
