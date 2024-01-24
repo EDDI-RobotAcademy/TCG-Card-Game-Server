@@ -15,10 +15,12 @@ use crate::account::service::request::account_login_request::AccountLoginRequest
 use crate::account::service::request::account_register_request::AccountRegisterRequest;
 use crate::account::service::request::account_session_login_request::AccountSessionLoginRequest;
 use crate::account::service::request::account_session_logout_request::AccountSessionLogoutRequest;
+use crate::account::service::request::account_delete_request::AccountDeleteRequest;
 
 use crate::account::service::response::account_login_response::AccountLoginResponse;
 use crate::account::service::response::account_logout_response::AccountLogoutResponse;
 use crate::account::service::response::account_register_response::AccountRegisterResponse;
+use crate::account::service::response::account_delete_response::AccountDeleteResponse;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
@@ -130,6 +132,23 @@ impl AccountService for AccountServiceImpl {
             return AccountLogoutResponse::new(true)
         }
         return AccountLogoutResponse::new(false)
+    }
+
+    async fn account_delete(&self, account_delete_request: AccountDeleteRequest) -> AccountDeleteResponse {
+        println!("AccountServiceImpl: account_delete()");
+
+        let account_repository = self.repository.lock().await;
+        let account = account_delete_request.to_account().unwrap();
+        if let Some(found_account) = account_repository.find_by_user_id(account.user_id()).await.unwrap() {
+            // 비밀번호 매칭 확인
+            if verify(&account_delete_request.password(), &found_account.password()).unwrap() {
+                // 비밀번호 일치 확인
+                account_repository.delete(account_delete_request.to_account().unwrap()).await;
+                return AccountDeleteResponse::new(true)
+            }
+            return AccountDeleteResponse::new(false)
+        }
+        return AccountDeleteResponse::new(false)
     }
 }
 
