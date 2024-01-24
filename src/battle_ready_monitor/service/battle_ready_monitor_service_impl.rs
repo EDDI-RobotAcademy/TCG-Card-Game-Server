@@ -14,23 +14,28 @@ use crate::battle_ready_monitor::service::request::battle_ready_request::BattleR
 use crate::battle_ready_monitor::service::response::battle_ready_response::BattleReadyResponse;
 use crate::battle_room::repository::battle_room_wait_queue_repository::BattleRoomWaitQueueRepository;
 use crate::battle_room::repository::battle_room_wait_queue_repository_impl::BattleRoomWaitQueueRepositoryImpl;
+use crate::match_waiting_timer::repository::match_waiting_timer_repository::MatchWaitingTimerRepository;
+use crate::match_waiting_timer::repository::match_waiting_timer_repository_impl::MatchWaitingTimerRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
 pub struct BattleReadyMonitorServiceImpl {
     battle_room_wait_queue_repository: Arc<AsyncMutex<BattleRoomWaitQueueRepositoryImpl>>,
     battle_ready_monitor_repository: Arc<AsyncMutex<BattleReadyMonitorRepositoryImpl>>,
+    match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
 }
 
 impl BattleReadyMonitorServiceImpl {
     pub fn new(battle_room_wait_queue_repository: Arc<AsyncMutex<BattleRoomWaitQueueRepositoryImpl>>,
                battle_ready_monitor_repository: Arc<AsyncMutex<BattleReadyMonitorRepositoryImpl>>,
+               match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>) -> Self {
 
         BattleReadyMonitorServiceImpl {
             battle_room_wait_queue_repository,
             battle_ready_monitor_repository,
+            match_waiting_timer_repository,
             redis_in_memory_repository
         }
     }
@@ -43,6 +48,7 @@ impl BattleReadyMonitorServiceImpl {
                         BattleReadyMonitorServiceImpl::new(
                             BattleRoomWaitQueueRepositoryImpl::get_instance(),
                             BattleReadyMonitorRepositoryImpl::get_instance(),
+                            MatchWaitingTimerRepositoryImpl::get_instance(),
                             RedisInMemoryRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
@@ -81,6 +87,14 @@ impl BattleReadyMonitorService for BattleReadyMonitorServiceImpl {
 
         let battle_room_wait_queue_repository_mutex = self.battle_room_wait_queue_repository.lock().await;
         let matched_two_players = battle_room_wait_queue_repository_mutex.dequeue_two_players_from_wait_queue(2).await;
+
+        let mut match_waiting_timer_repository_mutex = self.match_waiting_timer_repository.lock().await;
+        let is_expired = match_waiting_timer_repository_mutex.check_match_waiting_timer_expired(account_unique_id, Duration::from_secs(60)).await;
+
+        if (is_expired) {
+            let mut battle_ready_monitor_repository_mutex = self.battle_ready_monitor_repository.lock().await;
+            battle_ready_monitor_repository_mutex.save_battle_account_hash(account_unique_id, BattleReadyStatus::FAIL).await;
+        }
 
         if (!matched_two_players.is_empty()) {
             println!("BattleReadyMonitorServiceImpl: 플레이어간 배틀 성사!!!");
