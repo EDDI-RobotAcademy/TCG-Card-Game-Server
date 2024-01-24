@@ -30,6 +30,8 @@ mod redis;
 mod client_program;
 mod battle_room_manager;
 
+mod account_deck;
+
 #[tokio::main]
 async fn main() {
     let domain_initializer = DomainInitializer;
