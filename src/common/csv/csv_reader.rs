@@ -3,11 +3,25 @@ use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
+fn extract_csv_header(file_path: &str) -> Result<Vec<String>, Box<dyn Error>> {
+    let current_exe_path = env::current_exe()?;
+    let current_dir = current_exe_path.parent().ok_or("Unable to get parent directory")?;
+    
+    let absolute_path = current_dir.join(file_path);
+    println!("absolute_path: {:?}", absolute_path);
+
+    let file = File::open(absolute_path)?;
+
+    let mut rdr = csv::Reader::from_reader(file);
+    let header = rdr.headers()?.iter().map(|field| field.to_string()).collect();
+
+    Ok(header)
+}
+
 fn csv_read(file_path: &str) -> Result<Vec<Vec<String>>, Box<dyn Error>> {
     let current_exe_path = env::current_exe()?;
     let current_dir = current_exe_path.parent().ok_or("Unable to get parent directory")?;
 
-    // Construct the absolute path by joining the current directory with the relative path
     let absolute_path = current_dir.join(file_path);
     println!("absolute_path: {:?}", absolute_path);
 
@@ -30,6 +44,18 @@ fn csv_read(file_path: &str) -> Result<Vec<Vec<String>>, Box<dyn Error>> {
 mod tests {
     use std::env;
     use super::*;
+
+    #[test]
+    fn test_extract_csv_header() {
+        let filename = "../../../resources/csv/every_card.csv";
+        match extract_csv_header(filename) {
+            Ok(header) => {
+                println!("Header successfully extracted.");
+                println!("Header: {:?}", header);
+            }
+            Err(err) => eprintln!("Error: {}", err),
+        }
+    }
 
     #[test]
     fn test_read_csv() {
