@@ -36,8 +36,6 @@ mod account_deck;
 mod battle_ready_monitor;
 mod match_waiting_timer;
 
-mod account_deck;
-
 #[tokio::main]
 async fn main() {
     let domain_initializer = DomainInitializer;
