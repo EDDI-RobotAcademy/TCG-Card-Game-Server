@@ -27,3 +27,5 @@ uuid = "*"
 
 csv = "*"
 
+indexmap = "*"
+rand = "0.8.5"
