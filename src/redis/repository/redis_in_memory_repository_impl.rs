@@ -69,6 +69,14 @@ impl RedisInMemoryRepository for RedisInMemoryRepositoryImpl {
 
         result
     }
+
+    async fn del(&mut self, key: &str) {
+        println!("RedisInMemoryRepositoryImpl: del()");
+        redis::cmd("DEL")
+            .arg(key)
+            .query::<()>(&mut self.connection)
+            .expect("Failed to delete key");
+    }
 }
 
 #[cfg(test)]
