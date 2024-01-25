@@ -25,6 +25,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
         // TODO: 이 부분 전부 번호에 따라 동작하도록 Table 처리가 필요함
         match protocol_number {
             1 => {
+                // Account Register
                 if let Some(request) = create_register_request(&data) {
                     let account_service_mutex = AccountServiceImpl::get_instance();
                     let mut account_service = account_service_mutex.lock().await;
@@ -38,6 +39,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             2 => {
+                // Account Login
                 if let Some(request) = create_login_request(&data) {
                     let account_service_mutex = AccountServiceImpl::get_instance();
                     let mut account_service = account_service_mutex.lock().await;
@@ -51,6 +53,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             3 => {
+                // Account Session Login
                 if let Some(request) = create_session_login_request(&data) {
                     let account_service_mutex = AccountServiceImpl::get_instance();
                     let mut account_service = account_service_mutex.lock().await;
@@ -64,6 +67,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             11 => {
+                // Request Battle Deck List ({deck_id: deck_name} 의 리스트)
                 if let Some(request) = create_deck_list_request(&data) {
                     let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
                     let mut account_deck_service = account_deck_service_mutex.lock().await;
@@ -138,6 +142,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             4444 => {
+                // Program Exit
                 if let Some(request) = create_client_program_exit_request(&data) {
                     let client_program_service_mutex = ClientProgramServiceImpl::get_instance();
                     let mut client_program_service = client_program_service_mutex.lock().await;
