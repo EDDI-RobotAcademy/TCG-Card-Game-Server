@@ -1,13 +1,11 @@
 use std::sync::Arc;
+use std::error::Error;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 
-use crate::battle_room_manager::entity::battle_room_ready_queue::BattleRoomReadyQueue;
-use crate::battle_room_manager::entity::battle_room_wait_queue::BattleRoomWaitingQueue;
-use crate::battle_room_manager::repository::battle_room_wait_queue_repository::BattleRoomWaitQueueRepository;
-use crate::receiver::entity::receive_data::ReceiveData;
-use crate::receiver::repository::server_receiver_repository_impl::ServerReceiverRepositoryImpl;
+use crate::battle_room::entity::battle_room_wait_queue::BattleRoomWaitingQueue;
+use crate::battle_room::repository::battle_room_wait_queue_repository::BattleRoomWaitQueueRepository;
 
 
 pub struct BattleRoomWaitQueueRepositoryImpl {
@@ -38,10 +36,14 @@ impl BattleRoomWaitQueueRepositoryImpl {
 
 #[async_trait]
 impl BattleRoomWaitQueueRepository for BattleRoomWaitQueueRepositoryImpl {
-    async fn enqueue_player_id_for_wait(&self, account_unique_id: i32) -> Result<bool, diesel::result::Error> {
+    async fn enqueue_player_id_for_wait(&self, account_unique_id: i32) -> Result<bool, Box<dyn Error>> {
         self.wait_queue.enqueue_player(account_unique_id).await;
 
         Ok(true)
+    }
+
+    async fn dequeue_two_players_from_wait_queue(&self, count: usize) -> Vec<i32> {
+        self.wait_queue.dequeue_n_players(count).await
     }
 }
 
