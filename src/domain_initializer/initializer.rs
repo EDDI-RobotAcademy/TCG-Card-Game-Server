@@ -5,6 +5,7 @@ use tokio::sync::Mutex;
 use tokio::sync::mpsc;
 
 use crate::account::service::account_service_impl::AccountServiceImpl;
+use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
 
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
 use crate::client_socket_accept::controller::client_socket_accept_controller_impl::ClientSocketAcceptControllerImpl;
@@ -46,6 +47,8 @@ impl DomainInitializer {
     pub fn init_account_domain(&self) {
         let _ = AccountServiceImpl::get_instance();
     }
+
+    pub fn init_account_deck_domain(&self) { let _ = AccountDeckServiceImpl::get_instance(); }
 
     pub async fn init_client_socket_accept_domain(&self,
                                                   acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>,
