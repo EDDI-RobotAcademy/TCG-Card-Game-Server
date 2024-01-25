@@ -7,7 +7,9 @@ use crate::account_deck::entity::account_deck::AccountDeck;
 use crate::account_deck::repository::account_deck_repository::AccountDeckRepository;
 use crate::account_deck::repository::account_deck_repository_impl::AccountDeckRepositoryImpl;
 use crate::account_deck::service::account_deck_service::AccountDeckService;
+use crate::account_deck::service::request::account_deck_list_request::AccountDeckListRequest;
 use crate::account_deck::service::request::account_deck_register_request::AccountDeckRegisterRequest;
+use crate::account_deck::service::response::account_deck_list_response::AccountDeckListResponse;
 use crate::account_deck::service::response::account_deck_register_response::AccountDeckRegisterResponse;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
@@ -68,6 +70,30 @@ impl AccountDeckService for AccountDeckServiceImpl {
         }
         // TODO: 덱이 계정당 최대 6개만 생성되어야 하므로, 계정의 덱 개수를 카운팅하는 작업 필요
     }
+
+    async fn account_deck_list(&self, account_deck_list_request: AccountDeckListRequest) -> AccountDeckListResponse {
+        println!("AccountDeckServiceImpl: account_deck_list()");
+
+        let account_deck_repository = self.repository.lock().await;
+        let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
+        let account_number_str = redis_repository_guard.get(account_deck_list_request.account_id()).await;
+        let account_unique_id: Result<i32, _> = account_number_str.expect("REASON").parse();
+        match account_unique_id {
+            Ok(int_type_account_id) => {
+                if let Some(deck_list) = account_deck_repository.get_list_by_user_int_id(int_type_account_id).await.unwrap() {
+                    AccountDeckListResponse::new(deck_list)
+                } else {
+                    let empty_set = Vec::new();
+                    AccountDeckListResponse::new(empty_set)
+                }
+            }
+            Err(e) => {
+                println!("Deck list loading error : {}", e);
+                let empty_set = Vec::new();
+                AccountDeckListResponse::new(empty_set)
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -81,13 +107,8 @@ mod tests {
         let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
         let mut account_deck_service_mutex_guard = account_deck_service_mutex.lock().await;
 
-        // let redis_in_memory_repository_mutex = RedisInMemoryRepositoryImpl::get_instance();
-        // let mut redis_in_memory_repository_guard = redis_in_memory_repository_mutex.lock().await;
-        //
-        // redis_in_memory_repository_guard.set_permanent("redis_token_str", "1").await;
-
         let redis_token_str = "redis_token_str";
-        let sample_deck_name = "너무 어렵죠?";
+        let sample_deck_name = "휴먼덱 화이팅";
 
         let account_deck_register_request = AccountDeckRegisterRequest::new(redis_token_str.to_string(), sample_deck_name.to_string());
 
@@ -95,8 +116,19 @@ mod tests {
 
         assert_eq!(true, result.get_is_success());
     }
+
     #[tokio::test]
-    #[cfg(not(feature = "deck_registration_test"))]
+    async fn test_deck_list() {
+        let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
+        let mut account_deck_service_mutex_guard = account_deck_service_mutex.lock().await;
+        let redis_token_str = "redis_token_str";
+        let account_deck_list_request = AccountDeckListRequest::new(redis_token_str.to_string());
+        let result = account_deck_service_mutex_guard.account_deck_list(account_deck_list_request).await;
+        println!("{:?}", result.get_list())
+    }
+
+    #[tokio::test]
+    #[cfg(not(feature = "account_deck_test"))]
     async fn dummy_test() {
         assert!(true);
     }
