@@ -100,7 +100,8 @@ impl AccountRepository for AccountRepositoryImpl {
         let mut connection = MysqlConnection::establish(&database_url)
             .expect("Failed to establish a new connection");
 
-        match diesel::delete(accounts.filter(account.eq(user_id)))
+        match diesel::delete(FilterDsl::filter(accounts, columns::user_id.eq(account.user_id())))
+
             .execute(&mut connection)
         {
             Ok(_) => {

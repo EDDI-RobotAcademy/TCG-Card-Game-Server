@@ -34,8 +34,8 @@ mod client_program;
 mod battle_room;
 mod account_deck;
 mod battle_ready_monitor;
-
-mod account_deck;
+mod match_waiting_timer;
+mod ugly_tests;
 
 #[tokio::main]
 async fn main() {

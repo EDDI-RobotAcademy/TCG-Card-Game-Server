@@ -33,17 +33,24 @@ impl BattleReadyMonitorRepositoryImpl {
 
 #[async_trait]
 impl BattleReadyMonitorRepository for BattleReadyMonitorRepositoryImpl {
-    async fn save_battle_account_hash(&mut self, accounts_vector: Vec<i32>, state: BattleReadyStatus) {
-        println!("BattleReadyMonitorRepositoryImpl: save_battle_account_hash()");
+    async fn save_battle_account_list_hash(&mut self, accounts_vector: Vec<i32>, state: BattleReadyStatus) {
+        println!("BattleReadyMonitorRepositoryImpl: save_battle_account_list_hash()");
 
         for account_id in accounts_vector {
             self.battle_ready_account_hash.set_user_ready_state(account_id, state);
         }
     }
 
+    async fn save_battle_account_hash(&mut self, account_id: i32, state: BattleReadyStatus) {
+        println!("BattleReadyMonitorRepositoryImpl: save_battle_account_hash()");
+
+        self.battle_ready_account_hash.set_user_ready_state(account_id, state);
+    }
+
     async fn get_account_status(&mut self, account_unique_id: i32) -> BattleReadyStatus {
         println!("BattleReadyMonitorRepositoryImpl: get_account_status()");
 
-        *self.battle_ready_account_hash.get_user_ready_state(account_unique_id).unwrap()
+        let battle_ready_status = self.battle_ready_account_hash.get_user_ready_state(account_unique_id);
+        return *battle_ready_status.unwrap()
     }
 }

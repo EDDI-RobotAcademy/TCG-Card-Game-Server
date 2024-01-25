@@ -18,4 +18,6 @@ impl AccountDeleteRequest {
     pub fn to_account(&self) -> Result<Account, BcryptError> {
         Account::new(&self.user_id, &self.password)
     }
+
+    pub fn password(&self) -> &str { &self.password }
 }

@@ -5,6 +5,8 @@ use diesel::dsl::not;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use uuid::Uuid;
+use crate::account::entity::account::Account;
+use crate::account::entity::account::accounts::password;
 
 use crate::account::repository::account_repository::AccountRepository;
 use crate::account::repository::account_repository_impl::AccountRepositoryImpl;
@@ -143,8 +145,12 @@ impl AccountService for AccountServiceImpl {
             // 비밀번호 매칭 확인
             if verify(&account_delete_request.password(), &found_account.password()).unwrap() {
                 // 비밀번호 일치 확인
-                account_repository.delete(account_delete_request.to_account().unwrap()).await;
-                return AccountDeleteResponse::new(true)
+
+                let result = account_repository.delete(account_delete_request.to_account().unwrap()).await;
+                if result.is_ok() {
+                    return AccountDeleteResponse::new(true)
+                }
+                return AccountDeleteResponse::new(false)
             }
             return AccountDeleteResponse::new(false)
         }
@@ -167,4 +173,41 @@ mod tests {
         //redis_token key값을 인자로 받아서 삭제
         redis_repository_gaurd.del("test_logout_key").await;
     }
+}
+
+#[tokio::test]
+async fn test_account_delete() {
+    let mut account_repository_mutex = AccountRepositoryImpl::get_instance();
+    let mut account_repository_gaurd = account_repository_mutex.lock().await;
+
+    let test_id = "test_account_delete";
+    let test_pw = "test_account_delete";
+    let test_account = Account::new(test_id, test_pw).unwrap();
+
+    // //test_account 저장
+    // account_repository_gaurd.save(test_account).await.expect("false");
+    // //test_account 삭제
+    account_repository_gaurd.delete(test_account).await.expect("false");
+}
+
+#[tokio::test]
+async fn test_account_delete_in_account_service() {
+    let mut account_service_mutex = AccountServiceImpl::get_instance();
+    let mut account_service_gaurd = account_service_mutex.lock().await;
+
+    let test_id = "test_account_delete";
+    let test_pw = "test_account_delete";
+    let hashed_password = hash(test_pw, 12);
+
+    //test_account 저장
+    // let test_account = AccountRegisterRequest::new(test_id, hashed_password.expect("e"));
+    // account_service_gaurd.account_register(test_account).await;
+
+    //test_account 로그인
+    let test_account = AccountLoginRequest::new(test_id, hashed_password.expect("e"));
+    account_service_gaurd.account_login(test_account).await;
+
+    //test_account 삭제
+    // let test_account = AccountDeleteRequest::new(test_id, hashed_password.expect("e"));
+    // account_service_gaurd.account_delete(test_account).await;
 }
