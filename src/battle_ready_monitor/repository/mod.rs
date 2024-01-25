@@ -1,0 +1,2 @@
+pub mod battle_ready_monitor_repository;
+pub mod battle_ready_monitor_repository_impl;
