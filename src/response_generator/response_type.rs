@@ -20,6 +20,7 @@ pub enum ResponseType {
 
     BATTLE_MATCH(BattleMatchResponse),
     BATTLE_READY(BattleReadyResponse),
+    BATTLE_DECK_LIST(AccountDeckListResponse),
 
     PROGRAM_EXIT(ClientProgramExitResponse),
 }
