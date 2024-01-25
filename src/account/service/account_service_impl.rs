@@ -14,8 +14,10 @@ use crate::account::service::account_service::AccountService;
 use crate::account::service::request::account_login_request::AccountLoginRequest;
 use crate::account::service::request::account_register_request::AccountRegisterRequest;
 use crate::account::service::request::account_session_login_request::AccountSessionLoginRequest;
+use crate::account::service::request::account_session_logout_request::AccountSessionLogoutRequest;
 
 use crate::account::service::response::account_login_response::AccountLoginResponse;
+use crate::account::service::response::account_logout_response::AccountLogoutResponse;
 use crate::account::service::response::account_register_response::AccountRegisterResponse;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 
@@ -116,6 +118,34 @@ impl AccountService for AccountServiceImpl {
             AccountLoginResponse::new("".to_string())
         }
     }
+
+    async fn account_session_logout(&self, account_session_logout_request: AccountSessionLogoutRequest) -> AccountLogoutResponse {
+        println!("AccountServiceImpl: account_session_logout()");
+
+        let mut redis_repository_gaurd = self.redis_in_memory_repository.lock().await;
+        let account_unique_id = redis_repository_gaurd.get(account_session_logout_request.get_session_id()).await;
+
+        if let Some(id) = account_unique_id {
+            redis_repository_gaurd.del(account_session_logout_request.get_session_id()).await;
+            return AccountLogoutResponse::new(true)
+        }
+        return AccountLogoutResponse::new(false)
+    }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::test;
 
+    #[tokio::test]
+    async fn test_account_session_logout() {
+        let mut redis_repository_mutex = RedisInMemoryRepositoryImpl::get_instance();
+        let mut redis_repository_gaurd = redis_repository_mutex.lock().await;
+
+        //redis_token 셋팅
+        redis_repository_gaurd.set_permanent("test_logout_key", "test_logout_value").await;
+        //redis_token key값을 인자로 받아서 삭제
+        redis_repository_gaurd.del("test_logout_key").await;
+    }
+}
