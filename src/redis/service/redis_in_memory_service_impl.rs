@@ -44,4 +44,10 @@ impl RedisInMemoryService for RedisInMemoryServiceImpl {
         let mut redis_in_memory_repository_guard = self.redis_in_memory_repository.lock().await;
         redis_in_memory_repository_guard.get(key).await
     }
+    async fn delete_value_with_key(&mut self, key: &str) {
+        println!("RedisInMemoryServiceImpl: delete_key_and_value()");
+
+        let mut redis_in_memory_repository_guard = self.redis_in_memory_repository.lock().await;
+        redis_in_memory_repository_guard.del(key).await
+    }
 }
