@@ -64,9 +64,17 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             11 => {
-                // Account Deck Name info 를 요청한 것이므로 이에 대해 응답해야함 (Select Account Deck for Battle)
-                // 배틀 진입시 화면에 어떤 덱을 사용 할 것인지 선택하기 위함
-                None
+                if let Some(request) = create_deck_list_request(&data) {
+                    let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
+                    let mut account_deck_service = account_deck_service_mutex.lock().await;
+
+                    let response = account_deck_service.account_deck_list(request).await;
+                    let response_type = Some(ResponseType::BATTLE_DECK_LIST(response));
+
+                    response_type
+                } else {
+                    None
+                }
             },
             12 => {
                 // Request Battle Match
