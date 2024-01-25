@@ -1,12 +1,128 @@
+use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
+fn build_dictionaries(csv_content: &Vec<Vec<String>>) -> (
+    HashMap<String, String>,   // 종족
+    HashMap<String, String>,   // 등급
+    HashMap<String, String>,   // 종류(아이템, 서포트 등등)
+    HashMap<String, String>,   // 필요한 에너지
+    HashMap<String, String>,   // 공격력(ATK)
+    HashMap<String, String>,   // 특성
+    HashMap<String, String>,   // 스킬
+    HashMap<String, String>,   // HP
+) {
+    let mut race_dictionary = HashMap::new();
+    let mut card_grade_dictionary = HashMap::new();
+    let mut card_kinds_dictionary = HashMap::new();
+    let mut energy_needed_dictionary = HashMap::new();
+    let mut attack_dictionary = HashMap::new();
+    let mut passive_dictionary = HashMap::new();
+    let mut skill_dictionary = HashMap::new();
+    let mut hp_dictionary = HashMap::new();
+
+    for record in csv_content.iter().skip(1) {
+        let card_number = &record[6]; // 카드번호
+        let race = &record[1]; // 종족
+        let card_grade = &record[2]; // 등급
+        let card_kind = &record[3]; // 종류
+        let energy_needed = &record[9]; // 필요_에너지
+        let attack = &record[10]; // 공격력
+        let passive = &record[12]; // 패시브
+        let skill = &record[13]; // 스킬
+        let hp = &record[14]; // 체력
+
+        race_dictionary.insert(card_number.clone(), race.clone());
+        card_grade_dictionary.insert(card_number.clone(), card_grade.clone());
+        card_kinds_dictionary.insert(card_number.clone(), card_kind.clone());
+        energy_needed_dictionary.insert(card_number.clone(), energy_needed.clone());
+        attack_dictionary.insert(card_number.clone(), attack.clone());
+        passive_dictionary.insert(card_number.clone(), passive.clone());
+        skill_dictionary.insert(card_number.clone(), skill.clone());
+        hp_dictionary.insert(card_number.clone(), hp.clone());
+    }
+
+    (
+        race_dictionary,
+        card_grade_dictionary,
+        card_kinds_dictionary,
+        energy_needed_dictionary,
+        attack_dictionary,
+        passive_dictionary,
+        skill_dictionary,
+        hp_dictionary,
+    )
+}
+
+// 카드 종류(서포트, 아이템 등등)
+fn get_card_kinds<'a>(
+    card_number: &'a str,
+    card_kinds_dictionary: &'a HashMap<String, String>,
+) -> Option<&'a String> {
+    card_kinds_dictionary.get(card_number)
+}
+
+// 카드 종족(휴먼, 언데드, 트랜트 등등)
+fn get_race<'a>(
+    card_number: &'a str,
+    race_dictionary: &'a HashMap<String, String>,
+) -> Option<&'a String> {
+    race_dictionary.get(card_number)
+}
+
+// 카드 등급
+fn get_card_grade<'a>(
+    card_number: &'a str,
+    card_grade_dictionary: &'a HashMap<String, String>,
+) -> Option<&'a String> {
+    card_grade_dictionary.get(card_number)
+}
+
+// 카드의 필요 에너지
+fn get_energy_needed<'a>(
+    card_number: &'a str,
+    energy_needed_dictionary: &'a HashMap<String, String>,
+) -> Option<&'a String> {
+    energy_needed_dictionary.get(card_number)
+}
+
+// 카드 공격력
+fn get_attack<'a>(
+    card_number: &'a str,
+    attack_dictionary: &'a HashMap<String, String>,
+) -> Option<&'a String> {
+    attack_dictionary.get(card_number)
+}
+
+// TODO: 추후 특성1, 2, 3에 따라 다 쪼개야합니다
+// 카드 특성
+fn get_passive<'a>(
+    card_number: &'a str,
+    passive_dictionary: &'a HashMap<String, String>,
+) -> Option<&'a String> {
+    passive_dictionary.get(card_number)
+}
+
+// TODO: 추후 스킬1, 2, 3에 따라 다 쪼개야합니다
+// 카드 스킬
+fn get_skill<'a>(
+    card_number: &'a str,
+    skill_dictionary: &'a HashMap<String, String>,
+) -> Option<&'a String> {
+    skill_dictionary.get(card_number)
+}
+
+// 카드 HP
+fn get_hp<'a>(card_number: &'a str, hp_dictionary: &'a HashMap<String, String>) -> Option<&'a String> {
+    hp_dictionary.get(card_number)
+}
+
 fn extract_csv_header(file_path: &str) -> Result<Vec<String>, Box<dyn Error>> {
     let current_exe_path = env::current_exe()?;
     let current_dir = current_exe_path.parent().ok_or("Unable to get parent directory")?;
-    
+
     let absolute_path = current_dir.join(file_path);
     println!("absolute_path: {:?}", absolute_path);
 
@@ -72,6 +188,44 @@ mod tests {
                 println!("CSV file successfully processed.");
                 for record in csv_content {
                     println!("{:?}", record);
+                }
+            }
+            Err(err) => eprintln!("Error: {}", err),
+        }
+    }
+
+    #[test]
+    fn test_build_dictionaries() {
+        let filename = "../../../resources/csv/every_card.csv";
+        match csv_read(filename) {
+            Ok((csv_content)) => {
+                println!("CSV file successfully processed.");
+
+                let (
+                    race_dictionary,
+                    card_grade_dictionary,
+                    card_kinds_dictionary,
+                    energy_needed_dictionary,
+                    attack_dictionary,
+                    passive_dictionary,
+                    skill_dictionary,
+                    hp_dictionary,
+                ) = build_dictionaries(&csv_content);
+
+                println!("race_dictionary: {:?}", race_dictionary);
+                println!("card_grade_dictionary: {:?}", card_grade_dictionary);
+                println!("card_kinds_dictionary: {:?}", card_kinds_dictionary);
+                println!("energy_needed_dictionary: {:?}", energy_needed_dictionary);
+                println!("attack_dictionary: {:?}", attack_dictionary);
+                println!("passive_dictionary: {:?}", passive_dictionary);
+                println!("skill_dictionary: {:?}", skill_dictionary);
+                println!("hp_dictionary: {:?}", hp_dictionary);
+
+                let card_number_to_test = "5"; // Modify this to the desired card number
+
+                match get_card_kinds(card_number_to_test, &card_kinds_dictionary) {
+                    Some(card_kinds) => println!("Card Kinds for {} : {}", card_number_to_test, card_kinds),
+                    None => println!("Card not found: {}", card_number_to_test),
                 }
             }
             Err(err) => eprintln!("Error: {}", err),
