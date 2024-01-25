@@ -80,31 +80,38 @@ impl BattleReadyMonitorService for BattleReadyMonitorServiceImpl {
     async fn check_ready_for_battle(&self, battle_ready_request: BattleReadyRequest) -> BattleReadyResponse {
         println!("BattleReadyMonitorServiceImpl: check_ready_for_battle()");
 
+        // 사용자 계정 고유값 획득
         let mut redis_in_memory_repository = self.redis_in_memory_repository.lock().await;
         let account_unique_id_option_string = redis_in_memory_repository.get(battle_ready_request.get_session_id()).await;
         let account_unique_id_string = account_unique_id_option_string.unwrap();
         let account_unique_id: i32 = account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32");
 
+        // 매칭 된 두 명이 존재 하는지 검사
         let battle_room_wait_queue_repository_mutex = self.battle_room_wait_queue_repository.lock().await;
         let matched_two_players = battle_room_wait_queue_repository_mutex.dequeue_two_players_from_wait_queue(2).await;
 
+        // 사용자 계정 고유값을 key로 시간이 만료되었는지 검사
         let mut match_waiting_timer_repository_mutex = self.match_waiting_timer_repository.lock().await;
         let is_expired = match_waiting_timer_repository_mutex.check_match_waiting_timer_expired(account_unique_id, Duration::from_secs(60)).await;
 
+        // 시간이 만료되었다면 FAIL 전송
         if (is_expired) {
             let mut battle_ready_monitor_repository_mutex = self.battle_ready_monitor_repository.lock().await;
             battle_ready_monitor_repository_mutex.save_battle_account_hash(account_unique_id, BattleReadyStatus::FAIL).await;
         }
 
+        // 매칭 된 플레이어 두 명이 존재함
         if (!matched_two_players.is_empty()) {
             println!("BattleReadyMonitorServiceImpl: 플레이어간 배틀 성사!!!");
             let mut battle_ready_monitor_repository_mutex = self.battle_ready_monitor_repository.lock().await;
             battle_ready_monitor_repository_mutex.save_battle_account_list_hash(matched_two_players, BattleReadyStatus::SUCCESS).await;
         }
 
+        // 매칭되지 않았다면 현재 사용자 배틀 매칭 상태값을 획득
         let mut battle_ready_monitor_repository_mutex = self.battle_ready_monitor_repository.lock().await;
         let response = battle_ready_monitor_repository_mutex.get_account_status(account_unique_id).await;
 
+        // 확보한 상태값에 따라 SUCCESS, WAIT, FAIL 정보 응답
         return match response {
             BattleReadyStatus::SUCCESS => {
                 BattleReadyResponse::new(BattleReadyStatus::SUCCESS)
