@@ -2,6 +2,7 @@ use crate::account::service::response::account_register_response::AccountRegiste
 use serde::{Deserialize, Serialize};
 use crate::account::service::response::account_login_response::AccountLoginResponse;
 use crate::account::service::response::account_logout_response::AccountLogoutResponse;
+use crate::account::service::response::account_modify_response::AccountModifyResponse;
 use crate::account::service::response::account_delete_response::AccountDeleteResponse;
 use crate::account_deck::service::response::account_deck_list_response::AccountDeckListResponse;
 use crate::account_deck::service::response::account_deck_modify_response::AccountDeckModifyResponse;
@@ -17,7 +18,7 @@ pub enum ResponseType {
     ACCOUNT_LOGIN(AccountLoginResponse),
     ACCOUNT_SESSION_LOGIN(AccountLoginResponse),
     ACCOUNT_LOGOUT(AccountLogoutResponse),
-    // ACCOUNT_MODIFY(AccountModifyResponse),
+    ACCOUNT_MODIFY(AccountModifyResponse),
     ACCOUNT_DELETE(AccountDeleteResponse),
 
     ACCOUNT_DECK_REGISTER(AccountDeckRegisterResponse),
