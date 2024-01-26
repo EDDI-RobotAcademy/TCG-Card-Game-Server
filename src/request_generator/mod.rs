@@ -5,4 +5,5 @@ pub mod client_program_request_generator;
 pub mod battle_room_request_generator;
 pub mod account_deck_request_generator;
 pub mod battle_ready_request_generator;
+pub mod deck_card_request_generator;
 

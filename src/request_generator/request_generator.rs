@@ -9,11 +9,14 @@ use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
+use crate::deck_card::service::deck_card_service::DeckCardService;
+use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
 use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_modify_request, create_deck_register_request};
 use crate::request_generator::account_request_generator::{create_login_request, create_register_request};
 use crate::request_generator::battle_ready_request_generator::create_battle_ready_request;
 use crate::request_generator::battle_room_request_generator::create_battle_match_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
+use crate::request_generator::deck_card_request_generator::create_deck_configuration_request;
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::response_generator::response_type::ResponseType;
 
@@ -149,6 +152,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = account_deck_service.account_deck_modify(request).await;
                     let response_type = Some(ResponseType::ACCOUNT_DECK_MODIFY(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            51 => {
+                // Deck Card Configuration
+                if let Some(request) = create_deck_configuration_request(&data) {
+                    let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
+                    let mut deck_card_service = deck_card_service_mutex.lock().await;
+
+                    let response = deck_card_service.deck_configuration_register(request).await;
+                    let response_type = Some(ResponseType::DECK_CARD_CONFIGURATION(response));
 
                     response_type
                 } else {
