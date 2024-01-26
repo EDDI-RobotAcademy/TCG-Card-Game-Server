@@ -9,7 +9,7 @@ use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
-use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_register_request};
+use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_modify_request, create_deck_register_request};
 use crate::request_generator::account_request_generator::{create_login_request, create_register_request};
 use crate::request_generator::battle_ready_request_generator::create_battle_ready_request;
 use crate::request_generator::battle_room_request_generator::create_battle_match_request;
@@ -25,6 +25,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
         // TODO: 이 부분 전부 번호에 따라 동작하도록 Table 처리가 필요함
         match protocol_number {
             1 => {
+                // Account Register
                 if let Some(request) = create_register_request(&data) {
                     let account_service_mutex = AccountServiceImpl::get_instance();
                     let mut account_service = account_service_mutex.lock().await;
@@ -38,6 +39,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             2 => {
+                // Account Login
                 if let Some(request) = create_login_request(&data) {
                     let account_service_mutex = AccountServiceImpl::get_instance();
                     let mut account_service = account_service_mutex.lock().await;
@@ -51,6 +53,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             3 => {
+                // Account Session Login
                 if let Some(request) = create_session_login_request(&data) {
                     let account_service_mutex = AccountServiceImpl::get_instance();
                     let mut account_service = account_service_mutex.lock().await;
@@ -64,6 +67,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             11 => {
+                // Request Battle Deck List ({deck_id: deck_name} 의 리스트)
                 if let Some(request) = create_deck_list_request(&data) {
                     let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
                     let mut account_deck_service = account_deck_service_mutex.lock().await;
@@ -137,7 +141,22 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            43 => {
+                // Account Deck Modify (deckId, sessionInfo, deckName)
+                if let Some(request) = create_deck_modify_request(&data) {
+                    let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
+                    let mut account_deck_service = account_deck_service_mutex.lock().await;
+
+                    let response = account_deck_service.account_deck_modify(request).await;
+                    let response_type = Some(ResponseType::ACCOUNT_DECK_MODIFY(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             4444 => {
+                // Program Exit
                 if let Some(request) = create_client_program_exit_request(&data) {
                     let client_program_service_mutex = ClientProgramServiceImpl::get_instance();
                     let mut client_program_service = client_program_service_mutex.lock().await;
