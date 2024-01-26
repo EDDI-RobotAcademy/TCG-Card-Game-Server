@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use async_trait::async_trait;
+use bcrypt::hash;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
@@ -89,5 +90,56 @@ impl AccountRepository for AccountRepositoryImpl {
             .find(|account| account.user_id == account_user_id);
 
         Ok(Option::from(found_account))
+    }
+
+    async fn delete(&self, account: Account) -> Result<(), diesel::result::Error> {
+        use crate::account::entity::account::accounts::dsl::*;
+
+        println!("AccountRepositoryImpl: delete()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        match diesel::delete(FilterDsl::filter(accounts, columns::user_id.eq(account.user_id())))
+
+            .execute(&mut connection)
+        {
+            Ok(_) => {
+                println!("Account deleted successfully.");
+                Ok(())
+            }
+            Err(e) => {
+                eprintln!("Error deleting account: {:?}", e);
+                Err(e)
+            }
+        }
+    }
+
+    async fn update(&self, account: Account, account_new_password: &str) -> Result<usize, diesel::result::Error> {
+
+        println!("AccountRepositoryImpl: update()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+        // 넘겨 받은 새로운 비밀번호를 암호화 합니다.
+        let hashed_password = hash(account_new_password, 12).expect("hashed_password fail");
+
+        match diesel::update(FilterDsl::filter(accounts, columns::user_id.eq(account.user_id)))
+            .set((
+                columns::password.eq(hashed_password),
+            ))
+            .execute(&mut connection)
+        {
+            Ok(num) => {
+                println!("Account updated successfully.");
+                Ok(num)
+            }
+            Err(e) => {
+                eprintln!("Error updating account: {:?}", e);
+                Err(e)
+            }
+        }
     }
 }

@@ -5,20 +5,27 @@ use diesel::dsl::not;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use uuid::Uuid;
+use crate::account::entity::account::Account;
+use crate::account::entity::account::accounts::password;
 
 use crate::account::repository::account_repository::AccountRepository;
 use crate::account::repository::account_repository_impl::AccountRepositoryImpl;
 
 use crate::account::service::account_service::AccountService;
 
-use crate::account::service::request::account_login_request::AccountLoginRequest;
-use crate::account::service::request::account_register_request::AccountRegisterRequest;
-use crate::account::service::request::account_session_login_request::AccountSessionLoginRequest;
 use crate::account::service::request::account_session_logout_request::AccountSessionLogoutRequest;
+use crate::account::service::request::account_session_login_request::AccountSessionLoginRequest;
 
-use crate::account::service::response::account_login_response::AccountLoginResponse;
-use crate::account::service::response::account_logout_response::AccountLogoutResponse;
+use crate::account::service::request::account_register_request::AccountRegisterRequest;
+use crate::account::service::request::account_delete_request::AccountDeleteRequest;
+use crate::account::service::request::account_modify_request::AccountModifyRequest;
+use crate::account::service::request::account_login_request::AccountLoginRequest;
+
 use crate::account::service::response::account_register_response::AccountRegisterResponse;
+use crate::account::service::response::account_logout_response::AccountLogoutResponse;
+use crate::account::service::response::account_delete_response::AccountDeleteResponse;
+use crate::account::service::response::account_modify_response::AccountModifyResponse;
+use crate::account::service::response::account_login_response::AccountLoginResponse;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
@@ -131,21 +138,48 @@ impl AccountService for AccountServiceImpl {
         }
         return AccountLogoutResponse::new(false)
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tokio::test;
+    async fn account_delete(&self, account_delete_request: AccountDeleteRequest) -> AccountDeleteResponse {
+        println!("AccountServiceImpl: account_delete()");
 
-    #[tokio::test]
-    async fn test_account_session_logout() {
-        let mut redis_repository_mutex = RedisInMemoryRepositoryImpl::get_instance();
-        let mut redis_repository_gaurd = redis_repository_mutex.lock().await;
+        let account_repository = self.repository.lock().await;
+        let account = account_delete_request.to_account().unwrap();
+        if let Some(found_account) = account_repository.find_by_user_id(account.user_id()).await.unwrap() {
+            // 비밀번호 매칭 확인
+            if verify(&account_delete_request.password(), &found_account.password()).unwrap() {
+                // 비밀번호 일치 확인
 
-        //redis_token 셋팅
-        redis_repository_gaurd.set_permanent("test_logout_key", "test_logout_value").await;
-        //redis_token key값을 인자로 받아서 삭제
-        redis_repository_gaurd.del("test_logout_key").await;
+                let result = account_repository.delete(account_delete_request.to_account().unwrap()).await;
+                if result.is_ok() {
+                    return AccountDeleteResponse::new(true)
+                }
+                return AccountDeleteResponse::new(false)
+            }
+            return AccountDeleteResponse::new(false)
+        }
+        return AccountDeleteResponse::new(false)
+    }
+
+    async fn account_modify(&self, account_modify_request: AccountModifyRequest) -> AccountModifyResponse {
+        println!("AccountServiceImpl: account_modify()");
+
+        let account_repository = self.repository.lock().await;
+        let account = account_modify_request.to_account().unwrap();
+        // Database accounts tables 에서 계정 찾기
+        if let Some(found_account) = account_repository.find_by_user_id(account.user_id()).await.unwrap() {
+            // 비밀번호 매칭 확인
+            if verify(&account_modify_request.password(), &found_account.password()).unwrap() {
+                let result = account_repository.update(account_modify_request.to_account().unwrap(), account_modify_request.new_password()).await;
+                if result.is_ok() {
+                    return AccountModifyResponse::new(true)
+                }
+                return AccountModifyResponse::new(false)
+            }
+            eprintln!("The password does not match.");
+            return AccountModifyResponse::new(false)
+        }
+        // 계정이 없음 - 로그인 실패
+        eprintln!("Account not found for user_id: {}", account.user_id());
+        return AccountModifyResponse::new(false)
     }
 }

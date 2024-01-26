@@ -9,11 +9,14 @@ use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
+use crate::deck_card::service::deck_card_service::DeckCardService;
+use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
 use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_modify_request, create_deck_register_request};
 use crate::request_generator::account_request_generator::{create_login_request, create_register_request};
 use crate::request_generator::battle_ready_request_generator::create_battle_ready_request;
 use crate::request_generator::battle_room_request_generator::create_battle_match_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
+use crate::request_generator::deck_card_request_generator::{create_deck_card_list_request, create_deck_configuration_request};
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::response_generator::response_type::ResponseType;
 
@@ -67,7 +70,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             11 => {
-                // Request Battle Deck List ({deck_id: deck_name} 의 리스트)
+                // Battle Deck List
                 if let Some(request) = create_deck_list_request(&data) {
                     let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
                     let mut account_deck_service = account_deck_service_mutex.lock().await;
@@ -81,7 +84,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             12 => {
-                // Request Battle Match
+                // Battle Match
                 if let Some(request) = create_battle_match_request(&data) {
                     let battle_room_service_mutex = BattleRoomServiceImpl::get_instance();
                     let mut battle_room_service = battle_room_service_mutex.lock().await;
@@ -110,11 +113,21 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             14 => {
-                // Account Deck Card List (실제 카드 정보)
-                None
+                // Battle Deck Card List
+                if let Some(request) = create_deck_card_list_request(&data) {
+                    let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
+                    let mut deck_card_service = deck_card_service_mutex.lock().await;
+
+                    let response = deck_card_service.deck_card_list(request).await;
+                    let response_type = Some(ResponseType::BATTLE_DECK_CARD_LIST(response));
+
+                    response_type
+                } else {
+                    None
+                }
             },
             41 => {
-                // Account Deck Register (덱 이름을 입력받아 덱 생성)
+                // Account Deck Register
                 if let Some(request) = create_deck_register_request(&data) {
                     let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
                     let mut account_deck_service = account_deck_service_mutex.lock().await;
@@ -128,7 +141,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             42 => {
-                // Account Deck List (사용자 Redis Token 을 받아 생성)
+                // Account Deck (Name) List
                 if let Some(request) = create_deck_list_request(&data) {
                     let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
                     let mut account_deck_service = account_deck_service_mutex.lock().await;
@@ -142,13 +155,41 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             43 => {
-                // Account Deck Modify (deckId, sessionInfo, deckName)
+                // Account Deck Modify
                 if let Some(request) = create_deck_modify_request(&data) {
                     let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
                     let mut account_deck_service = account_deck_service_mutex.lock().await;
 
                     let response = account_deck_service.account_deck_modify(request).await;
                     let response_type = Some(ResponseType::ACCOUNT_DECK_MODIFY(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            51 => {
+                // Deck Card Configuration
+                if let Some(request) = create_deck_configuration_request(&data) {
+                    let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
+                    let mut deck_card_service = deck_card_service_mutex.lock().await;
+
+                    let response = deck_card_service.deck_configuration_register(request).await;
+                    let response_type = Some(ResponseType::DECK_CARD_CONFIGURATION(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            52 => {
+                // (Account) Deck Card List
+                if let Some(request) = create_deck_card_list_request(&data) {
+                    let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
+                    let mut deck_card_service = deck_card_service_mutex.lock().await;
+
+                    let response = deck_card_service.deck_card_list(request).await;
+                    let response_type = Some(ResponseType::DECK_CARD_LIST(response));
 
                     response_type
                 } else {
