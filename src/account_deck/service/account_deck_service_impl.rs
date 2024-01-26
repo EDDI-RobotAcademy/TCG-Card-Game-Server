@@ -8,8 +8,10 @@ use crate::account_deck::repository::account_deck_repository::AccountDeckReposit
 use crate::account_deck::repository::account_deck_repository_impl::AccountDeckRepositoryImpl;
 use crate::account_deck::service::account_deck_service::AccountDeckService;
 use crate::account_deck::service::request::account_deck_list_request::AccountDeckListRequest;
+use crate::account_deck::service::request::account_deck_modify_request::AccountDeckModifyRequest;
 use crate::account_deck::service::request::account_deck_register_request::AccountDeckRegisterRequest;
 use crate::account_deck::service::response::account_deck_list_response::AccountDeckListResponse;
+use crate::account_deck::service::response::account_deck_modify_response::AccountDeckModifyResponse;
 use crate::account_deck::service::response::account_deck_register_response::AccountDeckRegisterResponse;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
@@ -94,6 +96,29 @@ impl AccountDeckService for AccountDeckServiceImpl {
             }
         }
     }
+
+    async fn account_deck_modify(&self, account_deck_modify_request: AccountDeckModifyRequest) -> AccountDeckModifyResponse {
+        println!("AccountDeckServiceImpl: account_deck_modify()");
+
+        let account_deck_repository = self.repository.lock().await;
+        let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
+        let account_number_str = redis_repository_guard.get(account_deck_modify_request.account_id()).await;
+        let account_unique_id: Result<i32, _> = account_number_str.expect("REASON").parse();
+        match account_unique_id {
+            Ok(int_id) => {
+                let result = account_deck_repository.update_data(account_deck_modify_request, int_id).await;
+                if result.is_ok() {
+                    AccountDeckModifyResponse::new(true)
+                } else {
+                    AccountDeckModifyResponse::new(false)
+                }
+            }
+            Err(e) => {
+                eprintln!("Error to get int id : {}", e);
+                AccountDeckModifyResponse::new(false)
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -102,7 +127,7 @@ mod tests {
     use tokio::test;
     use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
-    #[tokio::test]
+    #[test]
     async fn test_deck_registration() {
         let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
         let mut account_deck_service_mutex_guard = account_deck_service_mutex.lock().await;
@@ -117,7 +142,7 @@ mod tests {
         assert_eq!(true, result.get_is_success());
     }
 
-    #[tokio::test]
+    #[test]
     async fn test_deck_list() {
         let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
         let mut account_deck_service_mutex_guard = account_deck_service_mutex.lock().await;
@@ -125,6 +150,23 @@ mod tests {
         let account_deck_list_request = AccountDeckListRequest::new(redis_token_str.to_string());
         let result = account_deck_service_mutex_guard.account_deck_list(account_deck_list_request).await;
         println!("{:?}", result.get_list())
+    }
+
+    #[test]
+    async fn test_deck_modify() {
+        let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
+        let mut account_deck_service_mutex_guard = account_deck_service_mutex.lock().await;
+
+        let sample_deck_id: i32 = 8;
+        let sample_account_id_str = "redis_token_str";
+        let sample_deck_name = "new deck name";
+
+        let account_deck_modify_request
+            = AccountDeckModifyRequest::new(sample_deck_id, sample_account_id_str.to_string(), sample_deck_name.to_string());
+
+        let result = account_deck_service_mutex_guard.account_deck_modify(account_deck_modify_request).await;
+
+        assert_eq!(true, result.get_is_success())
     }
 
     #[tokio::test]

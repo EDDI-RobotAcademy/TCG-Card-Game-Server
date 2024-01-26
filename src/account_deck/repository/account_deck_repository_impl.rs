@@ -16,6 +16,7 @@ use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
 
 use crate::account_deck::entity::account_deck::AccountDeck;
 use crate::account_deck::repository::account_deck_repository::AccountDeckRepository;
+use crate::account_deck::service::request::account_deck_modify_request::AccountDeckModifyRequest;
 
 pub struct AccountDeckRepositoryImpl {
     mysql_database_connection: Arc<AsyncMutex<MysqlDatabaseConnection>>,
@@ -84,12 +85,8 @@ impl AccountDeckRepository for AccountDeckRepositoryImpl {
             .select((columns::deck_id, columns::account_id, columns::deck_name))
             .load::<AccountDeck>(&mut connection)?;
 
-        println!("{:?}", found_decks);
-
         let found_deck = found_decks.into_iter()
             .filter(|account_deck|account_deck.account_id == request);
-
-        println!("{:?}", found_deck);
 
         for decks in found_deck {
             let mut deck_map: HashMap<i32, String> = HashMap::new();
@@ -98,5 +95,32 @@ impl AccountDeckRepository for AccountDeckRepositoryImpl {
         }
 
         Ok(Option::from(deck_list))
+    }
+
+    async fn update_data(&self, modify_deck: AccountDeckModifyRequest, int_id: i32) -> Result<(), Error> {
+        use crate::account_deck::entity::account_deck::account_decks::dsl::*;
+        use diesel::prelude::*;
+
+        println!("AccountDeckRepositoryImpl: update_data()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        match diesel::replace_into(account_decks)
+            .values((deck_id.eq(&modify_deck.deck_id()),
+                            account_id.eq(int_id),
+                            deck_name.eq(&modify_deck.deck_name())))
+            .execute(&mut connection)
+        {
+            Ok(_) => {
+                println!("Account Deck updated successfully.");
+                Ok(())
+            }
+            Err(e) => {
+                eprintln!("Error update account deck: {:?}", e);
+                Err(e)
+            }
+        }
     }
 }
