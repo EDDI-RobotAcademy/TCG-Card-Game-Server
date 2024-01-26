@@ -90,4 +90,28 @@ impl AccountRepository for AccountRepositoryImpl {
 
         Ok(Option::from(found_account))
     }
+
+    async fn delete(&self, account: Account) -> Result<(), diesel::result::Error> {
+        use crate::account::entity::account::accounts::dsl::*;
+
+        println!("AccountRepositoryImpl: delete()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        match diesel::delete(FilterDsl::filter(accounts, columns::user_id.eq(account.user_id())))
+
+            .execute(&mut connection)
+        {
+            Ok(_) => {
+                println!("Account deleted successfully.");
+                Ok(())
+            }
+            Err(e) => {
+                eprintln!("Error deleting account: {:?}", e);
+                Err(e)
+            }
+        }
+    }
 }
