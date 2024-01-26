@@ -9,6 +9,7 @@ use crate::account_deck::service::response::account_deck_register_response::Acco
 use crate::battle_ready_monitor::service::response::battle_ready_response::BattleReadyResponse;
 use crate::battle_room::service::response::battle_match_response::BattleMatchResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
+use crate::deck_card::service::response::deck_configuration_response::DeckConfigurationResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ResponseType {
@@ -23,9 +24,12 @@ pub enum ResponseType {
     ACCOUNT_DECK_LIST(AccountDeckListResponse),
     ACCOUNT_DECK_MODIFY(AccountDeckModifyResponse),
 
+    DECK_CARD_CONFIGURATION(DeckConfigurationResponse),
+
+    BATTLE_DECK_LIST(AccountDeckListResponse),
     BATTLE_MATCH(BattleMatchResponse),
     BATTLE_READY(BattleReadyResponse),
-    BATTLE_DECK_LIST(AccountDeckListResponse),
+    // BATTLE_DECK_CARD_LIST(DeckCardListResponse),
 
     PROGRAM_EXIT(ClientProgramExitResponse),
 }
