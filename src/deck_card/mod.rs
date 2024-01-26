@@ -1,3 +1,3 @@
-mod entity;
-mod repository;
-mod service;
+pub mod entity;
+pub mod repository;
+pub mod service;
