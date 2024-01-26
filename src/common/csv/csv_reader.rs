@@ -4,7 +4,7 @@ use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
-fn build_dictionaries(csv_content: &Vec<Vec<String>>) -> (
+pub fn build_dictionaries(csv_content: &Vec<Vec<String>>) -> (
     HashMap<String, String>,   // 종족
     HashMap<String, String>,   // 등급
     HashMap<String, String>,   // 종류(아이템, 서포트 등등)
@@ -57,7 +57,7 @@ fn build_dictionaries(csv_content: &Vec<Vec<String>>) -> (
 }
 
 // 카드 종류(서포트, 아이템 등등)
-fn get_card_kinds<'a>(
+pub fn get_card_kinds<'a>(
     card_number: &'a str,
     card_kinds_dictionary: &'a HashMap<String, String>,
 ) -> Option<&'a String> {
@@ -65,7 +65,7 @@ fn get_card_kinds<'a>(
 }
 
 // 카드 종족(휴먼, 언데드, 트랜트 등등)
-fn get_race<'a>(
+pub fn get_race<'a>(
     card_number: &'a str,
     race_dictionary: &'a HashMap<String, String>,
 ) -> Option<&'a String> {
@@ -73,7 +73,7 @@ fn get_race<'a>(
 }
 
 // 카드 등급
-fn get_card_grade<'a>(
+pub fn get_card_grade<'a>(
     card_number: &'a str,
     card_grade_dictionary: &'a HashMap<String, String>,
 ) -> Option<&'a String> {
@@ -81,7 +81,7 @@ fn get_card_grade<'a>(
 }
 
 // 카드의 필요 에너지
-fn get_energy_needed<'a>(
+pub fn get_energy_needed<'a>(
     card_number: &'a str,
     energy_needed_dictionary: &'a HashMap<String, String>,
 ) -> Option<&'a String> {
@@ -89,7 +89,7 @@ fn get_energy_needed<'a>(
 }
 
 // 카드 공격력
-fn get_attack<'a>(
+pub fn get_attack<'a>(
     card_number: &'a str,
     attack_dictionary: &'a HashMap<String, String>,
 ) -> Option<&'a String> {
@@ -98,7 +98,7 @@ fn get_attack<'a>(
 
 // TODO: 추후 특성1, 2, 3에 따라 다 쪼개야합니다
 // 카드 특성
-fn get_passive<'a>(
+pub fn get_passive<'a>(
     card_number: &'a str,
     passive_dictionary: &'a HashMap<String, String>,
 ) -> Option<&'a String> {
@@ -107,7 +107,7 @@ fn get_passive<'a>(
 
 // TODO: 추후 스킬1, 2, 3에 따라 다 쪼개야합니다
 // 카드 스킬
-fn get_skill<'a>(
+pub fn get_skill<'a>(
     card_number: &'a str,
     skill_dictionary: &'a HashMap<String, String>,
 ) -> Option<&'a String> {
@@ -115,11 +115,11 @@ fn get_skill<'a>(
 }
 
 // 카드 HP
-fn get_hp<'a>(card_number: &'a str, hp_dictionary: &'a HashMap<String, String>) -> Option<&'a String> {
+pub fn get_hp<'a>(card_number: &'a str, hp_dictionary: &'a HashMap<String, String>) -> Option<&'a String> {
     hp_dictionary.get(card_number)
 }
 
-fn extract_csv_header(file_path: &str) -> Result<Vec<String>, Box<dyn Error>> {
+pub fn extract_csv_header(file_path: &str) -> Result<Vec<String>, Box<dyn Error>> {
     let current_exe_path = env::current_exe()?;
     let current_dir = current_exe_path.parent().ok_or("Unable to get parent directory")?;
 
@@ -134,7 +134,7 @@ fn extract_csv_header(file_path: &str) -> Result<Vec<String>, Box<dyn Error>> {
     Ok(header)
 }
 
-fn csv_read(file_path: &str) -> Result<Vec<Vec<String>>, Box<dyn Error>> {
+pub fn csv_read(file_path: &str) -> Result<Vec<Vec<String>>, Box<dyn Error>> {
     let current_exe_path = env::current_exe()?;
     let current_dir = current_exe_path.parent().ok_or("Unable to get parent directory")?;
 
