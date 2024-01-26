@@ -24,9 +24,9 @@ pub enum ResponseType {
     ACCOUNT_DECK_REGISTER(AccountDeckRegisterResponse),
     ACCOUNT_DECK_LIST(AccountDeckListResponse),
     ACCOUNT_DECK_MODIFY(AccountDeckModifyResponse),
-    ACCOUNT_DECK_CARD_LIST(DeckCardListResponse),
 
     DECK_CARD_CONFIGURATION(DeckConfigurationResponse),
+    DECK_CARD_LIST(DeckCardListResponse),
 
     BATTLE_DECK_LIST(AccountDeckListResponse),
     BATTLE_MATCH(BattleMatchResponse),
