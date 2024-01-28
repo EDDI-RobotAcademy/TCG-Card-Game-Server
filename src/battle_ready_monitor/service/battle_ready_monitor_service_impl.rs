@@ -89,6 +89,7 @@ impl BattleReadyMonitorService for BattleReadyMonitorServiceImpl {
         // 매칭 된 두 명이 존재 하는지 검사
         let battle_room_wait_queue_repository_mutex = self.battle_room_wait_queue_repository.lock().await;
         let matched_two_players = battle_room_wait_queue_repository_mutex.dequeue_two_players_from_wait_queue(2).await;
+        println!("matched_two_players: {:?}", matched_two_players);
 
         // 사용자 계정 고유값을 key로 시간이 만료되었는지 검사
         let mut match_waiting_timer_repository_mutex = self.match_waiting_timer_repository.lock().await;
@@ -102,7 +103,7 @@ impl BattleReadyMonitorService for BattleReadyMonitorServiceImpl {
 
         // 매칭 된 플레이어 두 명이 존재함
         if (!matched_two_players.is_empty()) {
-            println!("BattleReadyMonitorServiceImpl: 플레이어간 배틀 성사!!!");
+            println!("BattleReadyMonitorServiceImpl: 플레이어간 배틀 성사!!! -> {:?}", matched_two_players);
             let mut battle_ready_monitor_repository_mutex = self.battle_ready_monitor_repository.lock().await;
             battle_ready_monitor_repository_mutex.save_battle_account_list_hash(matched_two_players, BattleReadyStatus::SUCCESS).await;
         }
