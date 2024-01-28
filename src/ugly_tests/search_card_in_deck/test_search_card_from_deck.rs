@@ -23,6 +23,8 @@ pub(crate) fn search_card_from_deck_effect(deck: &mut Vec<i32>, hand_cards: &mut
 
     remain_deck
 }
+//TODO 현재 테스트 코드에서는 벡터 안의 값을 검색해서 찾아왔지만 영웅 이하의 등급에서 몇장 가져온다 등등 아마 카드 등급이 범위이므로
+//TODO 카드의 등급 및 덱을 나타내는 방식 수정  확정후 그에 맞는 데이터 타입 수정 필요
 #[cfg(test)]
 mod tests {
     use crate::ugly_tests::draw_deck::test_draw_five_from_deck::draw_cards;
