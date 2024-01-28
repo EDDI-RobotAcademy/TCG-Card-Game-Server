@@ -35,7 +35,7 @@ impl BattleRoomWaitingQueue {
         let mut guard = self.player_id_list.lock().await;
         let mut dequeued_players = Vec::new();
 
-        while guard.len() > count && dequeued_players.len() < count {
+        while dequeued_players.len() != count {
             dequeued_players.push(guard.pop().unwrap());
         }
 
