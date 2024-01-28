@@ -9,6 +9,7 @@ use diesel::{Connection, MysqlConnection, QueryDsl, ExpressionMethods, RunQueryD
 use diesel::result::Error;
 
 use crate::common::env::env_detector::EnvDetector;
+use crate::deck_card::entity::deck_card::deck_cards::columns;
 use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
 
 use crate::deck_card::entity::deck_card::DeckCard;
@@ -93,5 +94,35 @@ impl DeckCardRepository for DeckCardRepositoryImpl {
         }
 
         Ok("덱 저장에 성공하였습니다.".to_string())
+    }
+
+    async fn get_card_list(&self, request: i32) -> Result<Option<Vec<HashMap<i32, i32>>>, Error> {
+        use crate::deck_card::entity::deck_card::deck_cards::dsl::*;
+        use diesel::query_dsl::filter_dsl::FilterDsl;
+        use diesel::prelude::*;
+
+        println!("DeckCardRepositoryImpl: get_card_list()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        let mut card_list: Vec<HashMap<i32, i32>> = Vec::new();
+
+        let where_clause = FilterDsl::filter(deck_cards, deck_id.eq(deck_id));
+        let found_cards = where_clause
+            .select((deck_id, card_id, card_count))
+            .load::<DeckCard>(&mut connection)?;
+
+        let found_card = found_cards.into_iter()
+            .filter(|deck_card| deck_card.deck_id == request);
+
+        for card in found_card {
+            let mut card_map: HashMap<i32, i32> = HashMap::new();
+            card_map.insert(card.card_id, card.card_count);
+            card_list.push(card_map);
+        }
+
+        Ok(Option::from(card_list))
     }
 }
