@@ -1,53 +1,56 @@
-use std::sync::{Arc, Mutex};
-use tokio::sync::mpsc;
+use std::collections::VecDeque;
+use std::sync::Arc;
 use tokio::time::timeout;
 
-#[derive(Debug)]
-enum Message {
-    Enqueue(i32),
-    Dequeue(tokio::sync::oneshot::Sender<Option<Vec<i32>>>),
-}
+use tokio::sync::{Mutex, mpsc, oneshot};
 
-struct WaitQueue {
-    inner: Arc<Mutex<Vec<i32>>>,
+pub struct WaitQueue {
     sender: mpsc::Sender<Message>,
 }
 
+enum Message {
+    Enqueue(i32, oneshot::Sender<()>),
+    Dequeue(oneshot::Sender<Vec<i32>>),
+}
+
 impl WaitQueue {
-    fn new() -> Self {
+    pub fn new() -> Self {
         let (sender, mut receiver) = mpsc::channel(100);
 
-        let inner = Arc::new(Mutex::new(Vec::new()));
-        let inner_clone = inner.clone();
-
         tokio::spawn(async move {
-            while let Some(message) = receiver.recv().await {
-                match message {
-                    Message::Enqueue(item) => {
-                        let mut inner = inner_clone.lock().unwrap();
+            let mut inner = Vec::new();
+
+            while let Some(msg) = receiver.recv().await {
+                match msg {
+                    Message::Enqueue(item, sender) => {
                         inner.push(item);
+                        sender.send(()).unwrap(); // Ignore errors for simplicity
                     }
                     Message::Dequeue(sender) => {
-                        let mut inner = inner_clone.lock().unwrap();
-                        // Dequeue 2 items
-                        let items: Vec<i32> = inner.drain(..2).collect();
-                        let _ = sender.send(Some(items));
+                        if inner.len() >= 2 {
+                            let items: Vec<i32> = inner.drain(..2.min(inner.len())).collect();
+                            sender.send(items).unwrap(); // Ignore errors for simplicity
+                        } else {
+                            sender.send(Vec::new()).unwrap();
+                        }
                     }
                 }
             }
         });
 
-        WaitQueue { inner, sender }
+        Self { sender }
     }
 
-    async fn enqueue(&self, item: i32) {
-        self.sender.send(Message::Enqueue(item)).await.unwrap();
+    pub async fn enqueue(&self, item: i32) {
+        let (sender, receiver) = oneshot::channel();
+        self.sender.send(Message::Enqueue(item, sender)).await.unwrap();
+        receiver.await.unwrap();
     }
 
-    async fn dequeue(&self) -> Option<Vec<i32>> {
-        let (sender, receiver) = tokio::sync::oneshot::channel();
+    pub async fn dequeue(&self) -> Option<Vec<i32>> {
+        let (sender, receiver) = oneshot::channel();
         self.sender.send(Message::Dequeue(sender)).await.unwrap();
-        receiver.await.unwrap()
+        receiver.await.ok()
     }
 }
 
@@ -61,7 +64,7 @@ async fn test_enqueue_and_dequeue() {
             for j in 1..=5 {
                 wait_queue.enqueue(j + i * 5).await;
                 println!("Enqueued: {}", j + i * 5);
-                tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+                tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
             }
         })
     })
@@ -87,7 +90,7 @@ async fn test_enqueue_and_dequeue() {
         _ = timeout(tokio::time::Duration::from_secs(15), tokio::time::sleep(tokio::time::Duration::from_secs(0))) => {},
     };
 
-    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
 
     dequeue_thread.abort();
 }
