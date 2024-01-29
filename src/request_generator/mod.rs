@@ -6,4 +6,5 @@ pub mod battle_match_request_generator;
 pub mod account_deck_request_generator;
 pub mod battle_ready_request_generator;
 pub mod deck_card_request_generator;
+pub mod shop_request_generator;
 
