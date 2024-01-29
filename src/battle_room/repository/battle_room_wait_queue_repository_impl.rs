@@ -9,13 +9,13 @@ use crate::battle_room::repository::battle_room_wait_queue_repository::BattleRoo
 
 
 pub struct BattleRoomWaitQueueRepositoryImpl {
-    wait_queue: BattleRoomWaitingQueue,
+    wait_queue: AsyncMutex<BattleRoomWaitingQueue>,
 }
 
 impl BattleRoomWaitQueueRepositoryImpl {
     pub fn new() -> Self {
         BattleRoomWaitQueueRepositoryImpl {
-            wait_queue: BattleRoomWaitingQueue::new(),
+            wait_queue: AsyncMutex::new(BattleRoomWaitingQueue::new()),
         }
     }
 
@@ -31,13 +31,24 @@ impl BattleRoomWaitQueueRepositoryImpl {
 #[async_trait]
 impl BattleRoomWaitQueueRepository for BattleRoomWaitQueueRepositoryImpl {
     async fn enqueue_player_id_for_wait(&self, account_unique_id: i32) -> Result<bool, Box<dyn Error>> {
-        self.wait_queue.enqueue_player(account_unique_id).await;
+        println!("BattleRoomWaitQueueRepositoryImpl: enqueue_player_id_for_wait()");
+        let wait_queue_guard = self.wait_queue.lock().await;
+        wait_queue_guard.enqueue_player(account_unique_id).await;
 
         Ok(true)
     }
 
     async fn dequeue_two_players_from_wait_queue(&self, count: usize) -> Vec<i32> {
-        self.wait_queue.dequeue_n_players(count).await
+        println!("BattleRoomWaitQueueRepositoryImpl: dequeue_two_players_from_wait_queue()");
+        let wait_queue_guard = self.wait_queue.lock().await;
+        wait_queue_guard.dequeue_n_players(count).await
+    }
+
+    async fn get_wait_queue_length(&self) -> i32 {
+        println!("BattleRoomWaitQueueRepositoryImpl: dequeue_two_players_from_wait_queue()");
+        let wait_queue_guard = self.wait_queue.lock().await;
+        let player_id_list_guard = wait_queue_guard.player_id_list.lock().await;
+        player_id_list_guard.len() as i32
     }
 }
 
@@ -72,23 +83,29 @@ mod tests {
         repository_guard.enqueue_player_id_for_wait(4).await.expect("Can't enqueue");
         repository_guard.enqueue_player_id_for_wait(5).await.expect("Can't enqueue");
 
-        let queue_before_dequeue = repository_guard.wait_queue.player_id_list.lock().await;
+        let wait_queue_gaurd = repository_guard.wait_queue.lock().await;
+        let queue_before_dequeue = wait_queue_gaurd.player_id_list.lock().await;
         println!("Before dequeue: {:?}", queue_before_dequeue);
         drop(queue_before_dequeue);
+        drop(wait_queue_gaurd);
 
         let dequeued_players = repository_guard.dequeue_two_players_from_wait_queue(2).await;
         println!("dequeued_players: {:?}", dequeued_players);
 
-        let queue_after_dequeue = repository_guard.wait_queue.player_id_list.lock().await;
+        let wait_queue_gaurd = repository_guard.wait_queue.lock().await;
+        let queue_after_dequeue = wait_queue_gaurd.player_id_list.lock().await;
         println!("After dequeue: {:?}", queue_after_dequeue);
         drop(queue_after_dequeue);
+        drop(wait_queue_gaurd);
 
         let dequeued_players = repository_guard.dequeue_two_players_from_wait_queue(2).await;
         println!("dequeued_players: {:?}", dequeued_players);
 
-        let queue_after_dequeue = repository_guard.wait_queue.player_id_list.lock().await;
+        let wait_queue_gaurd = repository_guard.wait_queue.lock().await;
+        let queue_after_dequeue = wait_queue_gaurd.player_id_list.lock().await;
         println!("After dequeue: {:?}", queue_after_dequeue);
         drop(queue_after_dequeue);
+        drop(wait_queue_gaurd);
     }
 
 }
