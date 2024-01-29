@@ -6,6 +6,9 @@ use tokio::sync::mpsc;
 
 use crate::account::service::account_service_impl::AccountServiceImpl;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
+use crate::battle_ready_monitor::controller::battle_ready_monitor_controller_impl::BattleReadyMonitorControllerImpl;
+use crate::battle_ready_monitor::service::battle_ready_monitor_service_impl::BattleReadyMonitorServiceImpl;
+use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
 
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
@@ -86,6 +89,14 @@ impl DomainInitializer {
         transmitter_controller.inject_receiver_transmitter_channel(receiver_transmitter_channel_arc).await;
     }
 
+    pub async fn init_battle_matching_domain(&self) {
+        let _ = BattleRoomServiceImpl::get_instance();
+    }
+
+    pub async fn init_battle_ready_monitor_domain(&self) {
+        let _ = BattleReadyMonitorControllerImpl::get_instance();
+    }
+
     pub async fn init_redis_in_memory_domain(&self) {
         let _ = RedisInMemoryServiceImpl::get_instance();
     }
@@ -115,6 +126,10 @@ impl DomainInitializer {
             acceptor_receiver_channel_arc.clone(), receiver_transmitter_channel_arc.clone()).await;
         self.init_transmitter_domain(
             acceptor_transmitter_channel_arc.clone(), receiver_transmitter_channel_arc.clone()).await;
+
+        /* Battle Matching Domain List */
+        self.init_battle_matching_domain();
+        self.init_battle_ready_monitor_domain();
 
         /* Redis In-Memory DB Domain */
         self.init_redis_in_memory_domain().await;
