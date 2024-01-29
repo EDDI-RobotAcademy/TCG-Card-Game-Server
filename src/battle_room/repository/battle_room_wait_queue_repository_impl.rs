@@ -3,6 +3,9 @@ use std::error::Error;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
+use crate::battle_ready_monitor::entity::battle_ready_status::BattleReadyStatus;
+use crate::battle_ready_monitor::repository::battle_ready_monitor_repository::BattleReadyMonitorRepository;
+use crate::battle_ready_monitor::repository::battle_ready_monitor_repository_impl::BattleReadyMonitorRepositoryImpl;
 
 use crate::battle_room::entity::battle_room_wait_queue::BattleRoomWaitingQueue;
 use crate::battle_room::repository::battle_room_wait_queue_repository::BattleRoomWaitQueueRepository;
@@ -32,9 +35,18 @@ impl BattleRoomWaitQueueRepositoryImpl {
         let wait_queue_clone = Arc::clone(&self.wait_queue);
         tokio::spawn(async move {
             loop {
-                if let items = wait_queue_clone.lock().await.dequeue_n_players(2).await {
-                    println!("Dequeued from repository: {:?}", items);
+                let items = wait_queue_clone.lock().await.dequeue_n_players(2).await;
+                println!("Dequeued from repository: {:?}", items);
+
+                if items.len() == 2 {
+                    let battle_ready_monitor_repository_mutex = BattleReadyMonitorRepositoryImpl::get_instance();
+                    let mut battle_ready_monitor_repository_guard = battle_ready_monitor_repository_mutex.lock().await;
+
+                    battle_ready_monitor_repository_guard.save_battle_account_hash(items[0], BattleReadyStatus::SUCCESS).await;
+                    battle_ready_monitor_repository_guard.save_battle_account_hash(items[1], BattleReadyStatus::SUCCESS).await;
+                    drop(battle_ready_monitor_repository_guard);
                 }
+
                 tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
             }
         })
