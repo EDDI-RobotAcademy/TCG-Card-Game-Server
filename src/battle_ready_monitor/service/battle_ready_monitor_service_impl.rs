@@ -114,7 +114,8 @@ impl BattleReadyMonitorService for BattleReadyMonitorServiceImpl {
         let wait_queue_length = battle_room_wait_queue_guard.get_wait_queue_length().await;
         println!("current wait_queue_length: {}", wait_queue_length);
 
-        if (wait_queue_length == 2) {
+        // TODO: 매칭이 잡혀서 배틀에 들어간 사람을 또 매칭 큐에서 잡지 않도록 장치가 필요함
+        if (wait_queue_length >= 2) {
             let mut battle_ready_monitor_repository_mutex = self.battle_ready_monitor_repository.lock().await;
             battle_ready_monitor_repository_mutex.save_battle_account_hash(account_unique_id, BattleReadyStatus::SUCCESS).await;
         }
