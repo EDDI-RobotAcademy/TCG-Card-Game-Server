@@ -10,18 +10,12 @@ use crate::battle_room::repository::battle_room_wait_queue_repository::BattleRoo
 
 pub struct BattleRoomWaitQueueRepositoryImpl {
     wait_queue: BattleRoomWaitingQueue,
-    // ready_queue: BattleRoomReadyQueue,
-    // receiver_battle_room_manager_channel_arc: Option<Arc<ReceiverTransmitterLegacyChannel>>,
-    // battle_room_manager_transmitter_channel_arc: Option<Arc<ReceiverTransmitterLegacyChannel>>
 }
 
 impl BattleRoomWaitQueueRepositoryImpl {
     pub fn new() -> Self {
         BattleRoomWaitQueueRepositoryImpl {
             wait_queue: BattleRoomWaitingQueue::new(),
-            // ready_queue: BattleRoomReadyQueue::new(),
-            // acceptor_receiver_channel_arc: None,
-            // receiver_transmitter_channel_arc: None
         }
     }
 
@@ -65,4 +59,36 @@ mod tests {
 
         assert!(result.is_ok());
     }
+
+    #[tokio::test]
+    async fn test_enqueue_and_dequeue_players() {
+        let repository = BattleRoomWaitQueueRepositoryImpl::new();
+        let repository_arc = Arc::new(AsyncMutex::new(repository));
+
+        let repository_guard = repository_arc.lock().await;
+        repository_guard.enqueue_player_id_for_wait(1).await.expect("Can't enqueue");
+        repository_guard.enqueue_player_id_for_wait(2).await.expect("Can't enqueue");
+        repository_guard.enqueue_player_id_for_wait(3).await.expect("Can't enqueue");
+        repository_guard.enqueue_player_id_for_wait(4).await.expect("Can't enqueue");
+        repository_guard.enqueue_player_id_for_wait(5).await.expect("Can't enqueue");
+
+        let queue_before_dequeue = repository_guard.wait_queue.player_id_list.lock().await;
+        println!("Before dequeue: {:?}", queue_before_dequeue);
+        drop(queue_before_dequeue);
+
+        let dequeued_players = repository_guard.dequeue_two_players_from_wait_queue(2).await;
+        println!("dequeued_players: {:?}", dequeued_players);
+
+        let queue_after_dequeue = repository_guard.wait_queue.player_id_list.lock().await;
+        println!("After dequeue: {:?}", queue_after_dequeue);
+        drop(queue_after_dequeue);
+
+        let dequeued_players = repository_guard.dequeue_two_players_from_wait_queue(2).await;
+        println!("dequeued_players: {:?}", dequeued_players);
+
+        let queue_after_dequeue = repository_guard.wait_queue.player_id_list.lock().await;
+        println!("After dequeue: {:?}", queue_after_dequeue);
+        drop(queue_after_dequeue);
+    }
+
 }
