@@ -14,7 +14,7 @@ use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
 use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_modify_request, create_deck_register_request};
 use crate::request_generator::account_request_generator::{create_login_request, create_register_request};
 use crate::request_generator::battle_ready_request_generator::create_battle_ready_request;
-use crate::request_generator::battle_room_request_generator::create_battle_match_request;
+use crate::request_generator::battle_match_request_generator::create_battle_match_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
 use crate::request_generator::deck_card_request_generator::{create_deck_card_list_request, create_deck_configuration_request};
 use crate::request_generator::session_request_generator::create_session_login_request;
@@ -86,6 +86,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             12 => {
                 // Battle Match
                 if let Some(request) = create_battle_match_request(&data) {
+                    println!("request generator: battle match request protocol");
                     let battle_room_service_mutex = BattleRoomServiceImpl::get_instance();
                     let mut battle_room_service = battle_room_service_mutex.lock().await;
 
