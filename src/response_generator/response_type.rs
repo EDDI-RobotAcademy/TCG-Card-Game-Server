@@ -30,7 +30,7 @@ pub enum ResponseType {
     DECK_CARD_CONFIGURATION(DeckConfigurationResponse),
     DECK_CARD_LIST(DeckCardListResponse),
 
-    FREE_CARD_BUY(FreeCardResponse),
+    SHOP_FREE_CARD(FreeCardResponse),
 
     BATTLE_DECK_LIST(AccountDeckListResponse),
     BATTLE_MATCH(BattleMatchResponse),

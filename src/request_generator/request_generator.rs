@@ -207,7 +207,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     let mut shop_service = shop_service_mutex.lock().await;
 
                     let response = shop_service.free_card(request).await;
-                    let response_type = Some(ResponseType::FREE_CARD_BUY(response));
+                    let response_type = Some(ResponseType::SHOP_FREE_CARD(response));
 
                     response_type
                 } else {
