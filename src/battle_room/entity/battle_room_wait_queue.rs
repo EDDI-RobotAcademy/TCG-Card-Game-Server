@@ -35,13 +35,10 @@ impl BattleRoomWaitingQueue {
     pub async fn dequeue_n_players(&self, count: usize) -> Vec<i32> {
         let mut guard = self.player_id_list.lock().await;
         let mut dequeued_players = Vec::new();
-        let mut loop_count = 0;
 
-        while guard.len() >= count {
-            if (loop_count == 2) { break; }
-
+        if guard.len() >= count {
             dequeued_players.push(guard.pop().unwrap());
-            loop_count += 1;
+            dequeued_players.push(guard.pop().unwrap());
         }
         println!("dequeued_players: {:?}", dequeued_players);
 

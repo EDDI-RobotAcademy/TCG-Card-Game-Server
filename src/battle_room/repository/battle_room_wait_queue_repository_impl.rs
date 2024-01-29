@@ -9,13 +9,13 @@ use crate::battle_room::repository::battle_room_wait_queue_repository::BattleRoo
 
 
 pub struct BattleRoomWaitQueueRepositoryImpl {
-    wait_queue: AsyncMutex<BattleRoomWaitingQueue>,
+    wait_queue: Arc<AsyncMutex<BattleRoomWaitingQueue>>,
 }
 
 impl BattleRoomWaitQueueRepositoryImpl {
     pub fn new() -> Self {
         BattleRoomWaitQueueRepositoryImpl {
-            wait_queue: AsyncMutex::new(BattleRoomWaitingQueue::new()),
+            wait_queue: Arc::new(AsyncMutex::new(BattleRoomWaitingQueue::new())),
         }
     }
 
@@ -25,6 +25,19 @@ impl BattleRoomWaitQueueRepositoryImpl {
                 Arc::new(AsyncMutex::new(BattleRoomWaitQueueRepositoryImpl::new()));
         }
         INSTANCE.clone()
+    }
+
+    pub async fn start_dequeue_thread(&self) -> tokio::task::JoinHandle<()> {
+        println!("start_dequeue_thread()");
+        let wait_queue_clone = Arc::clone(&self.wait_queue);
+        tokio::spawn(async move {
+            loop {
+                if let items = wait_queue_clone.lock().await.dequeue_n_players(2).await {
+                    println!("Dequeued from repository: {:?}", items);
+                }
+                tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
+            }
+        })
     }
 }
 
@@ -56,6 +69,7 @@ impl BattleRoomWaitQueueRepository for BattleRoomWaitQueueRepositoryImpl {
 mod tests {
     use super::*;
     use tokio::test;
+    use tokio::time::timeout;
 
     #[tokio::test]
     async fn test_enqueue_player_id() {
@@ -106,6 +120,28 @@ mod tests {
         println!("After dequeue: {:?}", queue_after_dequeue);
         drop(queue_after_dequeue);
         drop(wait_queue_gaurd);
+    }
+
+    #[tokio::test]
+    async fn test_dequeue_thread() {
+        let repository = Arc::new(BattleRoomWaitQueueRepositoryImpl::new());
+
+        let dequeue_thread = repository.start_dequeue_thread().await;
+
+        let enqueue_threads: Vec<_> = (0..3).map(|i| {
+            let repository = Arc::clone(&repository);
+            tokio::spawn(async move {
+                for j in 1..=5 {
+                    repository.enqueue_player_id_for_wait(j + i * 5).await.unwrap();
+                    println!("Enqueued: {}", j + i * 5);
+                    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+                }
+            })
+        }).collect();
+
+        tokio::time::sleep(tokio::time::Duration::from_secs(12)).await;
+
+        dequeue_thread.abort();
     }
 
 }
