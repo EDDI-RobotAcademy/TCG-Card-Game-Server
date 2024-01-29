@@ -1,3 +1,4 @@
+use rand::prelude::SliceRandom;
 pub(crate) fn search_card_from_deck_effect(deck: &mut Vec<i32>, hand_cards: &mut Vec<i32>, value: i32, count: usize) -> Vec<i32> {
     let mut remain_deck = Vec::new();
 
@@ -27,6 +28,7 @@ pub(crate) fn search_card_from_deck_effect(deck: &mut Vec<i32>, hand_cards: &mut
 //TODO 카드의 등급 및 덱을 나타내는 방식 수정  확정후 그에 맞는 데이터 타입 수정 필요
 #[cfg(test)]
 mod tests {
+    use rand::prelude::SliceRandom;
     use crate::ugly_tests::draw_deck::test_draw_five_from_deck::draw_cards;
     use crate::ugly_tests::shuffle_deck::test_shuffle_deck::request_shuffle_deck_for_test;
     use crate::ugly_tests::search_card_in_deck::test_search_card_from_deck::search_card_from_deck_effect;
@@ -56,9 +58,8 @@ mod tests {
         player1_shuffled_deck_list=search_card_from_deck_effect(&mut player1_shuffled_deck_list,&mut hand_cards,100,1);
         println!("서치후 남은 덱 : {:?}", player1_shuffled_deck_list);
         println!("서치후 현재 핸드 : {:?}", hand_cards);
-
-
-
+        player1_shuffled_deck_list.shuffle(&mut rand::thread_rng());
+        println!("서치후 섞은 덱 : {:?}",player1_shuffled_deck_list);
 
 
     }
