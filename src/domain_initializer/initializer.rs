@@ -103,6 +103,8 @@ impl DomainInitializer {
 
         /* Business Domain List */
         self.init_account_domain();
+        self.init_account_deck_domain();
+        self.init_deck_card_domain();
 
         /* Core Domain List */
         self.init_server_socket_domain();
