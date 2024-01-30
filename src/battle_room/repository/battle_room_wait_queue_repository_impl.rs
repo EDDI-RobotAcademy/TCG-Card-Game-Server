@@ -8,6 +8,8 @@ use crate::battle_ready_monitor::repository::battle_ready_monitor_repository::Ba
 use crate::battle_ready_monitor::repository::battle_ready_monitor_repository_impl::BattleReadyMonitorRepositoryImpl;
 
 use crate::battle_room::entity::battle_room_wait_queue::BattleRoomWaitingQueue;
+use crate::battle_room::repository::battle_room_repository::BattleRoomRepository;
+use crate::battle_room::repository::battle_room_repository_impl::BattleRoomRepositoryImpl;
 use crate::battle_room::repository::battle_room_wait_queue_repository::BattleRoomWaitQueueRepository;
 
 
@@ -30,6 +32,7 @@ impl BattleRoomWaitQueueRepositoryImpl {
         INSTANCE.clone()
     }
 
+    // TODO: Thread가 배치된 위치가 다소 별로임 (Service 쪽에 배치 되는 것이 더 좋았음)
     pub async fn start_dequeue_thread(&self) -> tokio::task::JoinHandle<()> {
         println!("start_dequeue_thread()");
         let wait_queue_clone = Arc::clone(&self.wait_queue);
@@ -42,9 +45,17 @@ impl BattleRoomWaitQueueRepositoryImpl {
                     let battle_ready_monitor_repository_mutex = BattleReadyMonitorRepositoryImpl::get_instance();
                     let mut battle_ready_monitor_repository_guard = battle_ready_monitor_repository_mutex.lock().await;
 
+                    // TODO: Service에서 Repository 호출하도록 구성했어야함 (지금은 우선 진행)
                     battle_ready_monitor_repository_guard.save_battle_account_hash(items[0], BattleReadyStatus::SUCCESS).await;
                     battle_ready_monitor_repository_guard.save_battle_account_hash(items[1], BattleReadyStatus::SUCCESS).await;
                     drop(battle_ready_monitor_repository_guard);
+
+                    // TODO: 배틀룸으로 매칭된 사용자 이동 (위와 마찬가지)
+                    let battle_room_repository_mutex = BattleRoomRepositoryImpl::get_instance();
+                    let battle_room_repository_guard = battle_room_repository_mutex.lock().await;
+
+                    battle_room_repository_guard.set_player_to_battle_room(items).await.expect("전투 배치 실패");
+                    drop(battle_room_repository_guard);
                 }
 
                 tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
