@@ -1,1 +1,2 @@
 pub mod battle_match_response;
+pub mod what_is_the_room_number_response;
