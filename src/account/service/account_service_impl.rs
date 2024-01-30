@@ -17,6 +17,7 @@ use crate::account::service::request::account_session_logout_request::AccountSes
 use crate::account::service::request::account_session_login_request::AccountSessionLoginRequest;
 
 use crate::account::service::request::account_register_request::AccountRegisterRequest;
+use crate::account::service::request::account_logout_request::AccountLogoutRequest;
 use crate::account::service::request::account_delete_request::AccountDeleteRequest;
 use crate::account::service::request::account_modify_request::AccountModifyRequest;
 use crate::account::service::request::account_login_request::AccountLoginRequest;
@@ -29,6 +30,7 @@ use crate::account::service::response::account_login_response::AccountLoginRespo
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
+use crate::request_generator::session_request_generator::create_session_logout_request;
 
 
 pub struct AccountServiceImpl {
@@ -110,6 +112,19 @@ impl AccountService for AccountServiceImpl {
 
         // 로그인 실패 시 기본 응답 반환
         AccountLoginResponse::new("".to_string())
+    }
+
+    async fn account_logout(&self, account_logout_request: AccountLogoutRequest) -> AccountLogoutResponse {
+        println!("AccountServiceImpl: account_logout()");
+
+        let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
+        let account_session_id = redis_repository_guard.get(account_logout_request.get_session_id()).await;
+
+        if let Some(id) = account_session_id{
+            redis_repository_guard.del(account_logout_request.get_session_id()).await;
+            return AccountLogoutResponse::new(true)
+        }
+        return AccountLogoutResponse::new(false)
     }
 
     // TODO: Session Domain 혹은 Authentication Domain 을 별도로 구성하는 것이 더 좋을 것이다.
