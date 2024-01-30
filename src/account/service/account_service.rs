@@ -18,6 +18,7 @@ use crate::account::service::response::account_login_response::AccountLoginRespo
 pub trait AccountService {
     async fn account_register(&self, account_register_request: AccountRegisterRequest) -> AccountRegisterResponse;
     async fn account_login(&self, account_login_request: AccountLoginRequest) -> AccountLoginResponse;
+    async fn account_logout(&self, account_login_request: AccountLoginRequest) -> AccountLogoutResponse;
     async fn account_session_login(&self, account_session_login_request: AccountSessionLoginRequest) -> AccountLoginResponse;
     async fn account_session_logout(&self, account_logout_request: AccountSessionLogoutRequest) -> AccountLogoutResponse;
     async fn account_delete(&self, account_delete_request: AccountDeleteRequest) -> AccountDeleteResponse;

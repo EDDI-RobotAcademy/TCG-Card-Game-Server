@@ -12,7 +12,7 @@ use crate::client_program::service::client_program_service_impl::ClientProgramSe
 use crate::deck_card::service::deck_card_service::DeckCardService;
 use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
 use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_modify_request, create_deck_register_request};
-use crate::request_generator::account_request_generator::{create_login_request, create_register_request};
+use crate::request_generator::account_request_generator::{create_login_request, create_logout_request, create_register_request};
 use crate::request_generator::battle_ready_request_generator::create_battle_ready_request;
 use crate::request_generator::battle_match_request_generator::create_battle_match_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
@@ -63,6 +63,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = account_service.account_session_login(request).await;
                     let response_type = Some(ResponseType::ACCOUNT_LOGIN(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            4 => {
+                // Account Logout
+                if let Some(request) = create_logout_request(&data) {
+                    let account_service_mutex = AccountServiceImpl::get_instance();
+                    let mut account_service = account_service_mutex.lock().await;
+
+                    let response = account_service.account_logout(request).await;
+                    let response_type = Some(ResponseType::ACCOUNT_LOGOUT(response));
 
                     response_type
                 } else {
