@@ -109,13 +109,13 @@ impl DomainInitializer {
         let _ = BattleRoomServiceImpl::get_instance();
     }
 
-    pub async fn init_battle_matching_domain(&self) {
-        let _ = BattleRoomServiceImpl::get_instance();
-        let battle_room_repository = BattleRoomWaitQueueRepositoryImpl::get_instance();
-        let battle_room_repository_guard = battle_room_repository.lock().await;
-
-        battle_room_repository_guard.start_dequeue_thread().await;
-    }
+    // pub async fn init_battle_matching_domain(&self) {
+    //     let _ = BattleRoomServiceImpl::get_instance();
+    //     let battle_room_repository = BattleRoomWaitQueueRepositoryImpl::get_instance();
+    //     let battle_room_repository_guard = battle_room_repository.lock().await;
+    //
+    //     battle_room_repository_guard.start_dequeue_thread().await;
+    // }
 
     pub async fn init_battle_ready_monitor_domain(&self) {
         let _ = BattleReadyMonitorControllerImpl::get_instance();
@@ -158,7 +158,7 @@ impl DomainInitializer {
         self.init_battle_match_monitor_domain().await;
 
         /* Legacy */
-        self.init_battle_matching_domain().await;
+        // self.init_battle_matching_domain().await;
         self.init_battle_ready_monitor_domain().await;
 
         /* Redis In-Memory DB Domain */

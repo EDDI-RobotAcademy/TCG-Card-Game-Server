@@ -40,7 +40,6 @@ impl BattleWaitQueue {
             dequeued_players.push(guard.pop().unwrap());
             dequeued_players.push(guard.pop().unwrap());
         }
-        println!("dequeued_players: {:?}", dequeued_players);
 
         dequeued_players
     }
