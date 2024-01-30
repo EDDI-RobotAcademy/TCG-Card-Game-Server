@@ -118,9 +118,9 @@ impl AccountService for AccountServiceImpl {
         println!("AccountServiceImpl: account_logout()");
 
         let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
-        let account_unique_id = redis_repository_guard.get(account_logout_request.get_session_id()).await.unwrap();
+        let account_session_id = redis_repository_guard.get(account_logout_request.get_session_id()).await;
 
-        if let Some(id) = account_unique_id {
+        if let Some(id) = account_session_id{
             redis_repository_guard.del(account_logout_request.get_session_id()).await;
             return AccountLogoutResponse::new(true)
         }
