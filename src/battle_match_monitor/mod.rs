@@ -1,2 +1,1 @@
-mod service;
-mod repository;
+pub mod service;

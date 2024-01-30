@@ -54,7 +54,7 @@ impl BattleRoomWaitQueueRepositoryImpl {
                     let battle_room_repository_mutex = BattleRoomRepositoryImpl::get_instance();
                     let battle_room_repository_guard = battle_room_repository_mutex.lock().await;
 
-                    battle_room_repository_guard.set_player_to_battle_room(items).await.expect("전투 배치 실패");
+                    battle_room_repository_guard.set_players_to_battle_room(items).await.expect("전투 배치 실패");
                     drop(battle_room_repository_guard);
                 }
 
