@@ -1,6 +1,5 @@
 use tokio::sync::Mutex;
 use std::sync::Arc;
-use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct BattleRoomWaitingQueue {
@@ -17,6 +16,8 @@ impl BattleRoomWaitingQueue {
     pub async fn enqueue_player(&self, player_id: i32) {
         let mut guard = self.player_id_list.lock().await;
         guard.push(player_id);
+
+        println!("player_id_list: {:?}", guard);
     }
 
     pub async fn dequeue_player(&self) -> Option<i32> {
@@ -35,9 +36,11 @@ impl BattleRoomWaitingQueue {
         let mut guard = self.player_id_list.lock().await;
         let mut dequeued_players = Vec::new();
 
-        while guard.len() > count && dequeued_players.len() < count {
+        if guard.len() >= count {
+            dequeued_players.push(guard.pop().unwrap());
             dequeued_players.push(guard.pop().unwrap());
         }
+        println!("dequeued_players: {:?}", dequeued_players);
 
         dequeued_players
     }

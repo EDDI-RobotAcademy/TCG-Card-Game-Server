@@ -36,6 +36,9 @@ mod account_deck;
 mod battle_ready_monitor;
 mod match_waiting_timer;
 mod ugly_tests;
+mod deck_card;
+mod shop;
+mod account_card;
 
 #[tokio::main]
 async fn main() {
