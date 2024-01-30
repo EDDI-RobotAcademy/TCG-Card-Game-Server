@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use tokio::sync::mpsc;
 
@@ -8,9 +7,7 @@ use crate::account::service::account_service_impl::AccountServiceImpl;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
 use crate::battle_match_monitor::service::battle_match_monitor_service_impl::BattleMatchMonitorServiceImpl;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service_impl::BattleReadyAccountHashServiceImpl;
-use crate::battle_ready_monitor::controller::battle_ready_monitor_controller_impl::BattleReadyMonitorControllerImpl;
-use crate::battle_ready_monitor::service::battle_ready_monitor_service_impl::BattleReadyMonitorServiceImpl;
-use crate::battle_room::repository::battle_room_wait_queue_repository_impl::BattleRoomWaitQueueRepositoryImpl;
+
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
@@ -109,18 +106,6 @@ impl DomainInitializer {
         let _ = BattleRoomServiceImpl::get_instance();
     }
 
-    // pub async fn init_battle_matching_domain(&self) {
-    //     let _ = BattleRoomServiceImpl::get_instance();
-    //     let battle_room_repository = BattleRoomWaitQueueRepositoryImpl::get_instance();
-    //     let battle_room_repository_guard = battle_room_repository.lock().await;
-    //
-    //     battle_room_repository_guard.start_dequeue_thread().await;
-    // }
-
-    pub async fn init_battle_ready_monitor_domain(&self) {
-        let _ = BattleReadyMonitorControllerImpl::get_instance();
-    }
-
     pub async fn init_redis_in_memory_domain(&self) {
         let _ = RedisInMemoryServiceImpl::get_instance();
     }
@@ -156,10 +141,6 @@ impl DomainInitializer {
         self.init_battle_ready_account_hash_domain().await;
         self.init_battle_room_domain().await;
         self.init_battle_match_monitor_domain().await;
-
-        /* Legacy */
-        // self.init_battle_matching_domain().await;
-        self.init_battle_ready_monitor_domain().await;
 
         /* Redis In-Memory DB Domain */
         self.init_redis_in_memory_domain().await;

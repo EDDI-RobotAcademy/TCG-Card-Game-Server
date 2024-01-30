@@ -4,6 +4,5 @@ use crate::battle_room::service::response::battle_match_response::BattleMatchRes
 
 #[async_trait]
 pub trait BattleRoomService {
-    async fn enqueue_player_id_to_wait_queue(&self, battle_match_request: BattleMatchRequest) -> BattleMatchResponse;
-    // async fn enqueue_player_id_to_ready_queue(&self, account_unique_id: i32) -> BattleMatchResponse;
+    // async fn enqueue_player_id_to_wait_queue(&self, battle_match_request: BattleMatchRequest) -> BattleMatchResponse;
 }
