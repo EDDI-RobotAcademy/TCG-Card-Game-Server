@@ -18,7 +18,10 @@ use crate::request_generator::battle_match_request_generator::create_battle_matc
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
 use crate::request_generator::deck_card_request_generator::{create_deck_card_list_request, create_deck_configuration_request};
 use crate::request_generator::session_request_generator::create_session_login_request;
+use crate::request_generator::shop_request_generator::create_free_card_request;
 use crate::response_generator::response_type::ResponseType;
+use crate::shop::service::shop_service::ShopService;
+use crate::shop::service::shop_service_impl::ShopServiceImpl;
 
 
 // TODO: 이 부분도 같이 ugly 해졌는데 추후 고칠 필요 있음
@@ -233,6 +236,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = deck_card_service.deck_card_list(request).await;
                     let response_type = Some(ResponseType::DECK_CARD_LIST(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            71 => {
+                // Shop Free Card
+                if let Some(request) = create_free_card_request(&data) {
+                    let shop_service_mutex = ShopServiceImpl::get_instance();
+                    let mut shop_service = shop_service_mutex.lock().await;
+
+                    let response = shop_service.free_card(request).await;
+                    let response_type = Some(ResponseType::SHOP_FREE_CARD(response));
 
                     response_type
                 } else {
