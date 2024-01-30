@@ -39,6 +39,8 @@ mod ugly_tests;
 mod deck_card;
 mod shop;
 mod account_card;
+mod battle_wait_queue;
+mod battle_ready_account_hash;
 
 #[tokio::main]
 async fn main() {
