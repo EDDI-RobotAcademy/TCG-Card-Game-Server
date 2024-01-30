@@ -68,13 +68,8 @@ impl BattleWaitQueueService for BattleWaitQueueServiceImpl {
         println!("BattleWaitQueueServiceImpl: enqueue_player_id_to_wait_queue()");
 
         let account_unique_id = self.parse_account_unique_id(battle_wait_queue_request.get_session_id()).await;
-        // let mut redis_in_memory_repository = self.redis_in_memory_repository.lock().await;
-        // let account_unique_id_option_string = redis_in_memory_repository.get(battle_wait_queue_request.get_session_id()).await;
-        // let account_unique_id_string = account_unique_id_option_string.unwrap();
-        // let account_unique_id: i32 = account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32");
 
         let battle_wait_queue_repository = self.battle_wait_queue_repository.lock().await;
-        // let battle_wait_queue_repository = self.battle_wait_queue_repository.lock().await;
 
         let mut match_waiting_timer_repository = self.match_waiting_timer_repository.lock().await;
         match_waiting_timer_repository.set_match_waiting_timer(account_unique_id).await;
