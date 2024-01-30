@@ -10,6 +10,7 @@ use crate::battle_ready_monitor::controller::battle_ready_monitor_controller_imp
 use crate::battle_ready_monitor::service::battle_ready_monitor_service_impl::BattleReadyMonitorServiceImpl;
 use crate::battle_room::repository::battle_room_wait_queue_repository_impl::BattleRoomWaitQueueRepositoryImpl;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
 
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
@@ -90,6 +91,10 @@ impl DomainInitializer {
         transmitter_controller.inject_receiver_transmitter_channel(receiver_transmitter_channel_arc).await;
     }
 
+    pub async fn init_battle_wait_queue_domain(&self) {
+        let _ = BattleWaitQueueServiceImpl::get_instance();
+    }
+
     pub async fn init_battle_matching_domain(&self) {
         let _ = BattleRoomServiceImpl::get_instance();
         let battle_room_repository = BattleRoomWaitQueueRepositoryImpl::get_instance();
@@ -133,6 +138,9 @@ impl DomainInitializer {
             acceptor_transmitter_channel_arc.clone(), receiver_transmitter_channel_arc.clone()).await;
 
         /* Battle Matching Domain List */
+        self.init_battle_wait_queue_domain().await;
+
+        /* Legacy */
         self.init_battle_matching_domain().await;
         self.init_battle_ready_monitor_domain().await;
 
