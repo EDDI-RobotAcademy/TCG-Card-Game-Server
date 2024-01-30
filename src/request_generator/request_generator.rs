@@ -5,6 +5,8 @@ use crate::account_deck::service::account_deck_service::AccountDeckService;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service::BattleReadyAccountHashService;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service_impl::BattleReadyAccountHashServiceImpl;
+use crate::battle_room::service::battle_room_service::BattleRoomService;
+use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 
 use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueueService;
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
@@ -20,6 +22,7 @@ use crate::request_generator::client_program_request_generator::create_client_pr
 use crate::request_generator::deck_card_request_generator::{create_deck_card_list_request, create_deck_configuration_request};
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::request_generator::shop_request_generator::create_free_card_request;
+use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
 use crate::shop::service::shop_service::ShopService;
 use crate::shop::service::shop_service_impl::ShopServiceImpl;
@@ -167,6 +170,24 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = deck_card_service.deck_card_list(request).await;
                     let response_type = Some(ResponseType::BATTLE_DECK_CARD_LIST(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            15 => {
+                // Battle Match Cancel
+                None
+            },
+            16 => {
+                // WHAT_IS_THE_ROOM_NUMBER
+                if let Some(request) = create_what_is_the_room_number_request(&data) {
+                    let battle_room_service_mutex = BattleRoomServiceImpl::get_instance();
+                    let mut battle_room_service_guard = battle_room_service_mutex.lock().await;
+
+                    let response = battle_room_service_guard.what_is_the_room_number(request).await;
+                    let response_type = Some(ResponseType::WHAT_IS_THE_ROOM_NUMBER(response));
 
                     response_type
                 } else {
