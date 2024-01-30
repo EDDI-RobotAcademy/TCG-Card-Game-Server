@@ -2,6 +2,9 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
+use crate::battle_ready_account_hash::entity::battle_ready_account_hash_status::BattleReadyAccountHashStatus;
+use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repository::BattleReadyAccountHashRepository;
+use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repository_impl::BattleReadyAccountHashRepositoryImpl;
 
 use crate::battle_ready_monitor::entity::battle_ready_status::BattleReadyStatus;
 use crate::battle_ready_monitor::repository::battle_ready_monitor_repository::BattleReadyMonitorRepository;
@@ -19,21 +22,21 @@ use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepo
 
 pub struct BattleWaitQueueServiceImpl {
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
-    battle_ready_monitor_repository: Arc<AsyncMutex<BattleReadyMonitorRepositoryImpl>>,
+    battle_ready_account_hash_repository: Arc<AsyncMutex<BattleReadyAccountHashRepositoryImpl>>,
     battle_wait_queue_repository: Arc<AsyncMutex<BattleWaitQueueRepositoryImpl>>,
     match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
 }
 
 impl BattleWaitQueueServiceImpl {
     pub fn new(redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
-               battle_ready_monitor_repository: Arc<AsyncMutex<BattleReadyMonitorRepositoryImpl>>,
+               battle_ready_account_hash_repository: Arc<AsyncMutex<BattleReadyAccountHashRepositoryImpl>>,
                battle_wait_queue_repository: Arc<AsyncMutex<BattleWaitQueueRepositoryImpl>>,
                match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
             ) -> Self {
 
         BattleWaitQueueServiceImpl {
             redis_in_memory_repository,
-            battle_ready_monitor_repository,
+            battle_ready_account_hash_repository,
             battle_wait_queue_repository,
             match_waiting_timer_repository
         }
@@ -46,7 +49,7 @@ impl BattleWaitQueueServiceImpl {
                     AsyncMutex::new(
                         BattleWaitQueueServiceImpl::new(
                             RedisInMemoryRepositoryImpl::get_instance(),
-                            BattleReadyMonitorRepositoryImpl::get_instance(),
+                            BattleReadyAccountHashRepositoryImpl::get_instance(),
                             BattleWaitQueueRepositoryImpl::get_instance(),
                             MatchWaitingTimerRepositoryImpl::get_instance())));
         }
@@ -74,8 +77,8 @@ impl BattleWaitQueueService for BattleWaitQueueServiceImpl {
         let mut match_waiting_timer_repository = self.match_waiting_timer_repository.lock().await;
         match_waiting_timer_repository.set_match_waiting_timer(account_unique_id).await;
 
-        let mut battle_ready_monitor_repository = self.battle_ready_monitor_repository.lock().await;
-        battle_ready_monitor_repository.save_battle_account_hash(account_unique_id, BattleReadyStatus::WAIT).await;
+        let mut battle_ready_account_hash_repository = self.battle_ready_account_hash_repository.lock().await;
+        battle_ready_account_hash_repository.save_battle_ready_account_hash(account_unique_id, BattleReadyAccountHashStatus::WAIT).await;
 
         let response = battle_wait_queue_repository.enqueue_player_id_for_wait(account_unique_id).await;
 
@@ -85,13 +88,4 @@ impl BattleWaitQueueService for BattleWaitQueueServiceImpl {
 
         return BattleWaitQueueResponse::new(false)
     }
-
-    // async fn enqueue_player_id_to_ready_queue(&self, account_unique_id: i32) -> BattleMatchResponse {
-    //     println!("BattleRoomServiceImpl: enqueue_player_id_to_ready_queue()");
-    //
-    //     let battle_room_ready_queue_repository = self.battle_room_ready_queue_repository.lock().await;
-    //     battle_room_ready_queue_repository.enqueue_player_id_for_ready(account_unique_id).await;
-    //
-    //     BattleMatchResponse::new(false)
-    // }
 }

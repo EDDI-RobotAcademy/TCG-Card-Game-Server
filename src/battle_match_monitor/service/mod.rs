@@ -1,2 +1,2 @@
-mod battle_match_monitor_service;
-mod battle_match_monitor_service_impl;
+pub mod battle_match_monitor_service;
+pub mod battle_match_monitor_service_impl;

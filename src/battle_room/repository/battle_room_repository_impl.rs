@@ -47,7 +47,7 @@ impl BattleRoomRepositoryImpl {
 
 #[async_trait]
 impl BattleRoomRepository for BattleRoomRepositoryImpl {
-    async fn set_player_to_battle_room(&self, account_unique_id_list: Vec<i32>) -> Result<bool, Box<dyn Error>> {
+    async fn set_players_to_battle_room(&self, account_unique_id_list: Vec<i32>) -> Result<bool, Box<dyn Error>> {
         println!("BattleRoomRepositoryImpl: set_player_to_battle_room() -> {:?}", account_unique_id_list);
 
         let mut battle_room_list_guard = self.battle_room_list.lock().await;
