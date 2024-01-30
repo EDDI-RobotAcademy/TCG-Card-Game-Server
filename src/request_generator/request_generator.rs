@@ -5,8 +5,6 @@ use crate::account_deck::service::account_deck_service::AccountDeckService;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service::BattleReadyAccountHashService;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service_impl::BattleReadyAccountHashServiceImpl;
-use crate::battle_ready_monitor::service::battle_ready_monitor_service::BattleReadyMonitorService;
-use crate::battle_ready_monitor::service::battle_ready_monitor_service_impl::BattleReadyMonitorServiceImpl;
 
 use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueueService;
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;

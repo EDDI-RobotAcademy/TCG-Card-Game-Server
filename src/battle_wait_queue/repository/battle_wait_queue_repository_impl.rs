@@ -4,7 +4,6 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 
-use crate::battle_ready_monitor::repository::battle_ready_monitor_repository::BattleReadyMonitorRepository;
 use crate::battle_room::repository::battle_room_repository::BattleRoomRepository;
 use crate::battle_room::repository::battle_room_wait_queue_repository::BattleRoomWaitQueueRepository;
 use crate::battle_wait_queue::entity::battle_wait_queue::BattleWaitQueue;

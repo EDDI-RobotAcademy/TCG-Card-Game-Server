@@ -8,7 +8,6 @@ use crate::account_deck::service::response::account_deck_list_response::AccountD
 use crate::account_deck::service::response::account_deck_modify_response::AccountDeckModifyResponse;
 use crate::account_deck::service::response::account_deck_register_response::AccountDeckRegisterResponse;
 use crate::battle_ready_account_hash::service::response::battle_ready_account_hash_response::BattleReadyAccountHashResponse;
-use crate::battle_ready_monitor::service::response::battle_ready_response::BattleReadyResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::deck_card::service::response::deck_card_list_response::DeckCardListResponse;
