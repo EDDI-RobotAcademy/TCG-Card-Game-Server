@@ -25,6 +25,10 @@ impl BattleWaitQueueRepositoryImpl {
         }
     }
 
+    pub fn get_battle_wait_queue(&self) -> Arc<AsyncMutex<BattleWaitQueue>> {
+        Arc::clone(&self.battle_wait_queue)
+    }
+
     pub fn get_instance() -> Arc<AsyncMutex<BattleWaitQueueRepositoryImpl>> {
         lazy_static! {
             static ref INSTANCE: Arc<AsyncMutex<BattleWaitQueueRepositoryImpl>> =
