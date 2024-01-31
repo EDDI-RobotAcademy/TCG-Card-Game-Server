@@ -1,0 +1,2 @@
+pub mod game_lost_zone_repository;
+pub mod game_lost_zone_repository_impl;
