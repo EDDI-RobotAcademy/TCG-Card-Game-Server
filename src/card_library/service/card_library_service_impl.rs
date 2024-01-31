@@ -167,5 +167,11 @@ mod tests {
         let test_card_name = card_library_repository.search_name_by_card_id(test_card_id).await;
 
         println!("{:?}", test_card_name); // "넘쳐흐르는 사기"
+
+        let mythical_grade_index = 5;
+        let mythical_card_list = card_library_repository.get_card_list_by_grade_index(mythical_grade_index).await;
+
+        println!("{:?}", mythical_card_list)
+        // 19, 22, 23, 45, 58, 108 ...
     }
 }
