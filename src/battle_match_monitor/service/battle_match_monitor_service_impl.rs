@@ -56,8 +56,8 @@ impl BattleMatchMonitorService for BattleMatchMonitorServiceImpl {
             if items.len() == 2 {
                 let mut battle_ready_account_hash_repository_guard = self.battle_ready_account_hash_repository.lock().await;
 
-                battle_ready_account_hash_repository_guard.save_battle_ready_account_hash(items[0], BattleReadyAccountHashStatus::SUCCESS).await;
-                battle_ready_account_hash_repository_guard.save_battle_ready_account_hash(items[1], BattleReadyAccountHashStatus::SUCCESS).await;
+                battle_ready_account_hash_repository_guard.save_battle_ready_account_hash(items[0], BattleReadyAccountHashStatus::PREPARE).await;
+                battle_ready_account_hash_repository_guard.save_battle_ready_account_hash(items[1], BattleReadyAccountHashStatus::PREPARE).await;
                 drop(battle_ready_account_hash_repository_guard);
 
                 let battle_room_repository_guard = self.battle_room_repository.lock().await;

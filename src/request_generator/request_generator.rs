@@ -18,6 +18,7 @@ use crate::request_generator::account_deck_request_generator::{create_deck_list_
 use crate::request_generator::account_request_generator::{create_account_delete_request, create_account_modify_request, create_login_request, create_logout_request, create_register_request};
 use crate::request_generator::battle_ready_account_hash_request_generator::create_battle_ready_account_hash_request;
 use crate::request_generator::battle_wait_queue_request_generator::create_battle_wait_queue_request;
+use crate::request_generator::check_battle_prepare_request_generator::create_check_battle_prepare_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
 use crate::request_generator::deck_card_request_generator::{create_deck_card_list_request, create_deck_configuration_request};
 use crate::request_generator::session_request_generator::create_session_login_request;
@@ -188,6 +189,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = battle_room_service_guard.what_is_the_room_number(request).await;
                     let response_type = Some(ResponseType::WHAT_IS_THE_ROOM_NUMBER(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            17 => {
+                // Check Battle Prepare (CHECK_BATTLE_PREPARE)
+                if let Some(request) = create_check_battle_prepare_request(&data) {
+                    let battle_ready_account_hash_service_mutex = BattleReadyAccountHashServiceImpl::get_instance();
+                    let mut battle_ready_account_hash_service_guard = battle_ready_account_hash_service_mutex.lock().await;
+
+                    let response = battle_ready_account_hash_service_guard.check_prepare_for_battle(request).await;
+                    let response_type = Some(ResponseType::CHECK_BATTLE_PREPARE(response));
 
                     response_type
                 } else {

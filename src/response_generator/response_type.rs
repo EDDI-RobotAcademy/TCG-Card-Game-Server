@@ -8,6 +8,7 @@ use crate::account_deck::service::response::account_deck_list_response::AccountD
 use crate::account_deck::service::response::account_deck_modify_response::AccountDeckModifyResponse;
 use crate::account_deck::service::response::account_deck_register_response::AccountDeckRegisterResponse;
 use crate::battle_ready_account_hash::service::response::battle_ready_account_hash_response::BattleReadyAccountHashResponse;
+use crate::battle_ready_account_hash::service::response::check_battle_prepare_response::CheckBattlePrepareResponse;
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
@@ -29,6 +30,7 @@ pub enum ResponseType {
     ACCOUNT_DECK_MODIFY(AccountDeckModifyResponse),
 
     WHAT_IS_THE_ROOM_NUMBER(WhatIsTheRoomNumberResponse),
+    CHECK_BATTLE_PREPARE(CheckBattlePrepareResponse),
 
     DECK_CARD_CONFIGURATION(DeckConfigurationResponse),
     DECK_CARD_LIST(DeckCardListResponse),
