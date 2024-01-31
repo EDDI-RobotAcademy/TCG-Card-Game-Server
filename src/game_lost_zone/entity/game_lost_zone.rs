@@ -38,7 +38,7 @@ mod tests {
 
         // LostZoneCardList 확인
         let card_list = game_lost_zone.get_lost_zone_card_list();
-        let cards = card_list.get_lost_zone_cards();
+        let cards = card_list.get_lost_zone_card_list();
         assert_eq!(cards.len(), 2);
         assert_eq!(cards[0].get_card(), 42);
         assert_eq!(cards[1].get_card(), 10);

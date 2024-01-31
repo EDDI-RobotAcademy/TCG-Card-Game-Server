@@ -16,7 +16,7 @@ impl LostZoneCardList {
         self.lost_zone_card_list.push(card);
     }
 
-    pub fn get_lost_zone_cards(&self) -> &Vec<LostZoneCard> {
+    pub fn get_lost_zone_card_list(&self) -> &Vec<LostZoneCard> {
         &self.lost_zone_card_list
     }
 }
@@ -34,7 +34,7 @@ mod tests {
         lost_zone_card_list.add_lost_zone_card(card1);
         lost_zone_card_list.add_lost_zone_card(card2);
 
-        let cards = lost_zone_card_list.get_lost_zone_cards();
+        let cards = lost_zone_card_list.get_lost_zone_card_list();
         assert_eq!(cards.len(), 2);
         assert_eq!(cards[0].get_card(), 42);
         assert_eq!(cards[1].get_card(), 10);
