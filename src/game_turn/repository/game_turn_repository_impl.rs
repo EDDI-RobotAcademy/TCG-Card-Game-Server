@@ -42,6 +42,19 @@ impl GameTurnRepository for GameTurnRepositoryImpl {
 
         true
     }
+
+    fn next_game_turn_object(&mut self, account_unique_id: i32) -> i32 {
+        println!("GameTurnRepositoryImpl: next_game_turn_object()");
+
+        if let Some(index) = self.game_turn_map.get_index_of(&account_unique_id) {
+            if let Some((_key, game_turn)) = self.game_turn_map.get_index_mut(index) {
+                game_turn.next_turn();
+                return game_turn.get_turn();
+            }
+        }
+
+        -1
+    }
 }
 
 #[cfg(test)]
@@ -167,5 +180,31 @@ mod cfg_test {
 
         task_handle1.await.unwrap();
         task_handle2.await.unwrap();
+    }
+
+    #[test]
+    async fn test_next_game_turn_object() {
+        let mut repository = GameTurnRepositoryImpl::new();
+        let account_unique_id = 123;
+
+        repository.create_game_turn_object(account_unique_id);
+
+        let result = repository.next_game_turn_object(account_unique_id);
+
+        assert_eq!(result, 2);
+
+        let result = repository.next_game_turn_object(account_unique_id);
+
+        assert_eq!(result, 3);
+    }
+
+    #[test]
+    async fn test_next_game_turn_object_not_found() {
+        let mut repository = GameTurnRepositoryImpl::new();
+        let account_unique_id = 456;
+
+        let result = repository.next_game_turn_object(account_unique_id);
+
+        assert_eq!(result, -1);
     }
 }
