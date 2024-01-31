@@ -1,20 +1,28 @@
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::Arc;
 use std::time::Duration;
-// use crate::battle_ready_monitor::controller::battle_ready_monitor_controller::BattleReadyMonitorController;
-use crate::battle_ready_monitor::controller::battle_ready_monitor_controller_impl::BattleReadyMonitorControllerImpl;
+
+use crate::battle_match_monitor::service::battle_match_monitor_service::BattleMatchMonitorService;
+use crate::battle_match_monitor::service::battle_match_monitor_service_impl::BattleMatchMonitorServiceImpl;
+
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
 use crate::client_socket_accept::controller::client_socket_accept_controller_impl::ClientSocketAcceptControllerImpl;
+
 use crate::common::env::env_detector::EnvDetector;
+
 use crate::common::ip_address::local_ip_finder::IPAddress;
+
 use crate::domain_initializer::initializer::DomainInitializer;
+
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
 use crate::receiver::controller::server_receiver_controller_impl::ServerReceiverControllerImpl;
+
 use crate::server_socket::service::server_socket_service::ServerSocketService;
 use crate::server_socket::service::server_socket_service_impl::ServerSocketServiceImpl;
+
 use crate::thread_worker::service::thread_worker_service::ThreadWorkerServiceTrait;
 use crate::thread_worker::service::thread_worker_service_impl::ThreadWorkerServiceImpl;
+
 use crate::transmitter::controller::transmitter_controller::TransmitterController;
 use crate::transmitter::controller::transmitter_controller_impl::TransmitterControllerImpl;
 
@@ -33,12 +41,14 @@ mod redis;
 mod client_program;
 mod battle_room;
 mod account_deck;
-mod battle_ready_monitor;
 mod match_waiting_timer;
 mod ugly_tests;
 mod deck_card;
 mod shop;
 mod account_card;
+mod battle_wait_queue;
+mod battle_ready_account_hash;
+mod battle_match_monitor;
 
 #[tokio::main]
 async fn main() {
@@ -105,18 +115,17 @@ async fn main() {
     thread_worker_service_guard.save_async_thread_worker("Transmitter", Box::new(receiver_function.clone()));
     thread_worker_service_guard.start_thread_worker("Transmitter").await;
 
-    // TODO: 현재 상황에서 굳이 필요한가 ? (나중에 성능 문제로 필요하면 생각하자)
-    // let battle_ready_monitor_function = || -> Pin<Box<dyn Future<Output = ()> + Send>> {
-    //     Box::pin(async {
-    //         let battle_ready_monitor_controller_mutex = BattleReadyMonitorControllerImpl::get_instance();
-    //         let mut battle_ready_monitor_guard = battle_ready_monitor_controller_mutex.lock().await;
-    //         println!("Battle Ready Monitor instance found. Executing transmit_to_client().");
-    //         let _ = battle_ready_monitor_guard.start_monitor_for_battle_match().await;
-    //     })
-    // };
-    //
-    // thread_worker_service_guard.save_async_thread_worker("BattleReadyMonitor", Box::new(battle_ready_monitor_function.clone()));
-    // thread_worker_service_guard.start_thread_worker("BattleReadyMonitor").await;
+    let battle_match_monitor_function = || -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        Box::pin(async {
+            let battle_match_monitor_service_mutex = BattleMatchMonitorServiceImpl::get_instance();
+            let mut battle_match_monitor_service_guard = battle_match_monitor_service_mutex.lock().await;
+            println!("Battle Match Monitor instance found. Executing check_battle_match().");
+            let _ = battle_match_monitor_service_guard.check_battle_match().await;
+        })
+    };
+
+    thread_worker_service_guard.save_async_thread_worker("BattleMatchMonitor", Box::new(battle_match_monitor_function.clone()));
+    thread_worker_service_guard.start_thread_worker("BattleMatchMonitor").await;
 
     loop {
         tokio::time::sleep(Duration::from_secs(10)).await;
