@@ -1,11 +1,9 @@
 use std::sync::Arc;
 use async_trait::async_trait;
-use indexmap::IndexMap;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
 
-use crate::game_turn::entity::game_turn::GameTurn;
 use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
 
 use crate::game_turn::service::game_turn_service::GameTurnService;
@@ -13,6 +11,8 @@ use crate::game_turn::service::request::game_turn_request::GameTurnRequest;
 use crate::game_turn::service::response::game_turn_response::GameTurnResponse;
 
 use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
+use crate::game_turn::service::request::next_game_turn_request::NextGameTurnRequest;
+use crate::game_turn::service::response::next_game_turn_response::NextGameTurnResponse;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
@@ -54,7 +54,7 @@ impl GameTurnServiceImpl {
 #[async_trait]
 impl GameTurnService for GameTurnServiceImpl {
     async fn create_game_turn_object(&mut self, game_turn_request: GameTurnRequest) -> GameTurnResponse {
-        println!("GameTurnServiceImpl: create_game_turn_object");
+        println!("GameTurnServiceImpl: create_game_turn_object()");
 
         let session_id = game_turn_request.get_session_id();
         let account_unique_id = self.get_account_unique_id(session_id).await;
@@ -64,6 +64,19 @@ impl GameTurnService for GameTurnServiceImpl {
         let result = game_turn_repository_guard.create_game_turn_object(account_unique_id);
 
         GameTurnResponse::new(result)
+    }
+
+    async fn next_game_turn_object(&mut self, game_turn_request: NextGameTurnRequest) -> NextGameTurnResponse {
+        println!("GameTurnServiceImpl: next_game_turn_object()");
+
+        let session_id = game_turn_request.get_session_id();
+        let account_unique_id = self.get_account_unique_id(session_id).await;
+
+        let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
+
+        let result = game_turn_repository_guard.next_game_turn_object(account_unique_id);
+
+        NextGameTurnResponse::new(result)
     }
 }
 
