@@ -36,13 +36,27 @@ impl DeckCardRepositoryImpl {
         }
         INSTANCE.clone()
     }
+    async fn check_deck_cards_count(&self,deck: &Vec<i32>) -> Result<String, String> {
+        match deck.len() {
+            40 => {
+
+
+                Ok("와우! 정확히 40장입니다!!!!.".to_string())
+            }
+            length => {
+                // 40장이 아닌 경우
+                let error_string = format!("덱에 총 {}장이 있습니다. 정확히 40장을 맞춰주세요!", length);
+                println!("{}", error_string);
+                Err(error_string)
+            }
+        }
+    }
 }
 
 #[async_trait]
 impl DeckCardRepository for DeckCardRepositoryImpl {
     async fn save(&self, deck: DeckConfigurationRequest) -> Result<String, String> {
         use crate::deck_card::entity::deck_card::deck_cards::dsl::*;
-
         println!("DeckCardRepositoryImpl: save()");
 
         // TODO: 카드의 등급 제한을 넘기지 않도록 덱을 구성했는지 검사하는 로직 추가해야 함
@@ -50,17 +64,19 @@ impl DeckCardRepository for DeckCardRepositoryImpl {
         let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
         let mut connection = MysqlConnection::establish(&database_url)
             .expect("Failed to establish a new connection");
+        let result = self.check_deck_cards_count(&deck.card_id_list_of_deck().clone()).await.unwrap();
+        println!("{:?}",result);
 
-        // 받은 카드 리스트가 총 40장인지 검사
-        let bare_card_id_list_to_count_total = deck.card_id_list_of_deck().clone();
-        if bare_card_id_list_to_count_total.len() != 40 {
-            let length = bare_card_id_list_to_count_total.len();
-            let error_string = format!("덱에 총 {}장이 있습니다. 정확히 40장을 맞춰주세요!", length);
-            println!("{}", error_string);
-            return Err(error_string)
-        }
+        //받은 카드 리스트가 총 40장인지 검사
+        // let bare_card_id_list_to_count_total = deck.card_id_list_of_deck().clone();
+        // if bare_card_id_list_to_count_total.len() != 40 {
+        //     let length = bare_card_id_list_to_count_total.len();
+        //     let error_string = format!("덱에 총 {}장이 있습니다. 정확히 40장을 맞춰주세요!", length);
+        //     println!("{}", error_string);
+        //     return Err(error_string)
+        // }
 
-        println!("{:?}", bare_card_id_list_to_count_total.len());
+        // println!("{:?}", bare_card_id_list_to_count_total.len());
 
         // 같은 카드가 3장 초과인지 검사 및 {카드 ID: 카드 개수} map 형성
         let mut bare_card_id_list_for_loop = deck.card_id_list_of_deck().clone();
@@ -126,3 +142,4 @@ impl DeckCardRepository for DeckCardRepositoryImpl {
         Ok(Option::from(card_list))
     }
 }
+
