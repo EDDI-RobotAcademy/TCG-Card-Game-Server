@@ -52,6 +52,7 @@ mod battle_match_monitor;
 mod game_turn;
 mod game_lost_zone;
 mod game_deck;
+mod game_field_energy;
 
 #[tokio::main]
 async fn main() {
