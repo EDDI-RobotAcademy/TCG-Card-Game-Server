@@ -4,6 +4,7 @@ use tokio::sync::Mutex;
 use tokio::sync::mpsc;
 
 use crate::account::service::account_service_impl::AccountServiceImpl;
+use crate::account_card::service::account_card_service_impl::AccountCardServiceImpl;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
 use crate::battle_match_monitor::service::battle_match_monitor_service_impl::BattleMatchMonitorServiceImpl;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service_impl::BattleReadyAccountHashServiceImpl;
@@ -52,6 +53,8 @@ impl DomainInitializer {
     pub fn init_account_domain(&self) {
         let _ = AccountServiceImpl::get_instance();
     }
+
+    pub fn init_account_card_domain(&self) { let _ = AccountCardServiceImpl::get_instance(); }
 
     pub fn init_account_deck_domain(&self) { let _ = AccountDeckServiceImpl::get_instance(); }
 
@@ -123,6 +126,7 @@ impl DomainInitializer {
 
         /* Business Domain List */
         self.init_account_domain();
+        self.init_account_card_domain();
         self.init_account_deck_domain();
         self.init_deck_card_domain();
 
