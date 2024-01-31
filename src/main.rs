@@ -51,6 +51,7 @@ mod battle_ready_account_hash;
 mod battle_match_monitor;
 mod game_turn;
 mod game_lost_zone;
+mod game_deck;
 
 #[tokio::main]
 async fn main() {
