@@ -5,15 +5,15 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 
 use crate::game_field_energy::entity::game_field_energy::GameFieldEnergy;
-use crate::game_field_energy::repository::field_energy_repository::FieldEnergyRepository;
+use crate::game_field_energy::repository::game_field_energy_repository::GameFieldEnergyRepository;
 
-pub struct FieldEnergyRepositoryImpl {
+pub struct GameFieldEnergyRepositoryImpl {
     game_field_energy_map: IndexMap<i32, GameFieldEnergy>,
 }
 
-impl FieldEnergyRepositoryImpl {
+impl GameFieldEnergyRepositoryImpl {
     pub fn new() -> Self {
-        FieldEnergyRepositoryImpl {
+        GameFieldEnergyRepositoryImpl {
             game_field_energy_map: IndexMap::new(),
         }
     }
@@ -22,18 +22,18 @@ impl FieldEnergyRepositoryImpl {
         &mut self.game_field_energy_map
     }
 
-    pub fn get_instance() -> Arc<AsyncMutex<FieldEnergyRepositoryImpl>> {
+    pub fn get_instance() -> Arc<AsyncMutex<GameFieldEnergyRepositoryImpl>> {
         lazy_static! {
-            static ref INSTANCE: Arc<AsyncMutex<FieldEnergyRepositoryImpl>> =
+            static ref INSTANCE: Arc<AsyncMutex<GameFieldEnergyRepositoryImpl>> =
                 Arc::new(
                     AsyncMutex::new(
-                        FieldEnergyRepositoryImpl::new()));
+                        GameFieldEnergyRepositoryImpl::new()));
         }
         INSTANCE.clone()
     }
 }
 
-impl FieldEnergyRepository for FieldEnergyRepositoryImpl {
+impl GameFieldEnergyRepository for GameFieldEnergyRepositoryImpl {
     fn create_field_energy_object(&mut self, account_unique_id: i32) -> bool {
         println!("FieldEnergyRepositoryImpl: create_field_energy_object()");
 
@@ -51,7 +51,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_create_field_energy_object() {
-        let repository = FieldEnergyRepositoryImpl::new();
+        let repository = GameFieldEnergyRepositoryImpl::new();
         let instance = Arc::new(AsyncMutex::new(repository));
 
         let mut guard = instance.lock().await;
@@ -75,8 +75,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_instance() {
-        let instance1 = FieldEnergyRepositoryImpl::get_instance();
-        let instance2 = FieldEnergyRepositoryImpl::get_instance();
+        let instance1 = GameFieldEnergyRepositoryImpl::get_instance();
+        let instance2 = GameFieldEnergyRepositoryImpl::get_instance();
 
         assert!(Arc::ptr_eq(&instance1, &instance2));
     }

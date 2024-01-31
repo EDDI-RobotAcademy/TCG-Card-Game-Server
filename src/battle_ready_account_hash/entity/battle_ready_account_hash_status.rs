@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub enum BattleReadyAccountHashStatus {
     WAIT,
     PREPARE,
+    PREPARE_PROCESS,
     SUCCESS,
     FAIL,
 }
