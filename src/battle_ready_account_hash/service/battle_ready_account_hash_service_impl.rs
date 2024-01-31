@@ -86,10 +86,13 @@ impl BattleReadyAccountHashService for BattleReadyAccountHashServiceImpl {
         let mut battle_ready_account_hash_repository_mutex = self.battle_ready_account_hash_repository.lock().await;
         let response = battle_ready_account_hash_repository_mutex.get_battle_ready_account_hash_status(account_unique_id).await;
 
-        // 확보한 상태값에 따라 SUCCESS, WAIT, FAIL 정보 응답
+        // 확보한 상태값에 따라 SUCCESS, PREPARE, WAIT, FAIL 정보 응답
         return match response {
             BattleReadyAccountHashStatus::SUCCESS => {
                 BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::SUCCESS)
+            },
+            BattleReadyAccountHashStatus::PREPARE => {
+                BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::PREPARE)
             },
             BattleReadyAccountHashStatus::WAIT => {
                 BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::WAIT)
