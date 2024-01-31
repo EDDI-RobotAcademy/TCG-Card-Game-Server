@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use crate::battle_match_monitor::service::battle_match_monitor_service::BattleMatchMonitorService;
 use crate::battle_match_monitor::service::battle_match_monitor_service_impl::BattleMatchMonitorServiceImpl;
+
 use crate::battle_prepare_task::service::battle_prepare_task_service::BattlePrepareTaskService;
 use crate::battle_prepare_task::service::battle_prepare_task_service_impl::BattlePrepareTaskServiceImpl;
 
@@ -60,6 +61,7 @@ mod game_field_unit;
 mod game_hand;
 mod game_main_character;
 mod battle_prepare_task;
+mod card_library;
 
 #[tokio::main]
 async fn main() {

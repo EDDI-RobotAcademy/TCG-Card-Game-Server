@@ -72,13 +72,16 @@ impl DeckCardService for DeckCardServiceImpl {
 mod test {
     use super::*;
     use tokio::test;
+    use crate::deck_card::repository::deck_card_repository_impl::DeckCardRepositoryImpl;
+
+    use crate::deck_card;
 
     #[tokio::test]
     async fn test_deck_config_save() {
         let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
         let deck_card_service_mutex_guard = deck_card_service_mutex.lock().await;
 
-        let deck_id = 8;
+        let deck_id = 11;
 
         // let card_id_list_very_long = [1, 1, 1, 2, 2, 3, 3, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7,
         //     8, 8, 9, 9, 9, 11, 11, 11, 12, 12, 12, 13, 13, 13, 14, 14, 14, 15, 15, 15, 16, 16, 16, 17, 17, 17];
