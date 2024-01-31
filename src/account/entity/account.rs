@@ -8,7 +8,6 @@ pub struct Account {
     pub id: i32,
     pub user_id: String,
     pub password: String,
-    pub gold : i32,
 }
 
 table! {
@@ -16,7 +15,6 @@ table! {
         id -> Integer,
         user_id -> Text,
         password -> Text,
-        gold -> Integer,
     }
 }
 
@@ -29,7 +27,6 @@ impl Account {
             id: 0,
             user_id: user_id.to_string(),
             password: hashed_password,
-            gold: 100,
         })
     }
 
@@ -43,8 +40,6 @@ impl Account {
     pub fn password(&self) -> &str {
         &self.password
     }
-
-    pub fn gold(&self) -> i32 { self.gold }
 }
 
 impl std::fmt::Display for Account {
