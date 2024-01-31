@@ -1,5 +1,3 @@
-use crate::game_deck::entity::deck_card::DeckCard;
-
 #[derive(Debug)]
 pub struct FieldUnit {
     field_unit_card: i32,
