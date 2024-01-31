@@ -53,6 +53,7 @@ mod game_turn;
 mod game_lost_zone;
 mod game_deck;
 mod game_field_energy;
+mod game_tomb;
 
 #[tokio::main]
 async fn main() {
