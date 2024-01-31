@@ -18,7 +18,7 @@ impl GameLostZoneRepositoryImpl {
         }
     }
 
-    pub(crate) fn get_game_turn_map(&mut self) -> &mut IndexMap<i32, GameLostZone> {
+    pub(crate) fn get_game_lost_zone_map(&mut self) -> &mut IndexMap<i32, GameLostZone> {
         &mut self.game_lost_zone_map
     }
 
@@ -56,7 +56,7 @@ mod tests {
 
         assert_eq!(repository_guard.create_game_lost_zone_object(1), true);
 
-        let game_lost_zone_map = repository_guard.get_game_turn_map();
+        let game_lost_zone_map = repository_guard.get_game_lost_zone_map();
         assert_eq!(game_lost_zone_map.len(), 1);
 
         let lock_result = game_lost_zone_map.get(&1);
