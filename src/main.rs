@@ -49,6 +49,7 @@ mod account_card;
 mod battle_wait_queue;
 mod battle_ready_account_hash;
 mod battle_match_monitor;
+mod game_turn;
 
 #[tokio::main]
 async fn main() {
