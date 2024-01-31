@@ -56,6 +56,7 @@ mod game_field_energy;
 mod game_tomb;
 mod game_field_unit;
 mod game_hand;
+mod game_main_character;
 
 #[tokio::main]
 async fn main() {
