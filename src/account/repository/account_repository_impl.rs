@@ -79,10 +79,10 @@ impl AccountRepository for AccountRepositoryImpl {
         let mut connection = MysqlConnection::establish(&database_url)
             .expect("Failed to establish a new connection");
 
-        let select_clause = accounts.select((columns::id, columns::user_id, columns::password));
+        let select_clause = accounts.select((columns::id, columns::user_id, columns::password, columns::gold));
         let where_clause = FilterDsl::filter(accounts, columns::user_id.eq(user_id));
         let found_accounts = where_clause
-            .select((columns::id, columns::user_id, columns::password))
+            .select((columns::id, columns::user_id, columns::password, columns::gold))
             .load::<Account>(&mut connection)?;
 
         let found_account = found_accounts
