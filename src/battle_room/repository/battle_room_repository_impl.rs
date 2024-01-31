@@ -1,4 +1,6 @@
+use std::collections::HashMap;
 use std::error::Error;
+use std::ops::Deref;
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
@@ -11,13 +13,15 @@ use crate::battle_room::repository::battle_room_repository::BattleRoomRepository
 pub struct BattleRoomRepositoryImpl {
     battle_room_count: Arc<AsyncMutex<i32>>,
     battle_room_list: Arc<AsyncMutex<Vec<BattleRoom>>>,
+    battle_room_account_hash: Arc<AsyncMutex<HashMap<i32, i32>>>
 }
 
 impl BattleRoomRepositoryImpl {
     pub fn new() -> Self {
         BattleRoomRepositoryImpl {
             battle_room_list: Arc::new(AsyncMutex::new(Vec::new())),
-            battle_room_count: Arc::new(AsyncMutex::new(0))
+            battle_room_count: Arc::new(AsyncMutex::new(0)),
+            battle_room_account_hash: Arc::new(AsyncMutex::new(HashMap::new()))
         }
     }
 
@@ -47,7 +51,7 @@ impl BattleRoomRepositoryImpl {
 
 #[async_trait]
 impl BattleRoomRepository for BattleRoomRepositoryImpl {
-    async fn set_player_to_battle_room(&self, account_unique_id_list: Vec<i32>) -> Result<bool, Box<dyn Error>> {
+    async fn set_players_to_battle_room(&self, account_unique_id_list: Vec<i32>) -> Result<bool, Box<dyn Error>> {
         println!("BattleRoomRepositoryImpl: set_player_to_battle_room() -> {:?}", account_unique_id_list);
 
         let mut battle_room_list_guard = self.battle_room_list.lock().await;
@@ -58,9 +62,24 @@ impl BattleRoomRepository for BattleRoomRepositoryImpl {
         battle_room.add_player(account_unique_id_list[1]);
 
         battle_room_list_guard.push(BattleRoom::new());
+
+        let mut battle_room_account_hash_guard = self.battle_room_account_hash.lock().await;
+        battle_room_account_hash_guard.insert(account_unique_id_list[0], battle_room_count);
+        battle_room_account_hash_guard.insert(account_unique_id_list[1], battle_room_count);
+
         battle_room_count += 1;
 
         Ok(true)
+    }
+
+    async fn what_is_the_room_number(&self, account_unique_id: i32) -> Option<i32> {
+        println!("BattleRoomRepositoryImpl: what_is_the_room_number()");
+
+        let battle_room_account_hash_guard = self.battle_room_account_hash.lock().await;
+        match battle_room_account_hash_guard.get(&account_unique_id) {
+            Some(&room_number) => Some(room_number),
+            None => None,
+        }
     }
 }
 
@@ -77,7 +96,7 @@ mod tests {
         account_vector.push(1);
         account_vector.push(2);
 
-        let result = battle_room_repository.set_player_to_battle_room(account_vector).await;
+        let result = battle_room_repository.set_players_to_battle_room(account_vector).await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), true);
 
@@ -85,7 +104,7 @@ mod tests {
         other_account_vector.push(3);
         other_account_vector.push(4);
 
-        let result = battle_room_repository.set_player_to_battle_room(other_account_vector).await;
+        let result = battle_room_repository.set_players_to_battle_room(other_account_vector).await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), true);
     }

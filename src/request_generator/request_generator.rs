@@ -3,22 +3,26 @@ use crate::account::service::account_service::AccountService;
 use crate::account::service::account_service_impl::AccountServiceImpl;
 use crate::account_deck::service::account_deck_service::AccountDeckService;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
-use crate::battle_ready_monitor::service::battle_ready_monitor_service::BattleReadyMonitorService;
-use crate::battle_ready_monitor::service::battle_ready_monitor_service_impl::BattleReadyMonitorServiceImpl;
+use crate::battle_ready_account_hash::service::battle_ready_account_hash_service::BattleReadyAccountHashService;
+use crate::battle_ready_account_hash::service::battle_ready_account_hash_service_impl::BattleReadyAccountHashServiceImpl;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+
+use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueueService;
+use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
 use crate::deck_card::service::deck_card_service::DeckCardService;
 use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
 use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_modify_request, create_deck_register_request};
 use crate::request_generator::account_request_generator::{create_account_delete_request, create_account_modify_request, create_login_request, create_logout_request, create_register_request};
-use crate::request_generator::battle_ready_request_generator::create_battle_ready_request;
-use crate::request_generator::battle_match_request_generator::create_battle_match_request;
+use crate::request_generator::battle_ready_account_hash_request_generator::create_battle_ready_account_hash_request;
+use crate::request_generator::battle_wait_queue_request_generator::create_battle_wait_queue_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
 use crate::request_generator::deck_card_request_generator::{create_deck_card_list_request, create_deck_configuration_request};
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::request_generator::shop_request_generator::create_free_card_request;
+use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
 use crate::shop::service::shop_service::ShopService;
 use crate::shop::service::shop_service_impl::ShopServiceImpl;
@@ -129,14 +133,14 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             12 => {
-                // Battle Match
-                if let Some(request) = create_battle_match_request(&data) {
+                // Battle Wait Queue for Match
+                if let Some(request) = create_battle_wait_queue_request(&data) {
                     println!("request generator: battle match request protocol");
-                    let battle_room_service_mutex = BattleRoomServiceImpl::get_instance();
-                    let mut battle_room_service = battle_room_service_mutex.lock().await;
+                    let battle_wait_queue_service_mutex = BattleWaitQueueServiceImpl::get_instance();
+                    let mut battle_wait_queue_service = battle_wait_queue_service_mutex.lock().await;
 
-                    let response = battle_room_service.enqueue_player_id_to_wait_queue(request).await;
-                    let response_type = Some(ResponseType::BATTLE_MATCH(response));
+                    let response = battle_wait_queue_service.enqueue_player_id_to_wait_queue(request).await;
+                    let response_type = Some(ResponseType::BATTLE_WAIT_QUEUE_FOR_MATCH(response));
                     println!("response_type: {:?}", response_type);
 
                     response_type
@@ -146,11 +150,11 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             },
             13 => {
                 // Is Ready For Battle
-                if let Some(request) = create_battle_ready_request(&data) {
-                    let battle_ready_service_mutex = BattleReadyMonitorServiceImpl::get_instance();
-                    let mut battle_ready_service = battle_ready_service_mutex.lock().await;
+                if let Some(request) = create_battle_ready_account_hash_request(&data) {
+                    let battle_ready_account_hash_service_mutex = BattleReadyAccountHashServiceImpl::get_instance();
+                    let mut battle_ready_account_hash_service_guard = battle_ready_account_hash_service_mutex.lock().await;
 
-                    let response = battle_ready_service.check_ready_for_battle(request).await;
+                    let response = battle_ready_account_hash_service_guard.check_ready_for_battle(request).await;
                     let response_type = Some(ResponseType::BATTLE_READY(response));
 
                     response_type
@@ -166,6 +170,24 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = deck_card_service.deck_card_list(request).await;
                     let response_type = Some(ResponseType::BATTLE_DECK_CARD_LIST(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            15 => {
+                // Battle Match Cancel
+                None
+            },
+            16 => {
+                // WHAT_IS_THE_ROOM_NUMBER
+                if let Some(request) = create_what_is_the_room_number_request(&data) {
+                    let battle_room_service_mutex = BattleRoomServiceImpl::get_instance();
+                    let mut battle_room_service_guard = battle_room_service_mutex.lock().await;
+
+                    let response = battle_room_service_guard.what_is_the_room_number(request).await;
+                    let response_type = Some(ResponseType::WHAT_IS_THE_ROOM_NUMBER(response));
 
                     response_type
                 } else {

@@ -1,0 +1,2 @@
+pub mod battle_ready_account_hash_repository;
+pub mod battle_ready_account_hash_repository_impl;
