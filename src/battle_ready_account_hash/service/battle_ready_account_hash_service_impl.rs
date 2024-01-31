@@ -10,7 +10,9 @@ use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repo
 use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repository_impl::BattleReadyAccountHashRepositoryImpl;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service::BattleReadyAccountHashService;
 use crate::battle_ready_account_hash::service::request::battle_ready_account_hash_request::BattleReadyAccountHashRequest;
+use crate::battle_ready_account_hash::service::request::check_battle_prepare_request::CheckBattlePrepareRequest;
 use crate::battle_ready_account_hash::service::response::battle_ready_account_hash_response::BattleReadyAccountHashResponse;
+use crate::battle_ready_account_hash::service::response::check_battle_prepare_response::CheckBattlePrepareResponse;
 use crate::battle_wait_queue::repository::battle_wait_queue_repository_impl::BattleWaitQueueRepositoryImpl;
 
 use crate::match_waiting_timer::repository::match_waiting_timer_repository::MatchWaitingTimerRepository;
@@ -86,11 +88,8 @@ impl BattleReadyAccountHashService for BattleReadyAccountHashServiceImpl {
         let mut battle_ready_account_hash_repository_mutex = self.battle_ready_account_hash_repository.lock().await;
         let response = battle_ready_account_hash_repository_mutex.get_battle_ready_account_hash_status(account_unique_id).await;
 
-        // 확보한 상태값에 따라 SUCCESS, PREPARE, WAIT, FAIL 정보 응답
+        // 확보한 상태값에 따라 PREPARE, WAIT, FAIL 정보 응답
         return match response {
-            BattleReadyAccountHashStatus::SUCCESS => {
-                BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::SUCCESS)
-            },
             BattleReadyAccountHashStatus::PREPARE => {
                 BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::PREPARE)
             },
@@ -100,6 +99,32 @@ impl BattleReadyAccountHashService for BattleReadyAccountHashServiceImpl {
             BattleReadyAccountHashStatus::FAIL => {
                 BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::FAIL)
             },
+            _ => {
+                BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::FAIL)
+            }
+        }
+    }
+
+    async fn check_prepare_for_battle(&self, check_battle_prepare_request: CheckBattlePrepareRequest) -> CheckBattlePrepareResponse {
+        println!("BattleReadyMonitorServiceImpl: check_prepare_for_battle()");
+
+        let session_id = check_battle_prepare_request.get_session_id();
+        let account_unique_id = self.get_account_unique_id(session_id).await;
+
+        let mut battle_ready_account_hash_repository_mutex = self.battle_ready_account_hash_repository.lock().await;
+        let response = battle_ready_account_hash_repository_mutex.get_battle_ready_account_hash_status(account_unique_id).await;
+
+        // 확보한 상태값에 따라 SUCCESS, PREPARE 정보 응답
+        return match response {
+            BattleReadyAccountHashStatus::PREPARE => {
+                CheckBattlePrepareResponse::new(BattleReadyAccountHashStatus::PREPARE)
+            },
+            BattleReadyAccountHashStatus::SUCCESS => {
+                CheckBattlePrepareResponse::new(BattleReadyAccountHashStatus::SUCCESS)
+            },
+            _ => {
+                CheckBattlePrepareResponse::new(BattleReadyAccountHashStatus::FAIL)
+            }
         }
     }
 }
