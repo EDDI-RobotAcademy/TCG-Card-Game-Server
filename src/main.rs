@@ -51,6 +51,12 @@ mod battle_ready_account_hash;
 mod battle_match_monitor;
 mod game_turn;
 mod game_lost_zone;
+mod game_deck;
+mod game_field_energy;
+mod game_tomb;
+mod game_field_unit;
+mod game_hand;
+mod game_main_character;
 
 #[tokio::main]
 async fn main() {

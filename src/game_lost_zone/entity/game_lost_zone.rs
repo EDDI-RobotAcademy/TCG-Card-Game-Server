@@ -29,21 +29,17 @@ mod tests {
 
     #[test]
     fn test_game_lost_zone() {
-        // GameLostZone 객체 생성
         let mut game_lost_zone = GameLostZone::new();
 
-        // LostZoneCard 추가
         game_lost_zone.add_lost_zone_card(42);
         game_lost_zone.add_lost_zone_card(10);
 
-        // LostZoneCardList 확인
         let card_list = game_lost_zone.get_lost_zone_card_list();
-        let cards = card_list.get_lost_zone_cards();
+        let cards = card_list.get_lost_zone_card_list();
         assert_eq!(cards.len(), 2);
         assert_eq!(cards[0].get_card(), 42);
         assert_eq!(cards[1].get_card(), 10);
 
-        // Debug 출력 확인
         println!("{:?}", game_lost_zone);
     }
 }
