@@ -1,5 +1,3 @@
-use crate::game_deck::entity::deck_card::DeckCard;
-use crate::game_deck::entity::deck_card_list::DeckCardList;
 use crate::game_field_unit::entity::field_unit::FieldUnit;
 use crate::game_field_unit::entity::field_unit_list::FieldUnitList;
 

@@ -1,11 +1,11 @@
 #[derive(Debug)]
-pub struct DeckCard {
+pub struct GameDeckCard {
     card: i32,
 }
 
-impl DeckCard {
-    pub fn new(card: i32) -> DeckCard {
-        DeckCard { card }
+impl GameDeckCard {
+    pub fn new(card: i32) -> GameDeckCard {
+        GameDeckCard { card }
     }
 
     pub fn get_card(&self) -> i32 {
@@ -19,7 +19,7 @@ mod tests {
 
     #[test]
     fn test_deck_card_creation() {
-        let card = DeckCard::new(42);
+        let card = GameDeckCard::new(42);
         assert_eq!(card.get_card(), 42);
         println!("Test passed: DeckCard creation and getter");
     }
