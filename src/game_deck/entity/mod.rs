@@ -1,3 +1,3 @@
 pub mod game_deck;
-pub mod deck_card;
-pub mod deck_card_list;
+pub mod game_deck_card;
+pub mod game_deck_card_list;
