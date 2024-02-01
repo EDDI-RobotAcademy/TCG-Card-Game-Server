@@ -70,7 +70,6 @@ impl DomainInitializer {
     pub async fn init_client_socket_accept_domain(&self,
                                                   acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>,
                                                   acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>) {
-
         let client_socket_accept_controller_mutex = ClientSocketAcceptControllerImpl::get_instance();
         let mut client_socket_accept_controller = client_socket_accept_controller_mutex.lock().await;
 
@@ -92,7 +91,6 @@ impl DomainInitializer {
     pub async fn init_transmitter_domain(&self,
                                          acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>,
                                          receiver_transmitter_channel_arc: Arc<ReceiverTransmitterLegacyChannel>) {
-
         let transmitter_controller_mutex = TransmitterControllerImpl::get_instance();
         let mut transmitter_controller = transmitter_controller_mutex.lock().await;
 
@@ -202,6 +200,9 @@ impl DomainInitializer {
     //     //
     //     // drop(card_kinds_repository_guard);
     // }
+    pub async fn init_card_kinds_attribute_domain(&self) {
+        let _ = CardKindsServiceImpl::get_instance();
+    }
 
     pub async fn init_every_domain(&self) {
         /* IPC Channel List */
@@ -246,6 +247,7 @@ impl DomainInitializer {
         /* Card Attribute Domain */
         // self.init_card_attribute_domain().await;
         // self.init_card_library_domain().await;
+        self.init_card_kinds_attribute_domain().await;
     }
 }
 

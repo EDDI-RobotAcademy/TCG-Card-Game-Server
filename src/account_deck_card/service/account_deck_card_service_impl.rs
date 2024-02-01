@@ -57,10 +57,9 @@ impl AccountDeckCardServiceImpl {
     }
 
     async fn check_energy_card(&self, card_id: &i32) -> bool {
-        let card_id_str: String = format!("{}", card_id);
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
 
-        let card_kinds_option = card_kinds_repository_guard.get_card_kind(&card_id_str).await;
+        let card_kinds_option = card_kinds_repository_guard.get_card_kind(card_id).await;
         if card_kinds_option.map(|kind| kind == "에너지").unwrap_or(false) {
             return true;
         }

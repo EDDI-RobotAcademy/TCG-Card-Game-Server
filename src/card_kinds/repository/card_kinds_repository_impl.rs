@@ -1,37 +1,40 @@
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
-use tokio::sync::MutexGuard as AsyncMutexGuard;
+
 use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
+use crate::common::csv::csv_reader::{build_card_kinds_dictionary, csv_read};
+use crate::common::path::root_path::RootPath;
 
 pub struct CardKindsRepositoryImpl {
-    card_kinds_map: Arc<AsyncMutex<HashMap<String, String>>>,
+    card_kinds_map: Arc<AsyncMutex<HashMap<i32, String>>>,
 }
 
 impl CardKindsRepositoryImpl {
     pub fn new() -> Self {
+        let filename = RootPath::make_full_path("resources/csv/every_card.csv")
+            .unwrap_or_else(|| {
+                eprintln!("Failed to get file path.");
+                std::process::exit(1);
+            });
+        let filename_path = &filename.to_string_lossy();
+
+        let csv_content = match csv_read(filename_path) {
+            Ok(content) => content,
+            Err(err) => {
+                eprintln!("Error reading CSV file: {}", err);
+                std::process::exit(1);
+            }
+        };
+
+        let card_kinds_dictionary = build_card_kinds_dictionary(&csv_content);
+
         CardKindsRepositoryImpl {
-            card_kinds_map: Arc::new(AsyncMutex::new(HashMap::new())),
+            card_kinds_map: Arc::new(AsyncMutex::new(card_kinds_dictionary)),
         }
-    }
-
-    pub async fn get_card_kinds_map(&self) -> AsyncMutexGuard<'_, HashMap<String, String>> {
-        self.card_kinds_map.lock().await
-    }
-
-    pub async fn set_card_kinds_map(&self, card_kinds_dictionary: HashMap<String, String>) {
-        let mut card_kinds_map_guard = self.card_kinds_map.lock().await;
-        *card_kinds_map_guard = card_kinds_dictionary;
-    }
-
-    pub async fn create_instance(card_kinds_dictionary: HashMap<String, String>) {
-        let instance = Self::get_instance();
-        let mut instance_guard = instance.lock().await;
-        instance_guard.set_card_kinds_map(card_kinds_dictionary).await;
     }
 
     pub fn get_instance() -> Arc<AsyncMutex<CardKindsRepositoryImpl>> {
@@ -47,9 +50,31 @@ impl CardKindsRepositoryImpl {
 
 #[async_trait]
 impl CardKindsRepository for CardKindsRepositoryImpl {
-    async fn get_card_kind(&self, card_number: &str) -> Option<String> {
+    async fn get_card_kind(&self, card_number: &i32) -> Option<String> {
         let card_kinds_map_guard = self.card_kinds_map.lock().await;
         card_kinds_map_guard.get(card_number).cloned()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_get_card_kind() {
+        let card_kinds_repository_mutex = CardKindsRepositoryImpl::get_instance();
+        let card_kinds_repository_guard = card_kinds_repository_mutex.lock().await;
+        let card_number: i32 = 2;
+        let card_kind = card_kinds_repository_guard.get_card_kind(&card_number).await;
+
+        match card_kind {
+            Some(kind) => {
+                println!("Card Kind: {}", kind);
+                assert_eq!(kind, "서포트");
+            }
+            None => println!("Card not found."),
+        }
+    }
+}
+
 
