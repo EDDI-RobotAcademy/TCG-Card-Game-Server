@@ -1,13 +1,7 @@
 use std::sync::Arc;
 use async_trait::async_trait;
-use bcrypt::verify;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
-use crate::account::service::request::account_delete_request::AccountDeleteRequest;
-use crate::account::service::response::account_delete_response::AccountDeleteResponse;
-use crate::account_card::service::request::account_card_list_request::AccountCardListRequest;
-use crate::account_card::service::response::account_card_list_response::AccountCardListResponse;
-use crate::account_point::entity::account_point::account_points::account_id;
 use crate::account_point::repository::account_point_repository::AccountPointRepository;
 
 use crate::account::repository::account_repository::AccountRepository;
@@ -61,7 +55,6 @@ impl AccountPointService for AccountPointServiceImpl {
         println!("AccountPointServiceImpl: pay_gold()");
 
         let account_point_repository = self.repository.lock().await;
-        // let account_repository = self.account_repository.lock().await;
         let current_account_id: Result<i32, _> = gain_gold_request.account_id().parse();
         let current_account_id_int: i32 = current_account_id.unwrap();
 
@@ -83,7 +76,6 @@ impl AccountPointService for AccountPointServiceImpl {
         println!("AccountPointServiceImpl: pay_gold()");
 
         let account_point_repository = self.repository.lock().await;
-        // let account_repository = self.account_repository.lock().await;
         let current_account_id: Result<i32, _> = pay_gold_request.account_id().parse();
         let current_account_id_int: i32 = current_account_id.unwrap();
 
