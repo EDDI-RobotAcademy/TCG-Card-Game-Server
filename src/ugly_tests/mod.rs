@@ -11,4 +11,6 @@ mod search_card_in_deck;
 mod ingame;
 mod tutorial;
 
+mod diesel_experiment;
+mod enum_value;
 

@@ -1,2 +1,2 @@
-mod game_deck_repository;
-mod game_deck_repository_impl;
+pub mod game_deck_repository;
+pub mod game_deck_repository_impl;

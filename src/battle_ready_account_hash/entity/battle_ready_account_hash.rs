@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use crate::battle_ready_account_hash::entity::battle_ready_account_hash_status::BattleReadyAccountHashStatus;
 
+#[derive(Debug)]
 pub struct BattleReadyAccountHash {
     battle_ready_account_hash_status: HashMap<i32, BattleReadyAccountHashStatus>,
 }
@@ -18,6 +19,10 @@ impl BattleReadyAccountHash {
 
     pub fn get_user_ready_state(&self, user_id: i32) -> Option<&BattleReadyAccountHashStatus> {
         self.battle_ready_account_hash_status.get(&user_id)
+    }
+
+    pub fn get_status_map(&self) -> &HashMap<i32, BattleReadyAccountHashStatus> {
+        &self.battle_ready_account_hash_status
     }
 }
 

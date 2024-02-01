@@ -90,8 +90,14 @@ impl BattleReadyAccountHashService for BattleReadyAccountHashServiceImpl {
 
         // 확보한 상태값에 따라 PREPARE, WAIT, FAIL 정보 응답
         return match response {
+            BattleReadyAccountHashStatus::PREPARE_PROCESS => {
+                BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::PREPARE_PROCESS)
+            },
             BattleReadyAccountHashStatus::PREPARE => {
                 BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::PREPARE)
+            },
+            BattleReadyAccountHashStatus::SUCCESS => {
+                BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::SUCCESS)
             },
             BattleReadyAccountHashStatus::WAIT => {
                 BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::WAIT)
@@ -99,9 +105,6 @@ impl BattleReadyAccountHashService for BattleReadyAccountHashServiceImpl {
             BattleReadyAccountHashStatus::FAIL => {
                 BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::FAIL)
             },
-            _ => {
-                BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::FAIL)
-            }
         }
     }
 
@@ -118,6 +121,9 @@ impl BattleReadyAccountHashService for BattleReadyAccountHashServiceImpl {
         return match response {
             BattleReadyAccountHashStatus::PREPARE => {
                 CheckBattlePrepareResponse::new(BattleReadyAccountHashStatus::PREPARE)
+            },
+            BattleReadyAccountHashStatus::PREPARE_PROCESS => {
+                CheckBattlePrepareResponse::new(BattleReadyAccountHashStatus::PREPARE_PROCESS)
             },
             BattleReadyAccountHashStatus::SUCCESS => {
                 CheckBattlePrepareResponse::new(BattleReadyAccountHashStatus::SUCCESS)

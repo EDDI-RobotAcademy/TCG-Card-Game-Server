@@ -19,6 +19,10 @@ impl BattleReadyAccountHashRepositoryImpl {
         }
     }
 
+    pub fn get_battle_ready_account_hash(&self) -> &BattleReadyAccountHash {
+        &self.battle_ready_account_hash_status
+    }
+
     pub fn get_instance() -> Arc<AsyncMutex<BattleReadyAccountHashRepositoryImpl>> {
         lazy_static! {
             static ref INSTANCE: Arc<AsyncMutex<BattleReadyAccountHashRepositoryImpl>> =

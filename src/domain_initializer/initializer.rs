@@ -7,6 +7,7 @@ use crate::account::service::account_service_impl::AccountServiceImpl;
 use crate::account_card::service::account_card_service_impl::AccountCardServiceImpl;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
 use crate::battle_match_monitor::service::battle_match_monitor_service_impl::BattleMatchMonitorServiceImpl;
+use crate::battle_prepare_task::service::battle_prepare_task_service_impl::BattlePrepareTaskServiceImpl;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service_impl::BattleReadyAccountHashServiceImpl;
 
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
@@ -101,6 +102,10 @@ impl DomainInitializer {
         let _ = BattleMatchMonitorServiceImpl::get_instance();
     }
 
+    pub async fn init_battle_prepare_task_domain(&self) {
+        let _ = BattlePrepareTaskServiceImpl::get_instance();
+    }
+
     pub async fn init_battle_room_domain(&self) {
         let _ = BattleRoomServiceImpl::get_instance();
     }
@@ -141,6 +146,7 @@ impl DomainInitializer {
         self.init_battle_ready_account_hash_domain().await;
         self.init_battle_room_domain().await;
         self.init_battle_match_monitor_domain().await;
+        self.init_battle_prepare_task_domain().await;
 
         /* In-game Object Domain List */
         self.init_game_turn_domain();
