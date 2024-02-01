@@ -33,6 +33,12 @@ impl GameDeck {
 
         self.game_deck.set_card_list(game_deck_cards);
     }
+
+    pub fn get_card_ids(&self) -> Vec<i32> {
+        self.game_deck.get_all_card_list().iter()
+            .map(|card| card.get_card())
+            .collect()
+    }
 }
 
 #[cfg(test)]

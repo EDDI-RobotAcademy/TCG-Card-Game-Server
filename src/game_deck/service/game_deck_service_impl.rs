@@ -7,10 +7,12 @@ use crate::account_deck_card::repository::account_deck_card_repository::AccountD
 use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
 use crate::common::converter::hash_to_vector_converter::HashToVectorConverter;
 use crate::game_deck::entity::game_deck_card::GameDeckCard;
+use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
 
 use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::request::game_deck_card_list_request::GameDeckCardListRequest;
+use crate::game_deck::service::request::game_deck_card_shuffled_list_request::GameDeckCardShuffledListRequest;
 use crate::game_deck::service::response::game_deck_card_shuffled_list_response::GameDeckCardShuffledListResponse;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
@@ -58,7 +60,8 @@ impl GameDeckService for GameDeckServiceImpl {
     async fn create_and_shuffle_deck(&self, game_deck_card_list_request: GameDeckCardListRequest) -> GameDeckCardShuffledListResponse {
         println!("GameDeckServiceImpl: create_and_shuffle_deck()");
 
-        let account_unique_id = self.parse_account_unique_id(game_deck_card_list_request.get_session_id()).await;
+        let session_id = game_deck_card_list_request.get_session_id();
+        let account_unique_id = self.parse_account_unique_id(session_id).await;
         let deck_id = game_deck_card_list_request.get_deck_id();
 
         let account_deck_card_repository_guard = self.account_deck_card_repository.lock().await;
@@ -69,16 +72,26 @@ impl GameDeckService for GameDeckServiceImpl {
             _ => Vec::new(),
         };
         let account_deck_vector = HashToVectorConverter::hash_vector_to_vector(account_deck_hash_vector);
+        drop(account_deck_card_repository_guard);
 
         let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
         game_deck_repository_guard.set_game_deck_from_data(account_unique_id, account_deck_vector);
+        drop(game_deck_repository_guard);
 
-        // GameDeckCardShuffledListResponse::new(true)
+        let game_deck_card_shuffled_list_request = GameDeckCardShuffledListRequest::new(session_id.to_string());
+        self.shuffle_deck(game_deck_card_shuffled_list_request).await
     }
 
-    // async fn shuffle_deck(&self, game_deck_card_list_request: GameDeckCardShuffleListRequest) -> GameDeckCardShuffledListResponse {
-    //
-    // }
+    async fn shuffle_deck(&self, game_deck_card_shuffled_list_request: GameDeckCardShuffledListRequest) -> GameDeckCardShuffledListResponse {
+        let session_id = game_deck_card_shuffled_list_request.get_session_id();
+        let account_unique_id = self.parse_account_unique_id(session_id).await;
+
+        let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
+        game_deck_repository_guard.shuffle_game_deck(account_unique_id);
+        let game_deck_card_vector = game_deck_repository_guard.get_game_deck_card_ids(account_unique_id);
+
+        GameDeckCardShuffledListResponse::new(game_deck_card_vector)
+    }
 }
 
 #[cfg(test)]
@@ -106,7 +119,16 @@ mod tests {
         let mut game_deck_repository_guard = game_deck_repository_mutex.lock().await;
         game_deck_repository_guard.set_game_deck_from_data(account_id, account_deck_vector);
 
-        let game_deck_vector = game_deck_repository_guard.get_game_deck_map();
-        println!("Game Deck: {:?}", game_deck_vector);
+        let game_deck_map = game_deck_repository_guard.get_game_deck_map();
+        println!("Game Deck: {:?}", game_deck_map);
+
+        game_deck_repository_guard.shuffle_game_deck(account_id);
+        let game_deck_map = game_deck_repository_guard.get_game_deck_map();
+        println!("After Shuffle -> Game Deck: {:?}", game_deck_map);
+
+        let game_deck = game_deck_map.get(&account_id).unwrap();
+        let game_deck_vector = game_deck.get_card_ids();
+
+        println!("Game Deck as Vec<i32>: {:?}", game_deck_vector);
     }
 }

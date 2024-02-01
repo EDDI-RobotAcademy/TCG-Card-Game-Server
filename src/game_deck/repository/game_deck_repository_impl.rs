@@ -29,6 +29,14 @@ impl GameDeckRepositoryImpl {
         game_deck.set_card_list_from_data(data);
     }
 
+    pub fn get_game_deck_card_ids(&self, account_id: i32) -> Vec<i32> {
+        if let Some(game_deck) = self.game_deck_map.get(&account_id) {
+            game_deck.get_card_ids()
+        } else {
+            Vec::new()
+        }
+    }
+
     pub fn get_instance() -> Arc<AsyncMutex<GameDeckRepositoryImpl>> {
         lazy_static! {
             static ref INSTANCE: Arc<AsyncMutex<GameDeckRepositoryImpl>> =
