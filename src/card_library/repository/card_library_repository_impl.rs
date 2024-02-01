@@ -8,11 +8,11 @@ use crate::card_library::entity::card_dictionary_label::CardDictionaryLabel;
 use crate::card_library::repository::card_library_repository::CardLibraryRepository;
 
 pub struct CardLibraryRepositoryImpl {
-    labeled_card_dictionary_hash: HashMap<CardDictionaryLabel, HashMap<String, String>>,
+    labeled_card_dictionary_hash: Arc<AsyncMutex<HashMap<CardDictionaryLabel, HashMap<String, String>>>>,
 }
 impl CardLibraryRepositoryImpl {
     pub fn new() -> Self {
-        CardLibraryRepositoryImpl { labeled_card_dictionary_hash: HashMap::new() }
+        CardLibraryRepositoryImpl { labeled_card_dictionary_hash: Arc::new(AsyncMutex::new(HashMap::new())) }
     }
     pub fn get_instance() -> Arc<AsyncMutex<CardLibraryRepositoryImpl>> {
         lazy_static! {
@@ -28,10 +28,11 @@ impl CardLibraryRepositoryImpl {
 #[async_trait]
 impl CardLibraryRepository for CardLibraryRepositoryImpl {
     async fn store_dictionary(&mut self, label: CardDictionaryLabel, dictionary: HashMap<String, String>) {
-        self.labeled_card_dictionary_hash.insert(label, dictionary);
+        let mut labeled_card_dictionary_hash_guard = self.labeled_card_dictionary_hash.lock().await;
+        labeled_card_dictionary_hash_guard.insert(label, dictionary);
     }
     async fn get_dictionary(&self, label: CardDictionaryLabel) -> HashMap<String, String> {
-        let labeled_dictionaries = self.labeled_card_dictionary_hash.clone();
+        let labeled_dictionaries = self.labeled_card_dictionary_hash.lock().await;
         let selected_dictionary = labeled_dictionaries.get(&label).unwrap().clone();
         selected_dictionary
     }
