@@ -171,7 +171,11 @@ mod tests {
         let mythical_grade_index = 5;
         let mythical_card_list = card_library_repository.get_card_list_by_grade_index(mythical_grade_index).await;
 
-        println!("{:?}", mythical_card_list)
-        // 19, 22, 23, 45, 58, 108 ...
+        println!("{:?}", mythical_card_list);  // 19, 22, 23, 45, 58, 108 ...
+
+        let target_name = "중갑".to_string();
+        let target_card_id = card_library_repository.get_card_list_by_name(target_name).await;
+
+        println!("{:?}", target_card_id)
     }
 }

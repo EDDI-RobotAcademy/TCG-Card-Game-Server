@@ -41,6 +41,16 @@ impl CardLibraryRepository for CardLibraryRepositoryImpl {
         let result = name_dictionary.get(&card_id_into_key).unwrap();
         result.to_string()
     }
+    async fn get_card_list_by_name(&self, card_name: String) -> Vec<String> {
+        let name_dictionary = self.get_dictionary(CardDictionaryLabel::Name).await;
+        let mut card_list_containing_name = Vec::new();
+        for (key, value) in name_dictionary {
+            if value.contains(&card_name) {
+                card_list_containing_name.push(key);
+            }
+        }
+        card_list_containing_name
+    }
     async fn get_card_list_by_grade_index(&self, index: i32) -> Vec<String> {
         let grade_dictionary = self.get_dictionary(CardDictionaryLabel::Grade).await;
         let mut card_list_matched_with_index = Vec::new();
