@@ -39,7 +39,7 @@ impl AccountCardRepositoryImpl {
 }
 #[async_trait]
 impl AccountCardRepository for AccountCardRepositoryImpl {
-    async fn get_card_list(&self, request: i32) -> Result<Option<Vec<HashMap<i32, i32>>>, Error> {
+    async fn get_card_list(&self, request_account_unique_id: i32) -> Result<Option<Vec<HashMap<i32, i32>>>, Error> {
         use crate::account_card::entity::account_card::account_cards::dsl::*;
         use diesel::query_dsl::filter_dsl::FilterDsl;
         use diesel::prelude::*;
@@ -58,7 +58,7 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
             .load::<AccountCard>(&mut connection)?;
 
         let found_card = found_cards.into_iter()
-            .filter(|account_card| account_card.account_id == request);
+            .filter(|account_card| account_card.account_id == request_account_unique_id);
 
         for card in found_card {
             let mut card_map: HashMap<i32, i32> = HashMap::new();
@@ -66,5 +66,36 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
             card_list.push(card_map);
         }
         Ok(Option::from(card_list))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::test;
+    use tokio::time::timeout;
+
+    #[tokio::test]
+    async fn test_get_account_card_list() {
+        // 사용자가 가지고 있는 카드 리스트
+        let repository = AccountCardRepositoryImpl::get_instance();
+        let repository_guard = repository.lock().await;
+
+        let result = repository_guard.get_card_list(5).await;
+
+        match repository_guard.get_card_list(5).await {
+            Ok(result) => {
+                assert!(result.is_some(), "Expected Some, but got None");
+
+                if let Some(card_list) = result {
+                    println!("Card List: {:?}", card_list);
+                    assert!(!card_list.is_empty(), "Expected non-empty card list");
+                }
+            }
+            Err(err) => {
+                println!("Error: {:?}", err);
+                panic!("Test failed with error: {:?}", err);
+            }
+        }
     }
 }
