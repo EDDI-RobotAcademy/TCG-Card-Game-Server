@@ -41,6 +41,36 @@ impl CardLibraryRepository for CardLibraryRepositoryImpl {
         let result = name_dictionary.get(&card_id_into_key).unwrap();
         result.to_string()
     }
+    async fn search_race_by_card_id(&self, card_id: i32) -> String {
+        let race_dictionary = self.get_dictionary(CardDictionaryLabel::Race).await;
+        let card_id_into_key = format!("{}", card_id);
+        let result = race_dictionary.get(&card_id_into_key).unwrap();
+        result.to_string()
+    }
+    async fn search_grade_by_card_id(&self, card_id: i32) -> String {
+        let grade_dictionary = self.get_dictionary(CardDictionaryLabel::Grade).await;
+        let card_id_into_key = format!("{}", card_id);
+        let result = grade_dictionary.get(&card_id_into_key).unwrap();
+        result.to_string()
+    }
+    async fn search_kind_by_card_id(&self, card_id: i32) -> String {
+        let kind_dictionary = self.get_dictionary(CardDictionaryLabel::Kind).await;
+        let card_id_into_key = format!("{}", card_id);
+        let result = kind_dictionary.get(&card_id_into_key).unwrap();
+        result.to_string()
+    }
+    async fn search_attack_point_by_card_id(&self, card_id: i32) -> String {
+        let attack_point_dictionary = self.get_dictionary(CardDictionaryLabel::AttackPoint).await;
+        let card_id_into_key = format!("{}", card_id);
+        let result = attack_point_dictionary.get(&card_id_into_key).unwrap();
+        result.to_string()
+    }
+    async fn search_health_point_by_card_id(&self, card_id: i32) -> String {
+        let health_point_dictionary = self.get_dictionary(CardDictionaryLabel::HealthPoint).await;
+        let card_id_into_key = format!("{}", card_id);
+        let result = health_point_dictionary.get(&card_id_into_key).unwrap();
+        result.to_string()
+    }
     async fn get_card_list_by_name(&self, card_name: String) -> Vec<String> {
         let name_dictionary = self.get_dictionary(CardDictionaryLabel::Name).await;
         let mut card_list_containing_name = Vec::new();
@@ -51,11 +81,31 @@ impl CardLibraryRepository for CardLibraryRepositoryImpl {
         }
         card_list_containing_name
     }
-    async fn get_card_list_by_grade_index(&self, index: i32) -> Vec<String> {
+    async fn get_card_list_by_race(&self, race_index: i32) -> Vec<String> {
+        let race_dictionary = self.get_dictionary(CardDictionaryLabel::Race).await;
+        let mut card_list_matched_with_index = Vec::new();
+        for (key, value) in race_dictionary {
+            if value == format!("{}", race_index) {
+                card_list_matched_with_index.push(key)
+            }
+        }
+        card_list_matched_with_index
+    }
+    async fn get_card_list_by_grade(&self, grade_index: i32) -> Vec<String> {
         let grade_dictionary = self.get_dictionary(CardDictionaryLabel::Grade).await;
         let mut card_list_matched_with_index = Vec::new();
         for (key, value) in grade_dictionary {
-            if value == format!("{}", index) {
+            if value == format!("{}", grade_index) {
+                card_list_matched_with_index.push(key)
+            }
+        }
+        card_list_matched_with_index
+    }
+    async fn get_card_list_by_kind(&self, kind_index: i32) -> Vec<String> {
+        let kind_dictionary = self.get_dictionary(CardDictionaryLabel::Kind).await;
+        let mut card_list_matched_with_index = Vec::new();
+        for (key, value) in kind_dictionary {
+            if value == format!("{}", kind_index) {
                 card_list_matched_with_index.push(key)
             }
         }
