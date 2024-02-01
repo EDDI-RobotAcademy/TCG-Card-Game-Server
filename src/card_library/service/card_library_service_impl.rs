@@ -35,7 +35,7 @@ impl CardLibraryServiceImpl {
         let current_dir = current_exe_path.parent().ok_or("Unable to get parent directory")?;
 
         let absolute_path = current_dir.join(file_path);
-        println!("absolute_path: {:?}", absolute_path);
+        // println!("absolute_path: {:?}", absolute_path);
 
         let file = File::open(absolute_path)?;
 
@@ -158,20 +158,38 @@ mod tests {
 
         card_library_mutex_guard.open_library().await;
 
+        // get specific dictionary
         let card_library_repository = card_library_mutex_guard.repository.lock().await;
         let name_dictionary = card_library_repository.get_dictionary(CardDictionaryLabel::Name).await;
 
-        println!("{:?}", name_dictionary);
+        println!("name_dictionary: {:?}", name_dictionary);
 
-        let test_card_id = 2;
+        // card object formation
+        let test_card_id = 17;
         let test_card_name = card_library_repository.search_name_by_card_id(test_card_id).await;
+        let test_card_race = card_library_repository.search_race_by_card_id(test_card_id).await;
+        let test_card_grade = card_library_repository.search_grade_by_card_id(test_card_id).await;
+        let test_card_kind = card_library_repository.search_kind_by_card_id(test_card_id).await;
+        let test_card_attack_point = card_library_repository.search_attack_point_by_card_id(test_card_id).await;
+        let test_card_health_point = card_library_repository.search_health_point_by_card_id(test_card_id).await;
 
-        println!("{:?}", test_card_name); // "넘쳐흐르는 사기"
+        println!("Name: {:?}", test_card_name);
+        println!("Race: {:?}", test_card_race);
+        println!("Grade: {:?}", test_card_grade);
+        println!("Kind: {:?}", test_card_kind);
+        println!("Attack Point: {:?}", test_card_attack_point);
+        println!("Health Point: {:?}", test_card_health_point);
 
+        // card list formation with specific label index
+        let target_name = "중갑".to_string();
+        let target_card_id_list = card_library_repository.get_card_list_by_name(target_name).await;
+        let human_race_index = 1;
+        let human_card_list = card_library_repository.get_card_list_by_race(human_race_index).await;
         let mythical_grade_index = 5;
-        let mythical_card_list = card_library_repository.get_card_list_by_grade_index(mythical_grade_index).await;
+        let mythical_card_list = card_library_repository.get_card_list_by_grade(mythical_grade_index).await;
 
-        println!("{:?}", mythical_card_list)
-        // 19, 22, 23, 45, 58, 108 ...
+        println!("card_id_list_containing_'중갑': {:?}", target_card_id_list);
+        println!("human_card_list: {:?}", human_card_list);
+        println!("mythical_card_list: {:?}", mythical_card_list);
     }
 }
