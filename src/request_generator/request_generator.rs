@@ -3,6 +3,8 @@ use crate::account::service::account_service::AccountService;
 use crate::account::service::account_service_impl::AccountServiceImpl;
 use crate::account_deck::service::account_deck_service::AccountDeckService;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
+use crate::account_point::service::account_point_service::AccountPointService;
+use crate::account_point::service::account_point_service_impl::AccountPointServiceImpl;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service::BattleReadyAccountHashService;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service_impl::BattleReadyAccountHashServiceImpl;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
@@ -15,6 +17,7 @@ use crate::client_program::service::client_program_service_impl::ClientProgramSe
 use crate::deck_card::service::deck_card_service::DeckCardService;
 use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
 use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_modify_request, create_deck_register_request};
+use crate::request_generator::account_point_request_generator::create_gain_gold_request;
 use crate::request_generator::account_request_generator::{create_account_delete_request, create_account_modify_request, create_login_request, create_logout_request, create_register_request};
 use crate::request_generator::battle_ready_account_hash_request_generator::create_battle_ready_account_hash_request;
 use crate::request_generator::battle_wait_queue_request_generator::create_battle_wait_queue_request;
@@ -287,6 +290,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = shop_service.free_card(request).await;
                     let response_type = Some(ResponseType::SHOP_FREE_CARD(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            91 => {
+                // Gain gold
+                if let Some(request) = create_gain_gold_request(&data) {
+                    let account_point_service_mutex = AccountPointServiceImpl::get_instance();
+                    let mut account_point_service = account_point_service_mutex.lock().await;
+
+                    let response = account_point_service.gain_gold(request).await;
+                    let response_type = Some(ResponseType::GAIN_GOLD(response));
 
                     response_type
                 } else {

@@ -6,6 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use diesel::query_dsl::methods::{FilterDsl, FindDsl};
 use diesel::{Connection, MysqlConnection, QueryDsl, ExpressionMethods, RunQueryDsl};
+use crate::account::entity::account::Account;
 
 use crate::account_point::entity::account_point::AccountPoint;
 use crate::account_point::entity::account_point::account_points::dsl::{account_id, account_points};
@@ -38,7 +39,33 @@ impl AccountPointRepositoryImpl {
 
 #[async_trait]
 impl AccountPointRepository for AccountPointRepositoryImpl {
-    async fn update_gold(&self, account_point:AccountPoint, golds: i32) -> Result<usize, diesel::result::Error> {
+
+    async fn find_by_account_id(&self, account_user_id: i32) -> Result<Option<AccountPoint>, diesel::result::Error> {
+        use crate::account_point::entity::account_point::account_points::dsl::*;
+        use diesel::query_dsl::filter_dsl::FilterDsl;
+        use diesel::sql_types::{Integer, Text};
+        use diesel::prelude::*;
+
+        println!("AccountPointRepositoryImpl: find_by_account_id()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        let select_clause = account_points.select((columns::account_id, columns::gold));
+        let where_clause = FilterDsl::filter(account_points, columns::account_id.eq(account_id));
+        let found_accounts = where_clause
+            .select((columns::account_id, columns::gold))
+            .load::<AccountPoint>(&mut connection)?;
+
+        let found_account = found_accounts
+            .into_iter()
+            .find(|account| account.account_id == account_user_id);
+
+        Ok(Option::from(found_account))
+    }
+
+    async fn update_gold(&self, account_point: AccountPoint, golds: i32) -> Result<usize, diesel::result::Error> {
         println!("AccountPointRepositoryImpl: update_gold()");
 
         let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
