@@ -13,7 +13,9 @@ use crate::battle_wait_queue::service::response::battle_wait_queue_response::Bat
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::deck_card::service::response::deck_card_list_response::DeckCardListResponse;
 use crate::deck_card::service::response::deck_configuration_response::DeckConfigurationResponse;
+use crate::shop::service::request::get_card_default_request::GetCardDafaultRequest;
 use crate::shop::service::response::free_card_response::FreeCardResponse;
+use crate::shop::service::response::get_card_default_response::GetCardDafaultResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ResponseType {
@@ -34,6 +36,7 @@ pub enum ResponseType {
     DECK_CARD_LIST(DeckCardListResponse),
 
     SHOP_FREE_CARD(FreeCardResponse),
+    SHOP_GET_CARD_DEFAULT(GetCardDafaultResponse),
 
     BATTLE_DECK_LIST(AccountDeckListResponse),
     BATTLE_WAIT_QUEUE_FOR_MATCH(BattleWaitQueueResponse),
