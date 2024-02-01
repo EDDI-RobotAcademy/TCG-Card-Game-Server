@@ -3,6 +3,9 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
+use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
+use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
+use crate::card_library::repository::card_library_repository_impl::CardLibraryRepositoryImpl;
 use crate::common::converter::vector_to_hash_converter::VectorToHashConverter;
 use crate::deck_card::repository::deck_card_repository::DeckCardRepository;
 
@@ -14,13 +17,16 @@ use crate::deck_card::service::response::deck_card_list_response::DeckCardListRe
 use crate::deck_card::service::response::deck_configuration_response::DeckConfigurationResponse;
 
 pub struct DeckCardServiceImpl {
-    repository: Arc<AsyncMutex<DeckCardRepositoryImpl>>
+    deck_card_repository: Arc<AsyncMutex<DeckCardRepositoryImpl>>,
+    card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
 }
 
 impl DeckCardServiceImpl {
-    pub fn new(repository: Arc<AsyncMutex<DeckCardRepositoryImpl>>) -> Self {
+    pub fn new(deck_card_repository: Arc<AsyncMutex<DeckCardRepositoryImpl>>,
+               card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,) -> Self {
         DeckCardServiceImpl {
-            repository
+            deck_card_repository,
+            card_kinds_repository,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<DeckCardServiceImpl>> {
@@ -29,7 +35,8 @@ impl DeckCardServiceImpl {
                 Arc::new(
                     AsyncMutex::new(
                         DeckCardServiceImpl::new(
-                            DeckCardRepositoryImpl::get_instance())));
+                            DeckCardRepositoryImpl::get_instance(),
+                            CardKindsRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -49,21 +56,31 @@ impl DeckCardServiceImpl {
         }
     }
 
+    async fn check_energy_card(&self, card_id: &i32) -> bool {
+        let card_id_str: String = format!("{}", card_id);
+        let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
+
+        let card_kinds_option = card_kinds_repository_guard.get_card_kind(&card_id_str).await;
+        if card_kinds_option.map(|kind| kind == "에너지").unwrap_or(false) {
+            return true;
+        }
+
+        return false;
+    }
+
     async fn validate_deck(&self, request_deck_list: &Vec<i32>) -> Result<(), DeckConfigurationResponse> {
         let mut card_count_map = HashMap::new();
 
-        // TODO: Energy Card 의 경우 3장 넘어가도 됩니다.
         // TODO: 신화, 전설, 영웅, 언커먼, 일반 덱 구성 규칙 지켰는지 파악해야합니다.
         for card_id in request_deck_list.iter() {
             let card_counts = card_count_map.entry(card_id).or_insert(0);
             *card_counts += 1;
 
-            if *card_id == 93 {
-                println!("일반 && 에너지 카드는 수량에 상관없이 추가 할 수 있습니다");
-                continue;
-            }
-
             if *card_counts > 3 {
+                if self.check_energy_card(card_id).await {
+                    continue
+                }
+
                 let error_string =
                     format!("{}번 카드가 3장이 넘습니다. 같은 카드는 덱에 3장 이하여야 합니다!", card_id);
                 println!("{}", error_string);
@@ -87,13 +104,13 @@ impl DeckCardService for DeckCardServiceImpl {
             return error_response;
         }
 
-        // if let Err(error_response) = self.validate_deck(deck_card_id_vector).await {
-        //     return error_response;
-        // }
+        if let Err(error_response) = self.validate_deck(deck_card_id_vector).await {
+            return error_response;
+        }
 
         let deck_card_vector = deck_configuration_request.to_deck_card_list();
 
-        let deck_card_repository = self.repository.lock().await;
+        let deck_card_repository = self.deck_card_repository.lock().await;
         let result = deck_card_repository.save_deck_card_list(deck_card_vector).await;
         match result {
             Ok(success_message) => {
@@ -107,7 +124,7 @@ impl DeckCardService for DeckCardServiceImpl {
     async fn deck_card_list(&self, deck_card_list_request: DeckCardListRequest) -> DeckCardListResponse {
         println!("DeckCardServiceImpl: deck_card_list()");
 
-        let deck_card_repository = self.repository.lock().await;
+        let deck_card_repository = self.deck_card_repository.lock().await;
         let deck_id_i32 = deck_card_list_request.deck_id();
         let result = deck_card_repository.get_card_list(deck_id_i32).await;
         match result {
