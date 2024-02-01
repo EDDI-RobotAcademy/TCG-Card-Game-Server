@@ -12,8 +12,8 @@ use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueu
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
-use crate::deck_card::service::deck_card_service::DeckCardService;
-use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
+use crate::account_deck_card::service::account_deck_card_service::AccountDeckCardService;
+use crate::account_deck_card::service::account_deck_card_service_impl::AccountDeckCardServiceImpl;
 use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_modify_request, create_deck_register_request};
 use crate::request_generator::account_request_generator::{create_account_delete_request, create_account_modify_request, create_login_request, create_logout_request, create_register_request};
 use crate::request_generator::battle_ready_account_hash_request_generator::create_battle_ready_account_hash_request;
@@ -21,6 +21,7 @@ use crate::request_generator::battle_wait_queue_request_generator::create_battle
 use crate::request_generator::check_battle_prepare_request_generator::create_check_battle_prepare_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
 use crate::request_generator::deck_card_request_generator::{create_deck_card_list_request, create_deck_configuration_request};
+use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::request_generator::shop_request_generator::create_free_card_request;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
@@ -195,20 +196,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            17 => {
-                // Battle Deck Card List
-                if let Some(request) = create_deck_card_list_request(&data) {
-                    let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
-                    let mut deck_card_service = deck_card_service_mutex.lock().await;
-
-                    let response = deck_card_service.deck_card_list(request).await;
-                    let response_type = Some(ResponseType::BATTLE_DECK_CARD_LIST(response));
-
-                    response_type
-                } else {
-                    None
-                }
-            },
+            // 17 => {
+            //     // Game Deck Card List
+            //     if let Some(request) = create_game_deck_card_list_request(&data) {
+            //         let game_deck_card_service_mutex = GameDeckServiceImpl::get_instance();
+            //         let mut game_deck_card_service = game_deck_card_service_mutex.lock().await;
+            //
+            //         let response = game_deck_card_service.create_and_shuffle_deck(request).await;
+            //         let response_type = Some(ResponseType::BATTLE_GAME_DECK_CARD_LIST(response));
+            //
+            //         response_type
+            //     } else {
+            //         None
+            //     }
+            // },
             41 => {
                 // Account Deck Register
                 if let Some(request) = create_deck_register_request(&data) {
@@ -254,7 +255,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             51 => {
                 // Deck Card Configuration
                 if let Some(request) = create_deck_configuration_request(&data) {
-                    let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
+                    let deck_card_service_mutex = AccountDeckCardServiceImpl::get_instance();
                     let mut deck_card_service = deck_card_service_mutex.lock().await;
 
                     let response = deck_card_service.deck_configuration_register(request).await;
@@ -268,7 +269,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             52 => {
                 // (Account) Deck Card List
                 if let Some(request) = create_deck_card_list_request(&data) {
-                    let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
+                    let deck_card_service_mutex = AccountDeckCardServiceImpl::get_instance();
                     let mut deck_card_service = deck_card_service_mutex.lock().await;
 
                     let response = deck_card_service.deck_card_list(request).await;

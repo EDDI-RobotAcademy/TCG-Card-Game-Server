@@ -46,7 +46,7 @@ mod battle_room;
 mod account_deck;
 mod match_waiting_timer;
 mod ugly_tests;
-mod deck_card;
+mod account_deck_card;
 mod shop;
 mod account_card;
 mod battle_wait_queue;

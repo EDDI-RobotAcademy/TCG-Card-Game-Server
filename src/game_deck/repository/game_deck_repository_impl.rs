@@ -22,6 +22,21 @@ impl GameDeckRepositoryImpl {
         &mut self.game_deck_map
     }
 
+    pub fn set_game_deck_from_data(&mut self, account_unique_id: i32, data: Vec<i32>) {
+        let mut game_deck_map = self.get_game_deck_map();
+
+        let game_deck = game_deck_map.entry(account_unique_id).or_insert(GameDeck::new());
+        game_deck.set_card_list_from_data(data);
+    }
+
+    pub fn get_game_deck_card_ids(&self, account_id: i32) -> Vec<i32> {
+        if let Some(game_deck) = self.game_deck_map.get(&account_id) {
+            game_deck.get_card_ids()
+        } else {
+            Vec::new()
+        }
+    }
+
     pub fn get_instance() -> Arc<AsyncMutex<GameDeckRepositoryImpl>> {
         lazy_static! {
             static ref INSTANCE: Arc<AsyncMutex<GameDeckRepositoryImpl>> =
@@ -41,6 +56,15 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
         self.game_deck_map.insert(account_unique_id, new_game_deck_map);
 
         true
+    }
+
+    fn shuffle_game_deck(&mut self, account_unique_id: i32) -> bool {
+        if let Some(game_deck) = self.game_deck_map.get_mut(&account_unique_id) {
+            game_deck.shuffle_game_deck();
+            true
+        } else {
+            false
+        }
     }
 }
 

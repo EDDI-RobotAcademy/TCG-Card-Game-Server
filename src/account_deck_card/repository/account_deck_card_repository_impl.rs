@@ -12,25 +12,25 @@ use diesel::result::Error;
 use crate::common::env::env_detector::EnvDetector;
 use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
 
-use crate::deck_card::entity::deck_card::DeckCard;
-use crate::deck_card::repository::deck_card_repository::DeckCardRepository;
-use crate::deck_card::service::request::deck_configuration_request::DeckConfigurationRequest;
+use crate::account_deck_card::entity::account_deck_card::AccountDeckCard;
+use crate::account_deck_card::repository::account_deck_card_repository::AccountDeckCardRepository;
+use crate::account_deck_card::service::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
 
-pub struct DeckCardRepositoryImpl {
+pub struct AccountDeckCardRepositoryImpl {
     mysql_database_connection: Arc<AsyncMutex<MysqlDatabaseConnection>>,
 }
 
-impl DeckCardRepositoryImpl {
+impl AccountDeckCardRepositoryImpl {
     pub fn new(mysql_connection: Arc<AsyncMutex<MysqlDatabaseConnection>>) -> Self {
-        DeckCardRepositoryImpl {
+        AccountDeckCardRepositoryImpl {
             mysql_database_connection: mysql_connection
         }
     }
 
-    pub fn get_instance() -> Arc<AsyncMutex<DeckCardRepositoryImpl>> {
+    pub fn get_instance() -> Arc<AsyncMutex<AccountDeckCardRepositoryImpl>> {
         lazy_static! {
-            static ref INSTANCE: Arc<AsyncMutex<DeckCardRepositoryImpl>> =
-                Arc::new(AsyncMutex::new(DeckCardRepositoryImpl::new(
+            static ref INSTANCE: Arc<AsyncMutex<AccountDeckCardRepositoryImpl >> =
+                Arc::new(AsyncMutex::new(AccountDeckCardRepositoryImpl::new(
                     MysqlDatabaseConnection::get_instance()
             )));
         }
@@ -39,9 +39,9 @@ impl DeckCardRepositoryImpl {
 }
 
 #[async_trait]
-impl DeckCardRepository for DeckCardRepositoryImpl {
-    async fn save_deck_card_list(&self, deck_card_list: Vec<DeckCard>) -> Result<String, String> {
-        use crate::deck_card::entity::deck_card::deck_cards::dsl::*;
+impl AccountDeckCardRepository for AccountDeckCardRepositoryImpl {
+    async fn save_deck_card_list(&self, deck_card_list: Vec<AccountDeckCard>) -> Result<String, String> {
+        use crate::account_deck_card::entity::account_deck_card::deck_cards::dsl::*;
         println!("DeckCardRepositoryImpl: save()");
 
         let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
@@ -56,7 +56,7 @@ impl DeckCardRepository for DeckCardRepositoryImpl {
     }
 
     async fn get_card_list(&self, request_deck_id: i32) -> Result<Option<Vec<HashMap<i32, i32>>>, Error> {
-        use crate::deck_card::entity::deck_card::deck_cards::dsl::*;
+        use crate::account_deck_card::entity::account_deck_card::deck_cards::dsl::*;
         use diesel::query_dsl::filter_dsl::FilterDsl;
         use diesel::prelude::*;
 
@@ -71,7 +71,7 @@ impl DeckCardRepository for DeckCardRepositoryImpl {
         let where_clause = FilterDsl::filter(deck_cards, deck_id.eq(deck_id));
         let found_cards = where_clause
             .select((deck_id, card_id, card_count))
-            .load::<DeckCard>(&mut connection)?;
+            .load::<AccountDeckCard>(&mut connection)?;
 
         let found_card = found_cards.into_iter()
             .filter(|deck_card| deck_card.deck_id == request_deck_id);
@@ -88,13 +88,13 @@ impl DeckCardRepository for DeckCardRepositoryImpl {
 
 #[cfg(test)]
 mod tests {
-    use crate::deck_card::entity::deck_card::deck_cards::dsl::deck_cards;
+    use crate::account_deck_card::entity::account_deck_card::deck_cards::dsl::deck_cards;
     use super::*;
 
     // DELETE FROM deck_cards WHERE deck_id = 7777;
     #[tokio::test]
     async fn test_save_deck_card_list() {
-        let repository = DeckCardRepositoryImpl::get_instance();
+        let repository = AccountDeckCardRepositoryImpl::get_instance();
         let repository_guard = repository.lock().await;
 
         let card_id_list = vec![
@@ -102,7 +102,7 @@ mod tests {
             26, 26, 26, 30, 31, 31, 31, 32, 32, 32, 33, 33, 35, 35, 36, 36, 93, 93, 93, 93, 93,
         ];
 
-        let request = DeckConfigurationRequest::new(7777, card_id_list);
+        let request = AccountDeckConfigurationRequest::new(7777, card_id_list);
         let deck_card_list = request.to_deck_card_list();
 
         let result = repository_guard.save_deck_card_list(deck_card_list).await.expect("TODO: panic message");

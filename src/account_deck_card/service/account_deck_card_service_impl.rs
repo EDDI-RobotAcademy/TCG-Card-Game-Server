@@ -7,41 +7,41 @@ use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
 use crate::card_library::repository::card_library_repository_impl::CardLibraryRepositoryImpl;
 use crate::common::converter::vector_to_hash_converter::VectorToHashConverter;
-use crate::deck_card::repository::deck_card_repository::DeckCardRepository;
+use crate::account_deck_card::repository::account_deck_card_repository::AccountDeckCardRepository;
 
-use crate::deck_card::repository::deck_card_repository_impl::DeckCardRepositoryImpl;
-use crate::deck_card::service::deck_card_service::DeckCardService;
-use crate::deck_card::service::request::deck_card_list_request::DeckCardListRequest;
-use crate::deck_card::service::request::deck_configuration_request::DeckConfigurationRequest;
-use crate::deck_card::service::response::deck_card_list_response::DeckCardListResponse;
-use crate::deck_card::service::response::deck_configuration_response::DeckConfigurationResponse;
+use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
+use crate::account_deck_card::service::account_deck_card_service::AccountDeckCardService;
+use crate::account_deck_card::service::request::account_deck_card_list_request::AccountDeckCardListRequest;
+use crate::account_deck_card::service::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
+use crate::account_deck_card::service::response::account_deck_card_list_response::AccountDeckCardListResponse;
+use crate::account_deck_card::service::response::account_deck_configuration_response::AccountDeckConfigurationResponse;
 
-pub struct DeckCardServiceImpl {
-    deck_card_repository: Arc<AsyncMutex<DeckCardRepositoryImpl>>,
+pub struct AccountDeckCardServiceImpl {
+    deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>,
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
 }
 
-impl DeckCardServiceImpl {
-    pub fn new(deck_card_repository: Arc<AsyncMutex<DeckCardRepositoryImpl>>,
+impl AccountDeckCardServiceImpl {
+    pub fn new(deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>,
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,) -> Self {
-        DeckCardServiceImpl {
+        AccountDeckCardServiceImpl {
             deck_card_repository,
             card_kinds_repository,
         }
     }
-    pub fn get_instance() -> Arc<AsyncMutex<DeckCardServiceImpl>> {
+    pub fn get_instance() -> Arc<AsyncMutex<AccountDeckCardServiceImpl>> {
         lazy_static! {
-            static ref INSTANCE: Arc<AsyncMutex<DeckCardServiceImpl>> =
+            static ref INSTANCE: Arc<AsyncMutex<AccountDeckCardServiceImpl >> =
                 Arc::new(
                     AsyncMutex::new(
-                        DeckCardServiceImpl::new(
-                            DeckCardRepositoryImpl::get_instance(),
+                        AccountDeckCardServiceImpl::new(
+                            AccountDeckCardRepositoryImpl::get_instance(),
                             CardKindsRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
 
-    async fn check_deck_card_list_count(&self, deck: &Vec<i32>) -> Result<(), DeckConfigurationResponse> {
+    async fn check_deck_card_list_count(&self, deck: &Vec<i32>) -> Result<(), AccountDeckConfigurationResponse> {
         match deck.len() {
             40 => {
                 Ok(())
@@ -51,7 +51,7 @@ impl DeckCardServiceImpl {
                 let error_string = format!("덱에 총 {}장이 있습니다. 정확히 40장을 맞춰주세요!", length);
                 println!("{}", error_string);
 
-                return Err(DeckConfigurationResponse::new(false, error_string));
+                return Err(AccountDeckConfigurationResponse::new(false, error_string));
             }
         }
     }
@@ -68,7 +68,7 @@ impl DeckCardServiceImpl {
         return false;
     }
 
-    async fn validate_deck(&self, request_deck_list: &Vec<i32>) -> Result<(), DeckConfigurationResponse> {
+    async fn validate_deck(&self, request_deck_list: &Vec<i32>) -> Result<(), AccountDeckConfigurationResponse> {
         let mut card_count_map = HashMap::new();
 
         // TODO: 신화, 전설, 영웅, 언커먼, 일반 덱 구성 규칙 지켰는지 파악해야합니다.
@@ -85,7 +85,7 @@ impl DeckCardServiceImpl {
                     format!("{}번 카드가 3장이 넘습니다. 같은 카드는 덱에 3장 이하여야 합니다!", card_id);
                 println!("{}", error_string);
 
-                return Err(DeckConfigurationResponse::new(false, error_string));
+                return Err(AccountDeckConfigurationResponse::new(false, error_string));
             }
         }
 
@@ -94,8 +94,8 @@ impl DeckCardServiceImpl {
 }
 
 #[async_trait]
-impl DeckCardService for DeckCardServiceImpl {
-    async fn deck_configuration_register(&self, deck_configuration_request: DeckConfigurationRequest) -> DeckConfigurationResponse {
+impl AccountDeckCardService for AccountDeckCardServiceImpl {
+    async fn deck_configuration_register(&self, deck_configuration_request: AccountDeckConfigurationRequest) -> AccountDeckConfigurationResponse {
         println!("DeckCardServiceImpl: deck_configuration_register()");
 
         let deck_card_id_vector = deck_configuration_request.card_id_list_of_deck();
@@ -114,14 +114,14 @@ impl DeckCardService for DeckCardServiceImpl {
         let result = deck_card_repository.save_deck_card_list(deck_card_vector).await;
         match result {
             Ok(success_message) => {
-                DeckConfigurationResponse::new(true, success_message)
+                AccountDeckConfigurationResponse::new(true, success_message)
             }
             Err(error_message) => {
-                DeckConfigurationResponse::new(false, error_message)
+                AccountDeckConfigurationResponse::new(false, error_message)
             }
         }
     }
-    async fn deck_card_list(&self, deck_card_list_request: DeckCardListRequest) -> DeckCardListResponse {
+    async fn deck_card_list(&self, deck_card_list_request: AccountDeckCardListRequest) -> AccountDeckCardListResponse {
         println!("DeckCardServiceImpl: deck_card_list()");
 
         let deck_card_repository = self.deck_card_repository.lock().await;
@@ -130,11 +130,11 @@ impl DeckCardService for DeckCardServiceImpl {
         match result {
             Ok(opt_list) => {
                 let card_id_count_list = opt_list.unwrap();
-                DeckCardListResponse::new(card_id_count_list)
+                AccountDeckCardListResponse::new(card_id_count_list)
             }
             Err(e) => {
                 let empty_list = Vec::new();
-                DeckCardListResponse::new(empty_list)
+                AccountDeckCardListResponse::new(empty_list)
             }
         }
     }
@@ -144,13 +144,13 @@ impl DeckCardService for DeckCardServiceImpl {
 mod test {
     use super::*;
     use tokio::test;
-    use crate::deck_card::repository::deck_card_repository_impl::DeckCardRepositoryImpl;
+    use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
 
-    use crate::deck_card;
+    use crate::account_deck_card;
 
     #[tokio::test]
     async fn test_deck_config_save() {
-        let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
+        let deck_card_service_mutex = AccountDeckCardServiceImpl::get_instance();
         let deck_card_service_mutex_guard = deck_card_service_mutex.lock().await;
 
         let deck_id = 18118;
@@ -167,7 +167,7 @@ mod test {
         for id in test_card_id_list {
             card_vec.push(id);
         }
-        let deck_config_request = DeckConfigurationRequest::new(deck_id, card_vec);
+        let deck_config_request = AccountDeckConfigurationRequest::new(deck_id, card_vec);
 
         let result = deck_card_service_mutex_guard.deck_configuration_register(deck_config_request).await;
         println!("is_success: {}", result.get_is_success());
@@ -175,10 +175,10 @@ mod test {
     }
     #[tokio::test]
     async fn test_deck_card_list() {
-        let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
+        let deck_card_service_mutex = AccountDeckCardServiceImpl::get_instance();
         let deck_card_service_mutex_guard = deck_card_service_mutex.lock().await;
 
-        let deck_card_list_request = DeckCardListRequest::new(8);
+        let deck_card_list_request = AccountDeckCardListRequest::new(8);
 
         let result = deck_card_service_mutex_guard.deck_card_list(deck_card_list_request).await;
         println!("{:?}", result.get_card_id_list());
@@ -198,9 +198,9 @@ mod test {
             26, 26, 26, 30, 31, 31, 31, 32, 32, 32, 33, 33, 35, 35, 36, 36, 93, 93, 93, 93, 93,
         ];
 
-        let mut deck_configuration_request = DeckConfigurationRequest::new(7777, card_list);
+        let mut deck_configuration_request = AccountDeckConfigurationRequest::new(7777, card_list);
 
-        let deck_card_service = DeckCardServiceImpl::get_instance();
+        let deck_card_service = AccountDeckCardServiceImpl::get_instance();
         let deck_card_service_guard = deck_card_service.lock().await;
 
         let result = deck_card_service_guard.deck_configuration_register(deck_configuration_request.clone()).await;

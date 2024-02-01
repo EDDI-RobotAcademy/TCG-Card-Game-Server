@@ -1,3 +1,7 @@
+use std::time::SystemTime;
+use rand::prelude::StdRng;
+use rand::SeedableRng;
+use rand::seq::SliceRandom;
 use crate::game_deck::entity::game_deck_card::GameDeckCard;
 
 #[derive(Debug)]
@@ -17,6 +21,25 @@ impl GameDeckCardList {
     pub fn get_all_card_list(&self) -> &Vec<GameDeckCard> {
         &self.card_list
     }
+
+    pub fn set_card_list(&mut self, card_list: Vec<GameDeckCard>) {
+        self.card_list = card_list;
+    }
+
+    pub fn shuffle(&mut self) {
+        let mut rng = rand::thread_rng();
+        self.card_list.shuffle(&mut rng);
+    }
+
+    // pub fn shuffle(&mut self) {
+    //     let seed = SystemTime::now()
+    //         .duration_since(SystemTime::UNIX_EPOCH)
+    //         .expect("Time went backwards")
+    //         .as_nanos() as u64;
+    //
+    //     let mut rng: StdRng = SeedableRng::seed_from_u64(seed);
+    //     self.card_list.shuffle(&mut rng);
+    // }
 }
 
 #[cfg(test)]

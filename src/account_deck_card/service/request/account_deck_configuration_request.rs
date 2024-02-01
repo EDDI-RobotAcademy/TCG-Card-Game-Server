@@ -1,15 +1,15 @@
 use crate::common::converter::vector_to_hash_converter::VectorToHashConverter;
-use crate::deck_card::entity::deck_card::DeckCard;
+use crate::account_deck_card::entity::account_deck_card::AccountDeckCard;
 
 #[derive(Debug, Clone)]
-pub struct DeckConfigurationRequest {
+pub struct AccountDeckConfigurationRequest {
     deck_id: i32,
     card_id_list: Vec<i32>
 }
 
-impl DeckConfigurationRequest {
+impl AccountDeckConfigurationRequest {
     pub fn new(deck_id: i32, card_id_list: Vec<i32>) -> Self {
-        DeckConfigurationRequest {
+        AccountDeckConfigurationRequest {
             deck_id,
             card_id_list
         }
@@ -17,14 +17,14 @@ impl DeckConfigurationRequest {
     pub fn deck_id(&self) -> i32 { self.deck_id }
     pub fn card_id_list_of_deck(&self) -> &Vec<i32> { &self.card_id_list }
 
-    pub fn to_deck_card_list(&self) -> Vec<DeckCard> {
+    pub fn to_deck_card_list(&self) -> Vec<AccountDeckCard> {
         let deck_id = self.deck_id();
         let deck_card_id_list = self.card_id_list_of_deck();
         let deck_card_hash = VectorToHashConverter::convert_vector_to_hash(&deck_card_id_list);
 
-        let deck_card_list: Vec<DeckCard> = deck_card_hash
+        let deck_card_list: Vec<AccountDeckCard> = deck_card_hash
             .iter()
-            .map(|(card_id, card_count)| DeckCard::new(deck_id, *card_id, *card_count).unwrap())
+            .map(|(card_id, card_count)| AccountDeckCard::new(deck_id, *card_id, *card_count).unwrap())
             .collect();
 
         deck_card_list
@@ -43,7 +43,7 @@ mod tests {
             26, 26, 26, 30, 31, 31, 31, 32, 32, 32, 33, 33, 35, 35, 36, 36, 93, 93, 93, 93, 93,
         ];
 
-        let request = DeckConfigurationRequest::new(1, card_id_list);
+        let request = AccountDeckConfigurationRequest::new(1, card_id_list);
         let result = request.to_deck_card_list();
 
         for card in &result {

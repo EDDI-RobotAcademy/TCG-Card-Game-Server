@@ -1,2 +1,0 @@
-pub mod deck_configuration_response;
-pub mod deck_card_list_response;
