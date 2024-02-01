@@ -36,20 +36,28 @@ impl DeckCardRepositoryImpl {
         }
         INSTANCE.clone()
     }
-    async fn check_deck_cards_count(&self,deck: &Vec<i32>) -> Result<String, String> {
+    async fn check_this_deck_comply_rules(&self,deck: &Vec<i32>,map: HashMap<&i32, i32>) -> Result<(), String> {
         match deck.len() {
             40 => {
-
-
-                Ok("와우! 정확히 40장입니다!!!!.".to_string())
+                println!("대박!! 40장을 정확히 맞추셨습니다!!");
             }
             length => {
                 // 40장이 아닌 경우
                 let error_string = format!("덱에 총 {}장이 있습니다. 정확히 40장을 맞춰주세요!", length);
                 println!("{}", error_string);
-                Err(error_string)
+                return Err(error_string)
             }
         }
+         let mut card_count_map = map;
+        for (key, value) in card_count_map.iter() {
+
+            if *value > 3 {
+                let error_string = format!("{}번 카드가 3장 이상입니다. 같은 카드는 덱에 3장 이하여야 합니다!", key);
+                println!("{}", error_string);
+                return Err(error_string);
+            }
+        }
+        Ok(())
     }
 }
 
@@ -64,52 +72,40 @@ impl DeckCardRepository for DeckCardRepositoryImpl {
         let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
         let mut connection = MysqlConnection::establish(&database_url)
             .expect("Failed to establish a new connection");
-        let result = self.check_deck_cards_count(&deck.card_id_list_of_deck().clone()).await.unwrap();
-        println!("{:?}",result);
-
-        //받은 카드 리스트가 총 40장인지 검사
-        // let bare_card_id_list_to_count_total = deck.card_id_list_of_deck().clone();
-        // if bare_card_id_list_to_count_total.len() != 40 {
-        //     let length = bare_card_id_list_to_count_total.len();
-        //     let error_string = format!("덱에 총 {}장이 있습니다. 정확히 40장을 맞춰주세요!", length);
-        //     println!("{}", error_string);
-        //     return Err(error_string)
-        // }
-
-        // println!("{:?}", bare_card_id_list_to_count_total.len());
-
-        // 같은 카드가 3장 초과인지 검사 및 {카드 ID: 카드 개수} map 형성
-        let mut bare_card_id_list_for_loop = deck.card_id_list_of_deck().clone();
         let mut card_count_map = HashMap::new();
+        let mut built_deck=deck.card_id_list_of_deck().clone();
+
+
+        let mut bare_card_id_list_for_loop = deck.card_id_list_of_deck().clone();
 
         for card_key in bare_card_id_list_for_loop.iter() {
             let card_counts = card_count_map.entry(card_key).or_insert(0);
             *card_counts += 1;
-            if card_counts > &mut 3 {
-                let error_string = format!("{}번 카드가 3장이 넘습니다. 같은 카드는 덱에 3장 이하여야 합니다!", card_key);
-                println!("{}", error_string);
-                return Err(error_string)
+        }
+        let  result =self.check_this_deck_comply_rules(&built_deck,card_count_map.clone()).await;
+        if result.is_err()
+        {
+            return Err(result.unwrap_err())
+        }
+
+        else {
+            let mut bare_card_id_list_to_remove_duplication = deck.card_id_list_of_deck().clone();
+            let unique_card_id_set: HashSet<i32> = bare_card_id_list_to_remove_duplication.into_iter().collect();
+            let unique_card_id_list: Vec<i32> = unique_card_id_set.into_iter().collect();
+
+            println!("{:?}", unique_card_id_list);
+
+            for card_index in unique_card_id_list {
+                let card_count_index = card_count_map.get(&card_index).expect("REASON").clone();
+                let deck_card = DeckCard::new(deck.deck_id(), card_index, card_count_index).unwrap();
+                diesel::insert_into(deck_cards)
+                    .values(&deck_card)
+                    .execute(&mut connection)
+                    .expect("REASON");
             }
+
+            Ok("덱 저장에 성공하였습니다.".to_string())
         }
-
-        // println!("{:?}", card_count_map);
-
-        let mut bare_card_id_list_to_remove_duplication = deck.card_id_list_of_deck().clone();
-        let unique_card_id_set: HashSet<i32> = bare_card_id_list_to_remove_duplication.into_iter().collect();
-        let unique_card_id_list: Vec<i32> = unique_card_id_set.into_iter().collect();
-
-        // println!("{:?}", unique_card_id_list);
-
-        for card_index in unique_card_id_list {
-            let card_count_index = card_count_map.get(&card_index).expect("REASON").clone();
-            let deck_card = DeckCard::new(deck.deck_id(), card_index, card_count_index).unwrap();
-            diesel::insert_into(deck_cards)
-                .values(&deck_card)
-                .execute(&mut connection)
-                .expect("REASON");
-        }
-
-        Ok("덱 저장에 성공하였습니다.".to_string())
     }
 
     async fn get_card_list(&self, request: i32) -> Result<Option<Vec<HashMap<i32, i32>>>, Error> {
