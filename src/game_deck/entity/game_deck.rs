@@ -1,21 +1,21 @@
-use crate::game_deck::entity::game_deck_card::DeckCard;
-use crate::game_deck::entity::game_deck_card_list::DeckCardList;
+use crate::game_deck::entity::game_deck_card::GameDeckCard;
+use crate::game_deck::entity::game_deck_card_list::GameDeckCardList;
 
 #[derive(Debug)]
 pub struct GameDeck {
-    game_deck: DeckCardList,
+    game_deck: GameDeckCardList,
 }
 
 impl GameDeck {
     pub fn new() -> GameDeck {
-        GameDeck { game_deck: DeckCardList::new() }
+        GameDeck { game_deck: GameDeckCardList::new() }
     }
 
-    pub fn add_card_to_game_deck(&mut self, card: DeckCard) {
+    pub fn add_card_to_game_deck(&mut self, card: GameDeckCard) {
         self.game_deck.add_card(card);
     }
 
-    pub fn get_all_cards_in_game_deck(&self) -> &Vec<DeckCard> {
+    pub fn get_all_cards_in_game_deck(&self) -> &Vec<GameDeckCard> {
         self.game_deck.get_all_card_list()
     }
 }
@@ -28,8 +28,8 @@ mod tests {
     fn test_game_deck() {
         let mut game_deck = GameDeck::new();
 
-        let card1 = DeckCard::new(33);
-        let card2 = DeckCard::new(77);
+        let card1 = GameDeckCard::new(33);
+        let card2 = GameDeckCard::new(77);
 
         game_deck.add_card_to_game_deck(card1);
         game_deck.add_card_to_game_deck(card2);
