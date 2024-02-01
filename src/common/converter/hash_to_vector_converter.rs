@@ -3,7 +3,7 @@ use std::collections::HashMap;
 pub struct HashToVectorConverter;
 
 impl HashToVectorConverter {
-    fn hash_vector_to_vector(hash_list: Vec<HashMap<i32, i32>>) -> Vec<i32> {
+    pub fn hash_vector_to_vector(hash_list: Vec<HashMap<i32, i32>>) -> Vec<i32> {
         hash_list
             .into_iter()
             .flat_map(|entry| {
