@@ -1,3 +1,6 @@
+use bcrypt::{BcryptError};
+use diesel::{Insertable, Queryable, table};
+
 #[derive(Queryable, Insertable, Debug)]
 #[table_name = "account_points"]
 pub struct AccountPoint {
@@ -22,12 +25,12 @@ impl AccountPoint {
         })
     }
 
-    pub fn account_id(&self) -> i32 { self.id }
+    pub fn account_id(&self) -> i32 { self.account_id }
 
     pub fn gold(&self) -> i32 { self.gold }
 }
 
-impl std::fmt::Display for Account_point {
+impl std::fmt::Display for AccountPoint {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,

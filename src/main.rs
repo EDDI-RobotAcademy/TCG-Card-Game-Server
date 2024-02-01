@@ -62,6 +62,7 @@ mod game_hand;
 mod game_main_character;
 mod battle_prepare_task;
 mod card_library;
+mod account_point;
 
 #[tokio::main]
 async fn main() {
