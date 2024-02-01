@@ -5,8 +5,7 @@ use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
 use crate::card_grade::repository::card_grade_repository::CardGradeRepository;
-use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
-use crate::common::csv::csv_reader::{build_card_grade_dictionary, build_card_kinds_dictionary, csv_read};
+use crate::common::csv::csv_reader::{build_card_grade_dictionary, csv_read};
 use crate::common::path::root_path::RootPath;
 
 pub struct CardGradeRepositoryImpl {
