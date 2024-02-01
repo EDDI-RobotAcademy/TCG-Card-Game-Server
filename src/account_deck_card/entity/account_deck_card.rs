@@ -4,7 +4,7 @@ use diesel::sql_types::Integer;
 
 #[derive(Queryable, Insertable, Debug)]
 #[table_name = "deck_cards"]
-pub struct DeckCard {
+pub struct AccountDeckCard {
     #[column_name = "deck_id"]
     pub deck_id: i32,
     pub card_id: i32,
@@ -19,9 +19,9 @@ table! {
     }
 }
 
-impl DeckCard {
+impl AccountDeckCard {
     pub fn new(deck_id: i32, card_id: i32, card_count: i32) -> Result<Self, BcryptError> {
-        Ok(DeckCard {
+        Ok(AccountDeckCard {
             deck_id,
             card_id,
             card_count

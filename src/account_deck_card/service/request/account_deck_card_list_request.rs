@@ -1,11 +1,11 @@
 #[derive(Debug)]
-pub struct DeckCardListRequest {
+pub struct AccountDeckCardListRequest {
     deck_id: i32
 }
 
-impl DeckCardListRequest {
+impl AccountDeckCardListRequest {
     pub fn new(deck_id: i32) -> Self {
-        DeckCardListRequest {
+        AccountDeckCardListRequest {
             deck_id
         }
     }
