@@ -14,6 +14,8 @@ use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
+use crate::card_kinds::service::card_kinds_service::CardKindsService;
+use crate::card_kinds::service::card_kinds_service_impl::CardKindsServiceImpl;
 use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
 
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
@@ -148,7 +150,16 @@ impl DomainInitializer {
 
         let result = card_kinds_repository_guard.get_card_kind("6").await;
         println!("card kinds: {:?}", result);
-        // let _ = CardKindsServiceImpl::get_instance();
+
+        drop(card_kinds_repository_guard);
+
+        let card_kinds_service = CardKindsServiceImpl::get_instance();
+        let card_kinds_service_guard = card_kinds_service.lock().await;
+
+        let result_from_service = card_kinds_service_guard.get_card_kind("6").await;
+        println!("card kinds from service: {:?}", result_from_service);
+
+        drop(card_kinds_service_guard);
     }
 
     pub async fn init_every_domain(&self) {
