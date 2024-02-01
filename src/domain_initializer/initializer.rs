@@ -156,8 +156,12 @@ impl DomainInitializer {
         let card_kinds_service = CardKindsServiceImpl::get_instance();
         let card_kinds_service_guard = card_kinds_service.lock().await;
 
-        let result_from_service = card_kinds_service_guard.get_card_kind("6").await;
+        let result_from_service = card_kinds_service_guard.get_card_kind("93").await;
         println!("card kinds from service: {:?}", result_from_service);
+
+        if result_from_service.map(|kind| kind == "에너지").unwrap_or(false) {
+            println!("에너지 카드 감지!");
+        }
 
         drop(card_kinds_service_guard);
     }
