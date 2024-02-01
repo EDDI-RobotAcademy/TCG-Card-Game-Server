@@ -16,6 +16,11 @@ use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
 use crate::card_kinds::service::card_kinds_service::CardKindsService;
 use crate::card_kinds::service::card_kinds_service_impl::CardKindsServiceImpl;
+use crate::card_library::entity::card_dictionary_label::CardDictionaryLabel;
+use crate::card_library::repository::card_library_repository::CardLibraryRepository;
+use crate::card_library::repository::card_library_repository_impl::CardLibraryRepositoryImpl;
+use crate::card_library::service::card_library_service::CardLibraryService;
+use crate::card_library::service::card_library_service_impl::CardLibraryServiceImpl;
 use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
 
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
@@ -120,31 +125,41 @@ impl DomainInitializer {
     }
 
     pub async fn init_card_attribute_domain(&self) {
-        let current_dir = std::env::current_dir().unwrap_or_else(|err| {
-            eprintln!("Failed to get current directory: {}", err);
-            std::process::exit(1);
-        });
-        println!("current_dir: {:?}", current_dir);
+        // let current_dir = std::env::current_dir().unwrap_or_else(|err| {
+        //     eprintln!("Failed to get current directory: {}", err);
+        //     std::process::exit(1);
+        // });
+        // println!("current_dir: {:?}", current_dir);
+        //
+        // let filename = "../../resources/csv/every_card.csv";
+        //
+        // let csv_content = csv_read(filename).unwrap_or_else(|err| {
+        //     println!("Card 정보 읽는 도중 오류 발생: {}", err);
+        //     std::process::exit(1);
+        // });
+        //
+        // let (
+        //     race_dictionary,
+        //     card_grade_dictionary,
+        //     card_kinds_dictionary,
+        //     energy_needed_dictionary,
+        //     attack_dictionary,
+        //     passive_dictionary,
+        //     skill_dictionary,
+        //     hp_dictionary,
+        // ) = build_dictionaries(&csv_content);
 
-        let filename = "../../resources/csv/every_card.csv";
+        let source = "../../resources/csv/card_data.csv";
+        let card_library = CardLibraryServiceImpl::get_instance();
+        let card_library_guard = card_library.lock().await;
 
-        let csv_content = csv_read(filename).unwrap_or_else(|err| {
-            println!("Card 정보 읽는 도중 오류 발생: {}", err);
-            std::process::exit(1);
-        });
+        card_library_guard.open_library(source).await;
 
-        let (
-            race_dictionary,
-            card_grade_dictionary,
-            card_kinds_dictionary,
-            energy_needed_dictionary,
-            attack_dictionary,
-            passive_dictionary,
-            skill_dictionary,
-            hp_dictionary,
-        ) = build_dictionaries(&csv_content);
+        let kind_dictionary = card_library_guard.get_dictionary(CardDictionaryLabel::Kind).await;
 
-        CardKindsRepositoryImpl::create_instance(card_kinds_dictionary).await;
+        drop(card_library_guard);
+
+        CardKindsRepositoryImpl::create_instance(kind_dictionary).await;
         let card_kinds_repository = CardKindsRepositoryImpl::get_instance();
         let card_kinds_repository_guard = card_kinds_repository.lock().await;
 
@@ -156,15 +171,37 @@ impl DomainInitializer {
         let card_kinds_service = CardKindsServiceImpl::get_instance();
         let card_kinds_service_guard = card_kinds_service.lock().await;
 
-        let result_from_service = card_kinds_service_guard.get_card_kind("93").await;
+        let result_from_service = card_kinds_service_guard.get_card_kind("6").await;
         println!("card kinds from service: {:?}", result_from_service);
 
-        if result_from_service.map(|kind| kind == "에너지").unwrap_or(false) {
-            println!("에너지 카드 감지!");
+        if result_from_service.map(|kind| kind == "1").unwrap_or(false) {
+            println!("휴먼 카드 감지!");
         }
 
         drop(card_kinds_service_guard);
     }
+
+    // TODO: library 사용 방식이 확정되면 추가할 것
+    // pub async fn init_card_library_domain(&self) {
+    //     let source = "../../resources/csv/every_card.csv";
+    //     let card_library = CardLibraryServiceImpl::get_instance();
+    //     let card_library_guard = card_library.lock().await;
+    //
+    //     card_library_guard.open_library(source).await;
+    //
+    //     //
+    //     //
+    //     // let kind_dictionary = card_library_repo_guard.get_dictionary(CardDictionaryLabel::Kind).await;
+    //     // CardKindsRepositoryImpl::create_instance(kind_dictionary).await;
+    //     //
+    //     // let card_kinds_repository = CardKindsRepositoryImpl::get_instance();
+    //     // let card_kinds_repository_guard = card_kinds_repository.lock().await;
+    //     //
+    //     // let result = card_kinds_repository_guard.get_card_kind("6").await;
+    //     // println!("card kinds: {:?}", result);
+    //     //
+    //     // drop(card_kinds_repository_guard);
+    // }
 
     pub async fn init_every_domain(&self) {
         /* IPC Channel List */
@@ -208,6 +245,7 @@ impl DomainInitializer {
 
         /* Card Attribute Domain */
         self.init_card_attribute_domain().await;
+        // self.init_card_library_domain().await;
     }
 }
 

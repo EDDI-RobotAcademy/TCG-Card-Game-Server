@@ -127,8 +127,7 @@ impl CardLibraryServiceImpl {
 
 #[async_trait]
 impl CardLibraryService for CardLibraryServiceImpl {
-    async fn open_library(&self) {
-        let file_path = "../../../resources/csv/card_data.csv";
+    async fn open_library(&self, file_path: &str) {
         let card_data_csv_content = Self::card_data_csv_read(file_path).await;
         let prepared_dictionary_hash_tuple =
             Self::build_card_data_dictionaries(&card_data_csv_content.unwrap()).await;
@@ -142,6 +141,19 @@ impl CardLibraryService for CardLibraryServiceImpl {
         card_library_repository_mutex_guard.store_dictionary(CardDictionaryLabel::ActivationEnergy, prepared_dictionary_hash_tuple.4).await;
         card_library_repository_mutex_guard.store_dictionary(CardDictionaryLabel::AttackPoint, prepared_dictionary_hash_tuple.5).await;
         card_library_repository_mutex_guard.store_dictionary(CardDictionaryLabel::HealthPoint, prepared_dictionary_hash_tuple.6).await;
+
+        drop(card_library_repository_mutex_guard);
+
+        println!("CardLibraryServiceImpl: Card library is now ready.");
+    }
+    async fn get_dictionary(&self, label: CardDictionaryLabel) -> HashMap<String, String> {
+        println!("CardLibraryServiceImpl: get_dictionary()");
+
+        let card_library_repository_mutex_guard = self.repository.lock().await;
+        let found_dictionary = card_library_repository_mutex_guard.get_dictionary(label).await;
+        drop(card_library_repository_mutex_guard);
+
+        found_dictionary
     }
 }
 
@@ -156,13 +168,19 @@ mod tests {
         let card_library = CardLibraryServiceImpl::get_instance();
         let card_library_mutex_guard = card_library.lock().await;
 
-        card_library_mutex_guard.open_library().await;
+        let file_path = "../../../resources/csv/card_data.csv";
+
+        card_library_mutex_guard.open_library(file_path).await;
 
         // get specific dictionary
         let card_library_repository = card_library_mutex_guard.repository.lock().await;
         let name_dictionary = card_library_repository.get_dictionary(CardDictionaryLabel::Name).await;
 
         println!("name_dictionary: {:?}", name_dictionary);
+
+        // let kind_dictionary = card_library_mutex_guard.get_dictionary(CardDictionaryLabel::Kind).await;
+        //
+        // println!("kind_dictionary: {:?}", kind_dictionary);
 
         // card object formation
         let test_card_id = 17;
