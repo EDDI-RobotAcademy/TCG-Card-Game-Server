@@ -13,4 +13,5 @@ mod tutorial;
 
 mod diesel_experiment;
 mod enum_value;
+mod type_convert;
 
