@@ -127,8 +127,7 @@ impl CardLibraryServiceImpl {
 
 #[async_trait]
 impl CardLibraryService for CardLibraryServiceImpl {
-    async fn open_library(&self) {
-        let file_path = "../../../resources/csv/card_data.csv";
+    async fn open_library(&self, file_path: &str) {
         let card_data_csv_content = Self::card_data_csv_read(file_path).await;
         let prepared_dictionary_hash_tuple =
             Self::build_card_data_dictionaries(&card_data_csv_content.unwrap()).await;
@@ -142,6 +141,8 @@ impl CardLibraryService for CardLibraryServiceImpl {
         card_library_repository_mutex_guard.store_dictionary(CardDictionaryLabel::ActivationEnergy, prepared_dictionary_hash_tuple.4).await;
         card_library_repository_mutex_guard.store_dictionary(CardDictionaryLabel::AttackPoint, prepared_dictionary_hash_tuple.5).await;
         card_library_repository_mutex_guard.store_dictionary(CardDictionaryLabel::HealthPoint, prepared_dictionary_hash_tuple.6).await;
+
+        println!("CardLibraryServiceImpl: Card library is now ready.")
     }
 }
 
@@ -156,7 +157,9 @@ mod tests {
         let card_library = CardLibraryServiceImpl::get_instance();
         let card_library_mutex_guard = card_library.lock().await;
 
-        card_library_mutex_guard.open_library().await;
+        let file_path = "../../../resources/csv/card_data.csv";
+
+        card_library_mutex_guard.open_library(file_path).await;
 
         // get specific dictionary
         let card_library_repository = card_library_mutex_guard.repository.lock().await;

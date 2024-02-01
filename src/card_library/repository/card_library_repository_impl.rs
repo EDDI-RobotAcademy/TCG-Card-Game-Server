@@ -29,6 +29,7 @@ impl CardLibraryRepositoryImpl {
 impl CardLibraryRepository for CardLibraryRepositoryImpl {
     async fn store_dictionary(&mut self, label: CardDictionaryLabel, dictionary: HashMap<String, String>) {
         self.labeled_card_dictionary_hash.insert(label, dictionary);
+        println!("{:?} dictionary stored successfully.", label);
     }
     async fn get_dictionary(&self, label: CardDictionaryLabel) -> HashMap<String, String> {
         let labeled_dictionaries = self.labeled_card_dictionary_hash.clone();

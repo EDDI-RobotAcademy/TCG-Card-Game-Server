@@ -14,6 +14,8 @@ use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
+use crate::card_library::service::card_library_service::CardLibraryService;
+use crate::card_library::service::card_library_service_impl::CardLibraryServiceImpl;
 use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
 
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
@@ -151,6 +153,18 @@ impl DomainInitializer {
         // let _ = CardKindsServiceImpl::get_instance();
     }
 
+    // TODO: csv 에서 읽어온 데이터를 어떤 방식으로 관리할 것인지 추후 고민
+    pub async fn init_card_library_domain(&self) {
+        let card_library_service = CardLibraryServiceImpl::get_instance();
+        let card_library_service_guard = card_library_service.lock().await;
+
+        let filename = "../../resources/csv/every_card.csv";
+
+        card_library_service_guard.open_library(filename).await;
+
+        // CardKindsRepositoryImpl::create_instance()
+    }
+
     pub async fn init_every_domain(&self) {
         /* IPC Channel List */
         let acceptor_receiver_channel = AcceptorReceiverChannel::new(1);
@@ -193,6 +207,7 @@ impl DomainInitializer {
 
         /* Card Attribute Domain */
         self.init_card_attribute_domain().await;
+        self.init_card_library_domain().await;
     }
 }
 
