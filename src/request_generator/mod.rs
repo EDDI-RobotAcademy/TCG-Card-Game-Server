@@ -8,4 +8,5 @@ pub mod battle_ready_account_hash_request_generator;
 pub mod deck_card_request_generator;
 pub mod shop_request_generator;
 pub mod what_is_the_room_number_request_generator;
+pub mod check_battle_prepare_request_generator;
 
