@@ -120,20 +120,6 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             }
             11 => {
-                // Battle Deck List
-                if let Some(request) = create_deck_list_request(&data) {
-                    let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
-                    let mut account_deck_service = account_deck_service_mutex.lock().await;
-
-                    let response = account_deck_service.account_deck_list(request).await;
-                    let response_type = Some(ResponseType::BATTLE_DECK_LIST(response));
-
-                    response_type
-                } else {
-                    None
-                }
-            },
-            12 => {
                 // Battle Wait Queue for Match
                 if let Some(request) = create_battle_wait_queue_request(&data) {
                     println!("request generator: battle match request protocol");
@@ -149,7 +135,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            13 => {
+            12 => {
                 // Is Ready For Battle
                 if let Some(request) = create_battle_ready_account_hash_request(&data) {
                     let battle_ready_account_hash_service_mutex = BattleReadyAccountHashServiceImpl::get_instance();
@@ -163,14 +149,18 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            13 => {
+                // Battle Match Cancel
+                None
+            },
             14 => {
-                // Battle Deck Card List
-                if let Some(request) = create_deck_card_list_request(&data) {
-                    let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
-                    let mut deck_card_service = deck_card_service_mutex.lock().await;
+                // Check Battle Prepare (CHECK_BATTLE_PREPARE)
+                if let Some(request) = create_check_battle_prepare_request(&data) {
+                    let battle_ready_account_hash_service_mutex = BattleReadyAccountHashServiceImpl::get_instance();
+                    let mut battle_ready_account_hash_service_guard = battle_ready_account_hash_service_mutex.lock().await;
 
-                    let response = deck_card_service.deck_card_list(request).await;
-                    let response_type = Some(ResponseType::BATTLE_DECK_CARD_LIST(response));
+                    let response = battle_ready_account_hash_service_guard.check_prepare_for_battle(request).await;
+                    let response_type = Some(ResponseType::CHECK_BATTLE_PREPARE(response));
 
                     response_type
                 } else {
@@ -178,10 +168,6 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             15 => {
-                // Battle Match Cancel
-                None
-            },
-            16 => {
                 // WHAT_IS_THE_ROOM_NUMBER
                 if let Some(request) = create_what_is_the_room_number_request(&data) {
                     let battle_room_service_mutex = BattleRoomServiceImpl::get_instance();
@@ -195,14 +181,28 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            17 => {
-                // Check Battle Prepare (CHECK_BATTLE_PREPARE)
-                if let Some(request) = create_check_battle_prepare_request(&data) {
-                    let battle_ready_account_hash_service_mutex = BattleReadyAccountHashServiceImpl::get_instance();
-                    let mut battle_ready_account_hash_service_guard = battle_ready_account_hash_service_mutex.lock().await;
+            16 => {
+                // Battle Deck List
+                if let Some(request) = create_deck_list_request(&data) {
+                    let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
+                    let mut account_deck_service = account_deck_service_mutex.lock().await;
 
-                    let response = battle_ready_account_hash_service_guard.check_prepare_for_battle(request).await;
-                    let response_type = Some(ResponseType::CHECK_BATTLE_PREPARE(response));
+                    let response = account_deck_service.account_deck_list(request).await;
+                    let response_type = Some(ResponseType::BATTLE_DECK_LIST(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            17 => {
+                // Battle Deck Card List
+                if let Some(request) = create_deck_card_list_request(&data) {
+                    let deck_card_service_mutex = DeckCardServiceImpl::get_instance();
+                    let mut deck_card_service = deck_card_service_mutex.lock().await;
+
+                    let response = deck_card_service.deck_card_list(request).await;
+                    let response_type = Some(ResponseType::BATTLE_DECK_CARD_LIST(response));
 
                     response_type
                 } else {
