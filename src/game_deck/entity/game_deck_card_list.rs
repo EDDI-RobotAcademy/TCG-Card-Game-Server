@@ -1,20 +1,20 @@
-use crate::game_deck::entity::deck_card::DeckCard;
+use crate::game_deck::entity::game_deck_card::GameDeckCard;
 
 #[derive(Debug)]
-pub struct DeckCardList {
-    card_list: Vec<DeckCard>,
+pub struct GameDeckCardList {
+    card_list: Vec<GameDeckCard>,
 }
 
-impl DeckCardList {
-    pub fn new() -> DeckCardList {
-        DeckCardList { card_list: Vec::new() }
+impl GameDeckCardList {
+    pub fn new() -> GameDeckCardList {
+        GameDeckCardList { card_list: Vec::new() }
     }
 
-    pub fn add_card(&mut self, card: DeckCard) {
+    pub fn add_card(&mut self, card: GameDeckCard) {
         self.card_list.push(card);
     }
 
-    pub fn get_all_card_list(&self) -> &Vec<DeckCard> {
+    pub fn get_all_card_list(&self) -> &Vec<GameDeckCard> {
         &self.card_list
     }
 }
@@ -25,10 +25,10 @@ mod tests {
 
     #[test]
     fn test_deck_card_list() {
-        let mut deck_card_list = DeckCardList::new();
+        let mut deck_card_list = GameDeckCardList::new();
 
-        let card1 = DeckCard::new(42);
-        let card2 = DeckCard::new(10);
+        let card1 = GameDeckCard::new(42);
+        let card2 = GameDeckCard::new(10);
         deck_card_list.add_card(card1);
         deck_card_list.add_card(card2);
 
