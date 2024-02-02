@@ -1,11 +1,11 @@
 #[derive(Debug)]
 pub struct GameDeckCardListRequest {
-    deck_id: i32,
+    deck_id: String,
     session_id: String,
 }
 
 impl GameDeckCardListRequest {
-    pub fn new(deck_id: i32, session_id: String) -> Self {
+    pub fn new(deck_id: String, session_id: String) -> Self {
         GameDeckCardListRequest {
             deck_id,
             session_id,
@@ -17,6 +17,6 @@ impl GameDeckCardListRequest {
     }
 
     pub fn get_deck_id(&self) -> i32 {
-        self.deck_id
+        self.deck_id.parse().unwrap_or_default()
     }
 }
