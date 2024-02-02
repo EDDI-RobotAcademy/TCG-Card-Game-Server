@@ -42,6 +42,17 @@ impl GameHandRepository for GameHandRepositoryImpl {
 
         true
     }
+
+    fn add_card_list_to_hand(&mut self, account_unique_id: i32, card_list: Vec<i32>) -> bool {
+        println!("GameHandRepositoryImpl: add_card_list_to_hand()");
+
+        if let Some(game_hand) = self.game_hand_map.get_mut(&account_unique_id) {
+            game_hand.add_card_list_to_hand(card_list);
+            return true
+        }
+
+        return false
+    }
 }
 
 #[cfg(test)]
@@ -66,5 +77,27 @@ mod tests {
 
         assert!(Arc::strong_count(&instance) > 1);
         assert_eq!(lock.get_game_hand_map().len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_add_card_list_to_hand_in_repository() {
+        let mut game_hand_repository = GameHandRepositoryImpl::new();
+        game_hand_repository.create_game_hand_object(1);
+
+        let card_list = vec![11, 22, 33];
+        let result = game_hand_repository.add_card_list_to_hand(1, card_list.clone());
+
+        assert!(result);
+
+        let game_hand_map = game_hand_repository.get_game_hand_map();
+        let game_hand = game_hand_map.get(&1).unwrap();
+        let unit_list_in_game_hand = game_hand.get_all_card_list_in_game_hand();
+
+        println!("GameHandRepositoryImpl - Content after adding cards: {:?}", unit_list_in_game_hand);
+
+        assert_eq!(unit_list_in_game_hand.len(), card_list.len());
+        assert_eq!(unit_list_in_game_hand[0].get_card(), card_list[0]);
+        assert_eq!(unit_list_in_game_hand[1].get_card(), card_list[1]);
+        assert_eq!(unit_list_in_game_hand[2].get_card(), card_list[2]);
     }
 }

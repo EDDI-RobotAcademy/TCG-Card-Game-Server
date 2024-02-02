@@ -1,20 +1,20 @@
-use crate::game_hand::entity::hand_card::HandCard;
+use crate::game_hand::entity::hand_card::GameHandCard;
 
 #[derive(Debug)]
-pub struct HandCardList {
-    hand_card_list: Vec<HandCard>,
+pub struct GameHandCardList {
+    hand_card_list: Vec<GameHandCard>,
 }
 
-impl HandCardList {
-    pub fn new() -> HandCardList {
-        HandCardList { hand_card_list: Vec::new() }
+impl GameHandCardList {
+    pub fn new() -> GameHandCardList {
+        GameHandCardList { hand_card_list: Vec::new() }
     }
 
-    pub fn add_hand_card(&mut self, card: HandCard) {
+    pub fn add_hand_card(&mut self, card: GameHandCard) {
         self.hand_card_list.push(card);
     }
 
-    pub fn get_all_hand_card_list(&self) -> &Vec<HandCard> {
+    pub fn get_all_hand_card_list(&self) -> &Vec<GameHandCard> {
         &self.hand_card_list
     }
 }
@@ -25,10 +25,10 @@ mod tests {
 
     #[test]
     fn test_hand_card_list() {
-        let mut hand_card_list = HandCardList::new();
+        let mut hand_card_list = GameHandCardList::new();
 
-        let hand_card1 = HandCard::new(3);
-        let hand_card2 = HandCard::new(7);
+        let hand_card1 = GameHandCard::new(3);
+        let hand_card2 = GameHandCard::new(7);
         hand_card_list.add_hand_card(hand_card1);
         hand_card_list.add_hand_card(hand_card2);
 
