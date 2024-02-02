@@ -3,7 +3,7 @@ use serde_json::Value as JsonValue;
 use crate::account_deck_card::controller::request_form::account_deck_card_list_request_form::AccountDeckCardListRequestFrom;
 use crate::account_deck_card::controller::request_form::account_deck_configuration_request_form::AccountDeckConfigurationRequestForm;
 
-pub fn create_deck_configuration_request_form(data: &JsonValue) -> Option<AccountDeckConfigurationRequestForm> {
+pub fn create_account_deck_configuration_request_form(data: &JsonValue) -> Option<AccountDeckConfigurationRequestForm> {
     if let (Some(deck_id), Some(card_list)) = (
         data.get("deckId").and_then(|v| v.as_i64()),
         data.get("cardIdList").and_then(|v| v.as_array())
@@ -23,7 +23,7 @@ pub fn create_deck_configuration_request_form(data: &JsonValue) -> Option<Accoun
     }
 }
 
-pub fn create_deck_card_list_request_form(data: &JsonValue) -> Option<AccountDeckCardListRequestFrom> {
+pub fn create_account_deck_card_list_request_form(data: &JsonValue) -> Option<AccountDeckCardListRequestFrom> {
     if let Some(deck_id) = (
         data.get("deckId").and_then(|v| v.as_i64())
     ) {
