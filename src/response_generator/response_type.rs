@@ -19,6 +19,8 @@ use crate::shop::service::request::get_card_default_request::GetCardDafaultReque
 
 use crate::account_deck_card::service::response::account_deck_card_list_response::AccountDeckCardListResponse;
 use crate::account_deck_card::service::response::account_deck_configuration_response::AccountDeckConfigurationResponse;
+use crate::game_deck::service::response::game_deck_card_shuffled_list_response::GameDeckCardShuffledListResponse;
+use crate::game_deck::service::response::game_start_deck_card_list_response::GameStartDeckCardListResponse;
 
 use crate::shop::service::response::free_card_response::FreeCardResponse;
 use crate::shop::service::response::get_card_default_response::GetCardDafaultResponse;
@@ -38,6 +40,7 @@ pub enum ResponseType {
 
     WHAT_IS_THE_ROOM_NUMBER(WhatIsTheRoomNumberResponse),
     CHECK_BATTLE_PREPARE(CheckBattlePrepareResponse),
+    BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(GameStartDeckCardListResponse),
 
     DECK_CARD_CONFIGURATION(AccountDeckConfigurationResponse),
     DECK_CARD_LIST(AccountDeckCardListResponse),

@@ -66,6 +66,14 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
             false
         }
     }
+
+    fn draw_deck_card(&mut self, account_unique_id: i32, draw_count: i32) -> Vec<i32> {
+        if let Some(game_deck) = self.game_deck_map.get_mut(&account_unique_id) {
+            return game_deck.draw_game_deck(draw_count as usize)
+        }
+
+        return Vec::new()
+    }
 }
 
 #[cfg(test)]
@@ -80,5 +88,45 @@ mod tests {
         assert!(repo.create_game_deck_object(account_unique_id));
         let game_deck_map = repo.get_game_deck_map();
         assert!(game_deck_map.contains_key(&account_unique_id));
+    }
+
+    #[tokio::test]
+    async fn test_game_deck_repository_impl_draw_card() {
+        let mut repo = GameDeckRepositoryImpl::new();
+        let account_unique_id = 1;
+
+        assert!(repo.create_game_deck_object(account_unique_id));
+
+        let initial_cards = vec![1, 2, 3, 4, 5];
+        repo.set_game_deck_from_data(account_unique_id, initial_cards.clone());
+
+        let drawn_cards = repo.draw_deck_card(account_unique_id, 3);
+
+        assert_eq!(drawn_cards, initial_cards.iter().take(3).cloned().collect::<Vec<_>>());
+    }
+
+    #[tokio::test]
+    async fn test_something_like_real_draw_deck() {
+        let data = vec![
+            19, 8, 8, 8, 9, 9, 25, 25, 25, 27, 27, 27, 151, 20, 20, 20, 2, 2, 2, 26, 26, 26,
+            30, 31, 31, 31, 32, 32, 32, 33, 33, 35, 35, 36, 36, 93, 93, 93, 93, 93
+        ];
+
+        let account_unique_id = 1;
+        let repo = GameDeckRepositoryImpl::get_instance();
+        let mut repo_guard = repo.lock().await;
+        repo_guard.set_game_deck_from_data(account_unique_id, data.clone());
+
+        assert!(repo_guard.shuffle_game_deck(account_unique_id));
+
+        let current_cards = repo_guard.get_game_deck_card_ids(account_unique_id);
+        println!("Shuffled cards: {:?}", current_cards);
+
+        let drawn_cards = repo_guard.draw_deck_card(account_unique_id, 5);
+        assert_eq!(drawn_cards.len(), 5);
+        println!("Drawn cards: {:?}", drawn_cards);
+
+        let remaining_cards = repo_guard.get_game_deck_card_ids(account_unique_id);
+        println!("Remaining cards: {:?}", remaining_cards);
     }
 }
