@@ -87,8 +87,7 @@ impl AccountDeckCardRepository for AccountDeckCardRepositoryImpl {
 
 #[cfg(test)]
 mod tests {
-    use crate::account_deck_card::controller::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
-    use crate::account_deck_card::entity::account_deck_card::deck_cards::dsl::deck_cards;
+    use crate::account_deck_card::service::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
     use super::*;
 
     // DELETE FROM deck_cards WHERE deck_id = 7777;

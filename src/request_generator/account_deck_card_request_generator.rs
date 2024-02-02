@@ -1,9 +1,9 @@
 use serde_json::Value as JsonValue;
 
-use crate::account_deck_card::controller::request::account_deck_card_list_request::AccountDeckCardListRequest;
-use crate::account_deck_card::controller::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
+use crate::account_deck_card::controller::request_form::account_deck_card_list_request_form::AccountDeckCardListRequestFrom;
+use crate::account_deck_card::controller::request_form::account_deck_configuration_request_form::AccountDeckConfigurationRequestForm;
 
-pub fn create_deck_configuration_request(data: &JsonValue) -> Option<AccountDeckConfigurationRequest> {
+pub fn create_deck_configuration_request_form(data: &JsonValue) -> Option<AccountDeckConfigurationRequestForm> {
     if let (Some(deck_id), Some(card_list)) = (
         data.get("deckId").and_then(|v| v.as_i64()),
         data.get("cardIdList").and_then(|v| v.as_array())
@@ -17,18 +17,18 @@ pub fn create_deck_configuration_request(data: &JsonValue) -> Option<AccountDeck
                 card_vec_i32.push(card_id_i32);
             }
         }
-        Some(AccountDeckConfigurationRequest::new(deck_id_i32, card_vec_i32))
+        Some(AccountDeckConfigurationRequestForm::new(deck_id_i32, card_vec_i32))
     } else {
         None
     }
 }
 
-pub fn create_deck_card_list_request(data: &JsonValue) -> Option<AccountDeckCardListRequest> {
+pub fn create_deck_card_list_request_form(data: &JsonValue) -> Option<AccountDeckCardListRequestFrom> {
     if let Some(deck_id) = (
         data.get("deckId").and_then(|v| v.as_i64())
     ) {
         let deck_id_i32 = deck_id as i32;
-        Some(AccountDeckCardListRequest::new(deck_id_i32))
+        Some(AccountDeckCardListRequestFrom::new(deck_id_i32))
     } else {
         None
     }

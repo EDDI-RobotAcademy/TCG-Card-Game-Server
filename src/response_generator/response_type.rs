@@ -7,6 +7,8 @@ use crate::account::service::response::account_delete_response::AccountDeleteRes
 use crate::account_deck::service::response::account_deck_list_response::AccountDeckListResponse;
 use crate::account_deck::service::response::account_deck_modify_response::AccountDeckModifyResponse;
 use crate::account_deck::service::response::account_deck_register_response::AccountDeckRegisterResponse;
+use crate::account_deck_card::controller::response_form::account_deck_card_list_response_form::AccountDeckCardListResponseForm;
+use crate::account_deck_card::controller::response_form::account_deck_configuration_response_form::AccountDeckConfigurationResponseForm;
 use crate::account_point::service::response::gain_gold_response::GainGoldResponse;
 use crate::account_point::service::response::pay_gold_response::PayGoldResponse;
 use crate::battle_ready_account_hash::service::response::battle_ready_account_hash_response::BattleReadyAccountHashResponse;
@@ -14,13 +16,6 @@ use crate::battle_ready_account_hash::service::response::check_battle_prepare_re
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
-
-use crate::shop::service::request::get_card_default_request::GetCardDefaultRequest;
-
-use crate::account_deck_card::controller::response::account_deck_card_list_response::AccountDeckCardListResponse;
-use crate::account_deck_card::controller::response::account_deck_configuration_response::AccountDeckConfigurationResponse;
-
-use crate::game_deck::service::response::game_deck_card_shuffled_list_response::GameDeckCardShuffledListResponse;
 use crate::game_deck::service::response::game_start_deck_card_list_response::GameStartDeckCardListResponse;
 
 use crate::shop::service::response::free_card_response::FreeCardResponse;
@@ -43,8 +38,8 @@ pub enum ResponseType {
     CHECK_BATTLE_PREPARE(CheckBattlePrepareResponse),
     BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(GameStartDeckCardListResponse),
 
-    DECK_CARD_CONFIGURATION(AccountDeckConfigurationResponse),
-    DECK_CARD_LIST(AccountDeckCardListResponse),
+    DECK_CARD_CONFIGURATION(AccountDeckConfigurationResponseForm),
+    DECK_CARD_LIST(AccountDeckCardListResponseForm),
 
     SHOP_FREE_CARD(FreeCardResponse),
 
@@ -56,7 +51,7 @@ pub enum ResponseType {
     BATTLE_DECK_LIST(AccountDeckListResponse),
     BATTLE_WAIT_QUEUE_FOR_MATCH(BattleWaitQueueResponse),
     BATTLE_READY(BattleReadyAccountHashResponse),
-    BATTLE_DECK_CARD_LIST(AccountDeckCardListResponse),
+    BATTLE_DECK_CARD_LIST(AccountDeckCardListResponseForm),
 
     PROGRAM_EXIT(ClientProgramExitResponse),
 }

@@ -16,7 +16,6 @@ impl AccountDeckConfigurationRequest {
     }
     pub fn deck_id(&self) -> i32 { self.deck_id }
     pub fn card_id_list_of_deck(&self) -> &Vec<i32> { &self.card_id_list }
-
     pub fn to_deck_card_list(&self) -> Vec<AccountDeckCard> {
         let deck_id = self.deck_id();
         let deck_card_id_list = self.card_id_list_of_deck();
