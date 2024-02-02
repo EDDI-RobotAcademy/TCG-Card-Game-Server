@@ -7,6 +7,8 @@ use crate::account::service::response::account_delete_response::AccountDeleteRes
 use crate::account_deck::service::response::account_deck_list_response::AccountDeckListResponse;
 use crate::account_deck::service::response::account_deck_modify_response::AccountDeckModifyResponse;
 use crate::account_deck::service::response::account_deck_register_response::AccountDeckRegisterResponse;
+use crate::account_point::service::response::gain_gold_response::GainGoldResponse;
+use crate::account_point::service::response::pay_gold_response::PayGoldResponse;
 use crate::battle_ready_account_hash::service::response::battle_ready_account_hash_response::BattleReadyAccountHashResponse;
 use crate::battle_ready_account_hash::service::response::check_battle_prepare_response::CheckBattlePrepareResponse;
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
@@ -43,6 +45,10 @@ pub enum ResponseType {
     DECK_CARD_LIST(AccountDeckCardListResponse),
 
     SHOP_FREE_CARD(FreeCardResponse),
+
+    GAIN_GOLD(GainGoldResponse),
+    PAY_GOLD(PayGoldResponse),
+
     SHOP_GET_CARD_DEFAULT(GetCardDafaultResponse),
 
     BATTLE_DECK_LIST(AccountDeckListResponse),
