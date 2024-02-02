@@ -53,6 +53,23 @@ impl CardGradeRepository for CardGradeRepositoryImpl {
         let card_grade_map_guard = self.card_grade_map.lock().await;
         card_grade_map_guard.get(card_number).cloned()
     }
+
+    async fn get_grade_by_race_specific_card_list(&self, race_specific_card_list: Vec<i32>) -> Vec<(i32,String)>{
+        let card_grade_map_guard = self.card_grade_map.lock().await;
+        let mut card_grade_list_by_race : Vec<(i32, String)> = Vec::new();
+        for card_grade in card_grade_map_guard.clone() {
+            for race_card in race_specific_card_list.clone() {
+                if (card_grade.0 == race_card) {
+                    let card_tuple = (race_card, card_grade.1.clone());
+                    card_grade_list_by_race.push(card_tuple);
+                }
+            }
+        }
+
+        card_grade_list_by_race
+
+    }
+
 }
 
 #[cfg(test)]
