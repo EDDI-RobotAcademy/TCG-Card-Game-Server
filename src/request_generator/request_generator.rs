@@ -16,6 +16,9 @@ use crate::client_program::service::client_program_service::ClientProgramService
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
 use crate::account_deck_card::service::account_deck_card_service::AccountDeckCardService;
 use crate::account_deck_card::service::account_deck_card_service_impl::AccountDeckCardServiceImpl;
+use crate::game_deck::service::game_deck_service::GameDeckService;
+use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
+use crate::game_deck::service::response::game_deck_card_shuffled_list_response::GameDeckCardShuffledListResponse;
 use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_modify_request, create_deck_register_request};
 use crate::request_generator::account_point_request_generator::{create_gain_gold_request, create_pay_gold_request};
 use crate::request_generator::account_request_generator::{create_account_delete_request, create_account_modify_request, create_login_request, create_logout_request, create_register_request};
@@ -199,20 +202,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            // 17 => {
-            //     // Game Deck Card List
-            //     if let Some(request) = create_game_deck_card_list_request(&data) {
-            //         let game_deck_card_service_mutex = GameDeckServiceImpl::get_instance();
-            //         let mut game_deck_card_service = game_deck_card_service_mutex.lock().await;
-            //
-            //         let response = game_deck_card_service.create_and_shuffle_deck(request).await;
-            //         let response_type = Some(ResponseType::BATTLE_GAME_DECK_CARD_LIST(response));
-            //
-            //         response_type
-            //     } else {
-            //         None
-            //     }
-            // },
+            17 => {
+                // Game Deck Card List
+                if let Some(request) = create_game_deck_card_list_request(&data) {
+                    let game_deck_card_service_mutex = GameDeckServiceImpl::get_instance();
+                    let mut game_deck_card_service = game_deck_card_service_mutex.lock().await;
+
+                    let response = game_deck_card_service.create_and_shuffle_deck(request).await;
+                    let response_type = Some(ResponseType::BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             41 => {
                 // Account Deck Register
                 if let Some(request) = create_deck_register_request(&data) {
