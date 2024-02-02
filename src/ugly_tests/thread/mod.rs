@@ -3,3 +3,8 @@ mod test_thread_service;
 mod test_another_thread_service;
 mod test_one_more_thread_service;
 mod test_loop_thread_service;
+mod test_no_singleton_thread_service;
+mod test_tls_service;
+mod test_tokio_tls_service;
+mod test_another_tokio_critical_section_service;
+mod test_another_tokio_tls_service;
