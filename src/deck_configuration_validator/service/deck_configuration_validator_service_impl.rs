@@ -39,6 +39,7 @@ impl DeckConfigurationValidatorServiceImpl {
 #[async_trait]
 impl DeckConfigurationValidatorService for DeckConfigurationValidatorServiceImpl {
     async fn validate_deck(&self, deck: &Vec<i32>) -> Result<(), String> {
+        println!("DeckConfigurationValidatorServiceImpl: validate_deck()");
 
         let deck_configuration_repository_guard =
             self.deck_configuration_repository.lock().await;
