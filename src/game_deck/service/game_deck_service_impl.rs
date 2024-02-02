@@ -170,9 +170,9 @@ impl GameDeckService for GameDeckServiceImpl {
 
         self.add_drawn_cards_to_hand(account_unique_id, drawn_card_list).await;
 
-        let game_deck_card_vector = self.get_game_deck_card_ids(account_unique_id).await;
-
-        GameStartDeckCardListResponse::new(drawn_card_list_clone, game_deck_card_vector)
+        // let game_deck_card_vector = self.get_game_deck_card_ids(account_unique_id).await;
+        // GameStartDeckCardListResponse::new(drawn_card_list_clone, game_deck_card_vector)
+        GameStartDeckCardListResponse::new(drawn_card_list_clone)
     }
 
     async fn shuffle_deck(&self, game_deck_card_shuffled_list_request: GameDeckCardShuffledListRequest) -> GameDeckCardShuffledListResponse {
