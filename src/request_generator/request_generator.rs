@@ -23,7 +23,7 @@ use crate::request_generator::client_program_request_generator::create_client_pr
 use crate::request_generator::deck_card_request_generator::{create_deck_card_list_request, create_deck_configuration_request};
 use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
 use crate::request_generator::session_request_generator::create_session_login_request;
-use crate::request_generator::shop_request_generator::create_free_card_request;
+use crate::request_generator::shop_request_generator::{create_free_card_request, create_get_card_default_request};
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
 use crate::shop::service::shop_service::ShopService;
@@ -281,13 +281,13 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             71 => {
-                // Shop Free Card
-                if let Some(request) = create_free_card_request(&data) {
+                // Shop Get Card Default
+                if let Some(request) = create_get_card_default_request(&data) {
                     let shop_service_mutex = ShopServiceImpl::get_instance();
                     let mut shop_service = shop_service_mutex.lock().await;
 
-                    let response = shop_service.free_card(request).await;
-                    let response_type = Some(ResponseType::SHOP_FREE_CARD(response));
+                    let response = shop_service.get_card_default(request).await;
+                    let response_type = Some(ResponseType::SHOP_GET_CARD_DEFAULT(response));
 
                     response_type
                 } else {
