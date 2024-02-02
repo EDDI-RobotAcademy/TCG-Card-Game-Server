@@ -6,6 +6,7 @@ use tokio::sync::mpsc;
 use crate::account::service::account_service_impl::AccountServiceImpl;
 use crate::account_card::service::account_card_service_impl::AccountCardServiceImpl;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
+use crate::account_deck_card::controller::account_deck_card_controller_impl::AccountDeckCardControllerImpl;
 use crate::battle_match_monitor::service::battle_match_monitor_service_impl::BattleMatchMonitorServiceImpl;
 use crate::battle_prepare_task::service::battle_prepare_task_service_impl::BattlePrepareTaskServiceImpl;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service_impl::BattleReadyAccountHashServiceImpl;
@@ -56,7 +57,7 @@ impl DomainInitializer {
     }
     pub fn init_account_card_domain(&self) { let _ = AccountCardServiceImpl::get_instance(); }
     pub fn init_account_deck_domain(&self) { let _ = AccountDeckServiceImpl::get_instance(); }
-    pub fn init_deck_card_domain(&self) { let _ = AccountDeckCardServiceImpl::get_instance(); }
+    pub fn init_account_deck_card_domain(&self) { let _ = AccountDeckCardControllerImpl::get_instance(); }
 
     pub fn init_game_turn_domain(&self) { let _ = GameTurnServiceImpl::get_instance(); }
 
@@ -138,7 +139,7 @@ impl DomainInitializer {
         self.init_account_domain();
         self.init_account_card_domain();
         self.init_account_deck_domain();
-        self.init_deck_card_domain();
+        self.init_account_deck_card_domain();
 
         /* Core Domain List */
         self.init_server_socket_domain();

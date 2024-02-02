@@ -1,6 +1,7 @@
 use serde_json::Value as JsonValue;
-use crate::account_deck_card::service::request::account_deck_card_list_request::AccountDeckCardListRequest;
-use crate::account_deck_card::service::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
+
+use crate::account_deck_card::controller::request::account_deck_card_list_request::AccountDeckCardListRequest;
+use crate::account_deck_card::controller::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
 
 pub fn create_deck_configuration_request(data: &JsonValue) -> Option<AccountDeckConfigurationRequest> {
     if let (Some(deck_id), Some(card_list)) = (

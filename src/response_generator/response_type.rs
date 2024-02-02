@@ -17,8 +17,8 @@ use crate::client_program::service::response::client_program_exit_response::Clie
 
 use crate::shop::service::request::get_card_default_request::GetCardDafaultRequest;
 
-use crate::account_deck_card::service::response::account_deck_card_list_response::AccountDeckCardListResponse;
-use crate::account_deck_card::service::response::account_deck_configuration_response::AccountDeckConfigurationResponse;
+use crate::account_deck_card::controller::response::account_deck_card_list_response::AccountDeckCardListResponse;
+use crate::account_deck_card::controller::response::account_deck_configuration_response::AccountDeckConfigurationResponse;
 
 use crate::shop::service::response::free_card_response::FreeCardResponse;
 use crate::shop::service::response::get_card_default_response::GetCardDafaultResponse;

@@ -14,7 +14,6 @@ use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
 
 use crate::account_deck_card::entity::account_deck_card::AccountDeckCard;
 use crate::account_deck_card::repository::account_deck_card_repository::AccountDeckCardRepository;
-use crate::account_deck_card::service::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
 
 pub struct AccountDeckCardRepositoryImpl {
     mysql_database_connection: Arc<AsyncMutex<MysqlDatabaseConnection>>,
@@ -88,6 +87,7 @@ impl AccountDeckCardRepository for AccountDeckCardRepositoryImpl {
 
 #[cfg(test)]
 mod tests {
+    use crate::account_deck_card::controller::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
     use crate::account_deck_card::entity::account_deck_card::deck_cards::dsl::deck_cards;
     use super::*;
 
