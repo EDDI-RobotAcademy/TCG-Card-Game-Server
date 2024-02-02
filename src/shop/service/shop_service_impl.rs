@@ -14,8 +14,8 @@ use crate::shop::repository::shop_repository_impl::ShopRepositoryImpl;
 use crate::shop::service::request::free_card_request::FreeCardRequest;
 use crate::shop::service::response::free_card_response::FreeCardResponse;
 
-use crate::shop::service::request::get_card_default_request::GetCardDafaultRequest;
-use crate::shop::service::response::get_card_default_response::GetCardDafaultResponse;
+use crate::shop::service::request::get_card_default_request::GetCardDefaultRequest;
+use crate::shop::service::response::get_card_default_response::GetCardDefaultResponse;
 
 use crate::shop::service::shop_service::ShopService;
 
@@ -74,13 +74,13 @@ impl ShopService for ShopServiceImpl {
     //         }
     //     }
     // }
-    async fn get_card_default(&self, get_card_dafault_request: GetCardDafaultRequest) -> GetCardDafaultResponse {
+    async fn get_card_default(&self, get_card_default_request: GetCardDefaultRequest) -> GetCardDefaultResponse {
 
         let shop_repository = self.repository.lock().await;
         let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
         let account_card_repository = self.account_card_repository.lock().await;
 
-        let account_number_str = redis_repository_guard.get(get_card_dafault_request.account_id()).await;
+        let account_number_str = redis_repository_guard.get(get_card_default_request.account_id()).await;
         let account_unique_id: Result<i32, _> = account_number_str.expect("REASON").parse();
 
         match account_unique_id {
@@ -100,12 +100,12 @@ impl ShopService for ShopServiceImpl {
                         account_card_repository.save_new_card(int_type_account_id, checked_card.0).await;
                     }
                 }
-                GetCardDafaultResponse::new(get_cards)
+                GetCardDefaultResponse::new(get_cards)
                 }
 
             Err(e) => {
                 let empty_set = Vec::new();
-                GetCardDafaultResponse::new(empty_set)
+                GetCardDefaultResponse::new(empty_set)
             }
 
         }
@@ -124,7 +124,7 @@ mod tests {
         let shop_service_impl_mutex = ShopServiceImpl::get_instance();
         let shop_service_impl_mutex_guard = shop_service_impl_mutex.lock().await;
 
-        let request = GetCardDafaultRequest::new("qwer".to_string());
+        let request = GetCardDefaultRequest::new("qwer".to_string());
 
         let result = shop_service_impl_mutex_guard.get_card_default(request).await;
 
