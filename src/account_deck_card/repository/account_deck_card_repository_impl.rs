@@ -41,7 +41,7 @@ impl AccountDeckCardRepositoryImpl {
 impl AccountDeckCardRepository for AccountDeckCardRepositoryImpl {
     async fn save_deck_card_list(&self, deck_card_list: Vec<AccountDeckCard>) -> Result<String, String> {
         use crate::account_deck_card::entity::account_deck_card::deck_cards::dsl::*;
-        println!("DeckCardRepositoryImpl: save()");
+        println!("AccountDeckCardRepositoryImpl: save()");
 
         let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
         let mut connection = MysqlConnection::establish(&database_url)
@@ -59,7 +59,7 @@ impl AccountDeckCardRepository for AccountDeckCardRepositoryImpl {
         use diesel::query_dsl::filter_dsl::FilterDsl;
         use diesel::prelude::*;
 
-        println!("DeckCardRepositoryImpl: get_card_list()");
+        println!("AccountDeckCardRepositoryImpl: get_card_list()");
 
         let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
         let mut connection = MysqlConnection::establish(&database_url)
