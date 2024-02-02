@@ -92,6 +92,25 @@ pub fn build_card_grade_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i3
     card_grade_dictionary
 }
 
+pub fn build_card_race_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, String> {
+    let mut card_race_dictionary = HashMap::new();
+
+    for record in csv_content.iter() {
+        let card_number = record[6].parse::<i32>();
+
+        let card_race = &record[1];
+
+        if let Ok(card_number) = card_number {
+            card_race_dictionary.insert(card_number, card_race.clone());
+        } else {
+            eprintln!("Failed to parse card number: {:?}", record[6]);
+        }
+    }
+
+    card_race_dictionary
+}
+
+
 // 카드 종류(서포트, 아이템 등등)
 pub fn get_card_kinds<'a>(
     card_number: &'a str,

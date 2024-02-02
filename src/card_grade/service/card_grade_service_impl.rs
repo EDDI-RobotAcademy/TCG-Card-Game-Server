@@ -32,7 +32,7 @@ impl CardGradeServiceImpl {
 #[async_trait]
 impl CardGradeService for CardGradeServiceImpl {
     async fn get_card_grade(&self, card_number: &i32) -> Option<String> {
-        println!("CardKindsServiceImpl: get_card_kind()");
+        println!("CardGradeServiceImpl: get_card_grade()");
 
         let card_grade_repository_guard = self.card_grade_repository.lock().await;
         card_grade_repository_guard.get_card_grade(card_number).await
