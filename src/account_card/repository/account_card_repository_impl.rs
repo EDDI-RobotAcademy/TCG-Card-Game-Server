@@ -67,6 +67,93 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
         }
         Ok(Option::from(card_list))
     }
+
+
+    async fn check_same_card(&self, get_card_list: Vec<i32>, account_card_list: Vec<HashMap<i32, i32>>) -> HashMap<i32, bool> {
+
+        let mut account_card_check : HashMap<i32, bool> = Default::default();
+
+        for get_card in get_card_list {
+            account_card_check.insert(get_card, false);
+            for account_card in &account_card_list{
+                if(account_card.contains_key(&get_card)){
+                    account_card_check.insert(get_card, true);
+                }
+            }
+        }
+        account_card_check
+
+    }
+
+    async fn update_card_count(&self, shop_account_id: i32, shop_card_id: i32) -> Result<usize, diesel::result::Error> {
+        use crate::account_card::entity::account_card::account_cards::dsl::*;
+
+        use diesel::query_dsl::filter_dsl::FilterDsl;
+        use diesel::sql_types::{Integer, Text};
+        use diesel::prelude::*;
+
+        println!("AccountCardRepositoryImpl: update_card_count()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        let select_clause = account_cards.select((account_id, card_id, card_count));
+        let where_clause = FilterDsl::filter(account_cards, account_id.eq(shop_account_id).and(card_id.eq(shop_card_id)));
+
+        let found_account_cards = where_clause
+            .select((account_id, card_id, card_count))
+            .load::<AccountCard>(&mut connection)
+            .expect("error");
+
+
+        let update_count = found_account_cards[0].card_count + 1;
+
+        match diesel::update(where_clause)
+            .set((columns::card_count.eq(update_count)))
+            .execute(&mut connection)
+        {
+            Ok(num) => {
+                println!("card count updated successfully.");
+                Ok(num)
+            }
+            Err(e) => {
+                eprintln!("Error updating card count: {:?}", e);
+                Err(e)
+            }
+        }
+
+    }
+
+    async fn save_new_card(&self, shop_account_id: i32, shop_card_id: i32) -> Result<(), diesel::result::Error> {
+        use crate::account_card::entity::account_card::account_cards::dsl::*;
+
+        println!("AccountCardRepositoryImpl: save_new_card()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        let save_card = AccountCard {
+            account_id: shop_account_id,
+            card_id: shop_card_id,
+            card_count: 1,
+        };
+
+        match diesel::insert_into(account_cards)
+            .values(&save_card)
+            .execute(&mut connection)
+        {
+            Ok(_) => {
+                println!("new card saved successfully.");
+                Ok(())
+            }
+            Err(e) => {
+                eprintln!("Error saving new card: {:?}", e);
+                Err(e)
+            }
+        }
+    }
 }
 
 #[cfg(test)]

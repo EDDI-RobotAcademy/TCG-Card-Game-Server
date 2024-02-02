@@ -1,8 +1,8 @@
 use serde_json::Value as JsonValue;
-use crate::deck_card::service::request::deck_card_list_request::DeckCardListRequest;
-use crate::deck_card::service::request::deck_configuration_request::DeckConfigurationRequest;
+use crate::account_deck_card::service::request::account_deck_card_list_request::AccountDeckCardListRequest;
+use crate::account_deck_card::service::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
 
-pub fn create_deck_configuration_request(data: &JsonValue) -> Option<DeckConfigurationRequest> {
+pub fn create_deck_configuration_request(data: &JsonValue) -> Option<AccountDeckConfigurationRequest> {
     if let (Some(deck_id), Some(card_list)) = (
         data.get("deckId").and_then(|v| v.as_i64()),
         data.get("cardIdList").and_then(|v| v.as_array())
@@ -16,18 +16,18 @@ pub fn create_deck_configuration_request(data: &JsonValue) -> Option<DeckConfigu
                 card_vec_i32.push(card_id_i32);
             }
         }
-        Some(DeckConfigurationRequest::new(deck_id_i32, card_vec_i32))
+        Some(AccountDeckConfigurationRequest::new(deck_id_i32, card_vec_i32))
     } else {
         None
     }
 }
 
-pub fn create_deck_card_list_request(data: &JsonValue) -> Option<DeckCardListRequest> {
+pub fn create_deck_card_list_request(data: &JsonValue) -> Option<AccountDeckCardListRequest> {
     if let Some(deck_id) = (
         data.get("deckId").and_then(|v| v.as_i64())
     ) {
         let deck_id_i32 = deck_id as i32;
-        Some(DeckCardListRequest::new(deck_id_i32))
+        Some(AccountDeckCardListRequest::new(deck_id_i32))
     } else {
         None
     }

@@ -14,9 +14,16 @@ use crate::battle_ready_account_hash::service::response::check_battle_prepare_re
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
+
 use crate::deck_card::service::response::deck_card_list_response::DeckCardListResponse;
 use crate::deck_card::service::response::deck_configuration_response::DeckConfigurationResponse;
+use crate::shop::service::request::get_card_default_request::GetCardDafaultRequest;
+
+use crate::account_deck_card::service::response::account_deck_card_list_response::AccountDeckCardListResponse;
+use crate::account_deck_card::service::response::account_deck_configuration_response::AccountDeckConfigurationResponse;
+
 use crate::shop::service::response::free_card_response::FreeCardResponse;
+use crate::shop::service::response::get_card_default_response::GetCardDafaultResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ResponseType {
@@ -34,17 +41,20 @@ pub enum ResponseType {
     WHAT_IS_THE_ROOM_NUMBER(WhatIsTheRoomNumberResponse),
     CHECK_BATTLE_PREPARE(CheckBattlePrepareResponse),
 
-    DECK_CARD_CONFIGURATION(DeckConfigurationResponse),
-    DECK_CARD_LIST(DeckCardListResponse),
+    DECK_CARD_CONFIGURATION(AccountDeckConfigurationResponse),
+    DECK_CARD_LIST(AccountDeckCardListResponse),
 
     SHOP_FREE_CARD(FreeCardResponse),
+
     GAIN_GOLD(GainGoldResponse),
     PAY_GOLD(PayGoldResponse),
+
+    SHOP_GET_CARD_DEFAULT(GetCardDafaultResponse),
 
     BATTLE_DECK_LIST(AccountDeckListResponse),
     BATTLE_WAIT_QUEUE_FOR_MATCH(BattleWaitQueueResponse),
     BATTLE_READY(BattleReadyAccountHashResponse),
-    BATTLE_DECK_CARD_LIST(DeckCardListResponse),
+    BATTLE_DECK_CARD_LIST(AccountDeckCardListResponse),
 
     PROGRAM_EXIT(ClientProgramExitResponse),
 }

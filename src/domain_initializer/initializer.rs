@@ -12,21 +12,14 @@ use crate::battle_ready_account_hash::service::battle_ready_account_hash_service
 
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
-use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
-use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
-use crate::card_kinds::service::card_kinds_service::CardKindsService;
 use crate::card_kinds::service::card_kinds_service_impl::CardKindsServiceImpl;
-use crate::card_library::entity::card_dictionary_label::CardDictionaryLabel;
-use crate::card_library::repository::card_library_repository::CardLibraryRepository;
-use crate::card_library::repository::card_library_repository_impl::CardLibraryRepositoryImpl;
-use crate::card_library::service::card_library_service::CardLibraryService;
-use crate::card_library::service::card_library_service_impl::CardLibraryServiceImpl;
-use crate::deck_card::service::deck_card_service_impl::DeckCardServiceImpl;
+use crate::account_deck_card::service::account_deck_card_service_impl::AccountDeckCardServiceImpl;
+use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
+use crate::card_race::service::card_race_service_impl::CardRaceServiceImpl;
 
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
 use crate::client_socket_accept::controller::client_socket_accept_controller_impl::ClientSocketAcceptControllerImpl;
 use crate::client_socket_accept::entity::client_socket::ClientSocket;
-use crate::common::csv::csv_reader::{build_dictionaries, csv_read};
 
 use crate::server_socket::service::server_socket_service_impl::ServerSocketServiceImpl;
 use crate::thread_worker::service::thread_worker_service_impl::ThreadWorkerServiceImpl;
@@ -63,14 +56,13 @@ impl DomainInitializer {
     }
     pub fn init_account_card_domain(&self) { let _ = AccountCardServiceImpl::get_instance(); }
     pub fn init_account_deck_domain(&self) { let _ = AccountDeckServiceImpl::get_instance(); }
-    pub fn init_deck_card_domain(&self) { let _ = DeckCardServiceImpl::get_instance(); }
+    pub fn init_deck_card_domain(&self) { let _ = AccountDeckCardServiceImpl::get_instance(); }
 
     pub fn init_game_turn_domain(&self) { let _ = GameTurnServiceImpl::get_instance(); }
 
     pub async fn init_client_socket_accept_domain(&self,
                                                   acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>,
                                                   acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>) {
-
         let client_socket_accept_controller_mutex = ClientSocketAcceptControllerImpl::get_instance();
         let mut client_socket_accept_controller = client_socket_accept_controller_mutex.lock().await;
 
@@ -92,7 +84,6 @@ impl DomainInitializer {
     pub async fn init_transmitter_domain(&self,
                                          acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>,
                                          receiver_transmitter_channel_arc: Arc<ReceiverTransmitterLegacyChannel>) {
-
         let transmitter_controller_mutex = TransmitterControllerImpl::get_instance();
         let mut transmitter_controller = transmitter_controller_mutex.lock().await;
 
@@ -124,84 +115,13 @@ impl DomainInitializer {
         let _ = RedisInMemoryServiceImpl::get_instance();
     }
 
-    pub async fn init_card_attribute_domain(&self) {
-        // let current_dir = std::env::current_dir().unwrap_or_else(|err| {
-        //     eprintln!("Failed to get current directory: {}", err);
-        //     std::process::exit(1);
-        // });
-        // println!("current_dir: {:?}", current_dir);
-        //
-        // let filename = "../../resources/csv/every_card.csv";
-        //
-        // let csv_content = csv_read(filename).unwrap_or_else(|err| {
-        //     println!("Card 정보 읽는 도중 오류 발생: {}", err);
-        //     std::process::exit(1);
-        // });
-        //
-        // let (
-        //     race_dictionary,
-        //     card_grade_dictionary,
-        //     card_kinds_dictionary,
-        //     energy_needed_dictionary,
-        //     attack_dictionary,
-        //     passive_dictionary,
-        //     skill_dictionary,
-        //     hp_dictionary,
-        // ) = build_dictionaries(&csv_content);
+    // TODO: card library domain 의 경우 사용 방식이 확정되면 추가할 것
 
-        let source = "../../resources/csv/card_data.csv";
-        let card_library = CardLibraryServiceImpl::get_instance();
-        let card_library_guard = card_library.lock().await;
-
-        card_library_guard.open_library(source).await;
-
-        let kind_dictionary = card_library_guard.get_dictionary(CardDictionaryLabel::Kind).await;
-
-        drop(card_library_guard);
-
-        CardKindsRepositoryImpl::create_instance(kind_dictionary).await;
-        let card_kinds_repository = CardKindsRepositoryImpl::get_instance();
-        let card_kinds_repository_guard = card_kinds_repository.lock().await;
-
-        let result = card_kinds_repository_guard.get_card_kind("6").await;
-        println!("card kinds: {:?}", result);
-
-        drop(card_kinds_repository_guard);
-
-        let card_kinds_service = CardKindsServiceImpl::get_instance();
-        let card_kinds_service_guard = card_kinds_service.lock().await;
-
-        let result_from_service = card_kinds_service_guard.get_card_kind("6").await;
-        println!("card kinds from service: {:?}", result_from_service);
-
-        if result_from_service.map(|kind| kind == "1").unwrap_or(false) {
-            println!("휴먼 카드 감지!");
-        }
-
-        drop(card_kinds_service_guard);
+    pub async fn init_card_attributes_domain(&self) {
+        let _ = CardKindsServiceImpl::get_instance();
+        let _ = CardGradeServiceImpl::get_instance();
+        let _ = CardRaceServiceImpl::get_instance();
     }
-
-    // TODO: library 사용 방식이 확정되면 추가할 것
-    // pub async fn init_card_library_domain(&self) {
-    //     let source = "../../resources/csv/every_card.csv";
-    //     let card_library = CardLibraryServiceImpl::get_instance();
-    //     let card_library_guard = card_library.lock().await;
-    //
-    //     card_library_guard.open_library(source).await;
-    //
-    //     //
-    //     //
-    //     // let kind_dictionary = card_library_repo_guard.get_dictionary(CardDictionaryLabel::Kind).await;
-    //     // CardKindsRepositoryImpl::create_instance(kind_dictionary).await;
-    //     //
-    //     // let card_kinds_repository = CardKindsRepositoryImpl::get_instance();
-    //     // let card_kinds_repository_guard = card_kinds_repository.lock().await;
-    //     //
-    //     // let result = card_kinds_repository_guard.get_card_kind("6").await;
-    //     // println!("card kinds: {:?}", result);
-    //     //
-    //     // drop(card_kinds_repository_guard);
-    // }
 
     pub async fn init_every_domain(&self) {
         /* IPC Channel List */
@@ -244,8 +164,7 @@ impl DomainInitializer {
         self.init_redis_in_memory_domain().await;
 
         /* Card Attribute Domain */
-        self.init_card_attribute_domain().await;
-        // self.init_card_library_domain().await;
+        self.init_card_attributes_domain().await;
     }
 }
 
