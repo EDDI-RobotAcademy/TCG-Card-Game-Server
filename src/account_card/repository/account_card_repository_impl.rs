@@ -69,15 +69,15 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
     }
 
 
-    async fn check_same_card(&self, get_card_list: Vec<i32>, account_card_list: Vec<HashMap<i32, i32>>) -> HashMap<i32, bool> {
+    async fn check_same_card(&self, get_card_list: Vec<i32>, account_card_list: Vec<HashMap<i32, i32>>) -> HashMap<i32, i32> {
 
-        let mut account_card_check : HashMap<i32, bool> = Default::default();
+        let mut account_card_check : HashMap<i32, i32> = Default::default();
 
         for get_card in get_card_list {
-            account_card_check.insert(get_card, false);
+            account_card_check.insert(get_card, 0);
             for account_card in &account_card_list{
                 if(account_card.contains_key(&get_card)){
-                    account_card_check.insert(get_card, true);
+                    account_card_check.insert(get_card, *account_card.get(&get_card).unwrap());
                 }
             }
         }
@@ -85,7 +85,7 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
 
     }
 
-    async fn update_card_count(&self, shop_account_id: i32, shop_card_id: i32) -> Result<usize, diesel::result::Error> {
+    async fn update_card_count(&self, shop_account_id: i32, shop_update_card: (i32, i32)) -> Result<usize, diesel::result::Error> {
         use crate::account_card::entity::account_card::account_cards::dsl::*;
 
         use diesel::query_dsl::filter_dsl::FilterDsl;
@@ -99,15 +99,9 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
             .expect("Failed to establish a new connection");
 
         let select_clause = account_cards.select((account_id, card_id, card_count));
-        let where_clause = FilterDsl::filter(account_cards, account_id.eq(shop_account_id).and(card_id.eq(shop_card_id)));
+        let where_clause = FilterDsl::filter(account_cards, account_id.eq(shop_account_id).and(card_id.eq(shop_update_card.0)));
 
-        let found_account_cards = where_clause
-            .select((account_id, card_id, card_count))
-            .load::<AccountCard>(&mut connection)
-            .expect("error");
-
-
-        let update_count = found_account_cards[0].card_count + 1;
+        let update_count = shop_update_card.1 + 1;
 
         match diesel::update(where_clause)
             .set((columns::card_count.eq(update_count)))

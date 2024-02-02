@@ -15,7 +15,7 @@ use crate::battle_room::service::response::what_is_the_room_number_response::Wha
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 
-use crate::shop::service::request::get_card_default_request::GetCardDafaultRequest;
+use crate::shop::service::request::get_card_default_request::GetCardDefaultRequest;
 
 use crate::account_deck_card::service::response::account_deck_card_list_response::AccountDeckCardListResponse;
 use crate::account_deck_card::service::response::account_deck_configuration_response::AccountDeckConfigurationResponse;
@@ -23,7 +23,7 @@ use crate::game_deck::service::response::game_deck_card_shuffled_list_response::
 use crate::game_deck::service::response::game_start_deck_card_list_response::GameStartDeckCardListResponse;
 
 use crate::shop::service::response::free_card_response::FreeCardResponse;
-use crate::shop::service::response::get_card_default_response::GetCardDafaultResponse;
+use crate::shop::service::response::get_card_default_response::GetCardDefaultResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ResponseType {
@@ -50,7 +50,7 @@ pub enum ResponseType {
     GAIN_GOLD(GainGoldResponse),
     PAY_GOLD(PayGoldResponse),
 
-    SHOP_GET_CARD_DEFAULT(GetCardDafaultResponse),
+    SHOP_GET_CARD_DEFAULT(GetCardDefaultResponse),
 
     BATTLE_DECK_LIST(AccountDeckListResponse),
     BATTLE_WAIT_QUEUE_FOR_MATCH(BattleWaitQueueResponse),
