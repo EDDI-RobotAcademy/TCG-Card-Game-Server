@@ -4,6 +4,7 @@ use crate::account::service::response::account_login_response::AccountLoginRespo
 use crate::account::service::response::account_logout_response::AccountLogoutResponse;
 use crate::account::service::response::account_modify_response::AccountModifyResponse;
 use crate::account::service::response::account_delete_response::AccountDeleteResponse;
+use crate::account_card::service::response::account_card_list_response::AccountCardListResponse;
 use crate::account_deck::service::response::account_deck_list_response::AccountDeckListResponse;
 use crate::account_deck::service::response::account_deck_modify_response::AccountDeckModifyResponse;
 use crate::account_deck::service::response::account_deck_register_response::AccountDeckRegisterResponse;
@@ -23,6 +24,7 @@ use crate::shop::service::response::get_card_default_response::GetCardDefaultRes
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ResponseType {
+    // Account
     ACCOUNT_REGISTER(AccountRegisterResponse),
     ACCOUNT_LOGIN(AccountLoginResponse),
     ACCOUNT_SESSION_LOGIN(AccountLoginResponse),
@@ -30,6 +32,10 @@ pub enum ResponseType {
     ACCOUNT_MODIFY(AccountModifyResponse),
     ACCOUNT_DELETE(AccountDeleteResponse),
 
+    // Account Card
+    ACCOUNT_CARD_LIST(AccountCardListResponse),
+
+    // Account Deck
     ACCOUNT_DECK_REGISTER(AccountDeckRegisterResponse),
     ACCOUNT_DECK_LIST(AccountDeckListResponse),
     ACCOUNT_DECK_MODIFY(AccountDeckModifyResponse),
@@ -38,20 +44,24 @@ pub enum ResponseType {
     CHECK_BATTLE_PREPARE(CheckBattlePrepareResponse),
     BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(GameStartDeckCardListResponse),
 
+    // Account Deck Card
     DECK_CARD_CONFIGURATION(AccountDeckConfigurationResponseForm),
     DECK_CARD_LIST(AccountDeckCardListResponseForm),
 
-    SHOP_FREE_CARD(FreeCardResponse),
-
+    // Account Point
     GAIN_GOLD(GainGoldResponse),
     PAY_GOLD(PayGoldResponse),
 
+    // Shop
+    SHOP_FREE_CARD(FreeCardResponse),
     SHOP_GET_CARD_DEFAULT(GetCardDefaultResponse),
 
+    // Battle Entrance
     BATTLE_DECK_LIST(AccountDeckListResponse),
     BATTLE_WAIT_QUEUE_FOR_MATCH(BattleWaitQueueResponse),
     BATTLE_READY(BattleReadyAccountHashResponse),
     BATTLE_DECK_CARD_LIST(AccountDeckCardListResponseForm),
 
+    // Program Exit
     PROGRAM_EXIT(ClientProgramExitResponse),
 }
