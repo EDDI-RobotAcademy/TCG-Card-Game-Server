@@ -64,6 +64,8 @@ mod battle_prepare_task;
 mod card_library;
 mod account_point;
 mod card_kinds;
+mod card_grade;
+mod card_race;
 
 #[tokio::main]
 async fn main() {

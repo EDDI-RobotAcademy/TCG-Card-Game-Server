@@ -14,6 +14,8 @@ use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::card_kinds::service::card_kinds_service_impl::CardKindsServiceImpl;
 use crate::account_deck_card::service::account_deck_card_service_impl::AccountDeckCardServiceImpl;
+use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
+use crate::card_race::service::card_race_service_impl::CardRaceServiceImpl;
 
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
 use crate::client_socket_accept::controller::client_socket_accept_controller_impl::ClientSocketAcceptControllerImpl;
@@ -115,8 +117,10 @@ impl DomainInitializer {
 
     // TODO: card library domain 의 경우 사용 방식이 확정되면 추가할 것
 
-    pub async fn init_card_kinds_attribute_domain(&self) {
+    pub async fn init_card_attributes_domain(&self) {
         let _ = CardKindsServiceImpl::get_instance();
+        let _ = CardGradeServiceImpl::get_instance();
+        let _ = CardRaceServiceImpl::get_instance();
     }
 
     pub async fn init_every_domain(&self) {
@@ -160,7 +164,7 @@ impl DomainInitializer {
         self.init_redis_in_memory_domain().await;
 
         /* Card Attribute Domain */
-        self.init_card_kinds_attribute_domain().await;
+        self.init_card_attributes_domain().await;
     }
 }
 
