@@ -1,6 +1,8 @@
 use serde_json::Value as JsonValue;
 use crate::account::service::account_service::AccountService;
 use crate::account::service::account_service_impl::AccountServiceImpl;
+use crate::account_card::service::account_card_service::AccountCardService;
+use crate::account_card::service::account_card_service_impl::AccountCardServiceImpl;
 use crate::account_deck::service::account_deck_service::AccountDeckService;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
 use crate::account_deck_card::controller::account_deck_card_controller::AccountDeckCardController;
@@ -19,6 +21,7 @@ use crate::client_program::service::client_program_service_impl::ClientProgramSe
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
 use crate::game_deck::service::response::game_deck_card_shuffled_list_response::GameDeckCardShuffledListResponse;
+use crate::request_generator::account_card_request_generator::create_account_card_list_request;
 use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_modify_request, create_deck_register_request};
 use crate::request_generator::account_point_request_generator::{create_gain_gold_request, create_pay_gold_request};
 use crate::request_generator::account_request_generator::{create_account_delete_request, create_account_modify_request, create_login_request, create_logout_request, create_register_request};
@@ -26,7 +29,7 @@ use crate::request_generator::battle_ready_account_hash_request_generator::creat
 use crate::request_generator::battle_wait_queue_request_generator::create_battle_wait_queue_request;
 use crate::request_generator::check_battle_prepare_request_generator::create_check_battle_prepare_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
-use crate::request_generator::account_deck_card_request_generator::{create_deck_card_list_request_form, create_deck_configuration_request_form};
+use crate::request_generator::account_deck_card_request_generator::{create_account_deck_card_list_request_form, create_account_deck_configuration_request_form};
 use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::request_generator::shop_request_generator::{create_free_card_request, create_get_card_default_request};
@@ -216,6 +219,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            32 => {
+                // Account Card List
+                if let Some(request) = create_account_card_list_request(&data) {
+                    let account_card_service_mutex = AccountCardServiceImpl::get_instance();
+                    let mut account_card_service_mutex_guard = account_card_service_mutex.lock().await;
+
+                    let response = account_card_service_mutex_guard.account_card_list(request).await;
+                    let response_type = Some(ResponseType::ACCOUNT_CARD_LIST(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             41 => {
                 // Account Deck Register
                 if let Some(request) = create_deck_register_request(&data) {
@@ -245,7 +262,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             43 => {
-                // Account Deck Modify
+                // Account Deck (Name) Modify
                 if let Some(request) = create_deck_modify_request(&data) {
                     let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
                     let mut account_deck_service = account_deck_service_mutex.lock().await;
@@ -259,13 +276,13 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             51 => {
-                // Deck Card Configuration
-                if let Some(request) = create_deck_configuration_request_form(&data) {
+                // Account Deck Card Configuration
+                if let Some(request_form) = create_account_deck_configuration_request_form(&data) {
                     let deck_card_controller_mutex = AccountDeckCardControllerImpl::get_instance();
                     let mut deck_card_controller_mutex_guard = deck_card_controller_mutex.lock().await;
 
-                    let response = deck_card_controller_mutex_guard.deck_configuration_register(request).await;
-                    let response_type = Some(ResponseType::DECK_CARD_CONFIGURATION(response));
+                    let response_form = deck_card_controller_mutex_guard.deck_configuration_register(request_form).await;
+                    let response_type = Some(ResponseType::DECK_CARD_CONFIGURATION(response_form));
 
                     response_type
                 } else {
@@ -273,13 +290,13 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             52 => {
-                // (Account) Deck Card List
-                if let Some(request) = create_deck_card_list_request_form(&data) {
+                // Account Deck Card List
+                if let Some(request_form) = create_account_deck_card_list_request_form(&data) {
                     let deck_card_controller_mutex = AccountDeckCardControllerImpl::get_instance();
                     let mut deck_card_controller_mutex_guard = deck_card_controller_mutex.lock().await;
 
-                    let response = deck_card_controller_mutex_guard.deck_card_list(request).await;
-                    let response_type = Some(ResponseType::DECK_CARD_LIST(response));
+                    let response_form = deck_card_controller_mutex_guard.deck_card_list(request_form).await;
+                    let response_type = Some(ResponseType::DECK_CARD_LIST(response_form));
 
                     response_type
                 } else {
