@@ -5,11 +5,11 @@ use diesel::dsl::not;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use uuid::Uuid;
-use crate::account::entity::account::Account;
-use crate::account::entity::account::accounts::password;
 
 use crate::account::repository::account_repository::AccountRepository;
 use crate::account::repository::account_repository_impl::AccountRepositoryImpl;
+use crate::account_point::repository::account_point_repository::AccountPointRepository;
+use crate::account_point::repository::account_point_repository_impl::AccountPointRepositoryImpl;
 
 use crate::account::service::account_service::AccountService;
 
@@ -27,23 +27,26 @@ use crate::account::service::response::account_logout_response::AccountLogoutRes
 use crate::account::service::response::account_delete_response::AccountDeleteResponse;
 use crate::account::service::response::account_modify_response::AccountModifyResponse;
 use crate::account::service::response::account_login_response::AccountLoginResponse;
+
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
-use crate::request_generator::session_request_generator::create_session_logout_request;
 
 
 pub struct AccountServiceImpl {
     repository: Arc<AsyncMutex<AccountRepositoryImpl>>,
+    account_point_repository: Arc<AsyncMutex<AccountPointRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>
 }
 
 impl AccountServiceImpl {
     pub fn new(repository: Arc<AsyncMutex<AccountRepositoryImpl>>,
+               account_point_repository: Arc<AsyncMutex<AccountPointRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>) -> Self {
 
         AccountServiceImpl {
             repository,
+            account_point_repository,
             redis_in_memory_repository
         }
     }
@@ -55,6 +58,7 @@ impl AccountServiceImpl {
                     AsyncMutex::new(
                         AccountServiceImpl::new(
                             AccountRepositoryImpl::get_instance(),
+                            AccountPointRepositoryImpl::get_instance(),
                             RedisInMemoryRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
@@ -67,6 +71,7 @@ impl AccountService for AccountServiceImpl {
         println!("AccountServiceImpl: account_register()");
 
         let account_repository = self.repository.lock().await;
+        let account_point_repository = self.account_point_repository.lock().await;
         let account = account_register_request.to_account().unwrap();
         // 중복 확인 작업
         if account_repository.find_by_user_id(account.user_id()).await.unwrap().is_some() {
@@ -74,8 +79,15 @@ impl AccountService for AccountServiceImpl {
             return AccountRegisterResponse::new(false)
         }
         // 중복 아이디 존재하지 않는 경우 계정 저장
-        let result = account_repository.save(account_register_request.to_account().unwrap()).await;
-        if result.is_ok() {
+        let result_account = account_repository.save(account_register_request.to_account().unwrap()).await;
+
+        // 저장된 계정의 id 를 가지고, account_point 에 재화 관련 계정정보 생성
+        let found_account = account_repository.find_by_user_id(account.user_id()).await.unwrap();
+        let found_account_id = found_account.unwrap().id;
+        let set_account_point_id = account_point_repository.set_account_point(found_account_id,100).await;
+        let result_account_point = account_point_repository.save_account_points(set_account_point_id).await;
+
+        if result_account.is_ok() && result_account_point.is_ok() {
             return AccountRegisterResponse::new(true)
         }
         return AccountRegisterResponse::new(false)
@@ -158,14 +170,19 @@ impl AccountService for AccountServiceImpl {
         println!("AccountServiceImpl: account_delete()");
 
         let account_repository = self.repository.lock().await;
+        let account_point_repository = self.account_point_repository.lock().await;
         let account = account_delete_request.to_account().unwrap();
         if let Some(found_account) = account_repository.find_by_user_id(account.user_id()).await.unwrap() {
             // 비밀번호 매칭 확인
             if verify(&account_delete_request.password(), &found_account.password()).unwrap() {
                 // 비밀번호 일치 확인
+                // 저장된 계정의 id 를 가지고, account_point 에 재화 관련 계정정보 삭제
+                let found_account = account_repository.find_by_user_id(account.user_id()).await.unwrap();
+                let found_account_id = found_account.unwrap().id;
+                let result_account_point = account_point_repository.delete_account_points(found_account_id).await;
 
-                let result = account_repository.delete(account_delete_request.to_account().unwrap()).await;
-                if result.is_ok() {
+                let result_account = account_repository.delete(account_delete_request.to_account().unwrap()).await;
+                if result_account.is_ok() && result_account_point.is_ok() {
                     return AccountDeleteResponse::new(true)
                 }
                 return AccountDeleteResponse::new(false)

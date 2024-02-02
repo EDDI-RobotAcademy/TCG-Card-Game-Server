@@ -39,6 +39,34 @@ impl AccountPointRepositoryImpl {
 #[async_trait]
 impl AccountPointRepository for AccountPointRepositoryImpl {
 
+    async fn set_account_point(&self, account_user_id: i32, golds: i32) -> AccountPoint {
+        Some(AccountPoint::new(account_user_id, golds)).unwrap().expect("REASON")
+    }
+
+    async fn save_account_points(&self, account_point: AccountPoint) -> Result<(), diesel::result::Error> {
+        use crate::account_point::entity::account_point::account_points::dsl::*;
+
+        println!("AccountRepositoryImpl: save()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        match diesel::insert_into(account_points)
+            .values(&account_point)
+            .execute(&mut connection)
+        {
+            Ok(_) => {
+                println!("Account saved successfully.");
+                Ok(())
+            }
+            Err(e) => {
+                eprintln!("Error saving account: {:?}", e);
+                Err(e)
+            }
+        }
+    }
+
     async fn find_by_account_id(&self, account_user_id: i32) -> Result<Option<AccountPoint>, diesel::result::Error> {
         use crate::account_point::entity::account_point::account_points::dsl::*;
         use diesel::query_dsl::filter_dsl::FilterDsl;
@@ -82,6 +110,30 @@ impl AccountPointRepository for AccountPointRepositoryImpl {
             }
             Err(e) => {
                 eprintln!("Error updating Gold points: {:?}", e);
+                Err(e)
+            }
+        }
+    }
+
+    async fn delete_account_points(&self, account_user_id: i32) -> Result<(), diesel::result::Error> {
+        use crate::account_point::entity::account_point::account_points::dsl::*;
+
+        println!("AccountPointRepositoryImpl: delete()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        match diesel::delete(FilterDsl::filter(account_points, columns::account_id.eq(account_user_id)))
+
+            .execute(&mut connection)
+        {
+            Ok(_) => {
+                println!("Account_point deleted successfully.");
+                Ok(())
+            }
+            Err(e) => {
+                eprintln!("Error deleting account_point: {:?}", e);
                 Err(e)
             }
         }
