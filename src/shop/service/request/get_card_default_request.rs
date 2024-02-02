@@ -1,11 +1,11 @@
 #[derive(Debug)]
-pub struct GetCardDafaultRequest {
+pub struct GetCardDefaultRequest {
     account_id: String,
 }
 
-impl GetCardDafaultRequest {
+impl GetCardDefaultRequest {
     pub fn new(account_id: String) -> Self {
-        GetCardDafaultRequest { account_id: account_id.to_string() }
+        GetCardDefaultRequest { account_id: account_id.to_string() }
     }
     pub fn account_id(&self) -> &str { &self.account_id }
 }

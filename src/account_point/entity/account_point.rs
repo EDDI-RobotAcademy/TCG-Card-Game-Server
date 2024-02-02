@@ -20,8 +20,8 @@ impl AccountPoint {
     pub fn new(account_id: i32, gold: i32) -> Result<Self, BcryptError> {
 
         Ok(AccountPoint {
-            account_id: 0,
-            gold: 100,
+            account_id,
+            gold,
         })
     }
 
