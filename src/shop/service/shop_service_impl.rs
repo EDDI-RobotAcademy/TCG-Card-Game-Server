@@ -93,10 +93,10 @@ impl ShopService for ShopServiceImpl {
                 let account_card_check = account_card_repository.check_same_card(get_cards.clone(), get_account_card_list).await;
                 // 뽑은 카드가 있으면(true) 업데이트 / 없으면(false) 새로 저장
                 for checked_card in account_card_check {
-                    if (checked_card.1){
-                        account_card_repository.update_card_count(int_type_account_id, checked_card.0).await;
+                    if (checked_card.1 != 0){
+                        account_card_repository.update_card_count(int_type_account_id, checked_card).await;
                     }
-                    if (!checked_card.1){
+                    if (checked_card.1 == 0){
                         account_card_repository.save_new_card(int_type_account_id, checked_card.0).await;
                     }
                 }
