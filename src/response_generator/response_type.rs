@@ -15,8 +15,6 @@ use crate::battle_room::service::response::what_is_the_room_number_response::Wha
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 
-use crate::deck_card::service::response::deck_card_list_response::DeckCardListResponse;
-use crate::deck_card::service::response::deck_configuration_response::DeckConfigurationResponse;
 use crate::shop::service::request::get_card_default_request::GetCardDafaultRequest;
 
 use crate::account_deck_card::service::response::account_deck_card_list_response::AccountDeckCardListResponse;
