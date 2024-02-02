@@ -56,6 +56,61 @@ pub fn build_dictionaries(csv_content: &Vec<Vec<String>>) -> (
     )
 }
 
+pub fn build_card_kinds_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, String> {
+    let mut card_kinds_dictionary = HashMap::new();
+
+    for record in csv_content.iter() {
+        let card_number = record[6].parse::<i32>();
+
+        let card_kind = &record[3];
+
+        if let Ok(card_number) = card_number {
+            card_kinds_dictionary.insert(card_number, card_kind.clone());
+        } else {
+            eprintln!("Failed to parse card number: {:?}", record[6]);
+        }
+    }
+
+    card_kinds_dictionary
+}
+
+pub fn build_card_grade_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, String> {
+    let mut card_grade_dictionary = HashMap::new();
+
+    for record in csv_content.iter() {
+        let card_number = record[6].parse::<i32>();
+
+        let card_grade = &record[2];
+
+        if let Ok(card_number) = card_number {
+            card_grade_dictionary.insert(card_number, card_grade.clone());
+        } else {
+            eprintln!("Failed to parse card number: {:?}", record[6]);
+        }
+    }
+
+    card_grade_dictionary
+}
+
+pub fn build_card_race_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, String> {
+    let mut card_race_dictionary = HashMap::new();
+
+    for record in csv_content.iter() {
+        let card_number = record[6].parse::<i32>();
+
+        let card_race = &record[1];
+
+        if let Ok(card_number) = card_number {
+            card_race_dictionary.insert(card_number, card_race.clone());
+        } else {
+            eprintln!("Failed to parse card number: {:?}", record[6]);
+        }
+    }
+
+    card_race_dictionary
+}
+
+
 // 카드 종류(서포트, 아이템 등등)
 pub fn get_card_kinds<'a>(
     card_number: &'a str,
@@ -168,6 +223,33 @@ mod tests {
             Ok(header) => {
                 println!("Header successfully extracted.");
                 println!("Header: {:?}", header);
+            }
+            Err(err) => eprintln!("Error: {}", err),
+        }
+    }
+
+    #[test]
+    fn test_build_card_kinds_dictionary() {
+        let filename = "../../../resources/csv/every_card.csv";
+        match csv_read(filename) {
+            Ok(csv_content) => {
+                let card_kinds_dictionary = build_card_kinds_dictionary(&csv_content);
+                println!("Card Kinds Dictionary: {:?}", card_kinds_dictionary);
+            }
+            Err(err) => eprintln!("Error: {}", err),
+        }
+    }
+
+    #[test]
+    fn test_build_card_kinds_dictionary_with_number() {
+        let filename = "../../../resources/csv/every_card.csv";
+        match csv_read(filename) {
+            Ok(csv_content) => {
+                let card_kinds_dictionary = build_card_kinds_dictionary(&csv_content);
+                let specific_card_number = 2;
+
+                assert!(card_kinds_dictionary.contains_key(&specific_card_number));
+                println!("Card Kinds Dictionary: {:?}", card_kinds_dictionary);
             }
             Err(err) => eprintln!("Error: {}", err),
         }

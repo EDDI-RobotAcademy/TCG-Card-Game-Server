@@ -1,0 +1,2 @@
+pub mod game_main_character_repository;
+pub mod game_main_character_repository_impl;

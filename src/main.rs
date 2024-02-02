@@ -5,6 +5,9 @@ use std::time::Duration;
 use crate::battle_match_monitor::service::battle_match_monitor_service::BattleMatchMonitorService;
 use crate::battle_match_monitor::service::battle_match_monitor_service_impl::BattleMatchMonitorServiceImpl;
 
+use crate::battle_prepare_task::service::battle_prepare_task_service::BattlePrepareTaskService;
+use crate::battle_prepare_task::service::battle_prepare_task_service_impl::BattlePrepareTaskServiceImpl;
+
 use crate::client_socket_accept::controller::client_socket_accept_controller::ClientSocketAcceptController;
 use crate::client_socket_accept::controller::client_socket_accept_controller_impl::ClientSocketAcceptControllerImpl;
 
@@ -43,12 +46,26 @@ mod battle_room;
 mod account_deck;
 mod match_waiting_timer;
 mod ugly_tests;
-mod deck_card;
+mod account_deck_card;
 mod shop;
 mod account_card;
 mod battle_wait_queue;
 mod battle_ready_account_hash;
 mod battle_match_monitor;
+mod game_turn;
+mod game_lost_zone;
+mod game_deck;
+mod game_field_energy;
+mod game_tomb;
+mod game_field_unit;
+mod game_hand;
+mod game_main_character;
+mod battle_prepare_task;
+mod card_library;
+mod account_point;
+mod card_kinds;
+mod card_grade;
+mod card_race;
 
 #[tokio::main]
 async fn main() {
@@ -126,6 +143,18 @@ async fn main() {
 
     thread_worker_service_guard.save_async_thread_worker("BattleMatchMonitor", Box::new(battle_match_monitor_function.clone()));
     thread_worker_service_guard.start_thread_worker("BattleMatchMonitor").await;
+
+    let battle_prepare_task_function = || -> Pin<Box<dyn Future<Output = ()> + Send>> {
+        Box::pin(async {
+            let battle_prepare_task_service_mutex = BattlePrepareTaskServiceImpl::get_instance();
+            let mut battle_prepare_task_service_guard = battle_prepare_task_service_mutex.lock().await;
+            println!("Battle Prepare Task instance found. Executing prepare_for_player_battle().");
+            let _ = battle_prepare_task_service_guard.prepare_for_player_battle().await;
+        })
+    };
+
+    thread_worker_service_guard.save_async_thread_worker("BattlePrepareTask", Box::new(battle_prepare_task_function.clone()));
+    thread_worker_service_guard.start_thread_worker("BattlePrepareTask").await;
 
     loop {
         tokio::time::sleep(Duration::from_secs(10)).await;
