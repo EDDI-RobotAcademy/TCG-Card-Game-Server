@@ -8,5 +8,6 @@ use crate::account_deck::service::request::account_deck_modify_request::AccountD
 pub trait AccountDeckRepository {
     async fn save(&self, deck: AccountDeck) -> Result<(), Error>;
     async fn get_list_by_user_int_id(&self, request: i32) -> Result<Option<Vec<HashMap<i32, String>>>, Error>;
-    async fn update_data(&self, modify_deck: AccountDeckModifyRequest, int_id: i32) -> Result<(), Error>;
+    async fn update(&self, modify_deck: AccountDeckModifyRequest, int_id: i32) -> Result<(), Error>;
+    async fn delete(&self, deck_id: i32) -> Result<(), Error>;
 }
