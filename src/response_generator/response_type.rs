@@ -5,6 +5,7 @@ use crate::account::service::response::account_logout_response::AccountLogoutRes
 use crate::account::service::response::account_modify_response::AccountModifyResponse;
 use crate::account::service::response::account_delete_response::AccountDeleteResponse;
 use crate::account_card::service::response::account_card_list_response::AccountCardListResponse;
+use crate::account_deck::service::response::account_deck_delete_response::AccountDeckDeleteResponse;
 use crate::account_deck::service::response::account_deck_list_response::AccountDeckListResponse;
 use crate::account_deck::service::response::account_deck_modify_response::AccountDeckModifyResponse;
 use crate::account_deck::service::response::account_deck_register_response::AccountDeckRegisterResponse;
@@ -39,6 +40,7 @@ pub enum ResponseType {
     ACCOUNT_DECK_REGISTER(AccountDeckRegisterResponse),
     ACCOUNT_DECK_LIST(AccountDeckListResponse),
     ACCOUNT_DECK_MODIFY(AccountDeckModifyResponse),
+    ACCOUNT_DECK_DELETE(AccountDeckDeleteResponse),
 
     WHAT_IS_THE_ROOM_NUMBER(WhatIsTheRoomNumberResponse),
     CHECK_BATTLE_PREPARE(CheckBattlePrepareResponse),
