@@ -147,7 +147,7 @@ mod tests {
 
         let sample_deck_id: i32 = 8;
         let sample_account_id_str = "redis_token_str";
-        let sample_deck_name = "amazing deck name";
+        let sample_deck_name = "fantastic deck name";
 
         let account_deck_modify_request
             = AccountDeckModifyRequest::new(sample_deck_id, sample_account_id_str.to_string(), sample_deck_name.to_string());
