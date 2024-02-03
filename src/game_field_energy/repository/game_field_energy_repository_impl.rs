@@ -18,7 +18,7 @@ impl GameFieldEnergyRepositoryImpl {
         }
     }
 
-    pub fn get_game_field_energy_map(&mut self) -> &mut IndexMap<i32, GameFieldEnergy> {
+    pub(crate) fn get_game_field_energy_map(&mut self) -> &mut IndexMap<i32, GameFieldEnergy> {
         &mut self.game_field_energy_map
     }
 
@@ -41,16 +41,6 @@ impl GameFieldEnergyRepository for GameFieldEnergyRepositoryImpl {
         self.game_field_energy_map.insert(account_unique_id, new_game_field_energy_map);
 
         true
-    }
-    fn add_field_energy(&mut self, account_unique_id: i32) -> bool {
-        println!("FieldEnergyRepositoryImpl: add_field_energy()");
-
-        if let Some(game_field_energy) = self.game_field_energy_map.get_mut(&account_unique_id) {
-            game_field_energy.add_energy_count();
-            return true
-        }
-
-        false
     }
 }
 
@@ -81,27 +71,6 @@ mod tests {
             guard.get_game_field_energy_map().get(&account_unique_id),
             Some(&GameFieldEnergy::new(1))
         );
-    }
-
-    #[tokio::test]
-    async fn test_increment_of_field_energy() {
-        let repository = GameFieldEnergyRepositoryImpl::new();
-        let instance = Arc::new(AsyncMutex::new(repository));
-
-        let mut guard = instance.lock().await;
-        let account_unique_id = 1;
-        let result = guard.create_field_energy_object(account_unique_id);
-
-        assert!(result);
-
-        guard.add_field_energy(account_unique_id);
-
-        println!("{:?}", guard.get_game_field_energy_map());
-
-        assert_eq!(
-            guard.get_game_field_energy_map().get(&account_unique_id),
-            Some(&GameFieldEnergy::new(2))
-        )
     }
 
     #[tokio::test]
