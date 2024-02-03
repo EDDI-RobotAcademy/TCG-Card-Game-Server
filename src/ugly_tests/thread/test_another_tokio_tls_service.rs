@@ -26,7 +26,6 @@ impl ConceptTestRepository for ConceptTestRepositoryImpl {
     }
 
     fn increment_count(&mut self) {
-        // This method is no longer used
     }
 }
 

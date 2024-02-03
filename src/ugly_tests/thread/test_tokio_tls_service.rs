@@ -80,7 +80,7 @@ mod tests {
                 })
             })
             .collect();
-        
+
         for handle in handles {
             handle.await.unwrap();
         }
