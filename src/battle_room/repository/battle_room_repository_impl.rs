@@ -34,11 +34,11 @@ impl BattleRoomRepositoryImpl {
     //     let list = self.battle_room_list.lock().unwrap();
     //     list.clone()
     // }
-    //
-    // pub fn get_battle_room_count(&self) -> usize {
-    //     let list = self.battle_room_list.lock().unwrap();
-    //     list.len()
-    // }
+
+    pub async fn get_battle_room_count(&self) -> usize {
+        let list = self.battle_room_list.lock().await;
+        list.len()
+    }
 
     pub fn get_instance() -> Arc<AsyncMutex<BattleRoomRepositoryImpl>> {
         lazy_static! {
