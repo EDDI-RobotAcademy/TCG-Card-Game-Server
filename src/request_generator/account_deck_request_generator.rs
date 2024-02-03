@@ -1,5 +1,6 @@
 use serde_json::Value as JsonValue;
 
+use crate::account_deck::service::request::account_deck_delete_request::AccountDeckDeleteRequest;
 use crate::account_deck::service::request::account_deck_list_request::AccountDeckListRequest;
 use crate::account_deck::service::request::account_deck_modify_request::AccountDeckModifyRequest;
 use crate::account_deck::service::request::account_deck_register_request::AccountDeckRegisterRequest;
@@ -31,6 +32,15 @@ pub fn create_deck_modify_request(data: &JsonValue) -> Option<AccountDeckModifyR
     ) {
         let deck_id_opt_i32 = deck_id as i32;
         Some(AccountDeckModifyRequest::new(deck_id_opt_i32, account_id.to_string(), deck_name.to_string()))
+    } else {
+        None
+    }
+}
+
+pub fn create_deck_delete_request(data: &JsonValue) -> Option<AccountDeckDeleteRequest> {
+    if let Some(deck_unique_id) = data.get("deckId").and_then(|v| v.as_i64()) {
+        let deck_unique_id_i32 = deck_unique_id as i32;
+        Some(AccountDeckDeleteRequest::new(deck_unique_id_i32))
     } else {
         None
     }

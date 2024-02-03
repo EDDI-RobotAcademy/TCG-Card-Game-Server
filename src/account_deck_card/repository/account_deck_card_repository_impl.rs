@@ -83,6 +83,31 @@ impl AccountDeckCardRepository for AccountDeckCardRepositoryImpl {
 
         Ok(Option::from(card_list))
     }
+
+    async fn delete_deck_cards(&self, deck_unique_id: i32) -> Result<(), Error> {
+        use crate::account_deck_card::entity::account_deck_card::deck_cards::dsl::*;
+        use diesel::query_dsl::filter_dsl::FilterDsl;
+        use diesel::prelude::*;
+
+        println!("AccountDeckCardRepositoryImpl: delete_deck_cards()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        let where_clause = FilterDsl::filter(deck_cards, deck_id.eq(deck_unique_id));
+
+        match diesel::delete(where_clause).execute(&mut connection) {
+            Ok(_) => {
+                println!("Account Deck cards deleted successfully.");
+                Ok(())
+            }
+            Err(e) => {
+                eprintln!("Error delete account deck: {:?}", e);
+                Err(e)
+            }
+        }
+    }
 }
 
 #[cfg(test)]

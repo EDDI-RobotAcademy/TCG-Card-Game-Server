@@ -7,27 +7,34 @@ use crate::account_deck::entity::account_deck::AccountDeck;
 use crate::account_deck::repository::account_deck_repository::AccountDeckRepository;
 use crate::account_deck::repository::account_deck_repository_impl::AccountDeckRepositoryImpl;
 use crate::account_deck::service::account_deck_service::AccountDeckService;
+use crate::account_deck::service::request::account_deck_delete_request::AccountDeckDeleteRequest;
 use crate::account_deck::service::request::account_deck_list_request::AccountDeckListRequest;
 use crate::account_deck::service::request::account_deck_modify_request::AccountDeckModifyRequest;
 use crate::account_deck::service::request::account_deck_register_request::AccountDeckRegisterRequest;
+use crate::account_deck::service::response::account_deck_delete_response::AccountDeckDeleteResponse;
 use crate::account_deck::service::response::account_deck_list_response::AccountDeckListResponse;
 use crate::account_deck::service::response::account_deck_modify_response::AccountDeckModifyResponse;
 use crate::account_deck::service::response::account_deck_register_response::AccountDeckRegisterResponse;
+use crate::account_deck_card::repository::account_deck_card_repository::AccountDeckCardRepository;
+use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
 
 pub struct AccountDeckServiceImpl {
     repository: Arc<AsyncMutex<AccountDeckRepositoryImpl>>,
-    redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>
+    redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+    account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>
 }
 
 impl AccountDeckServiceImpl {
     pub fn new(repository: Arc<AsyncMutex<AccountDeckRepositoryImpl>>,
-               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>) -> Self {
+               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+               account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>) -> Self {
         AccountDeckServiceImpl {
             repository,
-            redis_in_memory_repository
+            redis_in_memory_repository,
+            account_deck_card_repository
         }
     }
 
@@ -38,7 +45,8 @@ impl AccountDeckServiceImpl {
                     AsyncMutex::new(
                         AccountDeckServiceImpl::new(
                             AccountDeckRepositoryImpl::get_instance(),
-                            RedisInMemoryRepositoryImpl::get_instance())));
+                            RedisInMemoryRepositoryImpl::get_instance(),
+                            AccountDeckCardRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -100,12 +108,40 @@ impl AccountDeckService for AccountDeckServiceImpl {
 
         let account_deck_repository_guard = self.repository.lock().await;
 
-        let result = account_deck_repository_guard.update_data(account_deck_modify_request, account_unique_id).await;
+        let result = account_deck_repository_guard.update(account_deck_modify_request, account_unique_id).await;
 
         if result.is_ok() {
             AccountDeckModifyResponse::new(true)
         } else {
             AccountDeckModifyResponse::new(false)
+        }
+    }
+
+    async fn account_deck_delete(&self, account_deck_delete_request: AccountDeckDeleteRequest) -> AccountDeckDeleteResponse {
+        println!("AccountDeckServiceImpl: account_deck_delete()");
+
+        let account_deck_repository_guard = self.repository.lock().await;
+
+        let account_deck_delete_result =
+            account_deck_repository_guard.delete(account_deck_delete_request.deck_unique_id()).await;
+
+        drop(account_deck_repository_guard);
+
+        if account_deck_delete_result.is_ok() {
+            let account_deck_card_repository_guard = self.account_deck_card_repository.lock().await;
+
+            let account_deck_card_delete_result =
+                account_deck_card_repository_guard.delete_deck_cards(account_deck_delete_request.deck_unique_id()).await;
+
+            drop(account_deck_card_repository_guard);
+
+            if account_deck_card_delete_result.is_ok() {
+                return AccountDeckDeleteResponse::new(true)
+            } else {
+                AccountDeckDeleteResponse::new(false)
+            }
+        } else {
+            AccountDeckDeleteResponse::new(false)
         }
     }
 }
@@ -153,6 +189,19 @@ mod tests {
             = AccountDeckModifyRequest::new(sample_deck_id, sample_account_id_str.to_string(), sample_deck_name.to_string());
 
         let result = account_deck_service_mutex_guard.account_deck_modify(account_deck_modify_request).await;
+
+        assert_eq!(true, result.get_is_success())
+    }
+
+    #[test]
+    async fn test_deck_delete() {
+        let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
+        let mut account_deck_service_mutex_guard = account_deck_service_mutex.lock().await;
+
+        let target_deck_id = 21;
+        let account_deck_delete_request = AccountDeckDeleteRequest::new(target_deck_id);
+
+        let result = account_deck_service_mutex_guard.account_deck_delete(account_deck_delete_request).await;
 
         assert_eq!(true, result.get_is_success())
     }
