@@ -26,6 +26,7 @@ use crate::server_socket::service::server_socket_service_impl::ServerSocketServi
 use crate::thread_worker::service::thread_worker_service_impl::ThreadWorkerServiceImpl;
 
 use crate::common::mpsc::mpsc_creator::mpsc_channel::define_channel;
+use crate::game_battle_field_monitor::controller::game_battle_field_monitor_controller_impl::GameBattleFieldMonitorControllerImpl;
 use crate::game_turn::service::game_turn_service_impl::GameTurnServiceImpl;
 
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;

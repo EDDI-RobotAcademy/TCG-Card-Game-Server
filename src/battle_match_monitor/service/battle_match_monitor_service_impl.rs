@@ -5,12 +5,15 @@ use crate::battle_match_monitor::service::battle_match_monitor_service::BattleMa
 use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repository_impl::BattleReadyAccountHashRepositoryImpl;
 
 use tokio::sync::Mutex as AsyncMutex;
+
 use crate::battle_ready_account_hash::entity::battle_ready_account_hash_status::BattleReadyAccountHashStatus;
 use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repository::BattleReadyAccountHashRepository;
 
 use crate::battle_room::repository::battle_room_repository::BattleRoomRepository;
 use crate::battle_room::repository::battle_room_repository_impl::BattleRoomRepositoryImpl;
 use crate::battle_wait_queue::repository::battle_wait_queue_repository_impl::BattleWaitQueueRepositoryImpl;
+use crate::game_battle_field_monitor::controller::game_battle_field_monitor_controller::GameBattleFieldMonitorController;
+use crate::game_battle_field_monitor::controller::game_battle_field_monitor_controller_impl::GameBattleFieldMonitorControllerImpl;
 
 pub struct BattleMatchMonitorServiceImpl {
     battle_wait_queue_repository: Arc<AsyncMutex<BattleWaitQueueRepositoryImpl>>,
@@ -63,7 +66,13 @@ impl BattleMatchMonitorService for BattleMatchMonitorServiceImpl {
                 let battle_room_repository_guard = self.battle_room_repository.lock().await;
 
                 battle_room_repository_guard.set_players_to_battle_room(items).await.expect("전투 배치 실패");
+                let battle_room_count = battle_room_repository_guard.get_battle_room_count().await;
                 drop(battle_room_repository_guard);
+
+                tokio::spawn(async move {
+                    let game_battle_field_monitor_controller = GameBattleFieldMonitorControllerImpl::new();
+                    game_battle_field_monitor_controller.battle_field_monitoring(battle_room_count).await;
+                });
             }
 
             tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
