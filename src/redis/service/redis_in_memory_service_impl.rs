@@ -1,8 +1,11 @@
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
-use serde_json::Value::Null;
 use tokio::sync::Mutex as AsyncMutex;
+
+use crate::redis::service::request::save_daily_key_and_value_request::SaveDailyKeyAndValueRequest;
+use crate::redis::service::response::save_daily_key_and_value_response::SaveDailyKeyAndValueResponse;
+
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
@@ -51,19 +54,19 @@ impl RedisInMemoryService for RedisInMemoryServiceImpl {
         let mut redis_in_memory_repository_guard = self.redis_in_memory_repository.lock().await;
         redis_in_memory_repository_guard.del(key).await
     }
-    async fn save_daily_key_and_value(&mut self, key: &str, value: &str) {
+    async fn save_daily_key_and_value(&self, save_daily_key_and_value_request: SaveDailyKeyAndValueRequest) -> SaveDailyKeyAndValueResponse {
         println!("RedisInMemoryServiceImpl: save_daily_key_and_value()");
 
         let mut redis_in_memory_repository_guard = self.redis_in_memory_repository.lock().await;
 
-        let current_key = redis_in_memory_repository_guard.get(key).await;
+        let current_key = redis_in_memory_repository_guard.get(save_daily_key_and_value_request.key()).await;
         println!("current_key: {:?}", current_key);
         if Some(current_key) == Some(None) {
-            redis_in_memory_repository_guard.set_with_expired_target_time(key, value).await;
-            return
+            redis_in_memory_repository_guard.set_with_expired_target_time(save_daily_key_and_value_request.key(), save_daily_key_and_value_request.value()).await;
+            return SaveDailyKeyAndValueResponse::new(true)
         }
         println!("Failed to set key.");
-        return
+        return SaveDailyKeyAndValueResponse::new(false)
     }
 }
 
@@ -78,6 +81,8 @@ mod test {
         let redis_in_memory_service_mutex = RedisInMemoryServiceImpl::get_instance();
         let mut redis_in_memory_service_mutex_guard = redis_in_memory_service_mutex.lock().await;
 
-        redis_in_memory_service_mutex_guard.save_daily_key_and_value("test_key3", "test_value3").await;
+        let test_account = SaveDailyKeyAndValueRequest::new("test_key3", "test_value3");
+
+        redis_in_memory_service_mutex_guard.save_daily_key_and_value(test_account).await;
     }
 }

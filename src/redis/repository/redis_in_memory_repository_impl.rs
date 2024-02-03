@@ -87,20 +87,28 @@ impl RedisInMemoryRepository for RedisInMemoryRepositoryImpl {
             let now = Utc::now;
             println!("now_time: {:?}", now());
             // 협정세계시 기준 (UTC) : 대한민국 시간은 UTC+9 (ex. UTC 14 시 59 분 59 초 = 대한민국 23 시 59 분 59 초)
-            let target_time: DateTime<Utc> = Utc.with_ymd_and_hms(now().year(), now().month(), now().day(), 8, 44, 00).unwrap();
+            let target_time: DateTime<Utc> = Utc.with_ymd_and_hms(now().year(), now().month(), now().day(), 14, 59, 59).unwrap();
             println!("target_time: {:?}", target_time);
             let difference_time = target_time - now();
             let difference_seconds = difference_time.num_seconds();
+                // 협정세계시의 일자가 대한민국의 일자 보다 늦을 경우, 일자를 +1(86400 초) 조정함 (참고: 대한민국 00 시 ~ 09 시 일 때 해당함)
+                let mut result_differnce_seconts;
+                if  Some(difference_seconds) < Some(1) {
+                    result_differnce_seconts = difference_seconds + 86400;
+                } else {
+                result_differnce_seconts = difference_seconds;
+                }
             // 잔여시간을 시, 분, 초 으로 표현
-            let hours = difference_seconds / 3600;
-            let minutes = (difference_seconds % 3600) / 60;
-            let remaining_seconds = difference_seconds % 60;
-            println!("remaining_time: {:?} hours {:?} minutes {:?} sedonds", hours, minutes, remaining_seconds);
+            let hours = result_differnce_seconts / 3600;
+            let minutes = (result_differnce_seconts % 3600) / 60;
+            let remaining_seconds = result_differnce_seconts % 60;
+
+            println!("remaining_time: {:?} hours {:?} minutes {:?} seconds", hours, minutes, remaining_seconds);
 
             redis::cmd("SET")
                 .arg(key)
                 .arg(value)
-                .arg("EX").arg(difference_seconds)
+                .arg("EX").arg(result_differnce_seconts)
                 .query::<()>(&mut self.connection)
                 .expect("Failed to set key");
     }
