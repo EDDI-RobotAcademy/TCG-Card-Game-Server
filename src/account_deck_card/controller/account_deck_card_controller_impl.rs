@@ -95,7 +95,7 @@ mod tests {
         ];
 
         let deck_configuration_request_form
-            = AccountDeckConfigurationRequestForm::new(888, card_list);
+            = AccountDeckConfigurationRequestForm::new(21, card_list);
 
         let account_deck_card_controller = AccountDeckCardControllerImpl::get_instance();
         let account_deck_card_controller_guard = account_deck_card_controller.lock().await;
