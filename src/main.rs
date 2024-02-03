@@ -70,6 +70,7 @@ mod card_grade;
 mod card_race;
 mod deck_configuration_validator;
 mod game_battle_field_monitor;
+mod game_card_energy_count;
 
 #[tokio::main]
 async fn main() {
