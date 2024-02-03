@@ -4,8 +4,8 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
-use diesel::query_dsl::methods::{FilterDsl, FindDsl};
-use diesel::{Connection, MysqlConnection, QueryDsl, ExpressionMethods, RunQueryDsl, OptionalExtension, Insertable};
+use diesel::query_dsl::methods::{FilterDsl};
+use diesel::{Connection, MysqlConnection, QueryDsl, ExpressionMethods, RunQueryDsl, Insertable, BoolExpressionMethods};
 use diesel::result::Error;
 
 use crate::account_deck::entity::account_deck::account_decks::{columns};
@@ -107,11 +107,10 @@ impl AccountDeckRepository for AccountDeckRepositoryImpl {
         let mut connection = MysqlConnection::establish(&database_url)
             .expect("Failed to establish a new connection");
 
-        match diesel::replace_into(account_decks)
-            .values((deck_id.eq(&modify_deck.deck_id()),
-                            account_id.eq(int_id),
-                            deck_name.eq(&modify_deck.deck_name())))
-            .execute(&mut connection)
+        let where_clause =
+            FilterDsl::filter(account_decks, deck_id.eq(modify_deck.deck_id()).and(account_id.eq(int_id)));
+
+        match diesel::update(where_clause).set(deck_name.eq(modify_deck.deck_name())).execute(&mut connection)
         {
             Ok(_) => {
                 println!("Account Deck updated successfully.");
