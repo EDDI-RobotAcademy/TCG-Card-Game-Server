@@ -1,5 +1,5 @@
-use crate::game_hand::entity::hand_card::GameHandCard;
-use crate::game_hand::entity::hand_card_list::GameHandCardList;
+use crate::game_hand::entity::game_hand_card::GameHandCard;
+use crate::game_hand::entity::game_hand_card_list::GameHandCardList;
 
 #[derive(Debug)]
 pub struct GameHand {
@@ -25,6 +25,10 @@ impl GameHand {
     pub fn get_all_card_list_in_game_hand(&self) -> &Vec<GameHandCard> {
         self.game_hand.get_all_hand_card_list()
     }
+
+    pub fn get_specific_card(&mut self, card_number: i32) -> Option<GameHandCard> {
+        self.game_hand.get_specific_hand_card(card_number)
+    }
 }
 
 #[cfg(test)]
@@ -32,7 +36,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_game_deck() {
+    fn test_game_hand() {
         let mut game_hand = GameHand::new();
 
         let hand_card1 = GameHandCard::new(56);
@@ -53,25 +57,31 @@ mod tests {
     #[test]
     fn test_add_card_list_to_hand() {
         let mut game_hand = GameHand::new();
-
-        // Create a vector of integers to represent card values
         let card_values = vec![11, 22, 33, 44, 55];
 
-        // Add the card values to the game hand
         game_hand.add_card_list_to_hand(card_values.clone());
 
-        // Retrieve the card list from the game hand
         let unit_list_in_game_hand = game_hand.get_all_card_list_in_game_hand();
-
-        // Assert that the length of the card list is as expected
         assert_eq!(unit_list_in_game_hand.len(), card_values.len());
 
-        // Assert that each card in the hand has the correct value
         for (index, &value) in card_values.iter().enumerate() {
             assert_eq!(unit_list_in_game_hand[index].get_card(), value);
         }
 
-        // Print the content of the game hand for manual inspection
         println!("{:?}", unit_list_in_game_hand);
+    }
+
+    #[test]
+    fn test_get_specific_card() {
+        let mut game_hand = GameHand::new();
+
+        let card_values = vec![11, 22, 33, 44, 55];
+        game_hand.add_card_list_to_hand(card_values.clone());
+
+        let specific_card = game_hand.get_specific_card(33);
+        assert!(specific_card.is_some());
+        assert_eq!(specific_card.unwrap().get_card(), 33);
+
+        println!("{:?}", game_hand.get_all_card_list_in_game_hand());
     }
 }
