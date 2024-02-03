@@ -1,1 +1,4 @@
 pub mod save_daily_key_and_value_request;
+pub mod save_key_and_value_request;
+pub mod get_value_with_key_request;
+pub mod delete_value_with_key_request;
