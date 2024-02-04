@@ -19,6 +19,10 @@ impl GameFieldUnit {
         self.game_field_unit.add_energy_to_unit(unit_id);
     }
 
+    pub fn find_unit_by_id(&self, unit_id: i32) -> Option<&GameFieldUnitCard> {
+        self.game_field_unit.find_unit_by_id(unit_id)
+    }
+
     pub fn get_all_unit_list_in_game_field(&self) -> &Vec<GameFieldUnitCard> {
         self.game_field_unit.get_all_field_unit_list()
     }
@@ -71,5 +75,26 @@ mod tests {
 
             assert_eq!(game_field_unit.get_all_unit_list_in_game_field()[unit_index].get_attached_energy(), expected_energy);
         }
+    }
+
+    #[test]
+    fn test_find_unit_by_id() {
+        let mut game_field_unit = GameFieldUnit::new();
+
+        let field_unit1 = GameFieldUnitCard::new(3);
+        let field_unit2 = GameFieldUnitCard::new(7);
+
+        game_field_unit.add_unit_to_game_field(field_unit1);
+        game_field_unit.add_unit_to_game_field(field_unit2);
+        println!("Initial state: {:?}", game_field_unit.get_all_unit_list_in_game_field());
+
+        let found_unit = game_field_unit.find_unit_by_id(3);
+        println!("Found Unit: {:?}", found_unit);
+        assert!(found_unit.is_some());
+        assert_eq!(found_unit.unwrap().get_card(), 3);
+
+        let found_unit = game_field_unit.find_unit_by_id(12345);
+        println!("Found Unit: {:?}", found_unit);
+        assert!(found_unit.is_none());
     }
 }

@@ -60,6 +60,18 @@ impl GameHandServiceImpl {
         let account_unique_id: i32 = account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32");
         account_unique_id
     }
+
+    async fn check_protocol_hacking(&mut self, account_unique_id: i32, unit_card_number: i32) -> bool {
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let maybe_exist_hand_unit = game_field_unit_repository_guard.find_unit_by_id(account_unique_id, unit_card_number);
+
+        if maybe_exist_hand_unit.is_none() {
+            // TODO: 해킹 감지 (3회 이상 계정 영구 정지, 1회, 2회 -> 1시간 접속 불가)
+            return false;
+        }
+
+        return false
+    }
 }
 
 #[async_trait]
@@ -72,6 +84,16 @@ impl GameHandService for GameHandServiceImpl {
 
         let unit_card_number_string = use_game_hand_unit_card_request.get_unit_number();
         let unit_card_number = unit_card_number_string.parse::<i32>().unwrap();
+
+        if self.check_protocol_hacking(account_unique_id, unit_card_number).await {
+            return UseGameHandUnitCardResponse::new(false)
+        }
+
+        let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
+        let maybe_unit_card = card_kinds_repository_guard.get_card_kind(&unit_card_number).await;
+        if maybe_unit_card.unwrap() != "유닛" {
+            return UseGameHandUnitCardResponse::new(false)
+        }
 
         let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
         let specific_card_option = game_hand_repository_guard.use_specific_card(account_unique_id, unit_card_number);
