@@ -35,6 +35,7 @@ use crate::request_generator::account_deck_card_request_generator::{create_accou
 use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::request_generator::shop_request_generator::{create_free_card_request, create_get_card_default_request};
+use crate::request_generator::use_hand_energy_request_generator::create_use_hand_energy_request;
 use crate::request_generator::use_hand_unit_request_generator::create_use_hand_unit_request;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
@@ -376,6 +377,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             }
+            1010 => {
+                // Energy Card Usage
+                if let Some(request) = create_use_hand_energy_request(&data) {
+                    let game_hand_service_mutex = GameHandServiceImpl::get_instance();
+                    let mut game_hand_service = game_hand_service_mutex.lock().await;
+
+                    let response = game_hand_service.attach_energy_card_to_field_unit(request).await;
+                    let response_type = Some(ResponseType::ENERGY_TO_BATTLE_FIELD_UNIT_USAGE(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             4444 => {
                 // Program Exit
                 if let Some(request) = create_client_program_exit_request(&data) {
