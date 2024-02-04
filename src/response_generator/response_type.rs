@@ -19,6 +19,7 @@ use crate::battle_room::service::response::what_is_the_room_number_response::Wha
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::game_deck::service::response::game_start_deck_card_list_response::GameStartDeckCardListResponse;
+use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
 
 use crate::shop::service::response::free_card_response::FreeCardResponse;
 use crate::shop::service::response::get_card_default_response::GetCardDefaultResponse;
@@ -63,6 +64,9 @@ pub enum ResponseType {
     BATTLE_WAIT_QUEUE_FOR_MATCH(BattleWaitQueueResponse),
     BATTLE_READY(BattleReadyAccountHashResponse),
     BATTLE_DECK_CARD_LIST(AccountDeckCardListResponseForm),
+
+    // Battle Field
+    HAND_TO_BATTLE_FIELD_UNIT_USAGE(UseGameHandUnitCardResponse),
 
     // Program Exit
     PROGRAM_EXIT(ClientProgramExitResponse),

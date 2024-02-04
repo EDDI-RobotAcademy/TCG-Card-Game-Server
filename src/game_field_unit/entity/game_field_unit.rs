@@ -1,21 +1,21 @@
-use crate::game_field_unit::entity::field_unit::FieldUnit;
-use crate::game_field_unit::entity::field_unit_list::FieldUnitList;
+use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
+use crate::game_field_unit::entity::game_field_unit_card_list::GameFieldUnitCardList;
 
 #[derive(Debug)]
 pub struct GameFieldUnit {
-    game_field_unit: FieldUnitList,
+    game_field_unit: GameFieldUnitCardList,
 }
 
 impl GameFieldUnit {
     pub fn new() -> GameFieldUnit {
-        GameFieldUnit { game_field_unit: FieldUnitList::new() }
+        GameFieldUnit { game_field_unit: GameFieldUnitCardList::new() }
     }
 
-    pub fn add_unit_to_game_field(&mut self, field_unit: FieldUnit) {
+    pub fn add_unit_to_game_field(&mut self, field_unit: GameFieldUnitCard) {
         self.game_field_unit.add_field_unit(field_unit);
     }
 
-    pub fn get_all_unit_list_in_game_field(&self) -> &Vec<FieldUnit> {
+    pub fn get_all_unit_list_in_game_field(&self) -> &Vec<GameFieldUnitCard> {
         self.game_field_unit.get_all_field_unit_list()
     }
 }
@@ -28,8 +28,8 @@ mod tests {
     fn test_game_deck() {
         let mut game_field_unit = GameFieldUnit::new();
 
-        let field_unit1 = FieldUnit::new(12);
-        let field_unit2 = FieldUnit::new(34);
+        let field_unit1 = GameFieldUnitCard::new(12);
+        let field_unit2 = GameFieldUnitCard::new(34);
 
         game_field_unit.add_unit_to_game_field(field_unit1);
         game_field_unit.add_unit_to_game_field(field_unit2);

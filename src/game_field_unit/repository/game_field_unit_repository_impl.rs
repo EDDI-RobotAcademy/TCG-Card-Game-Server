@@ -5,6 +5,7 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
+use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 
 pub struct GameFieldUnitRepositoryImpl {
@@ -42,6 +43,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         true
     }
+
+    fn add_unit_to_game_field(&mut self, account_unique_id: i32, unit_card_number: i32) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            game_field_unit.add_unit_to_game_field(GameFieldUnitCard::new(unit_card_number));
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[cfg(test)]
@@ -66,5 +76,18 @@ mod tests {
 
         assert!(Arc::strong_count(&instance) > 1);
         assert_eq!(lock.get_game_field_unit_map().len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_add_unit_to_game_field() {
+        let mut game_field_unit_repository = GameFieldUnitRepositoryImpl::new();
+        game_field_unit_repository.create_game_field_unit_object(1);
+
+        let unit_card_number = 42;
+        let result = game_field_unit_repository.add_unit_to_game_field(1, unit_card_number);
+
+        assert!(result);
+
+        println!("Test Output: {:?}", game_field_unit_repository.get_game_field_unit_map());
     }
 }

@@ -12,4 +12,5 @@ pub mod check_battle_prepare_request_generator;
 pub mod account_point_request_generator;
 pub mod game_deck_card_list_request_generator;
 mod account_card_request_generator;
+mod use_hand_unit_request_generator;
 
