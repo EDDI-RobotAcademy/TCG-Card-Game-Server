@@ -369,7 +369,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     let mut game_hand_service = game_hand_service_mutex.lock().await;
 
                     let response = game_hand_service.use_specific_card(request).await;
-                    let response_type = Some(ResponseType::BATTLE_FIELD_UNIT_USAGE(response));
+                    let response_type = Some(ResponseType::HAND_TO_BATTLE_FIELD_UNIT_USAGE(response));
 
                     response_type
                 } else {
