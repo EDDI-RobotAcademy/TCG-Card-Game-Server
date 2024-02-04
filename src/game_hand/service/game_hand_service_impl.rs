@@ -5,6 +5,9 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
+use crate::card_race::repository::card_race_repository::CardRaceRepository;
+use crate::card_race::repository::card_race_repository_impl::CardRaceRepositoryImpl;
+use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
 use crate::game_hand::repository::game_hand_repository::GameHandRepository;
@@ -22,6 +25,7 @@ pub struct GameHandServiceImpl {
     game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
     game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
+    card_race_repository: Arc<AsyncMutex<CardRaceRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
 }
 
@@ -29,12 +33,14 @@ impl GameHandServiceImpl {
     pub fn new(game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
                game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
+               card_race_repository: Arc<AsyncMutex<CardRaceRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     ) -> Self {
         GameHandServiceImpl {
             game_hand_repository,
             game_field_unit_repository,
             card_kinds_repository,
+            card_race_repository,
             redis_in_memory_repository
         }
     }
@@ -48,6 +54,7 @@ impl GameHandServiceImpl {
                             GameHandRepositoryImpl::get_instance(),
                             GameFieldUnitRepositoryImpl::get_instance(),
                             CardKindsRepositoryImpl::get_instance(),
+                            CardRaceRepositoryImpl::get_instance(),
                             RedisInMemoryRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
@@ -71,6 +78,17 @@ impl GameHandServiceImpl {
         }
 
         return false
+    }
+
+    async fn convert_race_string_to_enum(race_str: &str) -> RaceEnumValue {
+        match race_str.to_lowercase().as_str() {
+            "언데드" => RaceEnumValue::Undead,
+            "휴먼" => RaceEnumValue::Human,
+            "천사" => RaceEnumValue::Angel,
+            "기계" => RaceEnumValue::Machine,
+            "트랜트" => RaceEnumValue::Trent,
+            _ => panic!("Invalid race string"),
+        }
     }
 }
 
@@ -106,6 +124,7 @@ impl GameHandService for GameHandServiceImpl {
         UseGameHandUnitCardResponse::new(true)
     }
 
+    // 에너지 카드 직접 1장 붙이기
     async fn attach_energy_card_to_field_unit(&mut self, use_game_hand_energy_card_request: UseGameHandEnergyCardRequest) -> UseGameHandEnergyCardResponse {
         println!("GameHandServiceImpl: attach_energy_card_to_field_unit()");
 
@@ -129,8 +148,16 @@ impl GameHandService for GameHandServiceImpl {
             return UseGameHandEnergyCardResponse::new(false)
         }
 
+        // TODO: Dictionary 값 아직 enum 처리 안되어 있음
+        let card_race_repository_guard = self.card_race_repository.lock().await;
+        let race_option = card_race_repository_guard.get_card_race(&energy_card_id).await;
+        let race_string = race_option.unwrap();
+
+        // TODO: 그로 인해 race_option 값을 문자열 기반으로 매칭해야함
+        let race_enum = GameHandServiceImpl::convert_race_string_to_enum(&race_string).await;
+
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        game_field_unit_repository_guard.attach_energy_to_game_field_unit(account_unique_id, unit_card_number);
+        game_field_unit_repository_guard.attach_energy_to_game_field_unit(account_unique_id, unit_card_number, race_enum, 1);
 
         UseGameHandEnergyCardResponse::new(true)
     }

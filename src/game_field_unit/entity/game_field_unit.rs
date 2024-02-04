@@ -1,5 +1,6 @@
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::game_field_unit_card_list::GameFieldUnitCardList;
+use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 
 #[derive(Debug)]
 pub struct GameFieldUnit {
@@ -15,8 +16,8 @@ impl GameFieldUnit {
         self.game_field_unit.add_field_unit(field_unit);
     }
 
-    pub fn add_energy_to_unit(&mut self, unit_id: i32) {
-        self.game_field_unit.add_energy_to_unit(unit_id);
+    pub fn add_energy_to_unit(&mut self, unit_id: i32, race: RaceEnumValue, quantity: i32) {
+        self.game_field_unit.add_energy_to_unit(unit_id, race, quantity);
     }
 
     pub fn find_unit_by_id(&self, unit_id: i32) -> Option<&GameFieldUnitCard> {
@@ -62,10 +63,10 @@ mod tests {
         game_field_unit.add_unit_to_game_field(field_unit2);
         println!("Initial state: {:?}", game_field_unit.get_all_unit_list_in_game_field());
 
-        let test_cases = [(3, 1), (7, 1)];
+        let test_cases = [(3, RaceEnumValue::Undead, 1), (7, RaceEnumValue::Human, 1)];
 
-        for &(unit_id, expected_energy) in &test_cases {
-            game_field_unit.add_energy_to_unit(unit_id);
+        for &(unit_id, race, quantity) in &test_cases {
+            game_field_unit.add_energy_to_unit(unit_id, race, quantity);
             println!("After adding energy to unit {}: {:?}", unit_id, game_field_unit.get_all_unit_list_in_game_field());
 
             let unit_index = game_field_unit.get_all_unit_list_in_game_field()
@@ -73,7 +74,7 @@ mod tests {
                 .position(|unit| unit.get_card() == unit_id)
                 .expect("Unit not found in the list.");
 
-            assert_eq!(game_field_unit.get_all_unit_list_in_game_field()[unit_index].get_attached_energy(), expected_energy);
+            assert_eq!(game_field_unit.get_all_unit_list_in_game_field()[unit_index].get_attached_energy().get_energy_quantity(&race), Some(&quantity));
         }
     }
 
