@@ -67,7 +67,7 @@ impl GameHandServiceImpl {
 
         if maybe_exist_hand_unit.is_none() {
             // TODO: 해킹 감지 (3회 이상 계정 영구 정지, 1회, 2회 -> 1시간 접속 불가)
-            return false;
+            return true;
         }
 
         return false
@@ -86,6 +86,7 @@ impl GameHandService for GameHandServiceImpl {
         let unit_card_number = unit_card_number_string.parse::<i32>().unwrap();
 
         if self.check_protocol_hacking(account_unique_id, unit_card_number).await {
+            println!("프로토콜 조작 감지: 해킹범을 검거합시다!");
             return UseGameHandUnitCardResponse::new(false)
         }
 
