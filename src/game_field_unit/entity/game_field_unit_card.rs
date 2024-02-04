@@ -1,14 +1,17 @@
+use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
+use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
+
 #[derive(Debug, Clone)]
 pub struct GameFieldUnitCard {
     field_unit_card: i32,
-    attached_energy: i32,
+    attached_energy_map: AttachedEnergyMap,
 }
 
 impl GameFieldUnitCard {
     pub fn new(field_unit_card: i32) -> GameFieldUnitCard {
         GameFieldUnitCard {
             field_unit_card,
-            attached_energy: 0,
+            attached_energy_map: AttachedEnergyMap::new(),
         }
     }
 
@@ -16,12 +19,12 @@ impl GameFieldUnitCard {
         self.field_unit_card
     }
 
-    pub fn get_attached_energy(&self) -> i32 {
-        self.attached_energy
+    pub fn get_attached_energy(&self) -> &AttachedEnergyMap {
+        &self.attached_energy_map
     }
 
-    pub fn attach_energy(&mut self) {
-        self.attached_energy += 1;
+    pub fn attach_energy(&mut self, race: RaceEnumValue, quantity: i32) {
+        self.attached_energy_map.add_energy(race, quantity);
     }
 }
 
@@ -40,10 +43,15 @@ mod tests {
     fn test_attach_energy() {
         let mut game_field_unit_card = GameFieldUnitCard::new(5);
         assert_eq!(game_field_unit_card.get_card(), 5);
-        assert_eq!(game_field_unit_card.get_attached_energy(), 0);
+        assert_eq!(game_field_unit_card.get_attached_energy().get_all_energy().len(), 0);
 
-        game_field_unit_card.attach_energy();
-        assert_eq!(game_field_unit_card.get_attached_energy(), 1);
+        game_field_unit_card.attach_energy(RaceEnumValue::Undead, 3);
+        assert_eq!(game_field_unit_card.get_attached_energy().get_all_energy().len(), 1);
+        assert_eq!(*game_field_unit_card.get_attached_energy().get_energy_quantity(&RaceEnumValue::Undead).unwrap(), 3);
+
+        game_field_unit_card.attach_energy(RaceEnumValue::Human, 5);
+        assert_eq!(game_field_unit_card.get_attached_energy().get_all_energy().len(), 2);
+        assert_eq!(*game_field_unit_card.get_attached_energy().get_energy_quantity(&RaceEnumValue::Human).unwrap(), 5);
 
         println!("{:?}", game_field_unit_card);
 

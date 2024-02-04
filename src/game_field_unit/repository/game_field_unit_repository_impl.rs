@@ -6,6 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
+use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 
 pub struct GameFieldUnitRepositoryImpl {
@@ -53,9 +54,9 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         }
     }
 
-    fn attach_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32) {
+    fn attach_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race: RaceEnumValue, quantity: i32) {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            game_field_unit.add_energy_to_unit(unit_card_number);
+            game_field_unit.add_energy_to_unit(unit_card_number, race, quantity);
         }
     }
 
@@ -114,12 +115,14 @@ mod tests {
         game_field_unit_repository.add_unit_to_game_field(1, unit_card_number);
         println!("Initial state: {:?}", game_field_unit_repository.get_game_field_unit_map());
 
-        game_field_unit_repository.attach_energy_to_game_field_unit(1, unit_card_number);
+        let race = RaceEnumValue::Undead;
+        let quantity = 1;
+        game_field_unit_repository.attach_energy_to_game_field_unit(1, unit_card_number, race, quantity);
         println!("After attaching energy: {:?}", game_field_unit_repository.get_game_field_unit_map());
 
         let game_field_unit = game_field_unit_repository.get_game_field_unit_map().get(&1).unwrap();
-        let attached_energy = game_field_unit.get_all_unit_list_in_game_field()[0].get_attached_energy();
-        assert_eq!(attached_energy, 1);
+        let attached_energy = game_field_unit.get_all_unit_list_in_game_field()[0].get_attached_energy().get_energy_quantity(&race);
+        assert_eq!(attached_energy, Some(&quantity));
     }
 
     #[tokio::test]

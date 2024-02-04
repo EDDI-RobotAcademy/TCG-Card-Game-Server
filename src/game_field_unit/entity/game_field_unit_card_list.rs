@@ -1,4 +1,5 @@
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
+use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 
 #[derive(Debug, Clone)]
 pub struct GameFieldUnitCardList {
@@ -22,9 +23,9 @@ impl GameFieldUnitCardList {
         self.game_field_unit_card_list.iter().find(|card| card.get_card() == unit_id)
     }
 
-    pub fn add_energy_to_unit(&mut self, unit_id: i32) {
+    pub fn add_energy_to_unit(&mut self, unit_id: i32, race: RaceEnumValue, quantity: i32) {
         if let Some(unit) = self.game_field_unit_card_list.iter_mut().find(|card| card.get_card() == unit_id) {
-            unit.attach_energy();
+            unit.attach_energy(race, quantity);
         }
     }
 }
@@ -65,7 +66,7 @@ mod tests {
         assert_eq!(field_unit_list[1].get_card(), 7);
 
         let mut cloned_list = game_field_unit_card_list.clone();
-        cloned_list.add_energy_to_unit(3);
+        cloned_list.add_energy_to_unit(3, RaceEnumValue::Undead, 3);
 
         println!("{:?}", cloned_list.get_all_field_unit_list());
     }
