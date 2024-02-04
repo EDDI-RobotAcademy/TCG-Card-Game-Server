@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
 use crate::game_hand::repository::game_hand_repository::GameHandRepository;
 
@@ -69,7 +70,7 @@ impl GameHandService for GameHandServiceImpl {
         let specific_card = specific_card_option.unwrap();
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-
+        game_field_unit_repository_guard.add_unit_to_game_field(account_unique_id, specific_card.get_card());
 
         UseGameHandUnitCardResponse::new(true)
     }
