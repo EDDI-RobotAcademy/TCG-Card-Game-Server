@@ -58,6 +58,14 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             game_field_unit.add_energy_to_unit(unit_card_number);
         }
     }
+
+    fn find_unit_by_id(&self, account_unique_id: i32, unit_card_number: i32) -> Option<&GameFieldUnitCard> {
+        if let Some(game_field_unit) = self.game_field_unit_map.get(&account_unique_id) {
+            game_field_unit.find_unit_by_id(unit_card_number)
+        } else {
+            None
+        }
+    }
 }
 
 #[cfg(test)]
@@ -112,5 +120,31 @@ mod tests {
         let game_field_unit = game_field_unit_repository.get_game_field_unit_map().get(&1).unwrap();
         let attached_energy = game_field_unit.get_all_unit_list_in_game_field()[0].get_attached_energy();
         assert_eq!(attached_energy, 1);
+    }
+
+    #[tokio::test]
+    async fn test_find_unit_by_id() {
+        let mut game_field_unit_repository = GameFieldUnitRepositoryImpl::new();
+        game_field_unit_repository.create_game_field_unit_object(1);
+
+        let unit_card_number = 42;
+        let result = game_field_unit_repository.add_unit_to_game_field(1, unit_card_number);
+        let result = game_field_unit_repository.add_unit_to_game_field(1, 6);
+        let result = game_field_unit_repository.add_unit_to_game_field(1, 2);
+        let result = game_field_unit_repository.add_unit_to_game_field(1, 13);
+        assert!(result);
+
+        println!("Test Output: {:?}", game_field_unit_repository.get_game_field_unit_map());
+
+        let found_unit = game_field_unit_repository.find_unit_by_id(1, 2);
+        println!("Found Unit: {:?}", found_unit);
+        assert!(found_unit.is_some());
+
+        let found_unit = found_unit.unwrap();
+        assert_eq!(found_unit.get_card(), 2);
+
+        let found_unit = game_field_unit_repository.find_unit_by_id(1, 12312);
+        println!("Found Unit: {:?}", found_unit);
+        assert!(found_unit.is_none());
     }
 }
