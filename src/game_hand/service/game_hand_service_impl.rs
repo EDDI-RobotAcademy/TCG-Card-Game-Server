@@ -3,6 +3,8 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::card_grade::repository::card_grade_repository::CardGradeRepository;
+use crate::card_grade::repository::card_grade_repository_impl::CardGradeRepositoryImpl;
 use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
@@ -15,26 +17,33 @@ use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGa
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
 use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
+use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
 pub struct GameHandServiceImpl {
+    game_turn_repository: Arc<AsyncMutex<GameTurnRepositoryImpl>>,
     game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
     game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
+    card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
 }
 
 impl GameHandServiceImpl {
-    pub fn new(game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
+    pub fn new(game_turn_repository: Arc<AsyncMutex<GameTurnRepositoryImpl>>,
+               game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
                game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
+               card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     ) -> Self {
         GameHandServiceImpl {
+            game_turn_repository,
             game_hand_repository,
             game_field_unit_repository,
             card_kinds_repository,
+            card_grade_repository,
             redis_in_memory_repository
         }
     }
@@ -45,9 +54,11 @@ impl GameHandServiceImpl {
                 Arc::new(
                     AsyncMutex::new(
                         GameHandServiceImpl::new(
+                            GameTurnRepositoryImpl::get_instance(),
                             GameHandRepositoryImpl::get_instance(),
                             GameFieldUnitRepositoryImpl::get_instance(),
                             CardKindsRepositoryImpl::get_instance(),
+                            CardGradeRepositoryImpl::get_instance(),
                             RedisInMemoryRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
@@ -94,6 +105,16 @@ impl GameHandService for GameHandServiceImpl {
         let maybe_unit_card = card_kinds_repository_guard.get_card_kind(&unit_card_number).await;
         if maybe_unit_card.unwrap() != "유닛" {
             return UseGameHandUnitCardResponse::new(false)
+        }
+
+        let card_grade_repository_guard = self.card_grade_repository.lock().await;
+        if card_grade_repository_guard.get_card_grade(&unit_card_number).await.unwrap() == "신화".to_string() {
+            let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
+            let &user_turn = game_turn_repository_guard.get_game_turn_map().get(&account_unique_id).unwrap();
+            if &user_turn <= 4 {
+                println!("신화 유닛은 현재 사용 불가");
+                return UseGameHandUnitCardResponse::new(false)
+            }
         }
 
         let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
