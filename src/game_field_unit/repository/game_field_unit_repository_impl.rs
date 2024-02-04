@@ -52,6 +52,12 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             false
         }
     }
+
+    fn attach_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32) {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            game_field_unit.add_energy_to_unit(unit_card_number);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -89,5 +95,22 @@ mod tests {
         assert!(result);
 
         println!("Test Output: {:?}", game_field_unit_repository.get_game_field_unit_map());
+    }
+
+    #[tokio::test]
+    async fn test_attach_energy_to_game_field_unit() {
+        let mut game_field_unit_repository = GameFieldUnitRepositoryImpl::new();
+        game_field_unit_repository.create_game_field_unit_object(1);
+
+        let unit_card_number = 42;
+        game_field_unit_repository.add_unit_to_game_field(1, unit_card_number);
+        println!("Initial state: {:?}", game_field_unit_repository.get_game_field_unit_map());
+
+        game_field_unit_repository.attach_energy_to_game_field_unit(1, unit_card_number);
+        println!("After attaching energy: {:?}", game_field_unit_repository.get_game_field_unit_map());
+
+        let game_field_unit = game_field_unit_repository.get_game_field_unit_map().get(&1).unwrap();
+        let attached_energy = game_field_unit.get_all_unit_list_in_game_field()[0].get_attached_energy();
+        assert_eq!(attached_energy, 1);
     }
 }

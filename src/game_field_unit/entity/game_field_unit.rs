@@ -15,6 +15,10 @@ impl GameFieldUnit {
         self.game_field_unit.add_field_unit(field_unit);
     }
 
+    pub fn add_energy_to_unit(&mut self, unit_id: i32) {
+        self.game_field_unit.add_energy_to_unit(unit_id);
+    }
+
     pub fn get_all_unit_list_in_game_field(&self) -> &Vec<GameFieldUnitCard> {
         self.game_field_unit.get_all_field_unit_list()
     }
@@ -25,7 +29,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_game_deck() {
+    fn test_add_game_field_unit() {
         let mut game_field_unit = GameFieldUnit::new();
 
         let field_unit1 = GameFieldUnitCard::new(12);
@@ -41,5 +45,31 @@ mod tests {
         assert_eq!(unit_list_in_game_field[1].get_card(), 34);
 
         println!("{:?}", unit_list_in_game_field);
+    }
+
+    #[test]
+    fn test_add_energy_to_unit() {
+        let mut game_field_unit = GameFieldUnit::new();
+
+        let field_unit1 = GameFieldUnitCard::new(3);
+        let field_unit2 = GameFieldUnitCard::new(7);
+
+        game_field_unit.add_unit_to_game_field(field_unit1);
+        game_field_unit.add_unit_to_game_field(field_unit2);
+        println!("Initial state: {:?}", game_field_unit.get_all_unit_list_in_game_field());
+
+        let test_cases = [(3, 1), (7, 1)];
+
+        for &(unit_id, expected_energy) in &test_cases {
+            game_field_unit.add_energy_to_unit(unit_id);
+            println!("After adding energy to unit {}: {:?}", unit_id, game_field_unit.get_all_unit_list_in_game_field());
+
+            let unit_index = game_field_unit.get_all_unit_list_in_game_field()
+                .iter()
+                .position(|unit| unit.get_card() == unit_id)
+                .expect("Unit not found in the list.");
+
+            assert_eq!(game_field_unit.get_all_unit_list_in_game_field()[unit_index].get_attached_energy(), expected_energy);
+        }
     }
 }
