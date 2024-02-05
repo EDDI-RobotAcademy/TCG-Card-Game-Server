@@ -27,6 +27,8 @@ use crate::game_tomb::repository::game_tomb_repository::GameTombRepository;
 use crate::game_tomb::repository::game_tomb_repository_impl::GameTombRepositoryImpl;
 use crate::game_round::repository::game_round_repository::GameRoundRepository;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
+use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
+use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
 
 
 pub struct BattlePrepareTaskServiceImpl {
@@ -38,7 +40,7 @@ pub struct BattlePrepareTaskServiceImpl {
     game_lost_zone_repository: Arc<AsyncMutex<GameLostZoneRepositoryImpl>>,
     game_main_character_repository: Arc<AsyncMutex<GameMainCharacterRepositoryImpl>>,
     game_tomb_repository: Arc<AsyncMutex<GameTombRepositoryImpl>>,
-    game_turn_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
+    game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
 }
 
 impl BattlePrepareTaskServiceImpl {
@@ -50,7 +52,7 @@ impl BattlePrepareTaskServiceImpl {
                game_lost_zone_repository: Arc<AsyncMutex<GameLostZoneRepositoryImpl>>,
                game_main_character_repository: Arc<AsyncMutex<GameMainCharacterRepositoryImpl>>,
                game_tomb_repository: Arc<AsyncMutex<GameTombRepositoryImpl>>,
-               game_turn_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,) -> Self {
+               game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,) -> Self {
         BattlePrepareTaskServiceImpl {
             battle_ready_account_hash_repository,
             game_deck_repository,
@@ -60,7 +62,7 @@ impl BattlePrepareTaskServiceImpl {
             game_lost_zone_repository,
             game_main_character_repository,
             game_tomb_repository,
-            game_turn_repository,
+            game_round_repository,
         }
     }
 
@@ -189,11 +191,11 @@ pub async fn player_tomb_init_thread(user_id: i32) {
     sleep(time::Duration::from_millis(300)).await;
 }
 
-pub async fn player_turn_init_thread(user_id: i32) {
-    let game_turn_repository_mutex = GameRoundRepositoryImpl::get_instance();
-    let mut game_turn_repository_guard = game_turn_repository_mutex.lock().await;
-    game_turn_repository_guard.create_game_round_object(user_id);
-    drop(game_turn_repository_guard);
+pub async fn player_round_init_thread(user_id: i32) {
+    let game_round_repository_mutex = GameRoundRepositoryImpl::get_instance();
+    let mut game_round_repository_guard = game_round_repository_mutex.lock().await;
+    game_round_repository_guard.create_game_round_object(user_id);
+    drop(game_round_repository_guard);
 
     sleep(time::Duration::from_millis(300)).await;
 }
@@ -207,6 +209,15 @@ pub async fn player_battle_ready_account_hash_config_thread(user_id: i32) {
     sleep(time::Duration::from_millis(300)).await;
 }
 
+pub async fn player_turn_init_thread(user_id: i32) {
+    let game_turn_repository_mutex = GameTurnRepositoryImpl::get_instance();
+    let mut game_turn_repository_guard = game_turn_repository_mutex.lock().await;
+    game_turn_repository_guard.create_game_turn_object(user_id);
+    drop(game_turn_repository_guard);
+
+    sleep(time::Duration::from_millis(300)).await;
+}
+
 pub async fn spawn_async_task_for_prepare_battle(user_id: i32) {
     let task_deck_init = tokio::spawn(player_deck_init_thread(user_id));
     let task_hand_init = tokio::spawn(player_hand_init_thread(user_id));
@@ -215,6 +226,8 @@ pub async fn spawn_async_task_for_prepare_battle(user_id: i32) {
     let task_lost_zone_init = tokio::spawn(player_lost_zone_init_thread(user_id));
     let task_main_character_init = tokio::spawn(player_main_character_init_thread(user_id));
     let task_tomb_init = tokio::spawn(player_tomb_init_thread(user_id));
+    let task_round_init = tokio::spawn(player_round_init_thread(user_id));
+    let task_turn_init = tokio::spawn(player_turn_init_thread(user_id));
 
     let _ = tokio::try_join!(
         task_deck_init,
@@ -224,6 +237,8 @@ pub async fn spawn_async_task_for_prepare_battle(user_id: i32) {
         task_lost_zone_init,
         task_main_character_init,
         task_tomb_init,
+        task_round_init,
+        task_turn_init,
     );
 
     let task_battle_ready_account_hash_config =
