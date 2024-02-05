@@ -115,47 +115,6 @@ impl GameDeckServiceImpl {
 
 #[async_trait]
 impl GameDeckService for GameDeckServiceImpl {
-    // async fn create_and_shuffle_deck(&self, game_deck_card_list_request: GameDeckCardListRequest) -> GameStartDeckCardListResponse {
-    //     println!("GameDeckServiceImpl: create_and_shuffle_deck()");
-    //
-    //     let session_id = game_deck_card_list_request.get_session_id();
-    //     let account_unique_id = self.parse_account_unique_id(session_id).await;
-    //     let deck_id = game_deck_card_list_request.get_deck_id();
-    //
-    //     let account_deck_card_repository_guard = self.account_deck_card_repository.lock().await;
-    //     let account_deck_list = account_deck_card_repository_guard.get_card_list(deck_id).await;
-    //
-    //     let account_deck_hash_vector = match account_deck_list {
-    //         Ok(Some(card_list)) => card_list,
-    //         _ => Vec::new(),
-    //     };
-    //     let account_deck_vector = HashToVectorConverter::hash_vector_to_vector(account_deck_hash_vector);
-    //     drop(account_deck_card_repository_guard);
-    //
-    //     let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
-    //     game_deck_repository_guard.set_game_deck_from_data(account_unique_id, account_deck_vector);
-    //     drop(game_deck_repository_guard);
-    //
-    //     let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
-    //     game_deck_repository_guard.shuffle_game_deck(account_unique_id);
-    //     drop(game_deck_repository_guard);
-    //
-    //     let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
-    //     let drawn_card_list = game_deck_repository_guard.draw_deck_card(account_unique_id, 5);
-    //     let drawn_card_list_clone = drawn_card_list.clone();
-    //     drop(game_deck_repository_guard);
-    //
-    //     let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
-    //     game_hand_repository_guard.add_card_list_to_hand(account_unique_id, drawn_card_list);
-    //     drop(game_hand_repository_guard);
-    //
-    //     let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
-    //     let game_deck_card_vector = game_deck_repository_guard.get_game_deck_card_ids(account_unique_id);
-    //     drop(game_deck_repository_guard);
-    //
-    //     GameStartDeckCardListResponse::new(drawn_card_list_clone, game_deck_card_vector)
-    // }
-
     async fn create_and_shuffle_deck(&self, game_deck_card_list_request: GameDeckCardListRequest) -> GameStartDeckCardListResponse {
         println!("GameDeckServiceImpl: create_and_shuffle_deck()");
 
@@ -170,8 +129,6 @@ impl GameDeckService for GameDeckServiceImpl {
 
         self.add_drawn_cards_to_hand(account_unique_id, drawn_card_list).await;
 
-        // let game_deck_card_vector = self.get_game_deck_card_ids(account_unique_id).await;
-        // GameStartDeckCardListResponse::new(drawn_card_list_clone, game_deck_card_vector)
         GameStartDeckCardListResponse::new(drawn_card_list_clone)
     }
 
