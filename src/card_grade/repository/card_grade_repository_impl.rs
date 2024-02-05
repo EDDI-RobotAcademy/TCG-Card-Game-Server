@@ -54,7 +54,7 @@ impl CardGradeRepository for CardGradeRepositoryImpl {
         card_grade_map_guard.get(card_number).cloned()
     }
 
-    async fn get_grade_by_race_specific_card_list(&self, race_specific_card_list: Vec<i32>) -> Vec<(i32,String)>{
+    async fn get_grade_by_specific_race_card_list(&self, race_specific_card_list: Vec<i32>) -> Vec<(i32,String)>{
         let card_grade_map_guard = self.card_grade_map.lock().await;
         let mut card_grade_list_by_race : Vec<(i32, String)> = Vec::new();
         for card_grade in card_grade_map_guard.clone() {
