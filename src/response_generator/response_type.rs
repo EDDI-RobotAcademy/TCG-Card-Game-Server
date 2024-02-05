@@ -19,8 +19,8 @@ use crate::battle_room::service::response::what_is_the_room_number_response::Wha
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::game_deck::service::response::game_start_deck_card_list_response::GameStartDeckCardListResponse;
-use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
-use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
+use crate::game_hand::controller::response_form::use_game_hand_energy_card_response_form::UseGameHandEnergyCardResponseForm;
+use crate::game_hand::controller::response_form::use_game_hand_unit_card_response_form::UseGameHandUnitCardResponseForm;
 
 use crate::shop::service::response::free_card_response::FreeCardResponse;
 use crate::shop::service::response::get_card_default_response::GetCardDefaultResponse;
@@ -67,8 +67,8 @@ pub enum ResponseType {
     BATTLE_DECK_CARD_LIST(AccountDeckCardListResponseForm),
 
     // Battle Field
-    HAND_TO_BATTLE_FIELD_UNIT_USAGE(UseGameHandUnitCardResponse),
-    ENERGY_TO_BATTLE_FIELD_UNIT_USAGE(UseGameHandEnergyCardResponse),
+    HAND_TO_BATTLE_FIELD_UNIT_USAGE(UseGameHandUnitCardResponseForm),
+    ENERGY_TO_BATTLE_FIELD_UNIT_USAGE(UseGameHandEnergyCardResponseForm),
 
     // Program Exit
     PROGRAM_EXIT(ClientProgramExitResponse),
