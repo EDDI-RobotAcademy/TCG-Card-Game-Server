@@ -55,19 +55,19 @@ impl CardRaceRepository for CardRaceRepositoryImpl {
         card_race_map_guard.get(card_number).cloned()
     }
 
-    async fn get_race_specific_card_list(&self , race_name : &str) -> Vec<i32> {
-        let mut race_specific_card_list = Vec::new();
+    async fn get_specific_race_card_list(&self , race_name : &str) -> Vec<i32> {
+        let mut specific_race_card_list = Vec::new();
         let card_race_map_guard = self.card_race_map.lock().await;
 
         for card in card_race_map_guard.clone() {
             if(card.1 == race_name) {
-                race_specific_card_list.push(card.0);
+                specific_race_card_list.push(card.0);
             }
-            if(card.1 == "전체") {
-                race_specific_card_list.push(card.0);
+            if(race_name == "전체") {
+                specific_race_card_list.push(card.0);
             }
         }
-        race_specific_card_list
+        specific_race_card_list
 
 
     }
