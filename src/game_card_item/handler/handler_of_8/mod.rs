@@ -1,0 +1,1 @@
+pub mod game_card_item_8_handler_impl;
