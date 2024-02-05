@@ -124,6 +124,13 @@ impl TransmitterRepository for TransmitterRepositoryImpl {
 
                                     client_socket_stream.write_all(json_data.as_bytes()).await.expect("Failed to write to client");
 
+                                    if let ResponseType::ACCOUNT_LOGIN(login_response) = &*response_data {
+                                        if login_response.get_redis_token() != "" {
+                                            println!("로그인 성공: Connection Context 생성");
+
+                                        }
+                                    }
+
                                     if let ResponseType::PROGRAM_EXIT(exit_response) = &*response_data {
                                         if exit_response.does_client_exit_success() {
                                             println!("종료 요청 수신: 전용 Transmitter 종료");

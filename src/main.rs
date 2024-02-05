@@ -74,6 +74,7 @@ mod game_card_energy_count;
 mod game_turn;
 mod game_card_support;
 mod game_card_item;
+mod connection_context;
 
 #[tokio::main]
 async fn main() {
