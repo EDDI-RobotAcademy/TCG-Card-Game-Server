@@ -7,10 +7,10 @@ impl GameFieldEnergy {
     pub fn new(energy_count: i32) -> Self {
         GameFieldEnergy { energy_count }
     }
-
     pub fn get_energy_count(&self) -> i32 {
         self.energy_count
     }
+    pub fn add_energy_count(&mut self) { self.energy_count += 1 }
 }
 
 #[cfg(test)]

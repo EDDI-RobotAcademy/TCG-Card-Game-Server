@@ -7,27 +7,34 @@ use crate::account_deck::entity::account_deck::AccountDeck;
 use crate::account_deck::repository::account_deck_repository::AccountDeckRepository;
 use crate::account_deck::repository::account_deck_repository_impl::AccountDeckRepositoryImpl;
 use crate::account_deck::service::account_deck_service::AccountDeckService;
+use crate::account_deck::service::request::account_deck_delete_request::AccountDeckDeleteRequest;
 use crate::account_deck::service::request::account_deck_list_request::AccountDeckListRequest;
 use crate::account_deck::service::request::account_deck_modify_request::AccountDeckModifyRequest;
 use crate::account_deck::service::request::account_deck_register_request::AccountDeckRegisterRequest;
+use crate::account_deck::service::response::account_deck_delete_response::AccountDeckDeleteResponse;
 use crate::account_deck::service::response::account_deck_list_response::AccountDeckListResponse;
 use crate::account_deck::service::response::account_deck_modify_response::AccountDeckModifyResponse;
 use crate::account_deck::service::response::account_deck_register_response::AccountDeckRegisterResponse;
+use crate::account_deck_card::repository::account_deck_card_repository::AccountDeckCardRepository;
+use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
 
 pub struct AccountDeckServiceImpl {
     repository: Arc<AsyncMutex<AccountDeckRepositoryImpl>>,
-    redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>
+    redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+    account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>
 }
 
 impl AccountDeckServiceImpl {
     pub fn new(repository: Arc<AsyncMutex<AccountDeckRepositoryImpl>>,
-               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>) -> Self {
+               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+               account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>) -> Self {
         AccountDeckServiceImpl {
             repository,
-            redis_in_memory_repository
+            redis_in_memory_repository,
+            account_deck_card_repository
         }
     }
 
@@ -38,9 +45,16 @@ impl AccountDeckServiceImpl {
                     AsyncMutex::new(
                         AccountDeckServiceImpl::new(
                             AccountDeckRepositoryImpl::get_instance(),
-                            RedisInMemoryRepositoryImpl::get_instance())));
+                            RedisInMemoryRepositoryImpl::get_instance(),
+                            AccountDeckCardRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
+    }
+    async fn get_account_unique_id(&self, account_session_id: &str) -> i32 {
+        let mut redis_in_memory_repository = self.redis_in_memory_repository.lock().await;
+        let account_unique_id_option_string = redis_in_memory_repository.get(account_session_id).await;
+        let account_unique_id_string = account_unique_id_option_string.unwrap();
+        account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32")
     }
 }
 
@@ -49,74 +63,85 @@ impl AccountDeckService for AccountDeckServiceImpl {
     async fn account_deck_register(&self, account_deck_register_request: AccountDeckRegisterRequest) -> AccountDeckRegisterResponse {
         println!("AccountDeckServiceImpl: account_deck_register()");
 
-        let account_deck_repository = self.repository.lock().await;
-        let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
-        let account_number_str = redis_repository_guard.get(account_deck_register_request.account_id()).await;
-        let account_unique_id: Result<i32, _> = account_number_str.expect("REASON").parse();
-        match account_unique_id {
-            Ok(int_type_account_id) => {
-                let account_deck = AccountDeck::new(int_type_account_id, account_deck_register_request.deck_name());
-                match account_deck {
-                    Ok(new_deck) => {
-                        let result = account_deck_repository.save(new_deck).await;
-                        AccountDeckRegisterResponse::new(true)
-                    }
-                    Err(e) => {
-                        AccountDeckRegisterResponse::new(false)
-                    }
-                }
-            }
-            Err(e) => {
-                AccountDeckRegisterResponse::new(false)
+        let account_unique_id = self.get_account_unique_id(account_deck_register_request.account_id()).await;
+        let account_deck = AccountDeck::new(account_unique_id, account_deck_register_request.deck_name()).unwrap();
+
+        let account_deck_repository_guard = self.repository.lock().await;
+
+        let account_deck_count_limit = 6;
+        if let Some(account_deck_list) =
+            account_deck_repository_guard.get_list_by_user_int_id(account_unique_id).await.unwrap() {
+            if account_deck_list.len() >= account_deck_count_limit {
+                return AccountDeckRegisterResponse::new(false)
             }
         }
-        // TODO: 덱이 계정당 최대 6개만 생성되어야 하므로, 계정의 덱 개수를 카운팅하는 작업 필요
+
+        let account_deck_save_result = account_deck_repository_guard.save(account_deck).await;
+
+        drop(account_deck_repository_guard);
+
+        if account_deck_save_result.is_err() { return AccountDeckRegisterResponse::new(false) }
+
+        AccountDeckRegisterResponse::new(true)
     }
 
     async fn account_deck_list(&self, account_deck_list_request: AccountDeckListRequest) -> AccountDeckListResponse {
         println!("AccountDeckServiceImpl: account_deck_list()");
 
-        let account_deck_repository = self.repository.lock().await;
-        let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
-        let account_number_str = redis_repository_guard.get(account_deck_list_request.account_id()).await;
-        let account_unique_id: Result<i32, _> = account_number_str.expect("REASON").parse();
-        match account_unique_id {
-            Ok(int_type_account_id) => {
-                if let Some(deck_list) = account_deck_repository.get_list_by_user_int_id(int_type_account_id).await.unwrap() {
-                    AccountDeckListResponse::new(deck_list)
-                } else {
-                    let empty_set = Vec::new();
-                    AccountDeckListResponse::new(empty_set)
-                }
-            }
-            Err(e) => {
-                println!("Deck list loading error : {}", e);
-                let empty_set = Vec::new();
-                AccountDeckListResponse::new(empty_set)
-            }
+        let account_unique_id = self.get_account_unique_id(account_deck_list_request.account_id()).await;
+
+        let account_deck_repository_guard = self.repository.lock().await;
+
+        if let Some(deck_list) =
+            account_deck_repository_guard.get_list_by_user_int_id(account_unique_id).await.unwrap() {
+            return AccountDeckListResponse::new(deck_list)
+        } else {
+            let empty_set = Vec::new();
+            AccountDeckListResponse::new(empty_set)
         }
     }
 
     async fn account_deck_modify(&self, account_deck_modify_request: AccountDeckModifyRequest) -> AccountDeckModifyResponse {
         println!("AccountDeckServiceImpl: account_deck_modify()");
 
-        let account_deck_repository = self.repository.lock().await;
-        let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
-        let account_number_str = redis_repository_guard.get(account_deck_modify_request.account_id()).await;
-        let account_unique_id: Result<i32, _> = account_number_str.expect("REASON").parse();
-        match account_unique_id {
-            Ok(int_id) => {
-                let result = account_deck_repository.update_data(account_deck_modify_request, int_id).await;
-                if result.is_ok() {
-                    AccountDeckModifyResponse::new(true)
-                } else {
-                    AccountDeckModifyResponse::new(false)
-                }
+        let account_unique_id = self.get_account_unique_id(account_deck_modify_request.account_id()).await;
+
+        let account_deck_repository_guard = self.repository.lock().await;
+
+        let result = account_deck_repository_guard.update(account_deck_modify_request, account_unique_id).await;
+
+        if result.is_ok() {
+            AccountDeckModifyResponse::new(true)
+        } else {
+            AccountDeckModifyResponse::new(false)
+        }
+    }
+
+    async fn account_deck_delete(&self, account_deck_delete_request: AccountDeckDeleteRequest) -> AccountDeckDeleteResponse {
+        println!("AccountDeckServiceImpl: account_deck_delete()");
+
+        let account_deck_repository_guard = self.repository.lock().await;
+
+        let account_deck_delete_result =
+            account_deck_repository_guard.delete(account_deck_delete_request.deck_unique_id()).await;
+
+        drop(account_deck_repository_guard);
+
+        if account_deck_delete_result.is_ok() {
+            let account_deck_card_repository_guard = self.account_deck_card_repository.lock().await;
+
+            let account_deck_card_delete_result =
+                account_deck_card_repository_guard.delete_deck_cards(account_deck_delete_request.deck_unique_id()).await;
+
+            drop(account_deck_card_repository_guard);
+
+            if account_deck_card_delete_result.is_ok() {
+                return AccountDeckDeleteResponse::new(true)
+            } else {
+                AccountDeckDeleteResponse::new(false)
             }
-            Err(e) => {
-                eprintln!("Error to get int id : {}", e);
-                AccountDeckModifyResponse::new(false)
-            }
+        } else {
+            AccountDeckDeleteResponse::new(false)
         }
     }
 }
@@ -125,7 +150,6 @@ impl AccountDeckService for AccountDeckServiceImpl {
 mod tests {
     use super::*;
     use tokio::test;
-    use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
     #[test]
     async fn test_deck_registration() {
@@ -133,13 +157,13 @@ mod tests {
         let mut account_deck_service_mutex_guard = account_deck_service_mutex.lock().await;
 
         let redis_token_str = "redis_token_str";
-        let sample_deck_name = "휴먼덱 화이팅";
+        let sample_deck_name = "7th deck";
 
         let account_deck_register_request = AccountDeckRegisterRequest::new(redis_token_str.to_string(), sample_deck_name.to_string());
 
         let result = account_deck_service_mutex_guard.account_deck_register(account_deck_register_request).await;
 
-        assert_eq!(true, result.get_is_success());
+        assert_eq!(false, result.get_is_success());
     }
 
     #[test]
@@ -159,12 +183,25 @@ mod tests {
 
         let sample_deck_id: i32 = 8;
         let sample_account_id_str = "redis_token_str";
-        let sample_deck_name = "new deck name";
+        let sample_deck_name = "fantastic deck name";
 
         let account_deck_modify_request
             = AccountDeckModifyRequest::new(sample_deck_id, sample_account_id_str.to_string(), sample_deck_name.to_string());
 
         let result = account_deck_service_mutex_guard.account_deck_modify(account_deck_modify_request).await;
+
+        assert_eq!(true, result.get_is_success())
+    }
+
+    #[test]
+    async fn test_deck_delete() {
+        let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
+        let mut account_deck_service_mutex_guard = account_deck_service_mutex.lock().await;
+
+        let target_deck_id = 21;
+        let account_deck_delete_request = AccountDeckDeleteRequest::new(target_deck_id);
+
+        let result = account_deck_service_mutex_guard.account_deck_delete(account_deck_delete_request).await;
 
         assert_eq!(true, result.get_is_success())
     }

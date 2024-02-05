@@ -16,6 +16,8 @@ use crate::common::env::env_detector::EnvDetector;
 use crate::common::ip_address::local_ip_finder::IPAddress;
 
 use crate::domain_initializer::initializer::DomainInitializer;
+use crate::game_battle_field_monitor::controller::game_battle_field_monitor_controller::GameBattleFieldMonitorController;
+use crate::game_battle_field_monitor::controller::game_battle_field_monitor_controller_impl::GameBattleFieldMonitorControllerImpl;
 
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
 use crate::receiver::controller::server_receiver_controller_impl::ServerReceiverControllerImpl;
@@ -67,6 +69,8 @@ mod card_kinds;
 mod card_grade;
 mod card_race;
 mod deck_configuration_validator;
+mod game_battle_field_monitor;
+mod game_card_energy_count;
 
 #[tokio::main]
 async fn main() {

@@ -1,8 +1,12 @@
 use serde_json::Value as JsonValue;
 use crate::account::service::account_service::AccountService;
 use crate::account::service::account_service_impl::AccountServiceImpl;
+use crate::account_card::service::account_card_service::AccountCardService;
+use crate::account_card::service::account_card_service_impl::AccountCardServiceImpl;
 use crate::account_deck::service::account_deck_service::AccountDeckService;
 use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
+use crate::account_deck_card::controller::account_deck_card_controller::AccountDeckCardController;
+use crate::account_deck_card::controller::account_deck_card_controller_impl::AccountDeckCardControllerImpl;
 use crate::account_point::service::account_point_service::AccountPointService;
 use crate::account_point::service::account_point_service_impl::AccountPointServiceImpl;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service::BattleReadyAccountHashService;
@@ -14,22 +18,25 @@ use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueu
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
-use crate::account_deck_card::service::account_deck_card_service::AccountDeckCardService;
-use crate::account_deck_card::service::account_deck_card_service_impl::AccountDeckCardServiceImpl;
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
 use crate::game_deck::service::response::game_deck_card_shuffled_list_response::GameDeckCardShuffledListResponse;
-use crate::request_generator::account_deck_request_generator::{create_deck_list_request, create_deck_modify_request, create_deck_register_request};
+use crate::game_hand::service::game_hand_service::GameHandService;
+use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
+use crate::request_generator::account_card_request_generator::create_account_card_list_request;
+use crate::request_generator::account_deck_request_generator::{create_deck_delete_request, create_deck_list_request, create_deck_modify_request, create_deck_register_request};
 use crate::request_generator::account_point_request_generator::{create_gain_gold_request, create_pay_gold_request};
 use crate::request_generator::account_request_generator::{create_account_delete_request, create_account_modify_request, create_login_request, create_logout_request, create_register_request};
 use crate::request_generator::battle_ready_account_hash_request_generator::create_battle_ready_account_hash_request;
 use crate::request_generator::battle_wait_queue_request_generator::create_battle_wait_queue_request;
 use crate::request_generator::check_battle_prepare_request_generator::create_check_battle_prepare_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
-use crate::request_generator::deck_card_request_generator::{create_deck_card_list_request, create_deck_configuration_request};
+use crate::request_generator::account_deck_card_request_generator::{create_account_deck_card_list_request_form, create_account_deck_configuration_request_form};
 use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::request_generator::shop_request_generator::{create_free_card_request, create_get_card_default_request};
+use crate::request_generator::use_hand_energy_request_generator::create_use_hand_energy_request;
+use crate::request_generator::use_hand_unit_request_generator::create_use_hand_unit_request;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
 use crate::shop::service::shop_service::ShopService;
@@ -216,6 +223,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            32 => {
+                // Account Card List
+                if let Some(request) = create_account_card_list_request(&data) {
+                    let account_card_service_mutex = AccountCardServiceImpl::get_instance();
+                    let mut account_card_service_mutex_guard = account_card_service_mutex.lock().await;
+
+                    let response = account_card_service_mutex_guard.account_card_list(request).await;
+                    let response_type = Some(ResponseType::ACCOUNT_CARD_LIST(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             41 => {
                 // Account Deck Register
                 if let Some(request) = create_deck_register_request(&data) {
@@ -245,7 +266,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             43 => {
-                // Account Deck Modify
+                // Account Deck (Name) Modify
                 if let Some(request) = create_deck_modify_request(&data) {
                     let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
                     let mut account_deck_service = account_deck_service_mutex.lock().await;
@@ -258,14 +279,28 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            51 => {
-                // Deck Card Configuration
-                if let Some(request) = create_deck_configuration_request(&data) {
-                    let deck_card_service_mutex = AccountDeckCardServiceImpl::get_instance();
-                    let mut deck_card_service = deck_card_service_mutex.lock().await;
+            44 => {
+                // Account Deck (All info) Delete
+                if let Some(request) = create_deck_delete_request(&data) {
+                    let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
+                    let mut account_deck_service = account_deck_service_mutex.lock().await;
 
-                    let response = deck_card_service.deck_configuration_register(request).await;
-                    let response_type = Some(ResponseType::DECK_CARD_CONFIGURATION(response));
+                    let response = account_deck_service.account_deck_delete(request).await;
+                    let response_type = Some(ResponseType::ACCOUNT_DECK_DELETE(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            51 => {
+                // Account Deck Card Configuration
+                if let Some(request_form) = create_account_deck_configuration_request_form(&data) {
+                    let deck_card_controller_mutex = AccountDeckCardControllerImpl::get_instance();
+                    let mut deck_card_controller_mutex_guard = deck_card_controller_mutex.lock().await;
+
+                    let response_form = deck_card_controller_mutex_guard.deck_configuration_register(request_form).await;
+                    let response_type = Some(ResponseType::DECK_CARD_CONFIGURATION(response_form));
 
                     response_type
                 } else {
@@ -273,13 +308,13 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             52 => {
-                // (Account) Deck Card List
-                if let Some(request) = create_deck_card_list_request(&data) {
-                    let deck_card_service_mutex = AccountDeckCardServiceImpl::get_instance();
-                    let mut deck_card_service = deck_card_service_mutex.lock().await;
+                // Account Deck Card List
+                if let Some(request_form) = create_account_deck_card_list_request_form(&data) {
+                    let deck_card_controller_mutex = AccountDeckCardControllerImpl::get_instance();
+                    let mut deck_card_controller_mutex_guard = deck_card_controller_mutex.lock().await;
 
-                    let response = deck_card_service.deck_card_list(request).await;
-                    let response_type = Some(ResponseType::DECK_CARD_LIST(response));
+                    let response_form = deck_card_controller_mutex_guard.deck_card_list(request_form).await;
+                    let response_type = Some(ResponseType::DECK_CARD_LIST(response_form));
 
                     response_type
                 } else {
@@ -322,6 +357,34 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = account_point_service.pay_gold(request).await;
                     let response_type = Some(ResponseType::PAY_GOLD(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1004 => {
+                // Unit Card Usage
+                if let Some(request) = create_use_hand_unit_request(&data) {
+                    let game_hand_service_mutex = GameHandServiceImpl::get_instance();
+                    let mut game_hand_service = game_hand_service_mutex.lock().await;
+
+                    let response = game_hand_service.use_specific_card(request).await;
+                    let response_type = Some(ResponseType::HAND_TO_BATTLE_FIELD_UNIT_USAGE(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            }
+            1010 => {
+                // Energy Card Usage
+                if let Some(request) = create_use_hand_energy_request(&data) {
+                    let game_hand_service_mutex = GameHandServiceImpl::get_instance();
+                    let mut game_hand_service = game_hand_service_mutex.lock().await;
+
+                    let response = game_hand_service.attach_energy_card_to_field_unit(request).await;
+                    let response_type = Some(ResponseType::ENERGY_TO_BATTLE_FIELD_UNIT_USAGE(response));
 
                     response_type
                 } else {

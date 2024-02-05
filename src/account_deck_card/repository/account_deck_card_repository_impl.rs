@@ -41,7 +41,7 @@ impl AccountDeckCardRepositoryImpl {
 impl AccountDeckCardRepository for AccountDeckCardRepositoryImpl {
     async fn save_deck_card_list(&self, deck_card_list: Vec<AccountDeckCard>) -> Result<String, String> {
         use crate::account_deck_card::entity::account_deck_card::deck_cards::dsl::*;
-        println!("DeckCardRepositoryImpl: save()");
+        println!("AccountDeckCardRepositoryImpl: save()");
 
         let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
         let mut connection = MysqlConnection::establish(&database_url)
@@ -59,7 +59,7 @@ impl AccountDeckCardRepository for AccountDeckCardRepositoryImpl {
         use diesel::query_dsl::filter_dsl::FilterDsl;
         use diesel::prelude::*;
 
-        println!("DeckCardRepositoryImpl: get_card_list()");
+        println!("AccountDeckCardRepositoryImpl: get_card_list()");
 
         let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
         let mut connection = MysqlConnection::establish(&database_url)
@@ -83,12 +83,36 @@ impl AccountDeckCardRepository for AccountDeckCardRepositoryImpl {
 
         Ok(Option::from(card_list))
     }
+
+    async fn delete_deck_cards(&self, deck_unique_id: i32) -> Result<(), Error> {
+        use crate::account_deck_card::entity::account_deck_card::deck_cards::dsl::*;
+        use diesel::query_dsl::filter_dsl::FilterDsl;
+        use diesel::prelude::*;
+
+        println!("AccountDeckCardRepositoryImpl: delete_deck_cards()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        let where_clause = FilterDsl::filter(deck_cards, deck_id.eq(deck_unique_id));
+
+        match diesel::delete(where_clause).execute(&mut connection) {
+            Ok(_) => {
+                println!("Account Deck cards deleted successfully.");
+                Ok(())
+            }
+            Err(e) => {
+                eprintln!("Error delete account deck: {:?}", e);
+                Err(e)
+            }
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::account_deck_card::controller::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
-    use crate::account_deck_card::entity::account_deck_card::deck_cards::dsl::deck_cards;
+    use crate::account_deck_card::service::request::account_deck_configuration_request::AccountDeckConfigurationRequest;
     use super::*;
 
     // DELETE FROM deck_cards WHERE deck_id = 7777;
