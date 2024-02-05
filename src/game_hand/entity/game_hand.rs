@@ -22,6 +22,12 @@ impl GameHand {
         }
     }
 
+    pub fn remove_card_list_from_hand(&mut self, card_list: Vec<i32>) {
+        for card in card_list {
+            self.game_hand.remove_hand_card(GameHandCard::new(card));
+        }
+    }
+
     pub fn get_all_card_list_in_game_hand(&self) -> &Vec<GameHandCard> {
         self.game_hand.get_all_hand_card_list()
     }

@@ -14,6 +14,10 @@ impl GameHandCardList {
         self.hand_card_list.push(card);
     }
 
+    pub fn remove_hand_card(&mut self, card: GameHandCard) {
+        self.hand_card_list.retain(|&card_in_hand| card_in_hand != card)
+    }
+
     pub fn get_all_hand_card_list(&self) -> &Vec<GameHandCard> {
         &self.hand_card_list
     }
