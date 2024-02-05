@@ -110,8 +110,8 @@ impl GameHandService for GameHandServiceImpl {
         let card_grade_repository_guard = self.card_grade_repository.lock().await;
         if card_grade_repository_guard.get_card_grade(&unit_card_number).await.unwrap() == "신화".to_string() {
             let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
-            let &user_turn = game_turn_repository_guard.get_game_turn_map().get(&account_unique_id).unwrap();
-            if &user_turn <= 4 {
+            let user_turn = game_turn_repository_guard.get_game_turn_map().get(&account_unique_id).unwrap();
+            if user_turn.get_turn() <= 4 {
                 println!("신화 유닛은 현재 사용 불가");
                 return UseGameHandUnitCardResponse::new(false)
             }
