@@ -5,6 +5,7 @@ use ipc_channel::ipc::IpcReceiver;
 use lazy_static::lazy_static;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::{Mutex as AsyncMutex, Mutex};
+use tokio::time::timeout;
 use crate::domain_initializer::initializer::{AcceptorTransmitterChannel, ReceiverTransmitterLegacyChannel};
 use crate::response_generator::response_type::ResponseType;
 
@@ -102,28 +103,38 @@ impl TransmitterRepository for TransmitterRepositoryImpl {
                     loop {
                         // 변경된 부분: 각 클라이언트에 대한 비동기 통신 작업을 별도의 태스크로 생성하여 동시에 수행
                         // Option<Arc<Mutex<ResponseType>>>
-                        let response = receiver_transmitter_channel.receive().await;
-                        println!("Transmitter receive channel data from Receiver");
+                        let response = timeout(Duration::from_secs(1), receiver_transmitter_channel.receive()).await;
 
-                        // Arc<Mutex<ResponseType>>
-                        if let Some(response) = response {
-                            // MutexGuard<TcpStream>
-                            let mut client_socket_stream = stream_arc.lock().await;
-                            println!("Transmitter lock socket");
+                        // 결과를 확인
+                        match response {
+                            Ok(response) => {
+                                println!("Transmitter receive channel data from Receiver");
 
-                            // MutexGaurd<ResponseType>
-                            let response_data = response.lock().await;
-                            let json_data = serde_json::to_string(&*response_data).expect("Failed to serialize to JSON");
+                                // Arc<Mutex<ResponseType>>
+                                if let Some(response) = response {
+                                    // MutexGuard<TcpStream>
+                                    let mut client_socket_stream = stream_arc.lock().await;
+                                    println!("Transmitter lock socket");
 
-                            println!("Transmitting data: {}", json_data);
+                                    // MutexGaurd<ResponseType>
+                                    let response_data = response.lock().await;
+                                    let json_data = serde_json::to_string(&*response_data).expect("Failed to serialize to JSON");
 
-                            client_socket_stream.write_all(json_data.as_bytes()).await.expect("Failed to write to client");
+                                    println!("Transmitting data: {}", json_data);
 
-                            if let ResponseType::PROGRAM_EXIT(exit_response) = &*response_data {
-                                if exit_response.does_client_exit_success() {
-                                    println!("종료 요청 수신: 전용 Transmitter 종료");
-                                    break;
+                                    client_socket_stream.write_all(json_data.as_bytes()).await.expect("Failed to write to client");
+
+                                    if let ResponseType::PROGRAM_EXIT(exit_response) = &*response_data {
+                                        if exit_response.does_client_exit_success() {
+                                            println!("종료 요청 수신: 전용 Transmitter 종료");
+                                            break;
+                                        }
+                                    }
                                 }
+                            }
+                            Err(_) => {
+                                // 타임아웃이 발생한 경우 처리
+                                println!("Transmitter receive channel data timed out");
                             }
                         }
 
