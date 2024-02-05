@@ -76,11 +76,11 @@ mod cfg_test {
         assert!(game_round_option.is_some());
 
         if let Some(game_round) = game_round_option {
-            println!("GameTurn inserted successfully!");
+            println!("GameRound inserted successfully!");
             println!("Account Unique ID: {}", account_unique_id);
-            println!("Turn Value: {}", game_round.get_round());
+            println!("Round Value: {}", game_round.get_round());
         } else {
-            println!("Failed to insert GameTurn!");
+            println!("Failed to insert GameRound!");
         }
     }
 
@@ -97,11 +97,11 @@ mod cfg_test {
         assert!(game_round_option.is_some());
 
         if let Some(game_round) = game_round_option {
-            println!("GameTurn inserted successfully!");
+            println!("GameRound inserted successfully!");
             println!("Account Unique ID: {}", account_unique_id);
-            println!("Turn Value: {}", game_round.get_round());
+            println!("Round Value: {}", game_round.get_round());
         } else {
-            println!("Failed to insert GameTurn!");
+            println!("Failed to insert GameRound!");
         }
     }
 
@@ -125,7 +125,7 @@ mod cfg_test {
 
                 let game_round_map = repository_guard.get_game_round_map();
 
-                println!("GameTurn Map: {:?}", game_round_map);
+                println!("GameRound Map: {:?}", game_round_map);
 
                 if let Some(index) = game_round_map.get_index_of(&account_unique_id) {
                     if let Some((_key, game_round)) = game_round_map.get_index_mut(index) {
@@ -157,7 +157,7 @@ mod cfg_test {
 
                 let game_round_map = repository_guard.get_game_round_map();
 
-                println!("GameTurn Map: {:?}", game_round_map);
+                println!("GameRound Map: {:?}", game_round_map);
 
                 if let Some(index) = game_round_map.get_index_of(&account_unique_id) {
                     if let Some((_key, game_round)) = game_round_map.get_index_mut(index) {
