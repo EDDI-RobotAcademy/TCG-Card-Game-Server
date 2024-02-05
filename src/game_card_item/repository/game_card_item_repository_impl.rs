@@ -75,7 +75,7 @@ mod tests {
         let function1 = repository.get_function(number1);
         assert!(function1.is_some());
 
-        let response1 = unsafe { function1.unwrap().use_support_card(UseItemCardRequest) };
+        let response1 = unsafe { function1.unwrap().use_item_card(UseItemCardRequest) };
         assert_eq!(response1, UseItemCardResponse);
 
         let number2 = 93;
@@ -91,7 +91,7 @@ mod tests {
 
         let none_function = NoneFunction;
         let request = UseItemCardRequest;
-        unsafe { none_function.use_support_card(request); }
+        unsafe { none_function.use_item_card(request); }
 
         let captured_output = String::from_utf8(output.clone()).unwrap();
         assert_eq!(captured_output.trim(), "아직 구현되지 않은 기능입니다.");
