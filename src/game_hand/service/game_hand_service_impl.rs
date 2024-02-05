@@ -25,7 +25,7 @@ use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepositor
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
 pub struct GameHandServiceImpl {
-    game_turn_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
+    game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
     game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
     game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
@@ -35,7 +35,7 @@ pub struct GameHandServiceImpl {
 }
 
 impl GameHandServiceImpl {
-    pub fn new(game_turn_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
+    pub fn new(game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
                game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
                game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
@@ -44,7 +44,7 @@ impl GameHandServiceImpl {
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     ) -> Self {
         GameHandServiceImpl {
-            game_turn_repository,
+            game_round_repository,
             game_hand_repository,
             game_field_unit_repository,
             card_kinds_repository,
@@ -137,9 +137,9 @@ impl GameHandService for GameHandServiceImpl {
 
         let card_grade_repository_guard = self.card_grade_repository.lock().await;
         if card_grade_repository_guard.get_card_grade(&unit_card_number).await.unwrap() == "신화".to_string() {
-            let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
-            let user_turn = game_turn_repository_guard.get_game_round_map().get(&account_unique_id).unwrap();
-            if user_turn.get_round() <= 4 {
+            let mut game_round_repository_guard = self.game_round_repository.lock().await;
+            let user_round = game_round_repository_guard.get_game_round_map().get(&account_unique_id).unwrap();
+            if user_round.get_round() <= 4 {
                 println!("신화 유닛은 현재 사용 불가");
                 return UseGameHandUnitCardResponse::new(false)
             }

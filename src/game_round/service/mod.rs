@@ -1,4 +1,4 @@
-pub mod game_turn_service;
+pub mod game_round_service;
 pub mod request;
 pub mod response;
-pub mod game_turn_service_impl;
+pub mod game_round_service_impl;
