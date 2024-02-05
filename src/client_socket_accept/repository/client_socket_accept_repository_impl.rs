@@ -60,6 +60,7 @@ impl ClientSocketAcceptRepository for ClientSocketAcceptRepositoryImpl {
                     let mut client_list_gaurd = self.client_list.lock().await;
 
                     client_list_gaurd.insert(client.address().to_string(), client.clone());
+                    println!("Client List: {:?}", *client_list_gaurd);
 
                     if let Some(acceptor_receiver_channel) = &self.acceptor_receiver_channel_arc {
                         tokio::time::sleep(Duration::from_millis(100)).await;
