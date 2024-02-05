@@ -21,6 +21,8 @@ use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGame
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
 use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
+use crate::game_tomb::repository::game_tomb_repository::GameTombRepository;
+use crate::game_tomb::repository::game_tomb_repository_impl::GameTombRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
@@ -28,6 +30,7 @@ pub struct GameHandServiceImpl {
     game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
     game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
     game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
+    game_tomb_repository: Arc<AsyncMutex<GameTombRepositoryImpl>>,
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
     card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
     card_race_repository: Arc<AsyncMutex<CardRaceRepositoryImpl>>,
@@ -38,6 +41,7 @@ impl GameHandServiceImpl {
     pub fn new(game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
                game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
                game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
+               game_tomb_repository: Arc<AsyncMutex<GameTombRepositoryImpl>>,
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
                card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
                card_race_repository: Arc<AsyncMutex<CardRaceRepositoryImpl>>,
@@ -47,6 +51,7 @@ impl GameHandServiceImpl {
             game_round_repository,
             game_hand_repository,
             game_field_unit_repository,
+            game_tomb_repository,
             card_kinds_repository,
             card_grade_repository,
             card_race_repository,
@@ -63,6 +68,7 @@ impl GameHandServiceImpl {
                             GameRoundRepositoryImpl::get_instance(),
                             GameHandRepositoryImpl::get_instance(),
                             GameFieldUnitRepositoryImpl::get_instance(),
+                            GameTombRepositoryImpl::get_instance(),
                             CardKindsRepositoryImpl::get_instance(),
                             CardGradeRepositoryImpl::get_instance(),
                             CardRaceRepositoryImpl::get_instance(),
@@ -189,6 +195,9 @@ impl GameHandService for GameHandServiceImpl {
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         game_field_unit_repository_guard.attach_energy_to_game_field_unit(account_unique_id, unit_card_number, race_enum, 1);
+
+        let mut game_tomb_repository_guard = self.game_tomb_repository.lock().await;
+        game_tomb_repository_guard.add_used_card_to_tomb(account_unique_id, energy_card_id);
 
         UseGameHandEnergyCardResponse::new(true)
     }

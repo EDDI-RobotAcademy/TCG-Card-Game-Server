@@ -42,6 +42,13 @@ impl GameTombRepository for GameTombRepositoryImpl {
 
         true
     }
+    fn add_used_card_to_tomb(&mut self, account_unique_id: i32, used_card_id: i32) {
+        println!("GameTombRepositoryImpl: add_used_card_to_tomb()");
+
+        if let Some(user_game_tomb) = self.get_game_tomb_map().get_mut(&account_unique_id) {
+            user_game_tomb.add_tomb_card(used_card_id)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -57,6 +64,10 @@ mod tests {
         assert!(result);
 
         println!("Test Output: {:?}", game_tomb_repository.get_game_tomb_map());
+
+        game_tomb_repository.add_used_card_to_tomb(1, 10);
+
+        println!("After player1 use card : {:?}", game_tomb_repository.get_game_tomb_map())
     }
 
     #[tokio::test]
