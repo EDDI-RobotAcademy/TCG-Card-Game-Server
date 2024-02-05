@@ -130,7 +130,7 @@ mod cfg_test {
 
                 if let Some(index) = game_turn_map.get_index_of(&account_unique_id) {
                     if let Some((_key, game_turn)) = game_turn_map.get_index_mut(index) {
-                        game_turn.next_round();
+                        game_turn.next_turn();
                     }
                 }
 

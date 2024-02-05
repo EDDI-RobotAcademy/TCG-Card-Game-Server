@@ -72,6 +72,8 @@ mod deck_configuration_validator;
 mod game_battle_field_monitor;
 mod game_card_energy_count;
 mod game_turn;
+mod game_card_support;
+mod game_card_item;
 
 #[tokio::main]
 async fn main() {
