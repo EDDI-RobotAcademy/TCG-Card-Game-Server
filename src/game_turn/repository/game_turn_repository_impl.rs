@@ -49,8 +49,8 @@ impl GameTurnRepository for GameTurnRepositoryImpl {
 
         if let Some(index) = self.game_turn_map.get_index_of(&account_unique_id) {
             if let Some((_key, game_turn)) = self.game_turn_map.get_index_mut(index) {
-                game_turn.next_round();
-                return game_turn.get_round();
+                game_turn.next_turn();
+                return game_turn.get_turn();
             }
         }
 
