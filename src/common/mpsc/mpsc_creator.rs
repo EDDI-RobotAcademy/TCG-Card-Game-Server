@@ -5,6 +5,7 @@ pub mod mpsc_channel {
     #[macro_export]
     macro_rules! define_channel {
         ($struct_name:ident, $type:ty) => {
+            #[derive(Debug)]
             pub struct $struct_name {
                 sender: mpsc::Sender<$type>,
                 receiver: Mutex<mpsc::Receiver<$type>>,
