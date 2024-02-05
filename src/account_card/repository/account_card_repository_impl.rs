@@ -9,7 +9,7 @@ use diesel::{Connection, MysqlConnection, QueryDsl, ExpressionMethods, RunQueryD
 use diesel::result::Error;
 
 use crate::common::env::env_detector::EnvDetector;
-use crate::account_card::entity::account_card::account_cards::columns;
+use crate::account_card::entity::account_card::account_cards::{account_id, columns};
 use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
 
 use crate::account_card::entity::account_card::AccountCard;
@@ -44,7 +44,7 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
         use diesel::query_dsl::filter_dsl::FilterDsl;
         use diesel::prelude::*;
 
-        println!("accountCardRepositoryImpl: get_card_list()");
+        println!("AccountCardRepositoryImpl: get_card_list()");
 
         let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
         let mut connection = MysqlConnection::establish(&database_url)
@@ -85,7 +85,7 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
 
     }
 
-    async fn update_card_count(&self, shop_account_id: i32, shop_update_card: (i32, i32)) -> Result<usize, diesel::result::Error> {
+    async fn update_card_count(&self, shop_account_id: i32, shop_update_card: (i32, i32)) -> Result<usize, Error> {
         use crate::account_card::entity::account_card::account_cards::dsl::*;
 
         use diesel::query_dsl::filter_dsl::FilterDsl;
@@ -99,7 +99,8 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
             .expect("Failed to establish a new connection");
 
         let select_clause = account_cards.select((account_id, card_id, card_count));
-        let where_clause = FilterDsl::filter(account_cards, account_id.eq(shop_account_id).and(card_id.eq(shop_update_card.0)));
+        let where_clause = FilterDsl::filter(account_cards,
+            account_id.eq(shop_account_id).and(card_id.eq(shop_update_card.0)));
 
         let update_count = shop_update_card.1 + 1;
 
@@ -119,7 +120,7 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
 
     }
 
-    async fn save_new_card(&self, shop_account_id: i32, shop_card_id: i32) -> Result<(), diesel::result::Error> {
+    async fn save_new_card(&self, account_unique_id: i32, shop_card_id: i32) -> Result<(), Error> {
         use crate::account_card::entity::account_card::account_cards::dsl::*;
 
         println!("AccountCardRepositoryImpl: save_new_card()");
@@ -129,7 +130,7 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
             .expect("Failed to establish a new connection");
 
         let save_card = AccountCard {
-            account_id: shop_account_id,
+            account_id: account_unique_id,
             card_id: shop_card_id,
             card_count: 1,
         };
@@ -144,6 +145,31 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
             }
             Err(e) => {
                 eprintln!("Error saving new card: {:?}", e);
+                Err(e)
+            }
+        }
+    }
+    async fn delete_all_account_cards(&self, account_unique_id: i32) -> Result<(), Error> {
+        use crate::account_card::entity::account_card::account_cards::dsl::*;
+        use diesel::prelude::*;
+
+        println!("AccountCardRepositoryImpl: save_new_card()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        let where_clause = FilterDsl::filter(account_cards, account_id.eq(account_unique_id));
+
+        match diesel::delete(where_clause)
+            .execute(&mut connection)
+        {
+            Ok(_) => {
+                println!("All account cards removed successfully.");
+                Ok(())
+            }
+            Err(e) => {
+                eprintln!("Error removing account cards: {:?}", e);
                 Err(e)
             }
         }
@@ -178,5 +204,24 @@ mod tests {
                 panic!("Test failed with error: {:?}", err);
             }
         }
+    }
+    #[test]
+    async fn test_delete_account_cards() {
+        let repository = AccountCardRepositoryImpl::get_instance();
+        let repository_guard = repository.lock().await;
+
+        let card_list = vec![1, 2, 3, 4, 5];
+        for card in card_list {
+            let save_result = repository_guard.save_new_card(1, card).await;
+            assert_eq!((), save_result.unwrap());
+        }
+
+        println!("After saved : {:?}", repository_guard.get_card_list(1).await);
+
+        let delete_result = repository_guard.delete_all_account_cards(1).await;
+
+        assert_eq!((), delete_result.unwrap());
+
+        println!("After deleted : {:?}", repository_guard.get_card_list(1).await);
     }
 }
