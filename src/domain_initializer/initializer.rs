@@ -60,8 +60,6 @@ impl DomainInitializer {
     pub fn init_account_deck_domain(&self) { let _ = AccountDeckServiceImpl::get_instance(); }
     pub fn init_account_deck_card_domain(&self) { let _ = AccountDeckCardControllerImpl::get_instance(); }
 
-    pub fn init_game_turn_domain(&self) { let _ = GameRoundServiceImpl::get_instance(); }
-
     pub async fn init_client_socket_accept_domain(&self,
                                                   acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>,
                                                   acceptor_transmitter_channel_arc: Arc<AcceptorTransmitterChannel>) {
@@ -158,9 +156,6 @@ impl DomainInitializer {
         self.init_battle_room_domain().await;
         self.init_battle_match_monitor_domain().await;
         self.init_battle_prepare_task_domain().await;
-
-        /* In-game Object Domain List */
-        self.init_game_turn_domain();
 
         /* Redis In-Memory DB Domain */
         self.init_redis_in_memory_domain().await;
