@@ -1,3 +1,4 @@
 pub mod game_deck_card_list_request;
 pub mod game_deck_card_shuffled_list_request;
 pub mod game_deck_card_draw_request;
+pub mod game_deck_card_redraw_request;
