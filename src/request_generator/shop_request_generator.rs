@@ -13,9 +13,11 @@ pub fn create_free_card_request(data: &JsonValue) -> Option<FreeCardRequest> {
 }
 
 pub fn create_get_card_default_request(data: &JsonValue) -> Option<GetCardDefaultRequest> {
-    if let Some(account_session_id) =
-        data.get("sessionInfo").and_then(|v| v.as_str()) {
-        Some(GetCardDefaultRequest::new(account_session_id.to_string()))
+    if let (Some(account_session_id), Some(race_name)) = (
+        data.get("sessionInfo").and_then(|v| v.as_str()),
+        data.get("race_name").and_then(|v| v.as_str()) )
+    {
+        Some(GetCardDefaultRequest::new(account_session_id.to_string(), race_name.to_string()))
     } else {
         None
     }

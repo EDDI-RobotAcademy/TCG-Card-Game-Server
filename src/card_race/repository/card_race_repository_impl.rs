@@ -54,6 +54,23 @@ impl CardRaceRepository for CardRaceRepositoryImpl {
         let card_race_map_guard = self.card_race_map.lock().await;
         card_race_map_guard.get(card_number).cloned()
     }
+
+    async fn get_specific_race_card_list(&self , race_name : &str) -> Vec<i32> {
+        let mut specific_race_card_list = Vec::new();
+        let card_race_map_guard = self.card_race_map.lock().await;
+
+        for card in card_race_map_guard.clone() {
+            if(card.1 == race_name) {
+                specific_race_card_list.push(card.0);
+            }
+            if(race_name == "전체") {
+                specific_race_card_list.push(card.0);
+            }
+        }
+        specific_race_card_list
+
+
+    }
 }
 
 #[cfg(test)]

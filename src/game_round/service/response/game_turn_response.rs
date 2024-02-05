@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GameTurnResponse {
+pub struct GameRoundResponse {
     is_success: bool,
 }
 
-impl GameTurnResponse {
+impl GameRoundResponse {
     pub fn new(is_success: bool) -> Self {
-        GameTurnResponse { is_success }
+        GameRoundResponse { is_success }
     }
 }
