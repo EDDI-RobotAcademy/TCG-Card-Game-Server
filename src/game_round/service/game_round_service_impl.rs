@@ -6,7 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::game_round::repository::game_round_repository::GameRoundRepository;
 
-use crate::game_round::service::game_turn_service::GameRoundService;
+use crate::game_round::service::game_round_service::GameRoundService;
 use crate::game_round::service::request::game_turn_request::GameRoundRequest;
 use crate::game_round::service::response::game_turn_response::GameRoundResponse;
 
