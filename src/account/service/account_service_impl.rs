@@ -27,6 +27,11 @@ use crate::account::service::response::account_logout_response::AccountLogoutRes
 use crate::account::service::response::account_delete_response::AccountDeleteResponse;
 use crate::account::service::response::account_modify_response::AccountModifyResponse;
 use crate::account::service::response::account_login_response::AccountLoginResponse;
+use crate::account_card::repository::account_card_repository::AccountCardRepository;
+use crate::account_card::repository::account_card_repository_impl::AccountCardRepositoryImpl;
+use crate::account_deck::repository::account_deck_repository::AccountDeckRepository;
+use crate::account_deck::repository::account_deck_repository_impl::AccountDeckRepositoryImpl;
+use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
 
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 
@@ -36,18 +41,26 @@ use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepo
 pub struct AccountServiceImpl {
     repository: Arc<AsyncMutex<AccountRepositoryImpl>>,
     account_point_repository: Arc<AsyncMutex<AccountPointRepositoryImpl>>,
-    redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>
+    redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+    account_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
+    account_deck_repository: Arc<AsyncMutex<AccountDeckRepositoryImpl>>,
+    // account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>
 }
 
 impl AccountServiceImpl {
     pub fn new(repository: Arc<AsyncMutex<AccountRepositoryImpl>>,
                account_point_repository: Arc<AsyncMutex<AccountPointRepositoryImpl>>,
-               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>) -> Self {
+               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+               account_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
+               account_deck_repository: Arc<AsyncMutex<AccountDeckRepositoryImpl>>) -> Self {
 
         AccountServiceImpl {
             repository,
             account_point_repository,
-            redis_in_memory_repository
+            redis_in_memory_repository,
+            account_card_repository,
+            account_deck_repository,
+            // account_deck_card_repository
         }
     }
 
@@ -59,7 +72,9 @@ impl AccountServiceImpl {
                         AccountServiceImpl::new(
                             AccountRepositoryImpl::get_instance(),
                             AccountPointRepositoryImpl::get_instance(),
-                            RedisInMemoryRepositoryImpl::get_instance())));
+                            RedisInMemoryRepositoryImpl::get_instance(),
+                            AccountCardRepositoryImpl::get_instance(),
+                            AccountDeckRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -103,8 +118,8 @@ impl AccountService for AccountServiceImpl {
             if verify(&account_login_request.password(), &found_account.password()).unwrap() {
                 // 로그인 성공
                 let redis_token = Uuid::new_v4();
-                let mut redis_repository_gaurd = self.redis_in_memory_repository.lock().await;
-                redis_repository_gaurd.set_with_expired_time(&*redis_token.to_string(), &found_account.id.to_string(), Some(3600)).await;
+                let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
+                redis_repository_guard.set_with_expired_time(&*redis_token.to_string(), &found_account.id.to_string(), Some(3600)).await;
 
                 return AccountLoginResponse::new(redis_token.to_string());
             } else {
@@ -169,27 +184,53 @@ impl AccountService for AccountServiceImpl {
     async fn account_delete(&self, account_delete_request: AccountDeleteRequest) -> AccountDeleteResponse {
         println!("AccountServiceImpl: account_delete()");
 
-        let account_repository = self.repository.lock().await;
-        let account_point_repository = self.account_point_repository.lock().await;
-        let account = account_delete_request.to_account().unwrap();
-        if let Some(found_account) = account_repository.find_by_user_id(account.user_id()).await.unwrap() {
-            // 비밀번호 매칭 확인
-            if verify(&account_delete_request.password(), &found_account.password()).unwrap() {
-                // 비밀번호 일치 확인
-                // 저장된 계정의 id 를 가지고, account_point 에 재화 관련 계정정보 삭제
-                let found_account = account_repository.find_by_user_id(account.user_id()).await.unwrap();
-                let found_account_id = found_account.unwrap().id;
-                let result_account_point = account_point_repository.delete_account_points(found_account_id).await;
+        // let account_repository = self.repository.lock().await;
+        // let account_point_repository = self.account_point_repository.lock().await;
+        // let account = account_delete_request.to_account().unwrap();
+        // if let Some(found_account) = account_repository.find_by_user_id(account.user_id()).await.unwrap() {
+        //     // 비밀번호 매칭 확인
+        //     if verify(&account_delete_request.password(), &found_account.password()).unwrap() {
+        //         // 비밀번호 일치 확인
+        //         // 저장된 계정의 id 를 가지고, account_point 에 재화 관련 계정정보 삭제
+        //         let found_account = account_repository.find_by_user_id(account.user_id()).await.unwrap();
+        //         let found_account_id = found_account.unwrap().id;
+        //         let result_account_point = account_point_repository.delete_account_points(found_account_id).await;
+        //
+        //         let result_account = account_repository.delete(account_delete_request.to_account().unwrap()).await;
+        //         if result_account.is_ok() && result_account_point.is_ok() {
+        //             return AccountDeleteResponse::new(true)
+        //         }
+        //         return AccountDeleteResponse::new(false)
+        //     }
+        //     return AccountDeleteResponse::new(false)
+        // }
+        // return AccountDeleteResponse::new(false)
 
-                let result_account = account_repository.delete(account_delete_request.to_account().unwrap()).await;
-                if result_account.is_ok() && result_account_point.is_ok() {
-                    return AccountDeleteResponse::new(true)
-                }
-                return AccountDeleteResponse::new(false)
+        let account_repository_guard = self.repository.lock().await;
+        let account = account_delete_request.to_account().unwrap();
+
+        if let Some(found_account) = account_repository_guard.find_by_user_id(account.user_id()).await.unwrap() {
+            if verify(&account_delete_request.password(), &found_account.password()).unwrap() {
+                let account_unique_id = found_account.id;
+
+                let account_card_repository_guard = self.account_card_repository.lock().await;
+                let _ = account_card_repository_guard.delete_all_account_cards(account_unique_id).await;
+                drop(account_card_repository_guard);
+
+                let account_deck_repository_guard = self.account_deck_repository.lock().await;
+                let _ = account_deck_repository_guard.delete_all_account_decks(account_unique_id).await;
+                drop(account_deck_repository_guard);
+
+                let account_point_repository_guard = self.account_point_repository.lock().await;
+                let _ = account_point_repository_guard.delete_account_points(account_unique_id).await;
+                drop(account_point_repository_guard);
+
+                return AccountDeleteResponse::new(true)
             }
-            return AccountDeleteResponse::new(false)
         }
-        return AccountDeleteResponse::new(false)
+
+        println!("Account is not found.");
+        AccountDeleteResponse::new(false)
     }
 
     async fn account_modify(&self, account_modify_request: AccountModifyRequest) -> AccountModifyResponse {
