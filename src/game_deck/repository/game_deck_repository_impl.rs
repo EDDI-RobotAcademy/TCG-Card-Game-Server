@@ -5,6 +5,7 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 
 use crate::game_deck::entity::game_deck::GameDeck;
+use crate::game_deck::entity::game_deck_card::GameDeckCard;
 use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
 
 pub struct GameDeckRepositoryImpl {
@@ -73,6 +74,16 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
         }
 
         return Vec::new()
+    }
+
+    fn add_cards_to_deck(&mut self, account_unique_id: i32, cards: Vec<i32>) -> bool {
+        if let Some(game_deck) = self.game_deck_map.get_mut(&account_unique_id) {
+            for card in cards {
+                let game_deck_card_form = GameDeckCard::new(card);
+                game_deck.add_card_to_game_deck(game_deck_card_form)
+            }
+        }
+        true
     }
 }
 
