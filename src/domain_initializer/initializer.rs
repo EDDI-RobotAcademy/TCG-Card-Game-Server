@@ -27,7 +27,7 @@ use crate::thread_worker::service::thread_worker_service_impl::ThreadWorkerServi
 
 use crate::common::mpsc::mpsc_creator::mpsc_channel::define_channel;
 use crate::game_battle_field_monitor::controller::game_battle_field_monitor_controller_impl::GameBattleFieldMonitorControllerImpl;
-use crate::game_turn::service::game_turn_service_impl::GameTurnServiceImpl;
+use crate::game_round::service::game_turn_service_impl::GameRoundServiceImpl;
 
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
 use crate::receiver::controller::server_receiver_controller_impl::ServerReceiverControllerImpl;
@@ -60,7 +60,7 @@ impl DomainInitializer {
     pub fn init_account_deck_domain(&self) { let _ = AccountDeckServiceImpl::get_instance(); }
     pub fn init_account_deck_card_domain(&self) { let _ = AccountDeckCardControllerImpl::get_instance(); }
 
-    pub fn init_game_turn_domain(&self) { let _ = GameTurnServiceImpl::get_instance(); }
+    pub fn init_game_turn_domain(&self) { let _ = GameRoundServiceImpl::get_instance(); }
 
     pub async fn init_client_socket_accept_domain(&self,
                                                   acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>,

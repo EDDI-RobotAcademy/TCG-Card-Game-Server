@@ -25,8 +25,8 @@ use crate::game_main_character::repository::game_main_character_repository::Game
 use crate::game_main_character::repository::game_main_character_repository_impl::GameMainCharacterRepositoryImpl;
 use crate::game_tomb::repository::game_tomb_repository::GameTombRepository;
 use crate::game_tomb::repository::game_tomb_repository_impl::GameTombRepositoryImpl;
-use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
-use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
+use crate::game_round::repository::game_round_repository::GameRoundRepository;
+use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 
 
 pub struct BattlePrepareTaskServiceImpl {
@@ -38,7 +38,7 @@ pub struct BattlePrepareTaskServiceImpl {
     game_lost_zone_repository: Arc<AsyncMutex<GameLostZoneRepositoryImpl>>,
     game_main_character_repository: Arc<AsyncMutex<GameMainCharacterRepositoryImpl>>,
     game_tomb_repository: Arc<AsyncMutex<GameTombRepositoryImpl>>,
-    game_turn_repository: Arc<AsyncMutex<GameTurnRepositoryImpl>>,
+    game_turn_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
 }
 
 impl BattlePrepareTaskServiceImpl {
@@ -50,7 +50,7 @@ impl BattlePrepareTaskServiceImpl {
                game_lost_zone_repository: Arc<AsyncMutex<GameLostZoneRepositoryImpl>>,
                game_main_character_repository: Arc<AsyncMutex<GameMainCharacterRepositoryImpl>>,
                game_tomb_repository: Arc<AsyncMutex<GameTombRepositoryImpl>>,
-               game_turn_repository: Arc<AsyncMutex<GameTurnRepositoryImpl>>,) -> Self {
+               game_turn_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,) -> Self {
         BattlePrepareTaskServiceImpl {
             battle_ready_account_hash_repository,
             game_deck_repository,
@@ -78,7 +78,7 @@ impl BattlePrepareTaskServiceImpl {
                             GameLostZoneRepositoryImpl::get_instance(),
                             GameMainCharacterRepositoryImpl::get_instance(),
                             GameTombRepositoryImpl::get_instance(),
-                            GameTurnRepositoryImpl::get_instance())));
+                            GameRoundRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -190,9 +190,9 @@ pub async fn player_tomb_init_thread(user_id: i32) {
 }
 
 pub async fn player_turn_init_thread(user_id: i32) {
-    let game_turn_repository_mutex = GameTurnRepositoryImpl::get_instance();
+    let game_turn_repository_mutex = GameRoundRepositoryImpl::get_instance();
     let mut game_turn_repository_guard = game_turn_repository_mutex.lock().await;
-    game_turn_repository_guard.create_game_turn_object(user_id);
+    game_turn_repository_guard.create_game_round_object(user_id);
     drop(game_turn_repository_guard);
 
     sleep(time::Duration::from_millis(300)).await;
