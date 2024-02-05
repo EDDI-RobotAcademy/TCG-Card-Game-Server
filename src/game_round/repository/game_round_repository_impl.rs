@@ -76,7 +76,7 @@ mod cfg_test {
         assert!(game_round_option.is_some());
 
         if let Some(game_round) = game_round_option {
-            println!("GameTurn inserted successfully!");
+            println!("GameRound inserted successfully!");
             println!("Account Unique ID: {}", account_unique_id);
             println!("Turn Value: {}", game_round.get_round());
         } else {
@@ -97,7 +97,7 @@ mod cfg_test {
         assert!(game_round_option.is_some());
 
         if let Some(game_round) = game_round_option {
-            println!("GameTurn inserted successfully!");
+            println!("GameRound inserted successfully!");
             println!("Account Unique ID: {}", account_unique_id);
             println!("Turn Value: {}", game_round.get_round());
         } else {
