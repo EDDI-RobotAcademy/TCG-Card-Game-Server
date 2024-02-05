@@ -6,6 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::game_turn::entity::game_turn::GameTurn;
 use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
+use crate::game_turn::service::response::decide_first_turn_response::DecideFirstTurnResponse;
 
 
 pub struct GameTurnRepositoryImpl {
@@ -55,6 +56,14 @@ impl GameTurnRepository for GameTurnRepositoryImpl {
         }
 
         -1
+    }
+
+    fn decide_first_turn(&mut self, account_unique_id:i32,gesture:String) -> DecideFirstTurnResponse {
+        println!("GameTurnRepositoryImpl: decide_first_turn()");
+        let result_is_draw=true;
+        //gesture -> rock,scissors, paper string을 뜻함
+        //여기서 상대 플레이어의 gesture도 어떻게 받는다 가정하고 무승부 일시 result_is_draw 에 true 승리 결정될시 false
+        DecideFirstTurnResponse::new(account_unique_id.to_string(),result_is_draw)
     }
 }
 
@@ -130,7 +139,7 @@ mod cfg_test {
 
                 if let Some(index) = game_turn_map.get_index_of(&account_unique_id) {
                     if let Some((_key, game_turn)) = game_turn_map.get_index_mut(index) {
-                        game_turn.next_round();
+                        game_turn.next_turn();
                     }
                 }
 
@@ -207,4 +216,5 @@ mod cfg_test {
 
         assert_eq!(result, -1);
     }
+
 }
