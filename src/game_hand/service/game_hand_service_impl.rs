@@ -79,16 +79,26 @@ impl GameHandServiceImpl {
         account_unique_id
     }
 
+    // TODO: 해킹 감지 (3회 이상 계정 영구 정지, 1회, 2회 -> 1시간 접속 불가)
     async fn check_protocol_hacking(&mut self, account_unique_id: i32, unit_card_number: i32) -> bool {
-        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        let maybe_exist_hand_unit = game_field_unit_repository_guard.find_unit_by_id(account_unique_id, unit_card_number);
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        let game_hand = game_hand_repository_guard.get_game_hand_map().get(&account_unique_id);
 
-        if maybe_exist_hand_unit.is_none() {
-            // TODO: 해킹 감지 (3회 이상 계정 영구 정지, 1회, 2회 -> 1시간 접속 불가)
-            return true;
+        if game_hand.is_none() {
+            println!("핸드 자체가 없습니다!");
+            return true
         }
 
-        return false
+        let mut result = true;
+
+        for &unit_card in game_hand.unwrap().get_all_card_list_in_game_hand().iter() {
+            if unit_card.get_card() == unit_card_number {
+                result = false;
+                break;
+            }
+        }
+
+        result
     }
 
     async fn convert_race_string_to_enum(race_str: &str) -> RaceEnumValue {
