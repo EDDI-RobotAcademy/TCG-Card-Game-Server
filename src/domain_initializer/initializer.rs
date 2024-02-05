@@ -14,7 +14,7 @@ use crate::battle_ready_account_hash::service::battle_ready_account_hash_service
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::card_kinds::service::card_kinds_service_impl::CardKindsServiceImpl;
-use crate::account_deck_card::service::account_deck_card_service_impl::AccountDeckCardServiceImpl;
+
 use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
 use crate::card_race::service::card_race_service_impl::CardRaceServiceImpl;
 
@@ -26,8 +26,6 @@ use crate::server_socket::service::server_socket_service_impl::ServerSocketServi
 use crate::thread_worker::service::thread_worker_service_impl::ThreadWorkerServiceImpl;
 
 use crate::common::mpsc::mpsc_creator::mpsc_channel::define_channel;
-use crate::game_battle_field_monitor::controller::game_battle_field_monitor_controller_impl::GameBattleFieldMonitorControllerImpl;
-use crate::game_round::service::game_round_service_impl::GameRoundServiceImpl;
 
 use crate::receiver::controller::server_receiver_controller::ServerReceiverController;
 use crate::receiver::controller::server_receiver_controller_impl::ServerReceiverControllerImpl;
@@ -59,8 +57,6 @@ impl DomainInitializer {
     pub fn init_account_card_domain(&self) { let _ = AccountCardServiceImpl::get_instance(); }
     pub fn init_account_deck_domain(&self) { let _ = AccountDeckServiceImpl::get_instance(); }
     pub fn init_account_deck_card_domain(&self) { let _ = AccountDeckCardControllerImpl::get_instance(); }
-
-    pub fn init_game_turn_domain(&self) { let _ = GameRoundServiceImpl::get_instance(); }
 
     pub async fn init_client_socket_accept_domain(&self,
                                                   acceptor_receiver_channel_arc: Arc<AcceptorReceiverChannel>,
@@ -158,9 +154,6 @@ impl DomainInitializer {
         self.init_battle_room_domain().await;
         self.init_battle_match_monitor_domain().await;
         self.init_battle_prepare_task_domain().await;
-
-        /* In-game Object Domain List */
-        self.init_game_turn_domain();
 
         /* Redis In-Memory DB Domain */
         self.init_redis_in_memory_domain().await;
