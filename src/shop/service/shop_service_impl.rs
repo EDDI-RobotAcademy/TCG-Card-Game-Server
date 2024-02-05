@@ -98,8 +98,8 @@ impl ShopService for ShopServiceImpl {
         let account_number_str = redis_repository_guard.get(get_card_default_request.account_id()).await;
         let account_unique_id: Result<i32, _> = account_number_str.expect("REASON").parse();
 
-        let get_race_specific_card_list = card_race_repository.get_race_specific_card_list("트랜트").await;
-        let gacha_card_list = card_grade_repository.get_grade_by_race_specific_card_list(get_race_specific_card_list).await;
+        let get_race_specific_card_list = card_race_repository.get_specific_race_card_list(get_card_default_request.race_name()).await;
+        let gacha_card_list = card_grade_repository.get_grade_by_specific_race_card_list(get_race_specific_card_list).await;
 
         match account_unique_id {
             Ok(int_type_account_id) => {
@@ -109,7 +109,7 @@ impl ShopService for ShopServiceImpl {
                 let get_account_card_list = account_card_repository.get_card_list(int_type_account_id).await.unwrap().unwrap();
                 // 뽑은 카드와 사용자의 카드 리스트 비교
                 let account_card_check = account_card_repository.check_same_card(get_cards.clone(), get_account_card_list).await;
-                // 뽑은 카드가 있으면(true) 업데이트 / 없으면(false) 새로 저장
+
                 for checked_card in account_card_check {
                     if (checked_card.1 != 0){
                         account_card_repository.update_card_count(int_type_account_id, checked_card).await;
@@ -142,7 +142,7 @@ mod tests {
         let shop_service_impl_mutex = ShopServiceImpl::get_instance();
         let shop_service_impl_mutex_guard = shop_service_impl_mutex.lock().await;
 
-        let request = GetCardDefaultRequest::new("qwer".to_string());
+        let request = GetCardDefaultRequest::new("qwer".to_string(), "전체".to_string());
 
         let result = shop_service_impl_mutex_guard.get_card_default(request).await;
 
