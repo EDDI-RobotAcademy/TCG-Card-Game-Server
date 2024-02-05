@@ -114,20 +114,23 @@ impl ShopRepository for ShopRepositoryImpl {
     //
     //     Ok(free_card_id_list)
     // }
-
-    async fn get_randomly_chosen_card_id_list(&self, how_many_cards_to_get: i32) -> Result<Vec<i32>, Error> {
+    async fn get_randomly_chosen_card_id_list(&self, how_many_cards_to_get: i32, gacha_card_list: Vec<(i32,String)>) -> Result<Vec<i32>, Error> {
         let mut original_card_id_list = Vec::new();
         let mut randomly_chosen_card_id_list = Vec::new();
+        //
+        // let filename = "../../../resources/csv/every_card.csv";
+        // match csv_read(filename) {
+        //     Ok(csv_contents) => {
+        //         for record in csv_contents {
+        //             let card_number: i32 = record.get(6).unwrap().to_string().parse().expect("REASON");
+        //             original_card_id_list.push(card_number);
+        //         }
+        //     }
+        //     Err(err) => eprintln!("Error: {}", err)
+        // }
 
-        let filename = "../../../resources/csv/every_card.csv";
-        match csv_read(filename) {
-            Ok(csv_contents) => {
-                for record in csv_contents {
-                    let card_number: i32 = record.get(6).unwrap().to_string().parse().expect("REASON");
-                    original_card_id_list.push(card_number);
-                }
-            }
-            Err(err) => eprintln!("Error: {}", err)
+        for card in gacha_card_list {
+            original_card_id_list.push(card.0);
         }
 
         for _ in 0..how_many_cards_to_get {
