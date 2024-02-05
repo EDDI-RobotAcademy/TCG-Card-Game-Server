@@ -20,12 +20,12 @@ use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGa
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
 use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
-use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
+use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
 pub struct GameHandServiceImpl {
-    game_turn_repository: Arc<AsyncMutex<GameTurnRepositoryImpl>>,
+    game_turn_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
     game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
     game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
@@ -35,7 +35,7 @@ pub struct GameHandServiceImpl {
 }
 
 impl GameHandServiceImpl {
-    pub fn new(game_turn_repository: Arc<AsyncMutex<GameTurnRepositoryImpl>>,
+    pub fn new(game_turn_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
                game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
                game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
@@ -60,7 +60,7 @@ impl GameHandServiceImpl {
                 Arc::new(
                     AsyncMutex::new(
                         GameHandServiceImpl::new(
-                            GameTurnRepositoryImpl::get_instance(),
+                            GameRoundRepositoryImpl::get_instance(),
                             GameHandRepositoryImpl::get_instance(),
                             GameFieldUnitRepositoryImpl::get_instance(),
                             CardKindsRepositoryImpl::get_instance(),
@@ -138,8 +138,8 @@ impl GameHandService for GameHandServiceImpl {
         let card_grade_repository_guard = self.card_grade_repository.lock().await;
         if card_grade_repository_guard.get_card_grade(&unit_card_number).await.unwrap() == "신화".to_string() {
             let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
-            let user_turn = game_turn_repository_guard.get_game_turn_map().get(&account_unique_id).unwrap();
-            if user_turn.get_turn() <= 4 {
+            let user_turn = game_turn_repository_guard.get_game_round_map().get(&account_unique_id).unwrap();
+            if user_turn.get_round() <= 4 {
                 println!("신화 유닛은 현재 사용 불가");
                 return UseGameHandUnitCardResponse::new(false)
             }

@@ -1,11 +1,11 @@
 #[derive(Debug)]
-pub struct NextGameTurnRequest {
+pub struct GameRoundRequest {
     session_id: String,
 }
 
-impl NextGameTurnRequest {
+impl GameRoundRequest {
     pub fn new(session_id: String) -> Self {
-        NextGameTurnRequest {
+        GameRoundRequest {
             session_id: session_id.to_string(),
         }
     }

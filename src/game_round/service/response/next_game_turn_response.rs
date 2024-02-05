@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NextGameTurnResponse {
+pub struct NextGameRoundResponse {
     next_turn: i32,
 }
 
-impl NextGameTurnResponse {
+impl NextGameRoundResponse {
     pub fn new(next_turn: i32) -> Self {
-        NextGameTurnResponse { next_turn }
+        NextGameRoundResponse { next_turn }
     }
 }

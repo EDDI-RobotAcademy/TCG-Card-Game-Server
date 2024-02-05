@@ -54,7 +54,7 @@ mod account_card;
 mod battle_wait_queue;
 mod battle_ready_account_hash;
 mod battle_match_monitor;
-mod game_turn;
+mod game_round;
 mod game_lost_zone;
 mod game_deck;
 mod game_field_energy;
