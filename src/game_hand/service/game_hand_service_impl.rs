@@ -32,6 +32,8 @@ use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGa
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 use crate::game_tomb::repository::game_tomb_repository::GameTombRepository;
 use crate::game_tomb::repository::game_tomb_repository_impl::GameTombRepositoryImpl;
+use crate::notify_player_action::repository::notify_player_action_repository::NotifyPlayerActionRepository;
+use crate::notify_player_action::repository::notify_player_action_repository_impl::NotifyPlayerActionRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
@@ -45,6 +47,7 @@ pub struct GameHandServiceImpl {
     card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
     card_race_repository: Arc<AsyncMutex<CardRaceRepositoryImpl>>,
     battle_room_repository: Arc<AsyncMutex<BattleRoomRepositoryImpl>>,
+    notify_player_action_repository: Arc<AsyncMutex<NotifyPlayerActionRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
 }
 
@@ -58,6 +61,7 @@ impl GameHandServiceImpl {
                card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
                card_race_repository: Arc<AsyncMutex<CardRaceRepositoryImpl>>,
                battle_room_repository: Arc<AsyncMutex<BattleRoomRepositoryImpl>>,
+               notify_player_action_repository: Arc<AsyncMutex<NotifyPlayerActionRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     ) -> Self {
         GameHandServiceImpl {
@@ -70,6 +74,7 @@ impl GameHandServiceImpl {
             card_grade_repository,
             card_race_repository,
             battle_room_repository,
+            notify_player_action_repository,
             redis_in_memory_repository
         }
     }
@@ -89,6 +94,7 @@ impl GameHandServiceImpl {
                             CardGradeRepositoryImpl::get_instance(),
                             CardRaceRepositoryImpl::get_instance(),
                             BattleRoomRepositoryImpl::get_instance(),
+                            NotifyPlayerActionRepositoryImpl::get_instance(),
                             RedisInMemoryRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
@@ -222,10 +228,16 @@ impl GameHandService for GameHandServiceImpl {
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         game_field_unit_repository_guard.add_unit_to_game_field(account_unique_id, specific_card.get_card());
 
+        // 상대방의 고유 id 값을 확보
         let battle_room_repository_guard = self.battle_room_repository.lock().await;
         // let room_number_option = battle_room_repository_guard.what_is_the_room_number(account_unique_id).await;
         // let room_number = room_number_option.unwrap();
         let opponent_unique_id = battle_room_repository_guard.find_opponent_unique_id(account_unique_id).await;
+
+        // TODO: 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
+        // notify_to_opponent_what_you_do(opponent_unique_id, unit_card_number)
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        notify_player_action_repository_guard.notify_to_opponent_what_you_do(opponent_unique_id.unwrap(), unit_card_number).await;
 
         UseGameHandUnitCardResponse::new(true)
     }
