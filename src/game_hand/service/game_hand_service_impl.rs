@@ -3,12 +3,16 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+
 use crate::card_grade::repository::card_grade_repository::CardGradeRepository;
 use crate::card_grade::repository::card_grade_repository_impl::CardGradeRepositoryImpl;
 use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
 use crate::card_race::repository::card_race_repository::CardRaceRepository;
 use crate::card_race::repository::card_race_repository_impl::CardRaceRepositoryImpl;
+use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
+use crate::game_deck::entity::game_deck_card::GameDeckCard;
+use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
@@ -16,8 +20,10 @@ use crate::game_hand::repository::game_hand_repository::GameHandRepository;
 
 use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryImpl;
 use crate::game_hand::service::game_hand_service::GameHandService;
+use crate::game_hand::service::request::put_cards_on_deck_request::{PutCardsOnDeckRequest};
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
+use crate::game_hand::service::response::put_cards_on_deck_response::PutCardsOnDeckResponse;
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
 use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
@@ -29,6 +35,7 @@ use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepo
 pub struct GameHandServiceImpl {
     game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
     game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
+    game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>,
     game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
     game_tomb_repository: Arc<AsyncMutex<GameTombRepositoryImpl>>,
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
@@ -40,6 +47,7 @@ pub struct GameHandServiceImpl {
 impl GameHandServiceImpl {
     pub fn new(game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
                game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
+               game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>,
                game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
                game_tomb_repository: Arc<AsyncMutex<GameTombRepositoryImpl>>,
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
@@ -50,6 +58,7 @@ impl GameHandServiceImpl {
         GameHandServiceImpl {
             game_round_repository,
             game_hand_repository,
+            game_deck_repository,
             game_field_unit_repository,
             game_tomb_repository,
             card_kinds_repository,
@@ -67,6 +76,7 @@ impl GameHandServiceImpl {
                         GameHandServiceImpl::new(
                             GameRoundRepositoryImpl::get_instance(),
                             GameHandRepositoryImpl::get_instance(),
+                            GameDeckRepositoryImpl::get_instance(),
                             GameFieldUnitRepositoryImpl::get_instance(),
                             GameTombRepositoryImpl::get_instance(),
                             CardKindsRepositoryImpl::get_instance(),
@@ -107,6 +117,8 @@ impl GameHandServiceImpl {
         result
     }
 
+
+
     async fn convert_race_string_to_enum(race_str: &str) -> RaceEnumValue {
         match race_str.to_lowercase().as_str() {
             "언데드" => RaceEnumValue::Undead,
@@ -121,6 +133,51 @@ impl GameHandServiceImpl {
 
 #[async_trait]
 impl GameHandService for GameHandServiceImpl {
+    async fn put_hand_cards_to_deck(&mut self, request: PutCardsOnDeckRequest) -> PutCardsOnDeckResponse {
+        // account_unique_id setting
+        let session_id = request.get_session_id();
+        let account_unique_id = self.get_account_unique_id(session_id).await;
+
+        // Vec<i32> card list setting
+        let card_string_list_to_be_changed = request.get_will_be_changed_card_list().clone();
+        let card_i32_list_to_be_changed =
+            VectorStringToVectorInteger::vector_string_to_vector_i32(card_string_list_to_be_changed);
+
+        // protocol hacking prevention
+        for card in &card_i32_list_to_be_changed {
+            if self.check_protocol_hacking(account_unique_id, *card).await {
+                println!("프로토콜 조작 감지: 해킹범을 검거합시다!");
+                return PutCardsOnDeckResponse::new(false)
+            } else {
+                continue
+            }
+        }
+
+        // removing hand cards
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        if let Some(user_game_hand) =
+            game_hand_repository_guard.get_game_hand_map().get_mut(&account_unique_id) {
+            user_game_hand.remove_card_list_from_hand(card_i32_list_to_be_changed.clone());
+        } else {
+            println!("User game hand is not found.");
+            return PutCardsOnDeckResponse::new(false)
+        }
+
+        // adding deck cards
+        let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
+        if let Some(user_game_deck) =
+            game_deck_repository_guard.get_game_deck_map().get_mut(&account_unique_id) {
+            for card in card_i32_list_to_be_changed {
+                let game_deck_card = GameDeckCard::new(card);
+                user_game_deck.add_card_to_game_deck(game_deck_card);
+            }
+        } else {
+            println!("User game deck is not found.");
+            return PutCardsOnDeckResponse::new(false)
+        }
+
+        PutCardsOnDeckResponse::new(true)
+    }
     async fn use_specific_card(&mut self, use_game_hand_unit_card_request: UseGameHandUnitCardRequest) -> UseGameHandUnitCardResponse {
         println!("GameHandServiceImpl: use_specific_card()");
 
