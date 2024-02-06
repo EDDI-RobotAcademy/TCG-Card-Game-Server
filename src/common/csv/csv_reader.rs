@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::fs::File;
-use std::path::Path;
 
 pub fn build_dictionaries(csv_content: &Vec<Vec<String>>) -> (
     HashMap<String, String>,   // 종족
@@ -56,54 +55,73 @@ pub fn build_dictionaries(csv_content: &Vec<Vec<String>>) -> (
     )
 }
 
-pub fn build_card_kinds_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, String> {
-    let mut card_kinds_dictionary = HashMap::new();
+
+
+// TODO: 아래의 카드 속성 dictionary 제작 기능은 card_data.csv 기반으로 변경
+//             let card_number = &card_record[0]; // 카드번호
+//             let name = &card_record[1]; // 이름
+//             let race = &card_record[2]; // 종족
+//             let grade = &card_record[3]; // 등급
+//             let kind = &card_record[4]; // 종류
+//             // 속성(병종)
+//             let activation_energy = &card_record[6]; // 필요_에너지
+//             let attack_point = &card_record[7]; // 공격력
+//             let health_point = &card_record[8]; // 체력
+//             // let passive = &record[12]; // 패시브
+//             // let skill = &record[13]; // 스킬
+//             // let hp = &record[14]; // 체력
+
+pub fn build_card_kinds_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
+    let mut card_kinds_dictionary: HashMap<i32, i32> = HashMap::new();
 
     for record in csv_content.iter() {
-        let card_number = record[6].parse::<i32>();
+        let card_number = record[0].parse::<i32>();
 
-        let card_kind = &record[3];
+        let card_kind = record[4].parse::<i32>();
 
-        if let Ok(card_number) = card_number {
-            card_kinds_dictionary.insert(card_number, card_kind.clone());
+        if card_number.is_ok() && card_kind.is_ok()  {
+            card_kinds_dictionary.insert(card_number.unwrap(), card_kind.unwrap());
         } else {
-            eprintln!("Failed to parse card number: {:?}", record[6]);
+            eprintln!("Failed to parse card number : {:?}", record[0]);
+            eprintln!("Failed to parse card kinds : {:?}", record[4]);
         }
     }
 
     card_kinds_dictionary
 }
 
-pub fn build_card_grade_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, String> {
-    let mut card_grade_dictionary = HashMap::new();
+pub fn build_card_grade_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
+    let mut card_grade_dictionary: HashMap<i32, i32> = HashMap::new();
 
     for record in csv_content.iter() {
-        let card_number = record[6].parse::<i32>();
+        let card_number = record[0].parse::<i32>();
 
-        let card_grade = &record[2];
+        let card_grade = record[3].parse::<i32>();
 
-        if let Ok(card_number) = card_number {
-            card_grade_dictionary.insert(card_number, card_grade.clone());
+        if card_number.is_ok() && card_grade.is_ok() {
+            card_grade_dictionary.insert(card_number.unwrap(), card_grade.unwrap());
         } else {
-            eprintln!("Failed to parse card number: {:?}", record[6]);
+            eprintln!("Failed to parse card number: {:?}", record[0]);
+            eprintln!("Failed to parse card grade: {:?}", record[3]);
         }
     }
 
     card_grade_dictionary
 }
 
-pub fn build_card_race_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, String> {
+pub fn build_card_race_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
     let mut card_race_dictionary = HashMap::new();
 
     for record in csv_content.iter() {
-        let card_number = record[6].parse::<i32>();
+        let card_number = record[0].parse::<i32>();
 
-        let card_race = &record[1];
+        let card_race = record[2].parse::<i32>();
 
-        if let Ok(card_number) = card_number {
-            card_race_dictionary.insert(card_number, card_race.clone());
+        if card_number.is_ok() && card_race.is_ok() {
+            card_race_dictionary.insert(card_number.unwrap(), card_race.unwrap());
         } else {
-            eprintln!("Failed to parse card number: {:?}", record[6]);
+            eprintln!("Failed to parse card number: {:?}", record[0]);
+            eprintln!("Failed to parse card race: {:?}", record[2]);
         }
     }
 

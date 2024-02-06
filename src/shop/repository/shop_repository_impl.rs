@@ -114,7 +114,7 @@ impl ShopRepository for ShopRepositoryImpl {
     //
     //     Ok(free_card_id_list)
     // }
-    async fn get_randomly_chosen_card_id_list(&self, how_many_cards_to_get: i32, gacha_card_list: Vec<(i32,String)>) -> Result<Vec<i32>, Error> {
+    async fn get_randomly_chosen_card_id_list(&self, how_many_cards_to_get: i32, gacha_card_list: Vec<(i32,i32)>) -> Result<Vec<i32>, Error> {
         let mut original_card_id_list = Vec::new();
         let mut randomly_chosen_card_id_list = Vec::new();
         //

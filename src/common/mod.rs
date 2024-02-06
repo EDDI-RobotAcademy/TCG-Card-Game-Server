@@ -4,3 +4,4 @@ pub mod ip_address;
 pub mod csv;
 pub mod converter;
 pub mod path;
+pub mod card_attributes;

@@ -32,7 +32,7 @@ impl CardRaceServiceImpl {
 
 #[async_trait]
 impl CardRaceService for CardRaceServiceImpl {
-    async fn get_card_race(&self, card_number: &i32) -> Option<String> {
+    async fn get_card_race(&self, card_number: &i32) -> Option<i32> {
         println!("CardRaceServiceImpl: get_card_race()");
 
         let card_race_repository_guard = self.card_race_repository.lock().await;
@@ -56,7 +56,7 @@ mod tests {
         match card_race {
             Some(race) => {
                 println!("Card Grade: {}", race);
-                assert_eq!(race, "휴먼");
+                assert_eq!(race, 1);
             }
             None => println!("Card not found."),
         }
