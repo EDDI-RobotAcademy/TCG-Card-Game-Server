@@ -12,6 +12,8 @@ use crate::receiver::repository::server_receiver_repository::ServerReceiverRepos
 use crate::domain_initializer::initializer::{AcceptorReceiverChannel, AcceptorTransmitterChannel, ReceiverTransmitterLegacyChannel};
 
 use serde_json::Value as JsonValue;
+use tokio::time::error::Elapsed;
+use tokio::time::timeout;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::client_socket_accept::repository::client_socket_accept_repository_impl::ReceiverTransmitterChannel;
 use crate::request_generator::request_generator::create_request_and_call_service;
@@ -159,11 +161,21 @@ impl ServerReceiverRepository for ServerReceiverRepositoryImpl {
     }
 }
 
+async fn read_from_stream(stream: Arc<Mutex<TcpStream>>, buffer: &mut Vec<u8>) -> Result<usize, Elapsed> {
+    match timeout(Duration::from_secs(1), stream.lock().await.read(buffer)).await {
+        Ok(result) => Ok(result.unwrap_or_else(|_| 0)),
+        Err(e) => {
+            println!("Socket receive timed out!");
+            Err(e)
+        }
+    }
+}
+
 async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: Arc<ReceiverTransmitterChannel>) {
     let mut buffer = vec![0; 1024]; // Adjust the buffer size as needed
 
     loop {
-        match stream.lock().await.read(&mut buffer).await {
+        match read_from_stream(Arc::clone(&stream), &mut buffer).await {
             Ok(bytes_read) => {
                 if bytes_read == 0 {
                     break;
@@ -207,8 +219,8 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: A
             }
             Err(err) => {
                 // Handle read error
-                println!("Error reading from stream: {:?}", err);
-                break;
+                println!("Can't receive from socket stream: {:?}", err);
+                // break;
             }
         }
 
