@@ -9,4 +9,5 @@ impl GameDeckCardDrawListResponse {
     pub fn new(draw_card_list: Vec<i32>) -> Self {
         GameDeckCardDrawListResponse { draw_card_list }
     }
+    pub fn get_drawn_card_list(&self) -> &Vec<i32> { &self.draw_card_list }
 }

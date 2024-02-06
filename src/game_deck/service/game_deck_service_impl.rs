@@ -13,8 +13,10 @@ use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryI
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
 use crate::game_deck::service::request::game_deck_card_list_request::GameDeckCardListRequest;
+use crate::game_deck::service::request::game_deck_card_redraw_request::GameDeckCardRedrawRequest;
 use crate::game_deck::service::request::game_deck_card_shuffled_list_request::GameDeckCardShuffledListRequest;
 use crate::game_deck::service::response::game_deck_card_draw_list_response::GameDeckCardDrawListResponse;
+use crate::game_deck::service::response::game_deck_card_redraw_response::GameDeckCardRedrawResponse;
 use crate::game_deck::service::response::game_deck_card_shuffled_list_response::GameDeckCardShuffledListResponse;
 use crate::game_deck::service::response::game_start_deck_card_list_response::GameStartDeckCardListResponse;
 use crate::game_hand::repository::game_hand_repository::GameHandRepository;
@@ -156,6 +158,23 @@ impl GameDeckService for GameDeckServiceImpl {
         let draw_card_vector = game_deck_repository_guard.draw_deck_card(account_unique_id, draw_count);
 
         GameDeckCardDrawListResponse::new(draw_card_vector)
+    }
+    async fn shuffle_and_redraw_deck(&self, game_deck_card_redraw_request: GameDeckCardRedrawRequest) -> GameDeckCardRedrawResponse {
+        println!("GameDeckServiceImpl: shuffle_and_redraw_deck()");
+
+        let session_id = game_deck_card_redraw_request.get_session_id();
+        let account_unique_id = self.parse_account_unique_id(session_id).await;
+
+        let draw_count = game_deck_card_redraw_request.get_redraw_card_count();
+
+        let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
+
+        game_deck_repository_guard.shuffle_game_deck(account_unique_id);
+
+        let redrawn_card_vector = game_deck_repository_guard.draw_deck_card(account_unique_id, draw_count);
+        let remaining_deck_vector = self.get_game_deck_card_ids(account_unique_id).await;
+
+        GameDeckCardRedrawResponse::new(redrawn_card_vector, remaining_deck_vector)
     }
 }
 

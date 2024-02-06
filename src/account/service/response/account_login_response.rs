@@ -9,4 +9,8 @@ impl AccountLoginResponse {
     pub fn new(redis_token: String) -> Self {
         AccountLoginResponse { redis_token }
     }
+
+    pub fn get_redis_token(&self) -> &str {
+        &self.redis_token
+    }
 }

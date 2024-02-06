@@ -3,7 +3,7 @@ use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 use crate::client_socket_accept::repository::client_socket_accept_repository_impl::ReceiverTransmitterChannel;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ClientSocket {
     address: String,
     stream: Arc<Mutex<TcpStream>>,
