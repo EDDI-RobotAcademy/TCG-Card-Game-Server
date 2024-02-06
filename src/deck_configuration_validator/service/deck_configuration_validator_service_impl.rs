@@ -5,6 +5,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::card_grade::repository::card_grade_repository::CardGradeRepository;
 
 use crate::card_grade::repository::card_grade_repository_impl::CardGradeRepositoryImpl;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::deck_configuration_validator::repository::deck_configuration_validator_repository::DeckConfigurationValidatorRepository;
 use crate::deck_configuration_validator::repository::deck_configuration_validator_repository_impl::DeckConfigurationValidatorRepositoryImpl;
 
@@ -85,7 +86,7 @@ impl DeckConfigurationValidatorService for DeckConfigurationValidatorServiceImpl
                     //     }
                     // }
 
-                    if grade == "언커먼".to_string() {
+                    if grade == GradeEnum::Uncommon as i32 {
                         uncommon_card_count += 1;
                         if uncommon_card_count > uncommon_card_count_limit {
                             let card_count_error =
@@ -94,7 +95,7 @@ impl DeckConfigurationValidatorService for DeckConfigurationValidatorServiceImpl
                         }
                     }
 
-                    if grade == "영웅".to_string() {
+                    if grade == GradeEnum::Hero as i32 {
                         hero_card_count += 1;
                         if hero_card_count > hero_card_count_limit {
                             let card_count_error =
@@ -103,7 +104,7 @@ impl DeckConfigurationValidatorService for DeckConfigurationValidatorServiceImpl
                         }
                     }
 
-                    if grade == "전설".to_string() {
+                    if grade == GradeEnum::Legend as i32 {
                         legendary_card_count += 1;
                         if legendary_card_count > legendary_card_count_limit {
                             let card_count_error =
@@ -112,7 +113,7 @@ impl DeckConfigurationValidatorService for DeckConfigurationValidatorServiceImpl
                         }
                     }
 
-                    if grade == "신화".to_string() {
+                    if grade == GradeEnum::Mythical as i32 {
                         mythical_card_count += 1;
                         if mythical_card_count > mythical_card_count_limit {
                             let card_count_error =

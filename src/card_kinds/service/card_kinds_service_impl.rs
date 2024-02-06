@@ -31,7 +31,7 @@ impl CardKindsServiceImpl {
 
 #[async_trait]
 impl CardKindsService for CardKindsServiceImpl {
-    async fn get_card_kind(&self, card_number: &i32) -> Option<String> {
+    async fn get_card_kind(&self, card_number: &i32) -> Option<i32> {
         println!("CardKindsServiceImpl: get_card_kind()");
 
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
@@ -55,7 +55,7 @@ mod tests {
         match card_kind {
             Some(kind) => {
                 println!("Card Kind: {}", kind);
-                assert_eq!(kind, "서포트");
+                assert_eq!(kind, 4);
             }
             None => println!("Card not found."),
         }
