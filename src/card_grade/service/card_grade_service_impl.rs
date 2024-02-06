@@ -31,7 +31,7 @@ impl CardGradeServiceImpl {
 
 #[async_trait]
 impl CardGradeService for CardGradeServiceImpl {
-    async fn get_card_grade(&self, card_number: &i32) -> Option<String> {
+    async fn get_card_grade(&self, card_number: &i32) -> Option<i32> {
         println!("CardGradeServiceImpl: get_card_grade()");
 
         let card_grade_repository_guard = self.card_grade_repository.lock().await;
@@ -55,7 +55,7 @@ mod tests {
         match card_grade {
             Some(grade) => {
                 println!("Card Grade: {}", grade);
-                assert_eq!(grade, "일반");
+                assert_eq!(grade, 1);
             }
             None => println!("Card not found."),
         }

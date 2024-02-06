@@ -10,12 +10,12 @@ use crate::common::csv::csv_reader::{build_card_kinds_dictionary, csv_read};
 use crate::common::path::root_path::RootPath;
 
 pub struct CardKindsRepositoryImpl {
-    card_kinds_map: Arc<AsyncMutex<HashMap<i32, String>>>,
+    card_kinds_map: Arc<AsyncMutex<HashMap<i32, i32>>>,
 }
 
 impl CardKindsRepositoryImpl {
     pub fn new() -> Self {
-        let filename = RootPath::make_full_path("resources/csv/every_card.csv")
+        let filename = RootPath::make_full_path("resources/csv/card_data.csv")
             .unwrap_or_else(|| {
                 eprintln!("Failed to get file path.");
                 std::process::exit(1);
@@ -50,7 +50,7 @@ impl CardKindsRepositoryImpl {
 
 #[async_trait]
 impl CardKindsRepository for CardKindsRepositoryImpl {
-    async fn get_card_kind(&self, card_number: &i32) -> Option<String> {
+    async fn get_card_kind(&self, card_number: &i32) -> Option<i32> {
         let card_kinds_map_guard = self.card_kinds_map.lock().await;
         card_kinds_map_guard.get(card_number).cloned()
     }
@@ -70,7 +70,7 @@ mod tests {
         match card_kind {
             Some(kind) => {
                 println!("Card Kind: {}", kind);
-                assert_eq!(kind, "서포트");
+                assert_eq!(kind, 4);
             }
             None => println!("Card not found."),
         }

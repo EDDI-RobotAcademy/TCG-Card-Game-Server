@@ -10,12 +10,12 @@ use crate::common::csv::csv_reader::{build_card_race_dictionary, csv_read};
 use crate::common::path::root_path::RootPath;
 
 pub struct CardRaceRepositoryImpl {
-    card_race_map: Arc<AsyncMutex<HashMap<i32, String>>>,
+    card_race_map: Arc<AsyncMutex<HashMap<i32, i32>>>,
 }
 
 impl CardRaceRepositoryImpl {
     pub fn new() -> Self {
-        let filename = RootPath::make_full_path("resources/csv/every_card.csv")
+        let filename = RootPath::make_full_path("resources/csv/card_data.csv")
             .unwrap_or_else(|| {
                 eprintln!("Failed to get file path.");
                 std::process::exit(1);
@@ -50,20 +50,17 @@ impl CardRaceRepositoryImpl {
 
 #[async_trait]
 impl CardRaceRepository for CardRaceRepositoryImpl {
-    async fn get_card_race(&self, card_number: &i32) -> Option<String> {
+    async fn get_card_race(&self, card_number: &i32) -> Option<i32> {
         let card_race_map_guard = self.card_race_map.lock().await;
         card_race_map_guard.get(card_number).cloned()
     }
 
-    async fn get_specific_race_card_list(&self , race_name : &str) -> Vec<i32> {
+    async fn get_specific_race_card_list(&self , race_value : i32) -> Vec<i32> {
         let mut specific_race_card_list = Vec::new();
         let card_race_map_guard = self.card_race_map.lock().await;
 
         for card in card_race_map_guard.clone() {
-            if(card.1 == race_name) {
-                specific_race_card_list.push(card.0);
-            }
-            if(race_name == "전체") {
+            if(card.1 == race_value) {
                 specific_race_card_list.push(card.0);
             }
         }
@@ -87,7 +84,7 @@ mod tests {
         match card_race {
             Some(race) => {
                 println!("Card Grade: {}", race);
-                assert_eq!(race, "휴먼");
+                assert_eq!(race, 1);
             }
             None => println!("Card not found."),
         }
