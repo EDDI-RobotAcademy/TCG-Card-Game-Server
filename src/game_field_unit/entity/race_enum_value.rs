@@ -8,6 +8,20 @@ pub enum RaceEnumValue {
     Chaos = 6,
 }
 
+impl From<i32> for RaceEnumValue {
+    fn from(value: i32) -> Self {
+        match value {
+            1 => RaceEnumValue::Undead,
+            2 => RaceEnumValue::Human,
+            3 => RaceEnumValue::Trent,
+            4 => RaceEnumValue::Angel,
+            5 => RaceEnumValue::Machine,
+            6 => RaceEnumValue::Chaos,
+            _ => panic!("Invalid enum value"),
+        }
+    }
+}
+
 #[test]
 fn test_race_enum_value() {
     let undead = RaceEnumValue::Undead as i32;
