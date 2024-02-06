@@ -3,6 +3,8 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::battle_room::repository::battle_room_repository::BattleRoomRepository;
+use crate::battle_room::repository::battle_room_repository_impl::BattleRoomRepositoryImpl;
 
 use crate::card_grade::repository::card_grade_repository::CardGradeRepository;
 use crate::card_grade::repository::card_grade_repository_impl::CardGradeRepositoryImpl;
@@ -42,6 +44,7 @@ pub struct GameHandServiceImpl {
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
     card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
     card_race_repository: Arc<AsyncMutex<CardRaceRepositoryImpl>>,
+    battle_room_repository: Arc<AsyncMutex<BattleRoomRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
 }
 
@@ -54,6 +57,7 @@ impl GameHandServiceImpl {
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
                card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
                card_race_repository: Arc<AsyncMutex<CardRaceRepositoryImpl>>,
+               battle_room_repository: Arc<AsyncMutex<BattleRoomRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     ) -> Self {
         GameHandServiceImpl {
@@ -65,6 +69,7 @@ impl GameHandServiceImpl {
             card_kinds_repository,
             card_grade_repository,
             card_race_repository,
+            battle_room_repository,
             redis_in_memory_repository
         }
     }
@@ -83,6 +88,7 @@ impl GameHandServiceImpl {
                             CardKindsRepositoryImpl::get_instance(),
                             CardGradeRepositoryImpl::get_instance(),
                             CardRaceRepositoryImpl::get_instance(),
+                            BattleRoomRepositoryImpl::get_instance(),
                             RedisInMemoryRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
@@ -215,6 +221,11 @@ impl GameHandService for GameHandServiceImpl {
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         game_field_unit_repository_guard.add_unit_to_game_field(account_unique_id, specific_card.get_card());
+
+        let battle_room_repository_guard = self.battle_room_repository.lock().await;
+        // let room_number_option = battle_room_repository_guard.what_is_the_room_number(account_unique_id).await;
+        // let room_number = room_number_option.unwrap();
+        let opponent_unique_id = battle_room_repository_guard.find_opponent_unique_id(account_unique_id).await;
 
         UseGameHandUnitCardResponse::new(true)
     }
