@@ -4,17 +4,27 @@ use crate::game_card_support::entity::energy_from_deck::EnergyFromDeck;
 #[derive(PartialEq)]
 pub struct GameCardSupportEffect {
     energy_from_deck: EnergyFromDeck,
+    need_to_find_card_id: i32,
 }
 
 impl GameCardSupportEffect {
     pub fn new(race: RaceEnum, energy_count: i32) -> Self {
         GameCardSupportEffect {
-            energy_from_deck: EnergyFromDeck::new(race, energy_count)
+            energy_from_deck: EnergyFromDeck::new(race, energy_count),
+            need_to_find_card_id: -1,
         }
     }
 
     pub fn get_energy_from_deck(&self) -> &EnergyFromDeck {
         &self.energy_from_deck
+    }
+
+    pub fn get_need_to_find_card_id(&self) -> i32 {
+        self.need_to_find_card_id
+    }
+
+    pub fn set_need_to_find_card_id(&mut self, need_to_find_card_id: i32) {
+        self.need_to_find_card_id = need_to_find_card_id;
     }
 }
 
