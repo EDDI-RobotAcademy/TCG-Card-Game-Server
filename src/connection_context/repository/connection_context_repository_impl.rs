@@ -66,41 +66,57 @@ mod tests {
     use tokio::test;
     use tokio::time::sleep;
 
-    // async fn fake_server(listener: Arc<Mutex<TcpListener>>, repository: ConnectionContextRepositoryImpl) {
-    //     while let Ok((socket, _)) = listener.lock().await.accept().await {
-    //         let account_unique_id = 1;
-    //         let socket_stream = Arc::new(AsyncMutex::new(socket));
-    //         let mut repository_clone = repository.clone();
-    //         repository_clone.add_connection_context(account_unique_id, socket_stream.clone(), ).await;
-    //         println!("Fake server: New connection added for account_unique_id {}", account_unique_id);
-    //     }
-    // }
-    //
-    // #[tokio::test]
-    // async fn test_add_connection_context() {
-    //     let listener = Arc::new(Mutex::new(TcpListener::bind("127.0.0.1:0").await.unwrap()));
-    //     let addr: SocketAddr = listener.lock().await.local_addr().unwrap();
-    //
-    //     let mut repository = ConnectionContextRepositoryImpl::get_instance();
-    //     let mut repository_guard = repository.lock().await;
-    //
-    //     tokio::spawn(fake_server(listener.clone(), repository_guard.clone()));
-    //
-    //     let stream = TcpStream::connect(addr).await.unwrap();
-    //
-    //     let account_unique_id = 2;
-    //     let socket_stream = Arc::new(AsyncMutex::new(stream));
-    //     let result = repository_guard.add_connection_context(account_unique_id, socket_stream.clone(), ).await;
-    //
-    //     assert!(result);
-    //     assert_eq!(repository_guard.connection_context_map().lock().await.len(), 1);
-    //     assert!(matches!(
-    //         repository_guard.connection_context_map().lock().await.get(&account_unique_id),
-    //         Some(value) if Arc::ptr_eq(value, &socket_stream)
-    //     ));
-    //
-    //     sleep(Duration::from_millis(100)).await;
-    //
-    //     println!("Connection context map: {:?}", repository_guard.connection_context_map().lock().await);
-    // }
+    async fn fake_server(listener: Arc<Mutex<TcpListener>>, repository: ConnectionContextRepositoryImpl) {
+        while let Ok((socket, _)) = listener.lock().await.accept().await {
+            let account_unique_id = 1;
+            // let socket_stream = Arc::new(AsyncMutex::new(socket));
+            // let socket_stream_guard = socket_stream.lock().await;
+            // let socket = &*socket_stream_guard;
+            let client_socket = Arc::new(
+                AsyncMutex::new(
+                    ClientSocket::new(
+                        "fake".parse().unwrap(),
+                        socket,
+                        Arc::new(ReceiverTransmitterChannel::new(1)))));
+            let mut repository_clone = repository.clone();
+            repository_clone.add_connection_context(account_unique_id, client_socket, ).await;
+            println!("Fake server: New connection added for account_unique_id {}", account_unique_id);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_add_connection_context() {
+        let listener = Arc::new(Mutex::new(TcpListener::bind("127.0.0.1:0").await.unwrap()));
+        let addr: SocketAddr = listener.lock().await.local_addr().unwrap();
+
+        let mut repository = ConnectionContextRepositoryImpl::get_instance();
+        let mut repository_guard = repository.lock().await;
+
+        tokio::spawn(fake_server(listener.clone(), repository_guard.clone()));
+
+        let stream = TcpStream::connect(addr).await.unwrap();
+
+        let account_unique_id = 2;
+        // let socket_stream = Arc::new(AsyncMutex::new(stream));
+
+        let client_socket = Arc::new(
+            AsyncMutex::new(
+                ClientSocket::new(
+                    "fake".parse().unwrap(),
+                    stream,
+                    Arc::new(ReceiverTransmitterChannel::new(1)))));
+
+        let result = repository_guard.add_connection_context(account_unique_id, client_socket.clone(), ).await;
+
+        assert!(result);
+        assert_eq!(repository_guard.connection_context_map().lock().await.len(), 1);
+        assert!(matches!(
+            repository_guard.connection_context_map().lock().await.get(&account_unique_id),
+            Some(value) if Arc::ptr_eq(value, &client_socket)
+        ));
+
+        sleep(Duration::from_millis(100)).await;
+
+        println!("Connection context map: {:?}", repository_guard.connection_context_map().lock().await);
+    }
 }
