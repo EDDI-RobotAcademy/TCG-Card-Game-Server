@@ -54,19 +54,19 @@ impl CardGradeRepository for CardGradeRepositoryImpl {
         card_grade_map_guard.get(card_number).cloned()
     }
 
-    async fn get_grade_by_specific_race_card_list(&self, race_specific_card_list: Vec<i32>) -> Vec<(i32,i32)>{
+    async fn get_grade_by_card_list(&self, card_list: Vec<i32>) -> Vec<(i32,i32)>{
         let card_grade_map_guard = self.card_grade_map.lock().await;
-        let mut card_grade_list_by_race : Vec<(i32, i32)> = Vec::new();
-        for card_grade in card_grade_map_guard.clone() {
-            for race_card in race_specific_card_list.clone() {
-                if (card_grade.0 == race_card) {
-                    let card_tuple = (race_card, card_grade.1.clone());
-                    card_grade_list_by_race.push(card_tuple);
+        let mut card_grade_list : Vec<(i32, i32)> = Vec::new();
+        for card_num_grade in card_grade_map_guard.clone() {
+            for card_num in card_list.clone() {
+                if (card_num_grade.0 == card_num) {
+                    let card_tuple = (card_num, card_num_grade.1.clone());
+                    card_grade_list.push(card_tuple);
                 }
             }
         }
 
-        card_grade_list_by_race
+        card_grade_list
 
     }
 
