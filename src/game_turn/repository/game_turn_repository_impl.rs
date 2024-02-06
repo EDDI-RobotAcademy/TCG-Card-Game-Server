@@ -6,6 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::game_turn::entity::game_turn::GameTurn;
 use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
+use crate::game_turn::service::request::decide_first_turn_request::Gesture;
 use crate::game_turn::service::response::decide_first_turn_response::DecideFirstTurnResponse;
 
 
@@ -58,12 +59,28 @@ impl GameTurnRepository for GameTurnRepositoryImpl {
         -1
     }
 
-    fn decide_first_turn(&mut self, account_unique_id:i32,gesture:String) -> DecideFirstTurnResponse {
+    fn decide_first_turn(&mut self, account_unique_id1:i32,choice1:Gesture,
+                                    account_unique_id2:i32,choice2:Gesture) -> DecideFirstTurnResponse {
         println!("GameTurnRepositoryImpl: decide_first_turn()");
-        let result_is_draw=true;
-        //gesture -> rock,scissors, paper string을 뜻함
-        //여기서 상대 플레이어의 gesture도 어떻게 받는다 가정하고 무승부 일시 result_is_draw 에 true 승리 결정될시 false
-        DecideFirstTurnResponse::new(account_unique_id.to_string(),result_is_draw)
+        let (winner_account_unique_id, result_is_draw) = match (choice1, choice2) {
+            (Gesture::Rock, Gesture::Scissors) | (Gesture::Paper, Gesture::Rock) | (Gesture::Scissors, Gesture::Paper) => {
+                println!("{} 선공 ",account_unique_id1);
+                (account_unique_id1, false)
+                // 플레이어 1이 이길 때
+            }
+            (Gesture::Scissors, Gesture::Rock) | (Gesture::Rock, Gesture::Paper) | (Gesture::Paper, Gesture::Scissors) => {
+                println!("{} 선공 ",account_unique_id2);
+                (account_unique_id2, false)  // 플레이어 2가 이길 때
+            }
+
+            _ =>{
+                println!("무승부! 한판더");
+                (0, true)
+            },  // 비길 때
+        };
+
+
+        DecideFirstTurnResponse::new(winner_account_unique_id,result_is_draw)
     }
 }
 
@@ -216,5 +233,8 @@ mod cfg_test {
 
         assert_eq!(result, -1);
     }
+
+
+
 
 }
