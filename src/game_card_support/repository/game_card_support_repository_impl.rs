@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum::Dummy;
+use crate::game_card_support::entity::game_card_support_effect::GameCardSupportEffect;
 use crate::game_card_support::handler::game_card_support_handler::GameCardSupportHandler;
 use crate::game_card_support::handler::handler_of_2::game_card_support_2_handler_impl::SupportCard_2_Function;
 
@@ -14,10 +16,10 @@ pub struct GameCardSupportRepositoryImpl {
 struct NoneFunction;
 
 impl GameCardSupportHandler for NoneFunction {
-    unsafe fn use_support_card(&self, use_support_card_request: UseSupportCardRequest) -> UseSupportCardResponse {
+    unsafe fn use_support_card(&self, use_support_card_request: UseSupportCardRequest) -> GameCardSupportEffect {
         println!("아직 구현되지 않은 기능입니다.");
 
-        UseSupportCardResponse
+        GameCardSupportEffect::new(Dummy, 0)
     }
 }
 
@@ -81,6 +83,7 @@ impl GameCardSupportRepository for GameCardSupportRepositoryImpl {
 mod tests {
     use std::io;
     use std::io::Write;
+    use crate::common::card_attributes::card_race::card_race_enum::RaceEnum::{Human, Undead};
     use super::*;
     use crate::game_card_support::service::request::use_support_card_request::UseSupportCardRequest;
 
@@ -93,7 +96,11 @@ mod tests {
         assert!(function1.is_some());
 
         let response1 = unsafe { function1.unwrap().use_support_card(UseSupportCardRequest) };
-        assert_eq!(response1, UseSupportCardResponse);
+        let energy_from_deck = response1.get_energy_from_deck();
+        let energy_count = energy_from_deck.get_energy_count();
+        let race = energy_from_deck.get_race();
+        assert_eq!(response1.get_energy_from_deck().get_energy_count(), 2);
+        assert_eq!(response1.get_energy_from_deck().get_race(), &Undead);
 
         let number2 = 93;
         let function2 = repository.get_function(number2);
