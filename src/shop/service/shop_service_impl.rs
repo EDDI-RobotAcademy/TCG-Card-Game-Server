@@ -99,7 +99,7 @@ impl ShopService for ShopServiceImpl {
         let account_unique_id: Result<i32, _> = account_number_str.expect("REASON").parse();
 
         let get_race_specific_card_list = card_race_repository.get_specific_race_card_list(get_card_default_request.race_name().parse::<i32>().unwrap()).await;
-        let gacha_card_list = card_grade_repository.get_grade_by_specific_race_card_list(get_race_specific_card_list).await;
+        let gacha_card_list = card_grade_repository.get_grade_by_card_list(get_race_specific_card_list).await;
 
         match account_unique_id {
             Ok(int_type_account_id) => {
