@@ -200,6 +200,7 @@ impl GameHandService for GameHandServiceImpl {
         let unit_card_number_string = use_game_hand_unit_card_request.get_unit_number();
         let unit_card_number = unit_card_number_string.parse::<i32>().unwrap();
 
+        // TODO: 이 파트는 ProtocolSecurityService 에서 처리하고 HandController에서 호출하도록 구성하는 것읻 더 좋음 (재사용성 측면에도 이득)
         if self.check_protocol_hacking(account_unique_id, unit_card_number).await {
             println!("프로토콜 조작 감지: 해킹범을 검거합시다!");
             return UseGameHandUnitCardResponse::new(false)
