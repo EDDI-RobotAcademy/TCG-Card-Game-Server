@@ -54,20 +54,17 @@ impl CardGradeRepository for CardGradeRepositoryImpl {
         card_grade_map_guard.get(card_number).cloned()
     }
 
-    async fn get_grade_by_card_list(&self, card_list: Vec<i32>) -> Vec<(i32,i32)>{
+    async fn get_legend_mythical_card_list(&self, card_list: Vec<i32>) -> Vec<(i32)>{
         let card_grade_map_guard = self.card_grade_map.lock().await;
-        let mut card_grade_list : Vec<(i32, i32)> = Vec::new();
-        for card_num_grade in card_grade_map_guard.clone() {
-            for card_num in card_list.clone() {
-                if (card_num_grade.0 == card_num) {
-                    let card_tuple = (card_num, card_num_grade.1.clone());
-                    card_grade_list.push(card_tuple);
-                }
+        let mut legend_mythical_card_list : Vec<(i32)> = Vec::new();
+        println!("{}", card_grade_map_guard[&58]);
+
+        for card_num in card_list {
+            if(card_grade_map_guard[&card_num] == 4 || card_grade_map_guard[&card_num] == 5) {
+                legend_mythical_card_list.push(card_num);
             }
         }
-
-        card_grade_list
-
+        legend_mythical_card_list
     }
 
 }
