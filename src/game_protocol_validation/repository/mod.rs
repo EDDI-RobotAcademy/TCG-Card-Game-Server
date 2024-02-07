@@ -1,0 +1,2 @@
+pub mod game_protocol_validation_repository_impl;
+pub mod game_protocol_validation_repository;

@@ -2,3 +2,4 @@ pub mod game_deck_card_list_request;
 pub mod game_deck_card_shuffled_list_request;
 pub mod game_deck_card_draw_request;
 pub mod game_deck_card_redraw_request;
+pub mod found_card_from_deck_request;

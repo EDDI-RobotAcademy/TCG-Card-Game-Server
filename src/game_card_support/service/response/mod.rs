@@ -1,1 +1,2 @@
 pub mod use_support_card_response;
+pub mod calculate_effect_response;

@@ -77,6 +77,7 @@ mod game_card_item;
 mod connection_context;
 mod game_first_active_skill;
 mod notify_player_action;
+mod game_protocol_validation;
 
 #[tokio::main]
 async fn main() {

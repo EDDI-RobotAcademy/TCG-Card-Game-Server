@@ -1,0 +1,4 @@
+pub mod support_card_protocol_validation_request;
+pub mod check_protocol_hacking_request;
+pub mod can_use_card_request;
+pub mod is_it_support_card_request;

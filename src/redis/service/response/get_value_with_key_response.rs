@@ -8,4 +8,9 @@ pub struct GetValueWithKeyResponse {
 
 impl GetValueWithKeyResponse {
     pub fn new(value: String) -> Self { GetValueWithKeyResponse { value } }
+
+
+    pub fn get_value(&self) -> &str {
+        &self.value
+    }
 }
