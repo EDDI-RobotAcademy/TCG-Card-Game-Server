@@ -1,12 +1,12 @@
 #[derive(Debug)]
-pub struct SupportCardProtocolValidationRequest {
+pub struct CheckProtocolHackingRequest {
     account_unique_id: i32,
     support_card_number: i32,
 }
 
-impl SupportCardProtocolValidationRequest {
+impl CheckProtocolHackingRequest {
     pub fn new(account_unique_id: i32, support_card_number: i32) -> Self {
-        SupportCardProtocolValidationRequest {
+        CheckProtocolHackingRequest {
             account_unique_id,
             support_card_number,
         }

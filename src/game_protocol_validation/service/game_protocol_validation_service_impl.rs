@@ -15,7 +15,13 @@ use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryI
 use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
 use crate::game_protocol_validation::repository::game_protocol_validation_repository_impl::GameProtocolValidationRepositoryImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
+use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
+use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
+use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_protocol_validation::service::request::support_card_protocol_validation_request::SupportCardProtocolValidationRequest;
+use crate::game_protocol_validation::service::response::can_use_card_response::CanUseCardResponse;
+use crate::game_protocol_validation::service::response::check_protocol_hacking_response::CheckProtocolHackingResponse;
+use crate::game_protocol_validation::service::response::is_it_support_card_response::IsItSupportCardResponse;
 use crate::game_protocol_validation::service::response::support_card_protocol_validation_response::SupportCardProtocolValidationResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
@@ -68,54 +74,40 @@ impl GameProtocolValidationServiceImpl {
         INSTANCE.clone()
     }
 
-    async fn is_it_support_card(&self, use_support_card_request: &SupportCardProtocolValidationRequest) -> bool {
-        let support_card_number = match use_support_card_request.get_support_card_number().parse::<i32>() {
-            Ok(number) => number,
-            Err(_) => return false,
-        };
-
-        let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
-        if let Some(maybe_support_card) = card_kinds_repository_guard.get_card_kind(&support_card_number).await {
-            maybe_support_card == KindsEnum::Support as i32
-        } else {
-            false
-        }
-    }
-
-    async fn get_user_round_value(&self, support_card_protocol_validation_request: &SupportCardProtocolValidationRequest) -> Option<i32> {
+    async fn get_user_round_value(&self, can_use_card_request: &CanUseCardRequest) -> Option<i32> {
         let mut game_round_repository_guard = self.game_round_repository.lock().await;
         game_round_repository_guard
             .get_game_round_map()
-            .get(&support_card_protocol_validation_request.get_account_unique_id())
+            .get(&can_use_card_request.get_account_unique_id())
             .map(|user_round| user_round.get_round())
     }
 
-    async fn can_use_mythical_card(&self, support_card_protocol_validation_request: &SupportCardProtocolValidationRequest, round: i32) -> bool {
-        if let Ok(support_card_number) = support_card_protocol_validation_request.get_support_card_number().parse::<i32>() {
+    async fn can_use_mythical_card(&self, can_use_card_request: &CanUseCardRequest, round: i32) -> bool {
+        if let target_card_number = can_use_card_request.get_support_card_number() {
             let card_grade_repository_guard = self.card_grade_repository.lock().await;
-            if let Some(card_grade) = card_grade_repository_guard.get_card_grade(&support_card_number).await {
+            if let Some(card_grade) = card_grade_repository_guard.get_card_grade(&target_card_number).await {
                 return card_grade == GradeEnum::Mythical as i32 && round == 4;
             }
         }
 
         false
     }
+}
 
-    async fn check_protocol_hacking(&mut self, support_card_protocol_validation_request: &SupportCardProtocolValidationRequest) -> bool {
+#[async_trait]
+impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
+
+    async fn check_protocol_hacking(&mut self, support_card_protocol_validation_request: CheckProtocolHackingRequest) -> CheckProtocolHackingResponse {
         let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
         let game_hand = game_hand_repository_guard.get_game_hand_map().get(&support_card_protocol_validation_request.get_account_unique_id());
 
         if game_hand.is_none() {
             println!("핸드 자체가 없습니다!");
-            return true
+            return CheckProtocolHackingResponse::new(false)
         }
 
         let mut result = true;
-
-        let target_card_number = match support_card_protocol_validation_request.get_support_card_number().parse::<i32>() {
-            Ok(number) => number,
-            Err(_) => return false,
-        };
+        let target_card_number = support_card_protocol_validation_request.get_support_card_number();
 
         for &target_card in game_hand.unwrap().get_all_card_list_in_game_hand().iter() {
             if target_card.get_card() == target_card_number {
@@ -124,31 +116,28 @@ impl GameProtocolValidationServiceImpl {
             }
         }
 
-        result
+        CheckProtocolHackingResponse::new(result)
     }
-}
 
-#[async_trait]
-impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
-    async fn support_card_protocol_validation(&mut self, support_card_validation_request: SupportCardProtocolValidationRequest) -> SupportCardProtocolValidationResponse {
-        println!("GameProtocolValidationServiceImpl: support_card_protocol_validation()");
-
-        if !self.is_it_support_card(&support_card_validation_request).await {
-            return SupportCardProtocolValidationResponse::new(false)
-        }
-
-        let round_option = self.get_user_round_value(&support_card_validation_request).await;
+    async fn can_use_card(&mut self, can_use_card_request: CanUseCardRequest) -> CanUseCardResponse {
+        let round_option = self.get_user_round_value(&can_use_card_request).await;
         let round = round_option.unwrap();
 
-        if !self.can_use_mythical_card(&support_card_validation_request, round).await {
-            return SupportCardProtocolValidationResponse::new(false)
+        if !self.can_use_mythical_card(&can_use_card_request, round).await {
+            return CanUseCardResponse::new(false)
         }
 
-        if self.check_protocol_hacking(&support_card_validation_request).await {
-            println!("프로토콜 조작 감지: 해킹범을 검거합시다!");
-            return SupportCardProtocolValidationResponse::new(false)
+        CanUseCardResponse::new(true)
+    }
+
+    async fn is_it_support_card(&self, is_it_support_card_request: IsItSupportCardRequest) -> IsItSupportCardResponse {
+        let support_card_number = is_it_support_card_request.get_support_card_number();
+
+        let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
+        if let Some(maybe_support_card) = card_kinds_repository_guard.get_card_kind(&support_card_number).await {
+            return IsItSupportCardResponse::new(maybe_support_card == KindsEnum::Support as i32)
         }
 
-        SupportCardProtocolValidationResponse::new(true)
+        IsItSupportCardResponse::new(false)
     }
 }
