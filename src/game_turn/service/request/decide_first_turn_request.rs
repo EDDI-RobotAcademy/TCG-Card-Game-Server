@@ -3,8 +3,8 @@ pub struct DecideFirstTurnRequest {
     session_id: String,
     choice: Gesture,
 }
-#[derive(Debug, PartialEq,Clone)]
-pub(crate) enum Gesture {
+#[derive(Debug, PartialEq, Clone)]
+pub enum Gesture {
     Rock,
     Paper,
     Scissors,
