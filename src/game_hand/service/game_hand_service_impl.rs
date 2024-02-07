@@ -158,16 +158,6 @@ impl GameHandService for GameHandServiceImpl {
         let card_i32_list_to_be_changed =
             VectorStringToVectorInteger::vector_string_to_vector_i32(card_string_list_to_be_changed);
 
-        // protocol hacking prevention
-        for card in &card_i32_list_to_be_changed {
-            if self.check_protocol_hacking(account_unique_id, *card).await {
-                println!("프로토콜 조작 감지: 해킹범을 검거합시다!");
-                return PutCardsOnDeckResponse::new(false)
-            } else {
-                continue
-            }
-        }
-
         // removing hand cards
         let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
         if let Some(user_game_hand) =
