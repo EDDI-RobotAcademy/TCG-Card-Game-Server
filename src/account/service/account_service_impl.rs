@@ -31,6 +31,7 @@ use crate::account_card::repository::account_card_repository::AccountCardReposit
 use crate::account_card::repository::account_card_repository_impl::AccountCardRepositoryImpl;
 use crate::account_deck::repository::account_deck_repository::AccountDeckRepository;
 use crate::account_deck::repository::account_deck_repository_impl::AccountDeckRepositoryImpl;
+use crate::account_deck_card::repository::account_deck_card_repository::AccountDeckCardRepository;
 use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
 
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
@@ -44,7 +45,7 @@ pub struct AccountServiceImpl {
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     account_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
     account_deck_repository: Arc<AsyncMutex<AccountDeckRepositoryImpl>>,
-    // account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>
+    account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>
 }
 
 impl AccountServiceImpl {
@@ -52,7 +53,8 @@ impl AccountServiceImpl {
                account_point_repository: Arc<AsyncMutex<AccountPointRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
                account_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
-               account_deck_repository: Arc<AsyncMutex<AccountDeckRepositoryImpl>>) -> Self {
+               account_deck_repository: Arc<AsyncMutex<AccountDeckRepositoryImpl>>,
+               account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>) -> Self {
 
         AccountServiceImpl {
             repository,
@@ -60,7 +62,7 @@ impl AccountServiceImpl {
             redis_in_memory_repository,
             account_card_repository,
             account_deck_repository,
-            // account_deck_card_repository
+            account_deck_card_repository,
         }
     }
 
@@ -74,7 +76,8 @@ impl AccountServiceImpl {
                             AccountPointRepositoryImpl::get_instance(),
                             RedisInMemoryRepositoryImpl::get_instance(),
                             AccountCardRepositoryImpl::get_instance(),
-                            AccountDeckRepositoryImpl::get_instance())));
+                            AccountDeckRepositoryImpl::get_instance(),
+                            AccountDeckCardRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -184,28 +187,6 @@ impl AccountService for AccountServiceImpl {
     async fn account_delete(&self, account_delete_request: AccountDeleteRequest) -> AccountDeleteResponse {
         println!("AccountServiceImpl: account_delete()");
 
-        // let account_repository = self.repository.lock().await;
-        // let account_point_repository = self.account_point_repository.lock().await;
-        // let account = account_delete_request.to_account().unwrap();
-        // if let Some(found_account) = account_repository.find_by_user_id(account.user_id()).await.unwrap() {
-        //     // 비밀번호 매칭 확인
-        //     if verify(&account_delete_request.password(), &found_account.password()).unwrap() {
-        //         // 비밀번호 일치 확인
-        //         // 저장된 계정의 id 를 가지고, account_point 에 재화 관련 계정정보 삭제
-        //         let found_account = account_repository.find_by_user_id(account.user_id()).await.unwrap();
-        //         let found_account_id = found_account.unwrap().id;
-        //         let result_account_point = account_point_repository.delete_account_points(found_account_id).await;
-        //
-        //         let result_account = account_repository.delete(account_delete_request.to_account().unwrap()).await;
-        //         if result_account.is_ok() && result_account_point.is_ok() {
-        //             return AccountDeleteResponse::new(true)
-        //         }
-        //         return AccountDeleteResponse::new(false)
-        //     }
-        //     return AccountDeleteResponse::new(false)
-        // }
-        // return AccountDeleteResponse::new(false)
-
         let account_repository_guard = self.repository.lock().await;
         let account = account_delete_request.to_account().unwrap();
 
@@ -218,6 +199,14 @@ impl AccountService for AccountServiceImpl {
                 drop(account_card_repository_guard);
 
                 let account_deck_repository_guard = self.account_deck_repository.lock().await;
+                let account_deck_id_list = account_deck_repository_guard.get_account_deck_id_list(account_unique_id).await.unwrap();
+
+                let account_deck_card_repository_guard = self.account_deck_card_repository.lock().await;
+                for deck_id in account_deck_id_list {
+                    let _ = account_deck_card_repository_guard.delete_deck_cards(deck_id).await;
+                }
+                drop(account_deck_card_repository_guard);
+
                 let _ = account_deck_repository_guard.delete_all_account_decks(account_unique_id).await;
                 drop(account_deck_repository_guard);
 

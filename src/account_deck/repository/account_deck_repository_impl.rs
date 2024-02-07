@@ -68,6 +68,33 @@ impl AccountDeckRepository for AccountDeckRepositoryImpl {
         }
     }
 
+    async fn get_account_deck_id_list(&self, account_unique_id: i32) -> Result<Vec<i32>, Error> {
+        use crate::account_deck::entity::account_deck::account_decks::dsl::*;
+        use diesel::prelude::*;
+
+        println!("AccountDeckRepositoryImpl: get_deck_id_list()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        let mut account_deck_id_list = Vec::new();
+
+        let where_clause = FilterDsl::filter(account_decks, account_id.eq(account_id));
+        let all_account_decks = where_clause
+            .select((columns::deck_id, columns::account_id, columns::deck_name))
+            .load::<AccountDeck>(&mut connection)?;
+
+        let specific_account_decks = all_account_decks.into_iter()
+            .filter(|account_deck|account_deck.account_id == account_unique_id);
+
+        for deck in specific_account_decks {
+            account_deck_id_list.push(deck.deck_id)
+        }
+
+        Ok(account_deck_id_list)
+    }
+
     async fn get_list_by_user_int_id(&self, request: i32) -> Result<Option<Vec<HashMap<i32, String>>>, Error> {
         use crate::account_deck::entity::account_deck::account_decks::dsl::*;
         use diesel::query_dsl::filter_dsl::FilterDsl;
