@@ -13,10 +13,13 @@ use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
+use crate::game_card_support::entity::game_card_support_effect::GameCardSupportEffect;
 use crate::game_card_support::repository::game_card_support_repository::GameCardSupportRepository;
 use crate::game_card_support::repository::game_card_support_repository_impl::GameCardSupportRepositoryImpl;
 use crate::game_card_support::service::game_card_support_service::GameCardSupportService;
+use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
 use crate::game_card_support::service::request::use_support_card_request::UseSupportCardRequest;
+use crate::game_card_support::service::response::calculate_effect_response::CalculateEffectResponse;
 use crate::game_card_support::service::response::use_support_card_response::UseSupportCardResponse;
 use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
 use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
@@ -217,5 +220,16 @@ impl GameCardSupportService for GameCardSupportServiceImpl {
         // notify_player_action_repository_guard.notify_to_opponent_what_support_you_use(opponent_unique_id.unwrap(), unit_card_number, ).await;
 
         UseSupportCardResponse::new(true)
+    }
+
+    async fn use_support_card(&mut self, calculate_effect_request: CalculateEffectRequest) -> GameCardSupportEffect {
+        println!("GameCardSupportServiceImpl: use_specific_support_card()");
+
+        let game_card_support_repository_guard = self.game_card_support_repository.lock().await;
+        let game_card_support_effect = unsafe {
+            game_card_support_repository_guard.call_support_card_repository_handler(calculate_effect_request.get_support_card_number())
+        };
+
+        return game_card_support_effect
     }
 }
