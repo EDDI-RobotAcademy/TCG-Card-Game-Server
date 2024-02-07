@@ -209,10 +209,6 @@ impl GameCardSupportService for GameCardSupportServiceImpl {
         game_field_unit_repository_guard.attach_multiple_energy_to_game_field_unit(
             account_unique_id, unit_card_number, race_enum as i32, real_energy_count as i32);
 
-        // TODO: 사용한 카드는 무덤으로 들어간다.
-        let mut game_tomb_repository = self.game_tomb_repository.lock().await;
-        game_tomb_repository.add_used_card_to_tomb(account_unique_id, specific_card.get_card());
-
         // TODO: UI에서 서포트를 통한 에너지 부스트를 어떻게 표현 할 것인가 ? (붙인 에너지와 수량 관련 사항이 필요한가 ?)
         let opponent_unique_id = self.get_opponent_unique_id(account_unique_id).await;
         let support_card_id = specific_card.get_card();
