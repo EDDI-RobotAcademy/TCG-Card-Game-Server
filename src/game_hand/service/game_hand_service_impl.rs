@@ -210,7 +210,7 @@ impl GameHandService for GameHandServiceImpl {
 
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
         let maybe_unit_card = card_kinds_repository_guard.get_card_kind(&unit_card_number).await;
-        if maybe_unit_card.unwrap() != KindsEnum::Unit as i32 {
+        if maybe_unit_card != KindsEnum::Unit {
             return UseGameHandUnitCardResponse::new(false)
         }
 
@@ -260,12 +260,12 @@ impl GameHandService for GameHandServiceImpl {
 
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
         let maybe_energy_card = card_kinds_repository_guard.get_card_kind(&energy_card_id).await;
-        if maybe_energy_card.unwrap() != KindsEnum::Energy as i32 {
+        if maybe_energy_card != KindsEnum::Energy {
             return UseGameHandEnergyCardResponse::new(false)
         }
 
         let maybe_unit_card = card_kinds_repository_guard.get_card_kind(&unit_card_number).await;
-        if maybe_unit_card.unwrap() != KindsEnum::Unit as i32 {
+        if maybe_unit_card != KindsEnum::Unit {
             return UseGameHandEnergyCardResponse::new(false)
         }
 

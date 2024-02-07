@@ -6,11 +6,12 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 
 use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
+use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::common::csv::csv_reader::{build_card_kinds_dictionary, csv_read};
 use crate::common::path::root_path::RootPath;
 
 pub struct CardKindsRepositoryImpl {
-    card_kinds_map: Arc<AsyncMutex<HashMap<i32, i32>>>,
+    card_kinds_map: Arc<AsyncMutex<HashMap<i32, KindsEnum>>>,
 }
 
 impl CardKindsRepositoryImpl {
@@ -50,9 +51,13 @@ impl CardKindsRepositoryImpl {
 
 #[async_trait]
 impl CardKindsRepository for CardKindsRepositoryImpl {
-    async fn get_card_kind(&self, card_number: &i32) -> Option<i32> {
+    // async fn get_card_kind(&self, card_number: &i32) -> Option<i32> {
+    //     let card_kinds_map_guard = self.card_kinds_map.lock().await;
+    //     card_kinds_map_guard.get(card_number).cloned()
+    // }
+    async fn get_card_kind(&self, card_number: &i32) -> KindsEnum {
         let card_kinds_map_guard = self.card_kinds_map.lock().await;
-        card_kinds_map_guard.get(card_number).cloned()
+        *card_kinds_map_guard.get(card_number).unwrap_or(&KindsEnum::Dummy)
     }
 }
 
@@ -67,13 +72,16 @@ mod tests {
         let card_number: i32 = 2;
         let card_kind = card_kinds_repository_guard.get_card_kind(&card_number).await;
 
-        match card_kind {
-            Some(kind) => {
-                println!("Card Kind: {}", kind);
-                assert_eq!(kind, 4);
-            }
-            None => println!("Card not found."),
-        }
+        // match card_kind {
+        //     Some(kind) => {
+        //         println!("Card Kind: {}", kind);
+        //         assert_eq!(kind, 4);
+        //     }
+        //     None => println!("Card not found."),
+        // }
+
+        assert_eq!(card_kind , KindsEnum::Support);
+        println!("card_kind: {:?}", card_kind);
     }
 }
 
