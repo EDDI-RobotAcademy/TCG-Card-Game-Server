@@ -174,8 +174,8 @@ impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
         let support_card_number = is_it_support_card_request.get_support_card_number();
 
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
-        if let Some(maybe_support_card) = card_kinds_repository_guard.get_card_kind(&support_card_number).await {
-            return IsItSupportCardResponse::new(maybe_support_card == KindsEnum::Support as i32)
+        if let maybe_support_card = card_kinds_repository_guard.get_card_kind(&support_card_number).await {
+            return IsItSupportCardResponse::new(maybe_support_card == KindsEnum::Support)
         }
 
         IsItSupportCardResponse::new(false)

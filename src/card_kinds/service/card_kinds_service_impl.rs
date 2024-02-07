@@ -6,6 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
 use crate::card_kinds::service::card_kinds_service::CardKindsService;
+use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 
 pub struct CardKindsServiceImpl {
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>
@@ -31,7 +32,7 @@ impl CardKindsServiceImpl {
 
 #[async_trait]
 impl CardKindsService for CardKindsServiceImpl {
-    async fn get_card_kind(&self, card_number: &i32) -> Option<i32> {
+    async fn get_card_kind(&self, card_number: &i32) -> KindsEnum {
         println!("CardKindsServiceImpl: get_card_kind()");
 
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
@@ -51,14 +52,8 @@ mod tests {
         let card_number: i32 = 2;
 
         let card_kind = card_kinds_repo_guard.get_card_kind(&card_number).await;
-
-        match card_kind {
-            Some(kind) => {
-                println!("Card Kind: {}", kind);
-                assert_eq!(kind, 4);
-            }
-            None => println!("Card not found."),
-        }
+        assert_eq!(card_kind, KindsEnum::Support);
+        println!("Card Kind: {:?}", card_kind);
     }
 }
 

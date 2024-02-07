@@ -114,11 +114,11 @@ impl GameCardSupportServiceImpl {
         };
 
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
-        if let Some(maybe_support_card) = card_kinds_repository_guard.get_card_kind(&support_card_number).await {
-            maybe_support_card == KindsEnum::Support as i32
-        } else {
-            false
+        if let maybe_support_card = card_kinds_repository_guard.get_card_kind(&support_card_number).await {
+            return maybe_support_card == KindsEnum::Support
         }
+
+        false
     }
 
     async fn get_user_round_value(&self, account_unique_id: i32) -> Option<i32> {
@@ -160,6 +160,7 @@ impl GameCardSupportServiceImpl {
 
 #[async_trait]
 impl GameCardSupportService for GameCardSupportServiceImpl {
+    // TODO: Before Refactor (need to chore)
     async fn use_specific_support_card(&mut self, use_support_card_request: UseSupportCardRequest) -> UseSupportCardResponse {
         println!("GameCardSupportServiceImpl: use_specific_support_card()");
 
@@ -218,6 +219,7 @@ impl GameCardSupportService for GameCardSupportServiceImpl {
         UseSupportCardResponse::new(true)
     }
 
+    // TODO: After Refactor (keep it)
     async fn use_support_card(&mut self, calculate_effect_request: CalculateEffectRequest) -> GameCardSupportEffect {
         println!("GameCardSupportServiceImpl: use_specific_support_card()");
 
