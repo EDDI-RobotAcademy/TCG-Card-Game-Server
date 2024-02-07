@@ -25,9 +25,11 @@ use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryI
 use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::request::put_cards_on_deck_request::{PutCardsOnDeckRequest};
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
+use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
 use crate::game_hand::service::response::put_cards_on_deck_response::PutCardsOnDeckResponse;
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
+use crate::game_hand::service::response::use_game_hand_support_card_response::UseGameHandSupportCardResponse;
 use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 use crate::game_tomb::repository::game_tomb_repository::GameTombRepository;
@@ -282,5 +284,21 @@ impl GameHandService for GameHandServiceImpl {
         game_tomb_repository_guard.add_used_card_to_tomb(account_unique_id, energy_card_id);
 
         UseGameHandEnergyCardResponse::new(true)
+    }
+
+    async fn use_support_card(&mut self, use_game_hand_support_card_request: UseGameHandSupportCardRequest) -> UseGameHandSupportCardResponse {
+        println!("GameHandServiceImpl: use_support_card()");
+
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        let specific_card_option = game_hand_repository_guard.use_specific_card(
+            use_game_hand_support_card_request.get_account_unique_id(),
+            use_game_hand_support_card_request.get_support_card_number());
+
+        if specific_card_option.is_none() {
+            return UseGameHandSupportCardResponse::new(-1)
+        }
+        let specific_card = specific_card_option.unwrap();
+
+        UseGameHandSupportCardResponse::new(specific_card.get_card())
     }
 }
