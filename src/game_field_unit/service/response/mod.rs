@@ -2,3 +2,4 @@ pub mod attach_energy_to_unit_response;
 pub mod attach_multiple_energy_to_field_unit_response;
 pub mod add_unit_to_game_field_response;
 pub mod attach_single_energy_to_unit_index_response;
+pub mod attach_multiple_energy_to_unit_index_response;
