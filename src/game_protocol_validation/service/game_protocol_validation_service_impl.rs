@@ -18,10 +18,12 @@ use crate::game_protocol_validation::service::game_protocol_validation_service::
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
+use crate::game_protocol_validation::service::request::is_it_unit_card_request::IsItUnitCardRequest;
 use crate::game_protocol_validation::service::request::support_card_protocol_validation_request::SupportCardProtocolValidationRequest;
 use crate::game_protocol_validation::service::response::can_use_card_response::CanUseCardResponse;
 use crate::game_protocol_validation::service::response::check_protocol_hacking_response::CheckProtocolHackingResponse;
 use crate::game_protocol_validation::service::response::is_it_support_card_response::IsItSupportCardResponse;
+use crate::game_protocol_validation::service::response::is_it_unit_card_response::IsItUnitCardResponse;
 use crate::game_protocol_validation::service::response::support_card_protocol_validation_response::SupportCardProtocolValidationResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
@@ -139,5 +141,16 @@ impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
         }
 
         IsItSupportCardResponse::new(false)
+    }
+
+    async fn is_it_unit_card(&self, is_it_unit_card_request: IsItUnitCardRequest) -> IsItUnitCardResponse {
+        let unit_card_id = is_it_unit_card_request.get_unit_card_id();
+
+        let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
+        if let maybe_unit_card = card_kinds_repository_guard.get_card_kind(&unit_card_id).await {
+            return IsItUnitCardResponse::new(maybe_unit_card == KindsEnum::Unit)
+        }
+
+        IsItUnitCardResponse::new(false)
     }
 }
