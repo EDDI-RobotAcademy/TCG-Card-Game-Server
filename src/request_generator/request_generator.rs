@@ -331,7 +331,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     let shop_service_mutex = ShopServiceImpl::get_instance();
                     let mut shop_service = shop_service_mutex.lock().await;
 
-                    let response = shop_service.get_card_default(request).await;
+                    let response = shop_service.get_specific_race_card_default(request).await;
                     let response_type = Some(ResponseType::SHOP_GET_CARD_DEFAULT(response));
 
                     response_type
