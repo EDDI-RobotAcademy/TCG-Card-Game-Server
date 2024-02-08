@@ -22,6 +22,7 @@ use crate::game_deck::service::response::game_deck_start_card_list_response::{Ga
 use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
 use crate::game_hand::controller::response_form::use_game_hand_energy_card_response_form::UseGameHandEnergyCardResponseForm;
 use crate::game_hand::controller::response_form::use_game_hand_unit_card_response_form::UseGameHandUnitCardResponseForm;
+use crate::notify_player_action::entity::notify_opponent_to_energy_usage::NotifyOpponentToEnergyUsage;
 use crate::notify_player_action::service::response::notify_opponent_hand_to_unit_action_response::NotifyOpponentHandToFieldUnitActionResponse;
 
 use crate::shop::service::response::free_card_response::FreeCardResponse;
@@ -72,6 +73,7 @@ pub enum ResponseType {
 
     // Notification to players
     NOTIFY_OPPONENT_HAND_TO_UNIT_ACTION(NotifyOpponentHandToFieldUnitActionResponse),
+    NOTIFY_OPPONENT_TO_ENERGY_USAGE(NotifyOpponentToEnergyUsage),
 
     // Mulligan
     CHANGE_FIRST_HAND(MulliganResponseForm),
