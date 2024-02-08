@@ -37,6 +37,8 @@ impl ShopRepositoryImpl {
         }
         INSTANCE.clone()
     }
+
+
 }
 
 #[async_trait]
@@ -68,6 +70,64 @@ impl ShopRepository for ShopRepositoryImpl {
         println!("randomly_chosen_card_id_list : {:?}", randomly_chosen_card_id_list);
 
         Ok(randomly_chosen_card_id_list)
+    }
+
+    async fn get_randomly_chosen_card_id(&self, gacha_card_list: Vec<(i32, GradeEnum)>) -> i32 {
+        let mut original_card_id_list = Vec::new();
+
+        for card in gacha_card_list {
+            original_card_id_list.push(card);
+        }
+        let random_index = rand::thread_rng().gen_range(0..original_card_id_list.len());
+        original_card_id_list[random_index].0
+
+    }
+    fn apply_probability_by_grade(&self, how_many_cards_to_get: i32, is_confirmed_upper_legend: bool) -> Vec<GradeEnum> {
+        let mut list_of_grade  = Vec::new();
+
+        match is_confirmed_upper_legend {
+            true => {
+                let random_index = rand::thread_rng().gen_range(1..100);
+                if (random_index > 90) {
+                    list_of_grade.push(GradeEnum::Mythical);
+                } else {
+                    list_of_grade.push(GradeEnum::Legend);
+                }
+
+                for _ in 1..how_many_cards_to_get {
+                    let random_index = rand::thread_rng().gen_range(1..100);
+                    if (random_index > 96) {
+                        list_of_grade.push(GradeEnum::Mythical);
+                    } else if (random_index > 86) {
+                        list_of_grade.push(GradeEnum::Legend);
+                    } else if (random_index > 69) {
+                        list_of_grade.push(GradeEnum::Hero);
+                    } else if (random_index > 39) {
+                        list_of_grade.push(GradeEnum::Uncommon);
+                    } else {
+                        list_of_grade.push(GradeEnum::Common);
+                    }
+                }
+            }
+            false => {
+                for _ in 0..how_many_cards_to_get {
+                    let random_index = rand::thread_rng().gen_range(1..100);
+                    if (random_index > 96) {
+                        list_of_grade.push(GradeEnum::Mythical);
+                    } else if (random_index > 86) {
+                        list_of_grade.push(GradeEnum::Legend);
+                    } else if (random_index > 69) {
+                        list_of_grade.push(GradeEnum::Hero);
+                    } else if (random_index > 39) {
+                        list_of_grade.push(GradeEnum::Uncommon);
+                    } else {
+                        list_of_grade.push(GradeEnum::Common);
+                    }
+                }
+            }
+        }
+
+        list_of_grade
     }
 }
 
