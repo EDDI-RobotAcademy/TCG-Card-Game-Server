@@ -12,6 +12,7 @@ use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
 use crate::card_race::repository::card_race_repository::CardRaceRepository;
 use crate::card_race::repository::card_race_repository_impl::CardRaceRepositoryImpl;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
 use crate::game_deck::entity::game_deck_card::GameDeckCard;
@@ -205,7 +206,7 @@ impl GameHandService for GameHandServiceImpl {
         }
 
         let card_grade_repository_guard = self.card_grade_repository.lock().await;
-        if card_grade_repository_guard.get_card_grade(&unit_card_number).await.unwrap() == 5 {
+        if card_grade_repository_guard.get_card_grade(&unit_card_number).await == GradeEnum::Mythical {
             let mut game_round_repository_guard = self.game_round_repository.lock().await;
             let user_round = game_round_repository_guard.get_game_round_map().get(&account_unique_id).unwrap();
             if user_round.get_round() <= 4 {
@@ -259,13 +260,8 @@ impl GameHandService for GameHandServiceImpl {
             return UseGameHandEnergyCardResponse::new(false)
         }
 
-        // TODO: Dictionary 값 아직 enum 처리 안되어 있음
         let card_race_repository_guard = self.card_race_repository.lock().await;
-        let race_option = card_race_repository_guard.get_card_race(&energy_card_id).await;
-        let race_string = race_option.unwrap();
-
-        // TODO: 그로 인해 race_option 값을 문자열 기반으로 매칭해야함
-        let race_enum = GameHandServiceImpl::convert_race_string_to_enum(&race_string.to_string()).await;
+        let race_enum = card_race_repository_guard.get_card_race(&energy_card_id).await;
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         game_field_unit_repository_guard.attach_energy_to_game_field_unit(account_unique_id, unit_card_number, race_enum, 1);

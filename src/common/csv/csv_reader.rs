@@ -2,7 +2,9 @@ use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::fs::File;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 
 pub fn build_dictionaries(csv_content: &Vec<Vec<String>>) -> (
     HashMap<String, String>,   // 종족
@@ -126,16 +128,28 @@ pub fn build_card_kinds_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i3
 }
 
 
-pub fn build_card_grade_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
-    let mut card_grade_dictionary: HashMap<i32, i32> = HashMap::new();
+pub fn build_card_grade_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, GradeEnum> {
+    let mut card_grade_dictionary: HashMap<i32, GradeEnum> = HashMap::new();
 
     for record in csv_content.iter() {
         let card_number = record[0].parse::<i32>();
-
         let card_grade = record[3].parse::<i32>();
 
-        if card_number.is_ok() && card_grade.is_ok() {
-            card_grade_dictionary.insert(card_number.unwrap(), card_grade.unwrap());
+        if let (Ok(card_number), Ok(card_grade)) = (card_number, card_grade) {
+            let grade_enum = match card_grade {
+                0 => GradeEnum::Dummy,
+                1 => GradeEnum::Common,
+                2 => GradeEnum::Uncommon,
+                3 => GradeEnum::Hero,
+                4 => GradeEnum::Legend,
+                5 => GradeEnum::Mythical,
+                _ => {
+                    eprintln!("Invalid card grade value: {}", card_grade);
+                    GradeEnum::Dummy
+                }
+            };
+
+            card_grade_dictionary.insert(card_number, grade_enum);
         } else {
             eprintln!("Failed to parse card number: {:?}", record[0]);
             eprintln!("Failed to parse card grade: {:?}", record[3]);
@@ -145,16 +159,29 @@ pub fn build_card_grade_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i3
     card_grade_dictionary
 }
 
-pub fn build_card_race_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
+pub fn build_card_race_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, RaceEnum> {
     let mut card_race_dictionary = HashMap::new();
 
     for record in csv_content.iter() {
         let card_number = record[0].parse::<i32>();
-
         let card_race = record[2].parse::<i32>();
 
-        if card_number.is_ok() && card_race.is_ok() {
-            card_race_dictionary.insert(card_number.unwrap(), card_race.unwrap());
+        if let (Ok(card_number), Ok(card_race)) = (card_number, card_race) {
+            let race_enum = match card_race {
+                0 => RaceEnum::Dummy,
+                1 => RaceEnum::Undead,
+                2 => RaceEnum::Human,
+                3 => RaceEnum::Trent,
+                4 => RaceEnum::Angel,
+                5 => RaceEnum::Machine,
+                6 => RaceEnum::Chaos,
+                _ => {
+                    eprintln!("Invalid card race value: {}", card_race);
+                    RaceEnum::Dummy
+                }
+            };
+
+            card_race_dictionary.insert(card_number, race_enum);
         } else {
             eprintln!("Failed to parse card number: {:?}", record[0]);
             eprintln!("Failed to parse card race: {:?}", record[2]);
