@@ -83,9 +83,9 @@ impl ShopServiceImpl {
             }
         }
     }
-    async fn card_gacha_system (&self, grade_card_list: HashMap<i32,GradeEnum>, how_many_cards_to_get: i32) -> Vec<i32> {
+    async fn card_gacha_system (&self, grade_card_list: HashMap<i32,GradeEnum>, how_many_cards_to_get: i32, is_confirmed_upper_legend: bool) -> Vec<i32> {
         let shop_repository = self.repository.lock().await;
-        let gacha_grade_result = shop_repository.apply_probability_by_grade(how_many_cards_to_get, true);
+        let gacha_grade_result = shop_repository.apply_probability_by_grade(how_many_cards_to_get, is_confirmed_upper_legend);
 
         let mut get_card_list = Vec::new();
         for grade in gacha_grade_result {
@@ -111,7 +111,7 @@ impl ShopService for ShopServiceImpl {
         let specific_race_card_list = card_race_repository.get_specific_race_card_list(get_card_default_request.get_race_enum()).await;
         let gacha_card_list = card_grade_repository.get_grade_by_card_list(specific_race_card_list).await;
         // 카드 10개 뽑기
-        let get_card_list = self.card_gacha_system(gacha_card_list, 10).await;
+        let get_card_list = self.card_gacha_system(gacha_card_list, 10, get_card_default_request.is_confirmed_upper_legend()).await;
 
         self.update_account_card_db(account_unique_id, get_card_list.clone()).await;
 
@@ -130,7 +130,7 @@ mod tests {
         let shop_service_impl_mutex = ShopServiceImpl::get_instance();
         let shop_service_impl_mutex_guard = shop_service_impl_mutex.lock().await;
 
-        let request = GetCardDefaultRequest::new("qwer".to_string(), "Human".to_string());
+        let request = GetCardDefaultRequest::new("qwer".to_string(), "Human".to_string(), true);
 
         let result = shop_service_impl_mutex_guard.get_specific_race_card_default(request).await;
 
