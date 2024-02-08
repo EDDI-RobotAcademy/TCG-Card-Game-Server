@@ -18,6 +18,7 @@ use crate::battle_ready_account_hash::service::response::check_battle_prepare_re
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
+use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
 use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
 use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
@@ -70,7 +71,7 @@ pub enum ResponseType {
 
     // Battle Field
     DEPLOY_UNIT_USAGE(DeployUnitResponseForm),
-    ENERGY_TO_BATTLE_FIELD_UNIT_USAGE(UseGameHandEnergyCardResponseForm),
+    ATTACH_GENERAL_ENERGY(AttachGeneralEnergyCardResponseForm),
 
     // Notification to players
     NOTIFY_OPPONENT_HAND_TO_UNIT_ACTION(NotifyOpponentHandToFieldUnitActionResponse),
