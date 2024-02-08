@@ -139,11 +139,11 @@ mod tests {
         let redis_in_memory_repository_mutex = RedisInMemoryRepositoryImpl::get_instance();
         let mut redis_in_memory_repository_gaurd = redis_in_memory_repository_mutex.lock().await;
 
-        redis_in_memory_repository_gaurd.set_with_expired_target_time("test_key1", "test_value1").await;
+        redis_in_memory_repository_gaurd.set_with_expired_target_time("test_key4", "test_account_delete5").await;
 
-        let result = redis_in_memory_repository_gaurd.get("test_key1").await;
+        let result = redis_in_memory_repository_gaurd.get("test_key4").await;
         println!("result value: {:?}", result);
-        assert_eq!(result, Some("test_value1".to_string()));
+        assert_eq!(result, Some("test_account_delete5".to_string()));
     }
 
     #[tokio::test]

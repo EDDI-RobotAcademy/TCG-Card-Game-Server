@@ -15,9 +15,11 @@ mod tests {
         let mut account_service_mutex = AccountServiceImpl::get_instance();
         let mut account_service_gaurd = account_service_mutex.lock().await;
 
-        let test_id = "test_account_delete";
-        let test_pw = "test_account_delete";
+        let test_id = "test_account_delete5";
+        let test_pw = "test_account_delete5";
+        let test_session_id = "test_key4";
         let string_test_pw = test_pw.to_string();
+        let string_test_session_id = test_session_id.to_string();
 
         //test_account 저장
         // let test_account = AccountRegisterRequest::new(test_id, string_test_pw);
@@ -28,7 +30,7 @@ mod tests {
         // account_service_gaurd.account_login(test_account).await;
 
         //test_account 삭제
-        let test_account = AccountDeleteRequest::new(test_id, string_test_pw);
+        let test_account = AccountDeleteRequest::new(test_id, string_test_pw, string_test_session_id);
         account_service_gaurd.account_delete(test_account).await;
     }
 }

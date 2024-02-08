@@ -50,11 +50,12 @@ pub fn create_account_modify_request(data: &JsonValue) -> Option<AccountModifyRe
 }
 
 pub fn create_account_delete_request(data: &JsonValue) -> Option<AccountDeleteRequest> {
-    if let (Some(username), Some(password)) = (
+    if let (Some(username), Some(password), Some(session_id)) = (
         data.get("userId").and_then(|v| v.as_str()),
         data.get("password").and_then(|v| v.as_str()),
+        data.get("session_id").and_then(|v| v.as_str()),
     ) {
-        Some(AccountDeleteRequest::new(username, password.to_string()))
+        Some(AccountDeleteRequest::new(username, password.to_string(), session_id.to_string()))
     } else {
         None
     }
