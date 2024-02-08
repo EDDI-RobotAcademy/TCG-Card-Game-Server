@@ -1,11 +1,11 @@
 #[derive(Debug)]
-pub struct GameDeckCardShuffledListRequest {
+pub struct GameDeckCardShuffleRequest {
     session_id: String,
 }
 
-impl GameDeckCardShuffledListRequest {
+impl GameDeckCardShuffleRequest {
     pub fn new(session_id: String) -> Self {
-        GameDeckCardShuffledListRequest {
+        GameDeckCardShuffleRequest {
             session_id,
         }
     }
