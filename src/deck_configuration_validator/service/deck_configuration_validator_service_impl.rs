@@ -73,59 +73,46 @@ impl DeckConfigurationValidatorService for DeckConfigurationValidatorServiceImpl
         let legendary_card_count_limit = 3;
         let mythical_card_count_limit = 1;
 
-        for card in deck {
+        // TODO: 추가 리팩토링 필요함
+        Ok(for card in deck {
             let grade_result = card_grade_repository_guard.get_card_grade(card).await;
-            match grade_result {
-                Some(grade) => {
-                    // if grade == "일반".to_string() {
-                    //     normal_card_count += 1;
-                    //     if normal_card_count > normal_card_count_limit {
-                    //         let card_count_error =
-                    //             format!("{} 등급 카드 최대치: {}장 초과", grade, normal_card_count_limit);
-                    //         return Err(card_count_error)
-                    //     }
-                    // }
 
-                    if grade == GradeEnum::Uncommon as i32 {
-                        uncommon_card_count += 1;
-                        if uncommon_card_count > uncommon_card_count_limit {
-                            let card_count_error =
-                                format!("{} 등급 카드 최대치: {}장 초과", grade, uncommon_card_count_limit);
-                            return Err(card_count_error)
-                        }
-                    }
-
-                    if grade == GradeEnum::Hero as i32 {
-                        hero_card_count += 1;
-                        if hero_card_count > hero_card_count_limit {
-                            let card_count_error =
-                                format!("{} 등급 카드 최대치: {}장 초과", grade, hero_card_count_limit);
-                            return Err(card_count_error)
-                        }
-                    }
-
-                    if grade == GradeEnum::Legend as i32 {
-                        legendary_card_count += 1;
-                        if legendary_card_count > legendary_card_count_limit {
-                            let card_count_error =
-                                format!("{} 등급 카드 최대치: {}장 초과", grade, legendary_card_count_limit);
-                            return Err(card_count_error)
-                        }
-                    }
-
-                    if grade == GradeEnum::Mythical as i32 {
-                        mythical_card_count += 1;
-                        if mythical_card_count > mythical_card_count_limit {
-                            let card_count_error =
-                                format!("{} 등급 카드 최대치: {}장 초과", grade, mythical_card_count_limit);
-                            return Err(card_count_error)
-                        }
-                    }
+            if grade_result == GradeEnum::Uncommon {
+                uncommon_card_count += 1;
+                if uncommon_card_count > uncommon_card_count_limit {
+                    let card_count_error =
+                        format!("{:?} 등급 카드 최대치: {}장 초과", grade_result, uncommon_card_count_limit);
+                    return Err(card_count_error)
                 }
-                None => ()
             }
-        }
-        Ok(())
+
+            if grade_result == GradeEnum::Hero {
+                hero_card_count += 1;
+                if hero_card_count > hero_card_count_limit {
+                    let card_count_error =
+                        format!("{:?} 등급 카드 최대치: {}장 초과", grade_result, hero_card_count_limit);
+                    return Err(card_count_error)
+                }
+            }
+
+            if grade_result == GradeEnum::Legend {
+                legendary_card_count += 1;
+                if legendary_card_count > legendary_card_count_limit {
+                    let card_count_error =
+                        format!("{:?} 등급 카드 최대치: {}장 초과", grade_result, legendary_card_count_limit);
+                    return Err(card_count_error)
+                }
+            }
+
+            if grade_result == GradeEnum::Mythical {
+                mythical_card_count += 1;
+                if mythical_card_count > mythical_card_count_limit {
+                    let card_count_error =
+                        format!("{:?} 등급 카드 최대치: {}장 초과", grade_result, mythical_card_count_limit);
+                    return Err(card_count_error)
+                }
+            }
+        })
     }
 }
 

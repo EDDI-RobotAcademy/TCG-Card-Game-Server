@@ -132,8 +132,8 @@ impl GameCardSupportServiceImpl {
     async fn can_use_mythical_card(&self, use_support_card_request: &UseSupportCardRequest, round: i32) -> bool {
         if let Ok(support_card_number) = use_support_card_request.get_unit_number().parse::<i32>() {
             let card_grade_repository_guard = self.card_grade_repository.lock().await;
-            if let Some(card_grade) = card_grade_repository_guard.get_card_grade(&support_card_number).await {
-                return card_grade == GradeEnum::Mythical as i32 && round == 4;
+            if let card_grade = card_grade_repository_guard.get_card_grade(&support_card_number).await {
+                return card_grade == GradeEnum::Mythical && round == 4;
             }
         }
 

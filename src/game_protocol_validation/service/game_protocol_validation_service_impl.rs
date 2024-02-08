@@ -85,8 +85,8 @@ impl GameProtocolValidationServiceImpl {
     async fn can_use_mythical_card(&self, can_use_card_request: &CanUseCardRequest, round: i32) -> bool {
         if let target_card_number = can_use_card_request.get_support_card_number() {
             let card_grade_repository_guard = self.card_grade_repository.lock().await;
-            if let Some(card_grade) = card_grade_repository_guard.get_card_grade(&target_card_number).await {
-                return card_grade == GradeEnum::Mythical as i32 && round == 4;
+            if let card_grade = card_grade_repository_guard.get_card_grade(&target_card_number).await {
+                return card_grade == GradeEnum::Mythical && round == 4;
             }
         }
 
