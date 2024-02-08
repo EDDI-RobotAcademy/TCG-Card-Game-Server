@@ -13,13 +13,13 @@ use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryI
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::request::found_card_from_deck_request::FoundCardFromDeckRequest;
 use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
-use crate::game_deck::service::request::game_deck_card_list_request::{GameStartDeckCardListRequest};
+use crate::game_deck::service::request::game_start_deck_card_list_request::{GameStartDeckCardListRequest};
 use crate::game_deck::service::request::game_deck_card_redraw_request::GameDeckCardRedrawRequest;
-use crate::game_deck::service::request::game_deck_card_shuffled_list_request::GameDeckCardShuffledListRequest;
+use crate::game_deck::service::request::game_deck_card_shuffle_request::{GameDeckCardShuffleRequest};
 use crate::game_deck::service::response::found_card_from_deck_response::FoundCardFromDeckResponse;
 use crate::game_deck::service::response::game_deck_card_draw_list_response::GameDeckCardDrawListResponse;
 use crate::game_deck::service::response::game_deck_card_redraw_response::GameDeckCardRedrawResponse;
-use crate::game_deck::service::response::game_deck_card_shuffled_list_response::GameDeckCardShuffledListResponse;
+use crate::game_deck::service::response::game_deck_card_shuffle_response::{GameDeckCardShuffleResponse};
 use crate::game_deck::service::response::game_start_deck_card_list_response::GameStartDeckCardListResponse;
 use crate::game_hand::repository::game_hand_repository::GameHandRepository;
 use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryImpl;
@@ -136,16 +136,15 @@ impl GameDeckService for GameDeckServiceImpl {
         GameStartDeckCardListResponse::new(drawn_card_list_clone)
     }
 
-    async fn shuffle_deck(&self, game_deck_card_shuffled_list_request: GameDeckCardShuffledListRequest) -> GameDeckCardShuffledListResponse {
+    async fn shuffle_deck(&self, game_deck_card_shuffle_request: GameDeckCardShuffleRequest) -> GameDeckCardShuffleResponse {
         println!("GameDeckServiceImpl: create_and_shuffle_deck()");
-        let session_id = game_deck_card_shuffled_list_request.get_session_id();
+        let session_id = game_deck_card_shuffle_request.get_session_id();
         let account_unique_id = self.parse_account_unique_id(session_id).await;
 
         let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
-        game_deck_repository_guard.shuffle_game_deck(account_unique_id);
-        let game_deck_card_vector = game_deck_repository_guard.get_game_deck_card_ids(account_unique_id);
+        let shuffle_result = game_deck_repository_guard.shuffle_game_deck(account_unique_id);
 
-        GameDeckCardShuffledListResponse::new(game_deck_card_vector)
+        GameDeckCardShuffleResponse::new(shuffle_result)
     }
 
     async fn draw_deck(&self, game_deck_card_draw_request: GameDeckCardDrawRequest) -> GameDeckCardDrawListResponse {
