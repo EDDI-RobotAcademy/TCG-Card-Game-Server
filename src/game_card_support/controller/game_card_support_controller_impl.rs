@@ -157,7 +157,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let support_card_number_string = energy_boost_support_request_form.get_support_card_number();
         let support_card_number = support_card_number_string.parse::<i32>().unwrap();
 
-        // 1.1. Hand 에 있는지 확인하여 해킹 여부 검증
+        // 2. Hand 에 있는지 확인하여 해킹 여부 검증
         let check_protocol_hacking_response = self.is_valid_protocol(
             energy_boost_support_request_form.to_check_protocol_hacking_request(account_unique_id, support_card_number)).await;
         if !check_protocol_hacking_response {
@@ -165,7 +165,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return EnergyBoostSupportResponseForm::new(false)
         }
 
-        // 1.2. 실제 서포트 카드가 맞는지 확인
+        // 3. 실제 서포트 카드가 맞는지 확인
         let is_it_support_response = self.is_it_support_card(
             energy_boost_support_request_form.to_is_it_support_card_request(support_card_number)).await;
         if !is_it_support_response {
@@ -173,7 +173,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return EnergyBoostSupportResponseForm::new(false)
         }
 
-        // 1.3. GameProtocolValidation Service 호출하여 사용 가능한지 조건 검사 (신화 > 4라운드 제약)
+        // 4. GameProtocolValidation Service 호출하여 사용 가능한지 조건 검사 (신화 > 4라운드 제약)
         let can_use_card_response = self.is_able_to_use(
             energy_boost_support_request_form.to_can_use_card_request(account_unique_id, support_card_number)).await;
         if !can_use_card_response {
@@ -181,15 +181,15 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return EnergyBoostSupportResponseForm::new(false)
         }
 
-        // 2. Hand Service 호출하여 카드 사용
+        // 5. Hand Service 호출하여 카드 사용
         let usage_hand_card = self.use_support_card(
             energy_boost_support_request_form.to_use_game_hand_support_card_request(account_unique_id, support_card_number)).await;
 
-        // 3. Support 카드 사용이므로 Tomb Service 호출하여 무덤 배치
+        // 6. Support 카드 사용이므로 Tomb Service 호출하여 무덤 배치
         self.place_used_card_to_tomb(
             energy_boost_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
 
-        // 4. 효과를 적용하기 위해 Support Card Service 호출하여 필요 효과 설정
+        // 7. 효과를 적용하기 위해 Support Card Service 호출하여 필요 효과 설정
         let calculated_effect_response = self.get_summary_of_support_card(
             energy_boost_support_request_form.to_calculate_effect_request(support_card_number)).await;
 
