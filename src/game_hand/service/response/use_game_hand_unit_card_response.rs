@@ -3,14 +3,15 @@ use crate::game_hand::controller::response_form::use_game_hand_unit_card_respons
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UseGameHandUnitCardResponse {
-    is_success: bool,
+    found_unit_card_id: i32,
 }
 
 impl UseGameHandUnitCardResponse {
-    pub fn new(is_success: bool) -> Self {
-        UseGameHandUnitCardResponse { is_success }
+    pub fn new(found_unit_card_id: i32) -> Self {
+        UseGameHandUnitCardResponse { found_unit_card_id }
     }
-    pub fn to_use_game_hand_unit_card_response_form(&self) -> UseGameHandUnitCardResponseForm {
-        UseGameHandUnitCardResponseForm::new( self.is_success )
+
+    pub fn get_found_unit_card_id(&self) -> i32 {
+        self.found_unit_card_id
     }
 }

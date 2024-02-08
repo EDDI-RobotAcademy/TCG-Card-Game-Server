@@ -1,4 +1,4 @@
-use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
+use crate::game_hand::service::request::legacy_use_game_hand_unit_card_request::LegacyUseGameHandUnitCardRequest;
 
 #[derive(Debug)]
 pub struct UseGameHandUnitCardRequestForm {
@@ -13,7 +13,7 @@ impl UseGameHandUnitCardRequestForm {
             unit_number,
         }
     }
-    pub fn to_use_game_hand_unit_card_request(&self) -> UseGameHandUnitCardRequest {
-        UseGameHandUnitCardRequest::new( self.session_id.clone(), self.unit_number.clone() )
+    pub fn to_use_game_hand_unit_card_request(&self) -> LegacyUseGameHandUnitCardRequest {
+        LegacyUseGameHandUnitCardRequest::new( self.session_id.clone(), self.unit_number.clone() )
     }
 }

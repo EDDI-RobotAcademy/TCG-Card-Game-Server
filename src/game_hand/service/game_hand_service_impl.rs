@@ -27,7 +27,9 @@ use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::request::put_cards_on_deck_request::{PutCardsOnDeckRequest};
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
+use crate::game_hand::service::request::legacy_use_game_hand_unit_card_request::LegacyUseGameHandUnitCardRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
+use crate::game_hand::service::response::legacy_use_game_hand_unit_card_response::LegacyUseGameHandUnitCardResponse;
 use crate::game_hand::service::response::put_cards_on_deck_response::PutCardsOnDeckResponse;
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
 use crate::game_hand::service::response::use_game_hand_support_card_response::UseGameHandSupportCardResponse;
@@ -194,7 +196,7 @@ impl GameHandService for GameHandServiceImpl {
 
         PutCardsOnDeckResponse::new(true)
     }
-    async fn use_specific_card(&mut self, use_game_hand_unit_card_request: UseGameHandUnitCardRequest) -> UseGameHandUnitCardResponse {
+    async fn use_specific_card(&mut self, use_game_hand_unit_card_request: LegacyUseGameHandUnitCardRequest) -> LegacyUseGameHandUnitCardResponse {
         println!("GameHandServiceImpl: use_specific_card()");
 
         let session_id = use_game_hand_unit_card_request.get_session_id();
@@ -206,13 +208,13 @@ impl GameHandService for GameHandServiceImpl {
         // TODO: 이 파트는 ProtocolSecurityService 에서 처리하고 HandController에서 호출하도록 구성하는 것읻 더 좋음 (재사용성 측면에도 이득)
         if self.check_protocol_hacking(account_unique_id, unit_card_number).await {
             println!("프로토콜 조작 감지: 해킹범을 검거합시다!");
-            return UseGameHandUnitCardResponse::new(false)
+            return LegacyUseGameHandUnitCardResponse::new(false)
         }
 
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
         let maybe_unit_card = card_kinds_repository_guard.get_card_kind(&unit_card_number).await;
         if maybe_unit_card != KindsEnum::Unit {
-            return UseGameHandUnitCardResponse::new(false)
+            return LegacyUseGameHandUnitCardResponse::new(false)
         }
 
         let card_grade_repository_guard = self.card_grade_repository.lock().await;
@@ -221,7 +223,7 @@ impl GameHandService for GameHandServiceImpl {
             let user_round = game_round_repository_guard.get_game_round_map().get(&account_unique_id).unwrap();
             if user_round.get_round() <= 4 {
                 println!("신화 유닛은 현재 사용 불가");
-                return UseGameHandUnitCardResponse::new(false)
+                return LegacyUseGameHandUnitCardResponse::new(false)
             }
         }
 
@@ -243,7 +245,7 @@ impl GameHandService for GameHandServiceImpl {
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
         notify_player_action_repository_guard.notify_to_opponent_what_you_do(opponent_unique_id.unwrap(), unit_card_number).await;
 
-        UseGameHandUnitCardResponse::new(true)
+        LegacyUseGameHandUnitCardResponse::new(true)
     }
 
     // 에너지 카드 직접 1장 붙이기
@@ -296,5 +298,21 @@ impl GameHandService for GameHandServiceImpl {
         let specific_card = specific_card_option.unwrap();
 
         UseGameHandSupportCardResponse::new(specific_card.get_card())
+    }
+
+    async fn use_unit_card(&mut self, use_game_hand_unit_card_request: UseGameHandUnitCardRequest) -> UseGameHandUnitCardResponse {
+        println!("GameHandServiceImpl: use_unit_card()");
+
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        let maybe_unit_card = game_hand_repository_guard.use_specific_card(
+            use_game_hand_unit_card_request.get_account_unique_id(),
+            use_game_hand_unit_card_request.get_unit_card_id());
+
+        if maybe_unit_card.is_none() {
+            return UseGameHandUnitCardResponse::new(-1)
+        }
+        let unit_card = maybe_unit_card.unwrap();
+
+        UseGameHandUnitCardResponse::new(unit_card.get_card())
     }
 }
