@@ -18,12 +18,14 @@ use crate::game_protocol_validation::service::game_protocol_validation_service::
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_cards_from_hand_request::CheckCardsFromHandRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
+use crate::game_protocol_validation::service::request::is_it_energy_card_request::IsItEnergyCardRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_protocol_validation::service::request::is_it_unit_card_request::IsItUnitCardRequest;
 use crate::game_protocol_validation::service::request::support_card_protocol_validation_request::SupportCardProtocolValidationRequest;
 use crate::game_protocol_validation::service::response::can_use_card_response::CanUseCardResponse;
 use crate::game_protocol_validation::service::response::check_cards_from_hand_response::CheckCardsFromHandResponse;
 use crate::game_protocol_validation::service::response::check_protocol_hacking_response::CheckProtocolHackingResponse;
+use crate::game_protocol_validation::service::response::is_it_energy_card_response::IsItEnergyCardResponse;
 use crate::game_protocol_validation::service::response::is_it_support_card_response::IsItSupportCardResponse;
 use crate::game_protocol_validation::service::response::is_it_unit_card_response::IsItUnitCardResponse;
 use crate::game_protocol_validation::service::response::support_card_protocol_validation_response::SupportCardProtocolValidationResponse;
@@ -192,5 +194,18 @@ impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
         }
 
         IsItUnitCardResponse::new(false)
+    }
+
+    async fn is_it_energy_card(&self, is_it_energy_card_request: IsItEnergyCardRequest) -> IsItEnergyCardResponse {
+        println!("GameProtocolValidationServiceImpl: to_is_it_energy_card_request()");
+
+        let energy_card_id = is_it_energy_card_request.get_energy_card_id();
+
+        let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
+        if let maybe_energy_card = card_kinds_repository_guard.get_card_kind(&energy_card_id).await {
+            return IsItEnergyCardResponse::new(maybe_energy_card == KindsEnum::Energy)
+        }
+
+        IsItEnergyCardResponse::new(false)
     }
 }
