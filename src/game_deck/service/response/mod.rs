@@ -1,4 +1,4 @@
-pub mod game_deck_card_shuffled_list_response;
+pub mod game_deck_card_shuffle_response;
 pub mod game_deck_card_draw_list_response;
 pub mod game_start_deck_card_list_response;
 pub mod game_deck_card_redraw_response;

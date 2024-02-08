@@ -1,5 +1,5 @@
 use serde_json::Value as JsonValue;
-use crate::game_deck::service::request::game_deck_card_list_request::{GameStartDeckCardListRequest};
+use crate::game_deck::service::request::game_start_deck_card_list_request::{GameStartDeckCardListRequest};
 
 pub fn create_game_deck_card_list_request(data: &JsonValue) -> Option<GameStartDeckCardListRequest> {
     if let (Some(deck_id), Some(session_info)) = (
