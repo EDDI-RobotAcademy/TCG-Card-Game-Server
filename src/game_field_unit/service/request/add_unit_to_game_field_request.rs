@@ -1,12 +1,12 @@
 #[derive(Debug)]
-pub struct UseGameHandUnitCardRequest {
+pub struct AddUnitToGameFieldRequest {
     account_unique_id: i32,
     unit_card_id: i32,
 }
 
-impl UseGameHandUnitCardRequest {
+impl AddUnitToGameFieldRequest {
     pub fn new(account_unique_id: i32, unit_card_id: i32) -> Self {
-        UseGameHandUnitCardRequest {
+        AddUnitToGameFieldRequest {
             account_unique_id,
             unit_card_id,
         }

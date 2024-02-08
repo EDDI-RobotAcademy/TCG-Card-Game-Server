@@ -1,5 +1,3 @@
-use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
-
 #[derive(Clone)]
 pub struct UseSupportCardRequest {
     session_id: String,

@@ -1,2 +1,3 @@
 pub mod battle_match_request;
 pub mod what_is_the_room_number_request;
+pub mod find_opponent_by_account_id_request;
