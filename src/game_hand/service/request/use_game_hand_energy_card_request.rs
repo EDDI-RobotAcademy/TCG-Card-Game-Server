@@ -1,28 +1,22 @@
 #[derive(Debug)]
 pub struct UseGameHandEnergyCardRequest {
-    session_id: String,
-    unit_number: String,
-    energy_card_id: String,
+    account_unique_id: i32,
+    energy_card_id: i32,
 }
 
 impl UseGameHandEnergyCardRequest {
-    pub fn new(session_id: String, unit_number: String, energy_card_id: String) -> Self {
+    pub fn new(account_unique_id: i32, energy_card_id: i32) -> Self {
         UseGameHandEnergyCardRequest {
-            session_id: session_id.to_string(),
-            unit_number: unit_number.to_string(),
-            energy_card_id: energy_card_id.to_string(),
+            account_unique_id,
+            energy_card_id,
         }
     }
 
-    pub fn get_session_id(&self) -> &str {
-        &self.session_id
+    pub fn get_account_unique_id(&self) -> i32 {
+        self.account_unique_id
     }
 
-    pub fn get_unit_number(&self) -> &str {
-        &self.unit_number
-    }
-
-    pub fn get_energy_card_id(&self) -> &str {
-        &self.energy_card_id
+    pub fn get_energy_card_id(&self) -> i32 {
+        self.energy_card_id
     }
 }
