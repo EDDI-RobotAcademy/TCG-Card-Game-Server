@@ -18,7 +18,7 @@ use crate::battle_ready_account_hash::service::response::check_battle_prepare_re
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
-use crate::game_deck::service::response::game_start_deck_card_list_response::GameStartDeckCardListResponse;
+use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
 use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
 use crate::game_hand::controller::response_form::use_game_hand_energy_card_response_form::UseGameHandEnergyCardResponseForm;
 use crate::game_hand::controller::response_form::use_game_hand_unit_card_response_form::UseGameHandUnitCardResponseForm;
@@ -43,7 +43,7 @@ pub enum ResponseType {
     CHECK_BATTLE_PREPARE(CheckBattlePrepareResponse),
     WHAT_IS_THE_ROOM_NUMBER(WhatIsTheRoomNumberResponse),
     BATTLE_DECK_LIST(AccountDeckListResponse),
-    BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(GameStartDeckCardListResponse),
+    BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(GameDeckStartCardListResponse),
 
     // Account Card
     ACCOUNT_CARD_LIST(AccountCardListResponse),
