@@ -176,11 +176,16 @@ impl GameDeckService for GameDeckServiceImpl {
         let redrawn_card_vector = game_deck_repository_guard.draw_deck_card(account_unique_id, draw_count);
         let remaining_deck_vector = self.get_game_deck_card_ids(account_unique_id).await;
 
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        game_hand_repository_guard.add_card_list_to_hand(account_unique_id, redrawn_card_vector.clone());
+
+        drop(game_hand_repository_guard);
+
         GameDeckCardRedrawResponse::new(redrawn_card_vector, remaining_deck_vector)
     }
 
     async fn find_by_card_id_with_count(&self, found_card_from_deck_request: FoundCardFromDeckRequest) -> FoundCardFromDeckResponse {
-        println!("GameDeckServiceImpl: shuffle_and_redraw_deck()");
+        println!("GameDeckServiceImpl: find_by_card_id_with_count()");
 
         let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
         let found_card_list = game_deck_repository_guard.find_by_card_id_with_count(

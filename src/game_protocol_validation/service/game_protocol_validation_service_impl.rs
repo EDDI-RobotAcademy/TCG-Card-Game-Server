@@ -16,10 +16,12 @@ use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGa
 use crate::game_protocol_validation::repository::game_protocol_validation_repository_impl::GameProtocolValidationRepositoryImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
+use crate::game_protocol_validation::service::request::check_cards_from_hand_request::CheckCardsFromHandRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_protocol_validation::service::request::support_card_protocol_validation_request::SupportCardProtocolValidationRequest;
 use crate::game_protocol_validation::service::response::can_use_card_response::CanUseCardResponse;
+use crate::game_protocol_validation::service::response::check_cards_from_hand_response::CheckCardsFromHandResponse;
 use crate::game_protocol_validation::service::response::check_protocol_hacking_response::CheckProtocolHackingResponse;
 use crate::game_protocol_validation::service::response::is_it_support_card_response::IsItSupportCardResponse;
 use crate::game_protocol_validation::service::response::support_card_protocol_validation_response::SupportCardProtocolValidationResponse;
@@ -92,11 +94,19 @@ impl GameProtocolValidationServiceImpl {
 
         false
     }
+    async fn get_account_unique_id(&self, session_id: &str) -> i32 {
+        let mut redis_in_memory_repository = self.redis_in_memory_repository.lock().await;
+        let account_unique_id_option_string = redis_in_memory_repository.get(session_id).await;
+        let account_unique_id_string = account_unique_id_option_string.unwrap();
+        let account_unique_id: i32 = account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32");
+        account_unique_id
+    }
 }
 
 #[async_trait]
 impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
 
+    // TODO: 확장성을 고려하여 추후 아래의 check_cards_from_hand 로 교체 작업 필요
     async fn check_protocol_hacking(&mut self, support_card_protocol_validation_request: CheckProtocolHackingRequest) -> CheckProtocolHackingResponse {
         let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
         let game_hand = game_hand_repository_guard.get_game_hand_map().get(&support_card_protocol_validation_request.get_account_unique_id());
@@ -117,6 +127,36 @@ impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
         }
 
         CheckProtocolHackingResponse::new(result)
+    }
+
+    async fn check_cards_from_hand(&mut self, check_cards_from_hand_request: CheckCardsFromHandRequest) -> CheckCardsFromHandResponse {
+        println!("GameProtocolValidationServiceImpl: check_cards_from_hand()");
+
+        let account_session_id = check_cards_from_hand_request.get_account_session_id();
+        let account_unique_id = self.get_account_unique_id(account_session_id).await;
+
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        let game_hand = game_hand_repository_guard.get_game_hand_map().get(&account_unique_id);
+
+        if game_hand.is_none() {
+            println!("check_cards_from_hand: hand is not found.");
+            return CheckCardsFromHandResponse::new(false)
+        }
+
+        let mut result = true;
+        let target_card_number_list = check_cards_from_hand_request.get_hand_card_list();
+
+        for &target_card in game_hand.unwrap().get_all_card_list_in_game_hand().iter() {
+            for target_card_number in target_card_number_list {
+                if target_card.get_card() == *target_card_number {
+                    result = false;
+                    println!("check_cards_from_hand: hand card protocol hacking detected.");
+                    break;
+                }
+            }
+        }
+
+        CheckCardsFromHandResponse::new(result)
     }
 
     async fn can_use_card(&mut self, can_use_card_request: CanUseCardRequest) -> CanUseCardResponse {
