@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::fs::File;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 
 pub fn build_dictionaries(csv_content: &Vec<Vec<String>>) -> (
@@ -126,16 +127,28 @@ pub fn build_card_kinds_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i3
 }
 
 
-pub fn build_card_grade_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
-    let mut card_grade_dictionary: HashMap<i32, i32> = HashMap::new();
+pub fn build_card_grade_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, GradeEnum> {
+    let mut card_grade_dictionary: HashMap<i32, GradeEnum> = HashMap::new();
 
     for record in csv_content.iter() {
         let card_number = record[0].parse::<i32>();
-
         let card_grade = record[3].parse::<i32>();
 
-        if card_number.is_ok() && card_grade.is_ok() {
-            card_grade_dictionary.insert(card_number.unwrap(), card_grade.unwrap());
+        if let (Ok(card_number), Ok(card_grade)) = (card_number, card_grade) {
+            let grade_enum = match card_grade {
+                0 => GradeEnum::Dummy,
+                1 => GradeEnum::Common,
+                2 => GradeEnum::Uncommon,
+                3 => GradeEnum::Hero,
+                4 => GradeEnum::Legend,
+                5 => GradeEnum::Mythical,
+                _ => {
+                    eprintln!("Invalid card grade value: {}", card_grade);
+                    GradeEnum::Dummy
+                }
+            };
+
+            card_grade_dictionary.insert(card_number, grade_enum);
         } else {
             eprintln!("Failed to parse card number: {:?}", record[0]);
             eprintln!("Failed to parse card grade: {:?}", record[3]);

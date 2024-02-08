@@ -6,6 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::card_grade::repository::card_grade_repository::CardGradeRepository;
 use crate::card_grade::repository::card_grade_repository_impl::CardGradeRepositoryImpl;
 use crate::card_grade::service::card_grade_service::CardGradeService;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 
 pub struct CardGradeServiceImpl {
     card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>
@@ -31,7 +32,7 @@ impl CardGradeServiceImpl {
 
 #[async_trait]
 impl CardGradeService for CardGradeServiceImpl {
-    async fn get_card_grade(&self, card_number: &i32) -> Option<i32> {
+    async fn get_card_grade(&self, card_number: &i32) -> GradeEnum {
         println!("CardGradeServiceImpl: get_card_grade()");
 
         let card_grade_repository_guard = self.card_grade_repository.lock().await;
@@ -52,12 +53,7 @@ mod tests {
 
         let card_grade = card_grade_repo_guard.get_card_grade(&card_number).await;
 
-        match card_grade {
-            Some(grade) => {
-                println!("Card Grade: {}", grade);
-                assert_eq!(grade, 1);
-            }
-            None => println!("Card not found."),
-        }
+        println!("Card Grade: {:?}", card_grade);
+        assert_eq!(card_grade, GradeEnum::Common);
     }
 }

@@ -12,6 +12,7 @@ use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
 use crate::card_race::repository::card_race_repository::CardRaceRepository;
 use crate::card_race::repository::card_race_repository_impl::CardRaceRepositoryImpl;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
 use crate::game_deck::entity::game_deck_card::GameDeckCard;
@@ -205,7 +206,7 @@ impl GameHandService for GameHandServiceImpl {
         }
 
         let card_grade_repository_guard = self.card_grade_repository.lock().await;
-        if card_grade_repository_guard.get_card_grade(&unit_card_number).await.unwrap() == 5 {
+        if card_grade_repository_guard.get_card_grade(&unit_card_number).await == GradeEnum::Mythical {
             let mut game_round_repository_guard = self.game_round_repository.lock().await;
             let user_round = game_round_repository_guard.get_game_round_map().get(&account_unique_id).unwrap();
             if user_round.get_round() <= 4 {

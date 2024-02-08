@@ -10,6 +10,7 @@ use rand::Rng;
 use crate::account_card::entity::account_card::account_cards::{account_id, card_count, card_id};
 use crate::account_card::entity::account_card::account_cards::dsl::account_cards;
 use crate::account_card::entity::account_card::AccountCard;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::csv::csv_reader::csv_read;
 
 use crate::common::env::env_detector::EnvDetector;
@@ -114,7 +115,7 @@ impl ShopRepository for ShopRepositoryImpl {
     //
     //     Ok(free_card_id_list)
     // }
-    async fn get_randomly_chosen_card_id_list(&self, how_many_cards_to_get: i32, gacha_card_list: Vec<(i32,i32)>) -> Result<Vec<i32>, Error> {
+    async fn get_randomly_chosen_card_id_list(&self, how_many_cards_to_get: i32, gacha_card_list: Vec<(i32,GradeEnum)>) -> Result<Vec<i32>, Error> {
         let mut original_card_id_list = Vec::new();
         let mut randomly_chosen_card_id_list = Vec::new();
         //
