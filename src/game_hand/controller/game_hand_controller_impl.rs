@@ -91,29 +91,4 @@ impl GameHandController for GameHandControllerImpl {
 
         return shuffle_and_redraw_response.to_change_first_hand_response_form()
     }
-
-    // TODO: 여기 아래의 부분들 전부 리팩토링될 예정이므로 정리할 것
-    async fn use_game_hand_energy_card(
-        &self, use_game_hand_energy_card_request_form: UseGameHandEnergyCardRequestForm) -> UseGameHandEnergyCardResponseForm {
-        println!("GameHandControllerImpl: use_game_hand_energy_card()");
-
-        let request =
-            use_game_hand_energy_card_request_form.to_use_game_hand_energy_card_request();
-
-        let mut game_hand_service_guard = self.game_hand_service.lock().await;
-        let response = game_hand_service_guard.attach_energy_card_to_field_unit(request).await;
-
-        response.to_use_game_hand_energy_card_response_form()
-    }
-    async fn use_game_hand_unit_card(
-        &self, use_game_hand_unit_card_request_form: UseGameHandUnitCardRequestForm) -> UseGameHandUnitCardResponseForm {
-        println!("GameHandControllerImpl: use_game_hand_unit_card()");
-
-        let request = use_game_hand_unit_card_request_form.to_use_game_hand_unit_card_request();
-
-        let mut game_hand_service_guard = self.game_hand_service.lock().await;
-        let response = game_hand_service_guard.use_specific_card(request).await;
-
-        response.to_use_game_hand_unit_card_response_form()
-    }
 }

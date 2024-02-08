@@ -18,6 +18,10 @@ use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueu
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
+use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
+use crate::game_card_energy::controller::game_card_energy_controller_impl::GameCardEnergyControllerImpl;
+use crate::game_card_unit::controller::game_card_unit_controller::GameCardUnitController;
+use crate::game_card_unit::controller::game_card_unit_controller_impl::GameCardUnitControllerImpl;
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
 use crate::game_hand::controller::game_hand_controller::GameHandController;
@@ -31,12 +35,12 @@ use crate::request_generator::battle_wait_queue_request_generator::create_battle
 use crate::request_generator::check_battle_prepare_request_generator::create_check_battle_prepare_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
 use crate::request_generator::account_deck_card_request_generator::{create_account_deck_card_list_request_form, create_account_deck_configuration_request_form};
+use crate::request_generator::attach_general_energy_card_request_form_generator::create_attach_general_energy_card_request_form;
 use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
 use crate::request_generator::mulligan_request_generator::create_mulligan_request_form;
 use crate::request_generator::session_request_generator::create_session_login_request;
-use crate::request_generator::shop_request_generator::{create_get_card_default_request};
-use crate::request_generator::use_hand_energy_request_generator::create_use_hand_energy_request_form;
-use crate::request_generator::use_hand_unit_request_generator::{create_use_hand_unit_request_form};
+use crate::request_generator::shop_request_generator::create_get_card_default_request;
+use crate::request_generator::deploy_unit_request_form_generator::create_deploy_unit_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
 use crate::shop::service::shop_service::ShopService;
@@ -370,26 +374,26 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             },
             1004 => {
                 // Unit Card Usage
-                if let Some(request_form) = create_use_hand_unit_request_form(&data) {
-                    let game_hand_controller_mutex = GameHandControllerImpl::get_instance();
-                    let game_hand_controller = game_hand_controller_mutex.lock().await;
+                if let Some(request_form) = create_deploy_unit_request_form(&data) {
+                    let game_card_unit_controller_mutex = GameCardUnitControllerImpl::get_instance();
+                    let game_card_unit_controller = game_card_unit_controller_mutex.lock().await;
 
-                    let response_form = game_hand_controller.use_game_hand_unit_card(request_form).await;
-                    let response_type = Some(ResponseType::HAND_TO_BATTLE_FIELD_UNIT_USAGE(response_form));
+                    let response_form = game_card_unit_controller.request_to_deploy_unit(request_form).await;
+                    let response_type = Some(ResponseType::DEPLOY_UNIT_USAGE(response_form));
 
                     response_type
                 } else {
                     None
                 }
-            }
+            },
             1010 => {
                 // Energy Card Usage
-                if let Some(request_form) = create_use_hand_energy_request_form(&data) {
-                    let game_hand_controller_mutex = GameHandControllerImpl::get_instance();
-                    let game_hand_controller = game_hand_controller_mutex.lock().await;
+                if let Some(request_form) = create_attach_general_energy_card_request_form(&data) {
+                    let game_card_energy_controller_mutex = GameCardEnergyControllerImpl::get_instance();
+                    let game_card_energy_controller = game_card_energy_controller_mutex.lock().await;
 
-                    let response_form = game_hand_controller.use_game_hand_energy_card(request_form).await;
-                    let response_type = Some(ResponseType::ENERGY_TO_BATTLE_FIELD_UNIT_USAGE(response_form));
+                    let response_form = game_card_energy_controller.request_to_attach_general_energy(request_form).await;
+                    let response_type = Some(ResponseType::ATTACH_GENERAL_ENERGY(response_form));
 
                     response_type
                 } else {

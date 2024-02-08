@@ -1,1 +1,1 @@
-pub mod attach_energy_request_form;
+pub mod attach_general_energy_card_request_form;

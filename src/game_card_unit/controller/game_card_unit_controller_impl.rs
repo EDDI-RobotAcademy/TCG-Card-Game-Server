@@ -141,6 +141,6 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             return DeployUnitResponseForm::new(false)
         }
 
-        DeployUnitResponseForm::new(true)
+        return DeployUnitResponseForm::new(true)
     }
 }
