@@ -1,6 +1,5 @@
-use crate::game_card_item::service::request::use_item_card_request::UseItemCardRequest;
-use crate::game_card_item::service::response::use_item_card_response::UseItemCardResponse;
+use crate::game_card_item::entity::game_card_item_effect::GameCardItemEffect;
 
-pub trait GameCardItemHandler {
-    unsafe fn use_item_card(&self, use_item_card_request: UseItemCardRequest) -> UseItemCardResponse;
+pub trait GameCardItemHandler: Send {
+    unsafe fn use_item_card(&self) -> GameCardItemEffect;
 }
