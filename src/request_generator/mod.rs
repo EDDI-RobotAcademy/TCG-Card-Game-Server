@@ -13,6 +13,6 @@ pub mod account_point_request_generator;
 pub mod game_deck_card_list_request_generator;
 mod account_card_request_generator;
 mod deploy_unit_request_form_generator;
-mod use_hand_energy_request_generator;
+mod attach_general_energy_card_request_form_generator;
 mod mulligan_request_generator;
 
