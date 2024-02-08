@@ -7,6 +7,6 @@ use crate::shop::service::response::get_card_default_response::GetCardDefaultRes
 #[async_trait]
 pub trait ShopService {
     // async fn free_card(&self, free_card_request: FreeCardRequest) -> FreeCardResponse;
-    async fn get_card_default(&self, get_card_default_request: GetCardDefaultRequest) -> GetCardDefaultResponse ;
+    async fn get_specific_race_card_default(&self, get_card_default_request: GetCardDefaultRequest) -> GetCardDefaultResponse ;
 
 }
