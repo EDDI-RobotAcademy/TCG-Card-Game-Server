@@ -25,7 +25,6 @@ use crate::game_hand::controller::response_form::mulligan_response_form::Mulliga
 use crate::notify_player_action::entity::notify_opponent_to_energy_boost::NotifyOpponentToEnergyBoost;
 use crate::notify_player_action::entity::notify_opponent_to_energy_usage::NotifyOpponentToEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_unit_deploy::NotifyOpponentToUnitDeploy;
-use crate::notify_player_action::service::response::notify_opponent_hand_to_unit_action_response::NotifyOpponentHandToFieldUnitActionResponse;
 
 use crate::shop::service::response::free_card_response::FreeCardResponse;
 use crate::shop::service::response::get_card_default_response::GetCardDefaultResponse;
