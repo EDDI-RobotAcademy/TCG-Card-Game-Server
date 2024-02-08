@@ -1,16 +1,16 @@
 use serde::{Deserialize, Serialize};
-use crate::game_hand::controller::response_form::use_game_hand_energy_card_response_form::UseGameHandEnergyCardResponseForm;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UseGameHandEnergyCardResponse {
-    is_success: bool,
+    found_energy_card_id: i32,
 }
 
 impl UseGameHandEnergyCardResponse {
-    pub fn new(is_success: bool) -> Self {
-        UseGameHandEnergyCardResponse { is_success }
+    pub fn new(found_energy_card_id: i32) -> Self {
+        UseGameHandEnergyCardResponse { found_energy_card_id }
     }
-    pub fn to_use_game_hand_energy_card_response_form(&self) -> UseGameHandEnergyCardResponseForm {
-        UseGameHandEnergyCardResponseForm::new( self.is_success )
+
+    pub fn get_found_energy_card_id(&self) -> i32 {
+        self.found_energy_card_id
     }
 }

@@ -25,12 +25,14 @@ use crate::game_hand::repository::game_hand_repository::GameHandRepository;
 use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryImpl;
 use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::request::put_cards_on_deck_request::{PutCardsOnDeckRequest};
-use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
+use crate::game_hand::service::request::legacy_use_game_hand_energy_card_request::LegacyUseGameHandEnergyCardRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_hand::service::request::legacy_use_game_hand_unit_card_request::LegacyUseGameHandUnitCardRequest;
+use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
 use crate::game_hand::service::response::legacy_use_game_hand_unit_card_response::LegacyUseGameHandUnitCardResponse;
 use crate::game_hand::service::response::put_cards_on_deck_response::PutCardsOnDeckResponse;
+use crate::game_hand::service::response::legacy_use_game_hand_energy_card_response::LegacyUseGameHandEnergyCardResponse;
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
 use crate::game_hand::service::response::use_game_hand_support_card_response::UseGameHandSupportCardResponse;
 use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
@@ -239,7 +241,7 @@ impl GameHandService for GameHandServiceImpl {
     }
 
     // 에너지 카드 직접 1장 붙이기
-    async fn attach_energy_card_to_field_unit(&mut self, use_game_hand_energy_card_request: UseGameHandEnergyCardRequest) -> UseGameHandEnergyCardResponse {
+    async fn attach_energy_card_to_field_unit(&mut self, use_game_hand_energy_card_request: LegacyUseGameHandEnergyCardRequest) -> LegacyUseGameHandEnergyCardResponse {
         println!("GameHandServiceImpl: attach_energy_card_to_field_unit()");
 
         let session_id = use_game_hand_energy_card_request.get_session_id();
@@ -254,12 +256,12 @@ impl GameHandService for GameHandServiceImpl {
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
         let maybe_energy_card = card_kinds_repository_guard.get_card_kind(&energy_card_id).await;
         if maybe_energy_card != KindsEnum::Energy {
-            return UseGameHandEnergyCardResponse::new(false)
+            return LegacyUseGameHandEnergyCardResponse::new(false)
         }
 
         let maybe_unit_card = card_kinds_repository_guard.get_card_kind(&unit_card_number).await;
         if maybe_unit_card != KindsEnum::Unit {
-            return UseGameHandEnergyCardResponse::new(false)
+            return LegacyUseGameHandEnergyCardResponse::new(false)
         }
 
         let card_race_repository_guard = self.card_race_repository.lock().await;
@@ -271,7 +273,7 @@ impl GameHandService for GameHandServiceImpl {
         let mut game_tomb_repository_guard = self.game_tomb_repository.lock().await;
         game_tomb_repository_guard.add_used_card_to_tomb(account_unique_id, energy_card_id);
 
-        UseGameHandEnergyCardResponse::new(true)
+        LegacyUseGameHandEnergyCardResponse::new(true)
     }
 
     async fn use_support_card(&mut self, use_game_hand_support_card_request: UseGameHandSupportCardRequest) -> UseGameHandSupportCardResponse {
@@ -304,5 +306,21 @@ impl GameHandService for GameHandServiceImpl {
         let unit_card = maybe_unit_card.unwrap();
 
         UseGameHandUnitCardResponse::new(unit_card.get_card())
+    }
+
+    async fn use_energy_card(&mut self, use_game_hand_energy_card_request: UseGameHandEnergyCardRequest) -> UseGameHandEnergyCardResponse {
+        println!("GameHandServiceImpl: use_unit_card()");
+
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        let maybe_energy_card = game_hand_repository_guard.use_specific_card(
+            use_game_hand_energy_card_request.get_account_unique_id(),
+            use_game_hand_energy_card_request.get_energy_card_id());
+
+        if maybe_energy_card.is_none() {
+            return UseGameHandEnergyCardResponse::new(-1)
+        }
+        let energy_card = maybe_energy_card.unwrap();
+
+        UseGameHandEnergyCardResponse::new(energy_card.get_card())
     }
 }
