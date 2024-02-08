@@ -5,19 +5,18 @@ use crate::game_field_unit::service::request::attach_single_energy_to_unit_index
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_energy_card_request::IsItEnergyCardRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_what_you_do_request::NotifyToOpponentWhatYouDoRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyToOpponentYouUseEnergyCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
-pub struct AttachEnergyRequestForm {
+pub struct AttachGeneralEnergyCardRequestForm {
     session_id: String,
     unit_card_index: String,
     energy_card_id: String,
 }
 
-impl AttachEnergyRequestForm {
+impl AttachGeneralEnergyCardRequestForm {
     pub fn new(session_id: String, unit_card_index: String, energy_card_id: String) -> Self {
-        AttachEnergyRequestForm {
+        AttachGeneralEnergyCardRequestForm {
             session_id: session_id.to_string(),
             unit_card_index: unit_card_index.to_string(),
             energy_card_id: energy_card_id.to_string(),

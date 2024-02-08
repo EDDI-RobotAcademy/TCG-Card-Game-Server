@@ -7,8 +7,8 @@ use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 
 use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
-use crate::game_card_energy::controller::request_form::attach_energy_request_form::AttachEnergyRequestForm;
-use crate::game_card_energy::controller::response_form::attach_energy_response_form::AttachEnergyResponseForm;
+use crate::game_card_energy::controller::request_form::attach_general_energy_card_request_form::AttachGeneralEnergyCardRequestForm;
+use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_card_energy::service::game_card_energy_service::GameCardEnergyService;
 use crate::game_card_energy::service::game_card_energy_service_impl::GameCardEnergyServiceImpl;
 use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
@@ -81,13 +81,13 @@ impl GameCardEnergyControllerImpl {
 
 #[async_trait]
 impl GameCardEnergyController for GameCardEnergyControllerImpl {
-    async fn request_to_attach_energy(&self, attach_energy_request_form: AttachEnergyRequestForm) -> AttachEnergyResponseForm {
+    async fn request_to_attach_general_energy(&self, attach_energy_request_form: AttachGeneralEnergyCardRequestForm) -> AttachGeneralEnergyCardResponseForm {
         println!("GameCardEnergyControllerImpl: request_to_attach_energy()");
 
         // 1. 세션 아이디를 검증합니다.
         let account_unique_id = self.is_valid_session(attach_energy_request_form.to_session_validation_request()).await;
         if account_unique_id == -1 {
-            return AttachEnergyResponseForm::new(false)
+            return AttachGeneralEnergyCardResponseForm::new(false)
         }
 
         // TODO: 세션을 제외하고 애초에 UI에서 숫자로 전송하면 더 좋다.
@@ -100,7 +100,7 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
             attach_energy_request_form.to_check_protocol_hacking_request(account_unique_id, energy_card_id)).await;
         if !check_protocol_hacking_response.is_success() {
             println!("해킹범을 검거합니다!");
-            return AttachEnergyResponseForm::new(false)
+            return AttachGeneralEnergyCardResponseForm::new(false)
         }
 
         // 3. CardKinds Service를 호출하여 실제 에너지 카드가 맞는지 확인
@@ -108,7 +108,7 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
             attach_energy_request_form.to_is_it_energy_card_request(energy_card_id)).await;
         if !is_it_energy_response.is_success() {
             println!("에너지 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
-            return AttachEnergyResponseForm::new(false)
+            return AttachGeneralEnergyCardResponseForm::new(false)
         }
 
         // 4. Hand Service 호출하여 에너지 카드 사용
@@ -133,7 +133,7 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
                 account_unique_id, unit_card_index, energy_card_effect_response.get_race())).await;
         if !attach_energy_to_field_unit_response.is_success() {
             println!("필드에 유닛에게 에너지를 부착하는 과정에서 문제가 발생하였습니다.");
-            return AttachEnergyResponseForm::new(false)
+            return AttachGeneralEnergyCardResponseForm::new(false)
         }
 
         // 7. 상대방의 고유 id 값을 확보
@@ -148,9 +148,9 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
                 find_opponent_by_account_id_response.get_opponent_unique_id(), unit_card_index, usage_hand_card_id)).await;
         if !notify_to_opponent_what_you_do_response.is_success() {
             println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
-            return AttachEnergyResponseForm::new(false)
+            return AttachGeneralEnergyCardResponseForm::new(false)
         }
 
-        AttachEnergyResponseForm::new(true)
+        AttachGeneralEnergyCardResponseForm::new(true)
     }
 }
