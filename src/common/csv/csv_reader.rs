@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::env;
 use std::error::Error;
 use std::fs::File;
+use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 
 pub fn build_dictionaries(csv_content: &Vec<Vec<String>>) -> (
     HashMap<String, String>,   // 종족
@@ -71,16 +72,50 @@ pub fn build_dictionaries(csv_content: &Vec<Vec<String>>) -> (
 //             // let skill = &record[13]; // 스킬
 //             // let hp = &record[14]; // 체력
 
-pub fn build_card_kinds_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
-    let mut card_kinds_dictionary: HashMap<i32, i32> = HashMap::new();
+// pub fn build_card_kinds_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
+//     let mut card_kinds_dictionary: HashMap<i32, i32> = HashMap::new();
+//
+//     for record in csv_content.iter() {
+//         let card_number = record[0].parse::<i32>();
+//
+//         let card_kind = record[4].parse::<i32>();
+//
+//         if card_number.is_ok() && card_kind.is_ok()  {
+//             card_kinds_dictionary.insert(card_number.unwrap(), card_kind.unwrap());
+//         } else {
+//             eprintln!("Failed to parse card number : {:?}", record[0]);
+//             eprintln!("Failed to parse card kinds : {:?}", record[4]);
+//         }
+//     }
+//
+//     card_kinds_dictionary
+// }
+
+pub fn build_card_kinds_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, KindsEnum> {
+    let mut card_kinds_dictionary: HashMap<i32, KindsEnum> = HashMap::new();
 
     for record in csv_content.iter() {
         let card_number = record[0].parse::<i32>();
-
         let card_kind = record[4].parse::<i32>();
 
-        if card_number.is_ok() && card_kind.is_ok()  {
-            card_kinds_dictionary.insert(card_number.unwrap(), card_kind.unwrap());
+        if let (Ok(card_number), Ok(card_kind)) = (card_number, card_kind) {
+            let card_kind_enum = match card_kind {
+                0 => KindsEnum::Dummy,
+                1 => KindsEnum::Unit,
+                2 => KindsEnum::Item,
+                3 => KindsEnum::Trap,
+                4 => KindsEnum::Support,
+                5 => KindsEnum::Tool,
+                6 => KindsEnum::Energy,
+                7 => KindsEnum::Environment,
+                8 => KindsEnum::Token,
+                _ => {
+                    eprintln!("Invalid card kind value: {}", card_kind);
+                    KindsEnum::Dummy
+                }
+            };
+
+            card_kinds_dictionary.insert(card_number, card_kind_enum);
         } else {
             eprintln!("Failed to parse card number : {:?}", record[0]);
             eprintln!("Failed to parse card kinds : {:?}", record[4]);
@@ -89,6 +124,7 @@ pub fn build_card_kinds_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i3
 
     card_kinds_dictionary
 }
+
 
 pub fn build_card_grade_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
     let mut card_grade_dictionary: HashMap<i32, i32> = HashMap::new();

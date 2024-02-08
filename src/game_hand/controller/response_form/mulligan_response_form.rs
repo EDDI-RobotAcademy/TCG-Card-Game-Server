@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChangeFirstHandResponseForm {
+pub struct MulliganResponseForm {
     redrawn_hand_card_list: Vec<i32>,
     updated_deck_card_list: Vec<i32>,
 }
 
-impl ChangeFirstHandResponseForm {
+impl MulliganResponseForm {
     pub fn new(redrawn_hand_card_list: Vec<i32>, updated_deck_card_list: Vec<i32>) -> Self {
-        ChangeFirstHandResponseForm {
+        MulliganResponseForm {
             redrawn_hand_card_list,
             updated_deck_card_list
         }

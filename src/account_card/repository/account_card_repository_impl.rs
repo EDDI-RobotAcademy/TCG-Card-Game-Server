@@ -153,7 +153,7 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
         use crate::account_card::entity::account_card::account_cards::dsl::*;
         use diesel::prelude::*;
 
-        println!("AccountCardRepositoryImpl: save_new_card()");
+        println!("AccountCardRepositoryImpl: delete_all_account_cards()");
 
         let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
         let mut connection = MysqlConnection::establish(&database_url)
@@ -165,7 +165,7 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
             .execute(&mut connection)
         {
             Ok(_) => {
-                println!("All account cards removed successfully.");
+                println!("All cards of account id : {} removed successfully.", account_unique_id);
                 Ok(())
             }
             Err(e) => {

@@ -54,10 +54,23 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         }
     }
 
+    // TODO: 수량 1개
     fn attach_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race: RaceEnumValue, quantity: i32) {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             game_field_unit.add_energy_to_unit(unit_card_number, race, quantity);
         }
+    }
+
+    // TODO: 여러 개
+    fn attach_multiple_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race_number: i32, quantity: i32) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let race = RaceEnumValue::from(race_number);
+            game_field_unit.add_energy_to_unit(unit_card_number, race, quantity);
+
+            return true
+        }
+
+        return false
     }
 
     fn find_unit_by_id(&self, account_unique_id: i32, unit_card_number: i32) -> Option<&GameFieldUnitCard> {

@@ -2,14 +2,14 @@ use lazy_static::lazy_static;
 use std::sync::Mutex;
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum RoomStatus {
     STATUS_FREE,
     STATUS_FULL,
 }
 
 // TODO: 추후 다 대 다 전투를 진행하는 상황에 대해 고려 할 필요가 있음 (이건 1 대 1)
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BattleRoom {
     pub id: i32,
     pub player_id_list: Vec<i32>,

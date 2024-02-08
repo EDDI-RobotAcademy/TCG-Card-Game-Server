@@ -43,6 +43,10 @@ impl GameDeck {
     pub fn draw_game_deck(&mut self, draw_count: usize) -> Vec<i32> {
         self.game_deck.draw_deck_card_list(draw_count)
     }
+
+    pub fn find_cards_by_id_with_count(&mut self, wanna_find_id: i32, count: usize) -> Vec<i32> {
+        self.game_deck.find_by_card_id_with_count(wanna_find_id, count)
+    }
 }
 
 #[cfg(test)]
@@ -134,5 +138,34 @@ mod tests {
 
         let remaining_cards = game_deck_object.get_all_cards_in_game_deck();
         println!("Remaining cards: {:?}", remaining_cards);
+    }
+
+    #[test]
+    fn test_find_cards_by_id_with_count() {
+        let mut game_deck_object = GameDeck::new();
+
+        let data = vec![
+            19, 8, 8, 8, 9, 9, 25, 25, 25, 27, 27, 27, 151, 20, 20, 20, 2, 2, 2, 26, 26, 26,
+            30, 31, 31, 31, 32, 32, 32, 33, 33, 35, 35, 36, 36, 93, 93, 93, 93, 93
+        ];
+
+        game_deck_object.set_card_list_from_data(data);
+
+        let cards_in_game_deck_after = game_deck_object.get_all_cards_in_game_deck().clone();
+        println!("After setting cards from data: {:?}", cards_in_game_deck_after);
+
+        game_deck_object.shuffle_game_deck();
+        let cards_in_game_deck_after_shuffle = game_deck_object.get_all_cards_in_game_deck().clone();
+        println!("After shuffle: {:?}", cards_in_game_deck_after_shuffle);
+
+        let found_cards = game_deck_object.find_cards_by_id_with_count(93, 2);
+        println!("Found cards with ID 8: {:?}", found_cards);
+
+        let remaining_cards = game_deck_object.get_all_cards_in_game_deck();
+        println!("Remaining cards: {:?}", remaining_cards);
+
+        game_deck_object.shuffle_game_deck();
+        let cards_in_game_deck_after_shuffle = game_deck_object.get_all_cards_in_game_deck().clone();
+        println!("After shuffle: {:?}", cards_in_game_deck_after_shuffle);
     }
 }

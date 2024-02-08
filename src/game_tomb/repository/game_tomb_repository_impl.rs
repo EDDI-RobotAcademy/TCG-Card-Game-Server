@@ -42,12 +42,14 @@ impl GameTombRepository for GameTombRepositoryImpl {
 
         true
     }
-    fn add_used_card_to_tomb(&mut self, account_unique_id: i32, used_card_id: i32) {
+    fn add_used_card_to_tomb(&mut self, account_unique_id: i32, used_card_id: i32) -> bool {
         println!("GameTombRepositoryImpl: add_used_card_to_tomb()");
 
         if let Some(user_game_tomb) = self.get_game_tomb_map().get_mut(&account_unique_id) {
             user_game_tomb.add_tomb_card(used_card_id)
         }
+
+        true
     }
 }
 

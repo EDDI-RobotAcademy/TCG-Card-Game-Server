@@ -85,6 +85,16 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
         }
         true
     }
+
+    fn find_by_card_id_with_count(&mut self, account_id: i32, need_to_find_card_id: i32, energy_count: i32) -> Vec<i32> {
+        println!("GameDeckRepositoryImpl: find_by_card_id()");
+
+        if let Some(game_deck) = self.game_deck_map.get_mut(&account_id) {
+            return game_deck.find_cards_by_id_with_count(need_to_find_card_id, energy_count as usize);
+        }
+
+        Vec::new()
+    }
 }
 
 #[cfg(test)]
@@ -139,5 +149,40 @@ mod tests {
 
         let remaining_cards = repo_guard.get_game_deck_card_ids(account_unique_id);
         println!("Remaining cards: {:?}", remaining_cards);
+    }
+
+    #[tokio::test]
+    async fn test_find_card_from_deck() {
+        let data = vec![
+            19, 8, 8, 8, 9, 9, 25, 25, 25, 27, 27, 27, 151, 20, 20, 20, 2, 2, 2, 26, 26, 26,
+            30, 31, 31, 31, 32, 32, 32, 33, 33, 35, 35, 36, 36, 93, 93, 93, 93, 93
+        ];
+
+        let account_unique_id = 1;
+        let repo = GameDeckRepositoryImpl::get_instance();
+        let mut repo_guard = repo.lock().await;
+        repo_guard.set_game_deck_from_data(account_unique_id, data.clone());
+
+        assert!(repo_guard.shuffle_game_deck(account_unique_id));
+
+        let current_cards = repo_guard.get_game_deck_card_ids(account_unique_id);
+        println!("Shuffled cards: {:?}", current_cards);
+
+        let drawn_cards = repo_guard.draw_deck_card(account_unique_id, 5);
+        assert_eq!(drawn_cards.len(), 5);
+        println!("Drawn cards: {:?}", drawn_cards);
+
+        let remaining_cards = repo_guard.get_game_deck_card_ids(account_unique_id);
+        println!("Remaining cards: {:?}", remaining_cards);
+
+        let found_cards = repo_guard.find_by_card_id_with_count(account_unique_id, 93, 2);
+        println!("Found cards with ID 3: {:?}", found_cards);
+
+        let remaining_cards = repo_guard.get_game_deck_card_ids(account_unique_id);
+        println!("Remaining cards: {:?}", remaining_cards);
+
+        repo_guard.shuffle_game_deck(account_unique_id);
+        let current_cards = repo_guard.get_game_deck_card_ids(account_unique_id);
+        println!("Shuffled cards: {:?}", current_cards);
     }
 }

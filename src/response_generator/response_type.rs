@@ -21,6 +21,7 @@ use crate::client_program::service::response::client_program_exit_response::Clie
 use crate::game_deck::service::response::game_start_deck_card_list_response::GameStartDeckCardListResponse;
 use crate::game_hand::controller::response_form::use_game_hand_energy_card_response_form::UseGameHandEnergyCardResponseForm;
 use crate::game_hand::controller::response_form::use_game_hand_unit_card_response_form::UseGameHandUnitCardResponseForm;
+use crate::notify_player_action::service::response::notify_opponent_hand_to_unit_action_response::NotifyOpponentHandToFieldUnitActionResponse;
 
 use crate::shop::service::response::free_card_response::FreeCardResponse;
 use crate::shop::service::response::get_card_default_response::GetCardDefaultResponse;
@@ -69,6 +70,8 @@ pub enum ResponseType {
     // Battle Field
     HAND_TO_BATTLE_FIELD_UNIT_USAGE(UseGameHandUnitCardResponseForm),
     ENERGY_TO_BATTLE_FIELD_UNIT_USAGE(UseGameHandEnergyCardResponseForm),
+
+    NOTIFY_OPPONENT_HAND_TO_UNIT_ACTION(NotifyOpponentHandToFieldUnitActionResponse),
 
     // Program Exit
     PROGRAM_EXIT(ClientProgramExitResponse),
