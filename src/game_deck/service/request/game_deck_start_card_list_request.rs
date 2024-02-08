@@ -1,12 +1,12 @@
 #[derive(Debug)]
-pub struct GameStartDeckCardListRequest {
+pub struct GameDeckStartCardListRequest {
     deck_id: String,
     session_id: String,
 }
 
-impl GameStartDeckCardListRequest {
+impl GameDeckStartCardListRequest {
     pub fn new(deck_id: String, session_id: String) -> Self {
-        GameStartDeckCardListRequest {
+        GameDeckStartCardListRequest {
             deck_id,
             session_id,
         }

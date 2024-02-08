@@ -14,7 +14,7 @@ use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::request::found_card_from_deck_request::FoundCardFromDeckRequest;
 use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
 use crate::game_deck::service::request::game_deck_card_list_request::GameDeckCardListRequest;
-use crate::game_deck::service::request::game_start_deck_card_list_request::{GameStartDeckCardListRequest};
+use crate::game_deck::service::request::game_deck_start_card_list_request::{GameDeckStartCardListRequest};
 use crate::game_deck::service::request::game_deck_card_redraw_request::GameDeckCardRedrawRequest;
 use crate::game_deck::service::request::game_deck_card_shuffle_request::{GameDeckCardShuffleRequest};
 use crate::game_deck::service::response::found_card_from_deck_response::FoundCardFromDeckResponse;
@@ -22,7 +22,7 @@ use crate::game_deck::service::response::game_deck_card_draw_list_response::Game
 use crate::game_deck::service::response::game_deck_card_list_response::GameDeckCardListResponse;
 use crate::game_deck::service::response::game_deck_card_redraw_response::GameDeckCardRedrawResponse;
 use crate::game_deck::service::response::game_deck_card_shuffle_response::{GameDeckCardShuffleResponse};
-use crate::game_deck::service::response::game_start_deck_card_list_response::GameStartDeckCardListResponse;
+use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
 use crate::game_hand::repository::game_hand_repository::GameHandRepository;
 use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
@@ -68,10 +68,6 @@ impl GameDeckServiceImpl {
         let account_unique_id_option_string = redis_in_memory_repository.get(session_id).await;
         let account_unique_id_string = account_unique_id_option_string.unwrap();
         account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32")
-    }
-
-    async fn get_account_unique_id(&self, game_start_deck_card_list_request: &GameStartDeckCardListRequest) -> i32 {
-        self.parse_account_unique_id(game_start_deck_card_list_request.get_session_id()).await
     }
 
     async fn initialize_game_deck(&self, account_unique_id: i32, deck_id: i32) {
@@ -120,10 +116,11 @@ impl GameDeckServiceImpl {
 
 #[async_trait]
 impl GameDeckService for GameDeckServiceImpl {
-    async fn create_and_shuffle_deck(&self, game_deck_card_list_request: GameStartDeckCardListRequest) -> GameStartDeckCardListResponse {
+    async fn create_and_shuffle_deck(&self, game_deck_card_list_request: GameDeckStartCardListRequest) -> GameDeckStartCardListResponse {
         println!("GameDeckServiceImpl: create_and_shuffle_deck()");
 
-        let account_unique_id = self.get_account_unique_id(&game_deck_card_list_request).await;
+        let session_id = game_deck_card_list_request.get_session_id();
+        let account_unique_id = self.parse_account_unique_id(session_id).await;
         let deck_id = game_deck_card_list_request.get_deck_id();
 
         self.initialize_game_deck(account_unique_id, deck_id).await;
@@ -134,7 +131,7 @@ impl GameDeckService for GameDeckServiceImpl {
 
         self.add_drawn_cards_to_hand(account_unique_id, drawn_card_list).await;
 
-        GameStartDeckCardListResponse::new(drawn_card_list_clone)
+        GameDeckStartCardListResponse::new(drawn_card_list_clone)
     }
 
     async fn shuffle_deck(&self, game_deck_card_shuffle_request: GameDeckCardShuffleRequest) -> GameDeckCardShuffleResponse {

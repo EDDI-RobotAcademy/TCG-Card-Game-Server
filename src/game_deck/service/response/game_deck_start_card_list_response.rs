@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GameStartDeckCardListResponse {
+pub struct GameDeckStartCardListResponse {
     hand_card_list: Vec<i32>,
 }
 
-impl GameStartDeckCardListResponse {
+impl GameDeckStartCardListResponse {
     pub fn new(hand_card_list: Vec<i32>) -> Self {
-        GameStartDeckCardListResponse { hand_card_list }
+        GameDeckStartCardListResponse { hand_card_list }
     }
 }
