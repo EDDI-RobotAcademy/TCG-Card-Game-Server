@@ -3,7 +3,7 @@ use crate::game_field_unit::service::request::add_unit_to_game_field_request::Ad
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_unit_card_request::IsItUnitCardRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_what_you_do_request::NotifyToOpponentWhatYouDoRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_deploy_unit_request::NotifyToOpponentYouDeployUnitRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 pub struct DeployUnitRequestForm{
@@ -54,8 +54,8 @@ impl DeployUnitRequestForm {
             account_unique_id)
     }
 
-    pub fn to_notify_to_opponent_what_you_do_request(&self, opponent_unique_id: i32, usage_hand_card_id: i32) -> NotifyToOpponentWhatYouDoRequest {
-        NotifyToOpponentWhatYouDoRequest::new(
+    pub fn to_notify_to_opponent_what_you_do_request(&self, opponent_unique_id: i32, usage_hand_card_id: i32) -> NotifyToOpponentYouDeployUnitRequest {
+        NotifyToOpponentYouDeployUnitRequest::new(
             opponent_unique_id, usage_hand_card_id)
     }
 }

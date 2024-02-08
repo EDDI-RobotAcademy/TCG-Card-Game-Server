@@ -6,6 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::connection_context::repository::connection_context_repository_impl::ConnectionContextRepositoryImpl;
 use crate::notify_player_action::entity::notify_opponent_to_energy_boost::NotifyOpponentToEnergyBoost;
 use crate::notify_player_action::entity::notify_opponent_to_energy_usage::NotifyOpponentToEnergyUsage;
+use crate::notify_player_action::entity::notify_opponent_to_unit_deploy::NotifyOpponentToUnitDeploy;
 use crate::notify_player_action::repository::notify_player_action_repository::NotifyPlayerActionRepository;
 use crate::notify_player_action::service::response::notify_opponent_hand_to_unit_action_response::NotifyOpponentHandToFieldUnitActionResponse;
 use crate::response_generator::response_type::ResponseType;
@@ -48,8 +49,8 @@ impl NotifyPlayerActionRepository for NotifyPlayerActionRepositoryImpl {
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    ResponseType::NOTIFY_OPPONENT_HAND_TO_UNIT_ACTION(
-                        NotifyOpponentHandToFieldUnitActionResponse::new(unit_card_number))))).await;
+                    ResponseType::NOTIFY_OPPONENT_TO_UNIT_DEPLOY(
+                        NotifyOpponentToUnitDeploy::new(unit_card_number))))).await;
 
         true
     }

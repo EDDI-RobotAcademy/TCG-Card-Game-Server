@@ -8,10 +8,10 @@ use crate::game_card_unit::repository::game_card_unit_repository_impl::GameCardU
 use crate::notify_player_action::repository::notify_player_action_repository::NotifyPlayerActionRepository;
 use crate::notify_player_action::repository::notify_player_action_repository_impl::NotifyPlayerActionRepositoryImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
-use crate::notify_player_action::service::request::notify_to_opponent_what_you_do_request::NotifyToOpponentWhatYouDoRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_deploy_unit_request::NotifyToOpponentYouDeployUnitRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_boost_card_request::NotifyToOpponentYouUseEnergyBoostCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyToOpponentYouUseEnergyCardRequest;
-use crate::notify_player_action::service::response::notify_to_opponent_what_you_do_response::NotifyToOpponentWhatYouDoResponse;
+use crate::notify_player_action::service::response::notify_to_opponent_you_deploy_unit_response::NotifyToOpponentYouDeployUnitResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_energy_boost_card_response::NotifyToOpponentYouUseEnergyBoostCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_energy_card_response::NotifyToOpponentYouUseEnergyCardResponse;
 
@@ -43,7 +43,7 @@ impl NotifyPlayerActionServiceImpl {
 
 #[async_trait]
 impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
-    async fn notify_to_opponent_what_you_do(&mut self, notify_to_opponent_what_you_do_request: NotifyToOpponentWhatYouDoRequest) -> NotifyToOpponentWhatYouDoResponse {
+    async fn notify_to_opponent_what_you_do(&mut self, notify_to_opponent_what_you_do_request: NotifyToOpponentYouDeployUnitRequest) -> NotifyToOpponentYouDeployUnitResponse {
         println!("NotifyPlayerActionServiceImpl: notify_to_opponent_what_you_do()");
 
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
@@ -51,7 +51,7 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
             notify_to_opponent_what_you_do_request.get_opponent_unique_id(),
             notify_to_opponent_what_you_do_request.get_usage_hand_card_id()).await;
 
-        NotifyToOpponentWhatYouDoResponse::new(notify_to_opponent_what_you_do_response)
+        NotifyToOpponentYouDeployUnitResponse::new(notify_to_opponent_what_you_do_response)
     }
 
     async fn notify_to_opponent_you_use_energy_card(&mut self, notify_to_opponent_you_use_energy_card_request: NotifyToOpponentYouUseEnergyCardRequest) -> NotifyToOpponentYouUseEnergyCardResponse {
