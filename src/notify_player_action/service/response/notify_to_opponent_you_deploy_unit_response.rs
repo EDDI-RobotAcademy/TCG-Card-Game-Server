@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NotifyToOpponentWhatYouDoResponse {
+pub struct NotifyToOpponentYouDeployUnitResponse {
     is_success: bool,
 }
 
-impl NotifyToOpponentWhatYouDoResponse {
+impl NotifyToOpponentYouDeployUnitResponse {
     pub fn new(is_success: bool) -> Self {
-        NotifyToOpponentWhatYouDoResponse { is_success }
+        NotifyToOpponentYouDeployUnitResponse { is_success }
     }
 
     pub fn is_success(&self) -> bool {

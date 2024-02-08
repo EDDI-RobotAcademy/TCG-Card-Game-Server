@@ -1,2 +1,3 @@
 pub mod notify_opponent_to_energy_usage;
 pub mod notify_opponent_to_energy_boost;
+pub mod notify_opponent_to_unit_deploy;

@@ -1,14 +1,12 @@
-use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
-
 #[derive(Debug)]
-pub struct NotifyToOpponentWhatYouDoRequest {
+pub struct NotifyToOpponentYouDeployUnitRequest {
     opponent_unique_id: i32,
     usage_hand_card_id: i32,
 }
 
-impl NotifyToOpponentWhatYouDoRequest {
+impl NotifyToOpponentYouDeployUnitRequest {
     pub fn new(opponent_unique_id: i32, usage_hand_card_id: i32) -> Self {
-        NotifyToOpponentWhatYouDoRequest {
+        NotifyToOpponentYouDeployUnitRequest {
             opponent_unique_id,
             usage_hand_card_id,
         }
