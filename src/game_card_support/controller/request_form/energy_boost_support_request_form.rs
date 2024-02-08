@@ -1,3 +1,4 @@
+use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
@@ -7,6 +8,8 @@ use crate::game_hand::service::request::use_game_hand_support_card_request::UseG
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_boost_card_request::NotifyToOpponentYouUseEnergyBoostCardRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyToOpponentYouUseEnergyCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -74,5 +77,21 @@ impl EnergyBoostSupportRequestForm {
                                                            energy_count: i32) -> AttachMultipleEnergyToUnitIndexRequest {
 
         AttachMultipleEnergyToUnitIndexRequest::new(account_unique_id, unit_number, boost_race, energy_count)
+    }
+
+    pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
+        FindOpponentByAccountIdRequest::new(
+            account_unique_id)
+    }
+
+    pub fn to_notify_to_opponent_you_use_energy_card_request(
+        &self, opponent_unique_id: i32,
+        unit_card_index: i32,
+        usage_hand_card_id: i32,
+        boosting_energy_count: i32,
+        boosting_energy_card_id: i32) -> NotifyToOpponentYouUseEnergyBoostCardRequest {
+
+            NotifyToOpponentYouUseEnergyBoostCardRequest::new(
+                opponent_unique_id, unit_card_index, usage_hand_card_id, boosting_energy_count, boosting_energy_card_id)
     }
 }
