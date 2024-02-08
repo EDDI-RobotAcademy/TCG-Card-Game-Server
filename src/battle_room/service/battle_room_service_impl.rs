@@ -10,8 +10,10 @@ use crate::battle_room::repository::battle_room_repository_impl::BattleRoomRepos
 
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::request::battle_match_request::BattleMatchRequest;
+use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::battle_room::service::request::what_is_the_room_number_request::WhatIsTheRoomNumberRequest;
 use crate::battle_room::service::response::battle_match_response::BattleMatchResponse;
+use crate::battle_room::service::response::find_opponent_by_account_id_response::FindOpponentByAccountIdResponse;
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
 use crate::battle_wait_queue::repository::battle_wait_queue_repository::BattleWaitQueueRepository;
 use crate::battle_wait_queue::repository::battle_wait_queue_repository_impl::BattleWaitQueueRepositoryImpl;
@@ -81,6 +83,16 @@ impl BattleRoomService for BattleRoomServiceImpl {
         let response = battle_room_repository_guard.what_is_the_room_number(account_unique_id).await;
 
         return WhatIsTheRoomNumberResponse::new(response.unwrap());
+    }
+
+    async fn find_opponent_by_account_unique_id(&self, find_opponent_by_account_id_request: FindOpponentByAccountIdRequest) -> FindOpponentByAccountIdResponse {
+        println!("BattleRoomServiceImpl: find_opponent_by_account_unique_id()");
+
+        let battle_room_repository_guard = self.battle_room_repository.lock().await;
+        let maybe_opponent_unique_id = battle_room_repository_guard.find_opponent_unique_id(
+            find_opponent_by_account_id_request.get_account_unique_id()).await;
+
+        return FindOpponentByAccountIdResponse::new(maybe_opponent_unique_id.unwrap())
     }
 
     // async fn enqueue_player_id_to_wait_queue(&self, battle_match_request: BattleMatchRequest) -> BattleMatchResponse {
