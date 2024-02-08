@@ -82,6 +82,17 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             None
         }
     }
+
+    fn attach_multiple_energy_to_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: i32, race_enum: RaceEnum, quantity: i32) -> bool {
+        println!("GameFieldUnitRepositoryImpl: attach_multiple_energy_to_indexed_unit()");
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            game_field_unit.add_energy_to_indexed_unit(unit_card_index as usize, RaceEnumValue::from(race_enum as i32), quantity);
+            return true
+        }
+
+        return false
+    }
 }
 
 #[cfg(test)]

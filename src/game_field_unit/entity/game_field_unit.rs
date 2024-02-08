@@ -27,10 +27,15 @@ impl GameFieldUnit {
     pub fn get_all_unit_list_in_game_field(&self) -> &Vec<GameFieldUnitCard> {
         self.game_field_unit.get_all_field_unit_list()
     }
+
+    pub fn add_energy_to_indexed_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32) {
+        self.game_field_unit.add_energy_to_indexed_unit(unit_card_index, race_enum, quantity);
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use rand::Rng;
     use super::*;
 
     #[test]
@@ -97,5 +102,32 @@ mod tests {
         let found_unit = game_field_unit.find_unit_by_id(12345);
         println!("Found Unit: {:?}", found_unit);
         assert!(found_unit.is_none());
+    }
+
+    #[test]
+    fn test_add_energy_to_indexed_unit() {
+        let mut game_field_unit = GameFieldUnit::new();
+
+        let field_unit1 = GameFieldUnitCard::new(3);
+        let field_unit2 = GameFieldUnitCard::new(7);
+
+        game_field_unit.add_unit_to_game_field(field_unit1);
+        game_field_unit.add_unit_to_game_field(field_unit2);
+        println!("Initial state: {:?}", game_field_unit.get_all_unit_list_in_game_field());
+
+        let index_to_add_energy = rand::thread_rng().gen_range(0..2);
+        println!("index_to_add_energy: {}", index_to_add_energy);
+
+        let race_enum = RaceEnumValue::Undead;
+        let quantity = rand::thread_rng().gen_range(1..=10);
+        println!("quantity: {}", quantity);
+
+        game_field_unit.add_energy_to_indexed_unit(index_to_add_energy, race_enum, quantity);
+        println!("After adding energy to unit at index {}: {:?}", index_to_add_energy, game_field_unit.get_all_unit_list_in_game_field());
+
+        assert_eq!(
+            game_field_unit.get_all_unit_list_in_game_field()[index_to_add_energy].get_attached_energy().get_energy_quantity(&race_enum),
+            Some(&quantity)
+        );
     }
 }
