@@ -19,6 +19,7 @@ use crate::battle_room::service::response::what_is_the_room_number_response::Wha
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::game_deck::service::response::game_start_deck_card_list_response::GameStartDeckCardListResponse;
+use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
 use crate::game_hand::controller::response_form::use_game_hand_energy_card_response_form::UseGameHandEnergyCardResponseForm;
 use crate::game_hand::controller::response_form::use_game_hand_unit_card_response_form::UseGameHandUnitCardResponseForm;
 use crate::notify_player_action::service::response::notify_opponent_hand_to_unit_action_response::NotifyOpponentHandToFieldUnitActionResponse;
@@ -36,6 +37,14 @@ pub enum ResponseType {
     ACCOUNT_MODIFY(AccountModifyResponse),
     ACCOUNT_DELETE(AccountDeleteResponse),
 
+    // Battle Entrance
+    BATTLE_WAIT_QUEUE_FOR_MATCH(BattleWaitQueueResponse),
+    BATTLE_READY(BattleReadyAccountHashResponse),
+    CHECK_BATTLE_PREPARE(CheckBattlePrepareResponse),
+    WHAT_IS_THE_ROOM_NUMBER(WhatIsTheRoomNumberResponse),
+    BATTLE_DECK_LIST(AccountDeckListResponse),
+    BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(GameStartDeckCardListResponse),
+
     // Account Card
     ACCOUNT_CARD_LIST(AccountCardListResponse),
 
@@ -45,33 +54,27 @@ pub enum ResponseType {
     ACCOUNT_DECK_MODIFY(AccountDeckModifyResponse),
     ACCOUNT_DECK_DELETE(AccountDeckDeleteResponse),
 
-    WHAT_IS_THE_ROOM_NUMBER(WhatIsTheRoomNumberResponse),
-    CHECK_BATTLE_PREPARE(CheckBattlePrepareResponse),
-    BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(GameStartDeckCardListResponse),
-
     // Account Deck Card
     DECK_CARD_CONFIGURATION(AccountDeckConfigurationResponseForm),
     DECK_CARD_LIST(AccountDeckCardListResponseForm),
-
-    // Account Point
-    GAIN_GOLD(GainGoldResponse),
-    PAY_GOLD(PayGoldResponse),
 
     // Shop
     SHOP_FREE_CARD(FreeCardResponse),
     SHOP_GET_CARD_DEFAULT(GetCardDefaultResponse),
 
-    // Battle Entrance
-    BATTLE_DECK_LIST(AccountDeckListResponse),
-    BATTLE_WAIT_QUEUE_FOR_MATCH(BattleWaitQueueResponse),
-    BATTLE_READY(BattleReadyAccountHashResponse),
-    BATTLE_DECK_CARD_LIST(AccountDeckCardListResponseForm),
+    // Account Point
+    GAIN_GOLD(GainGoldResponse),
+    PAY_GOLD(PayGoldResponse),
 
     // Battle Field
     HAND_TO_BATTLE_FIELD_UNIT_USAGE(UseGameHandUnitCardResponseForm),
     ENERGY_TO_BATTLE_FIELD_UNIT_USAGE(UseGameHandEnergyCardResponseForm),
 
+    // Notification to players
     NOTIFY_OPPONENT_HAND_TO_UNIT_ACTION(NotifyOpponentHandToFieldUnitActionResponse),
+
+    // Mulligan
+    CHANGE_FIRST_HAND(MulliganResponseForm),
 
     // Program Exit
     PROGRAM_EXIT(ClientProgramExitResponse),
