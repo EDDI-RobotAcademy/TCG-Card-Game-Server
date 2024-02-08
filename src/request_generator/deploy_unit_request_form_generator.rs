@@ -1,8 +1,6 @@
 use serde_json::Value as JsonValue;
 use crate::game_card_unit::controller::request_form::deploy_unit_request_form::DeployUnitRequestForm;
 
-use crate::game_hand::controller::request_form::use_game_hand_unit_card_request_form::UseGameHandUnitCardRequestForm;
-
 pub fn create_deploy_unit_request_form(data: &JsonValue) -> Option<DeployUnitRequestForm> {
     if let (Some(unit_number), Some(session_info)) = (
         data.get("unitId").and_then(|v| v.as_str()),

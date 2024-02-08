@@ -18,21 +18,17 @@ use crate::common::converter::vector_string_to_vector_integer::VectorStringToVec
 use crate::game_deck::entity::game_deck_card::GameDeckCard;
 use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
-use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
 use crate::game_hand::repository::game_hand_repository::GameHandRepository;
 
 use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryImpl;
 use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::request::put_cards_on_deck_request::{PutCardsOnDeckRequest};
-use crate::game_hand::service::request::legacy_use_game_hand_energy_card_request::LegacyUseGameHandEnergyCardRequest;
+
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
-use crate::game_hand::service::request::legacy_use_game_hand_unit_card_request::LegacyUseGameHandUnitCardRequest;
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
-use crate::game_hand::service::response::legacy_use_game_hand_unit_card_response::LegacyUseGameHandUnitCardResponse;
 use crate::game_hand::service::response::put_cards_on_deck_response::PutCardsOnDeckResponse;
-use crate::game_hand::service::response::legacy_use_game_hand_energy_card_response::LegacyUseGameHandEnergyCardResponse;
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
 use crate::game_hand::service::response::use_game_hand_support_card_response::UseGameHandSupportCardResponse;
 use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;

@@ -22,8 +22,6 @@ use crate::game_card_energy::controller::response_form::attach_general_energy_ca
 use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
 use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
 use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
-use crate::game_hand::controller::response_form::use_game_hand_energy_card_response_form::UseGameHandEnergyCardResponseForm;
-use crate::game_hand::controller::response_form::use_game_hand_unit_card_response_form::UseGameHandUnitCardResponseForm;
 use crate::notify_player_action::entity::notify_opponent_to_energy_usage::NotifyOpponentToEnergyUsage;
 use crate::notify_player_action::service::response::notify_opponent_hand_to_unit_action_response::NotifyOpponentHandToFieldUnitActionResponse;
 
