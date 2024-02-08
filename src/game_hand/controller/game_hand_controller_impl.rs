@@ -47,6 +47,7 @@ impl GameHandControllerImpl {
 
 #[async_trait]
 impl GameHandController for GameHandControllerImpl {
+    // TODO: redis 랑 naming issue 해결해서 깔끔하게 refactoring 필요
     async fn execute_mulligan_procedure(&self, mulligan_request_form: MulliganRequestForm) -> MulliganResponseForm {
         println!("GameHandControllerImpl: execute_mulligan_procedure()");
 

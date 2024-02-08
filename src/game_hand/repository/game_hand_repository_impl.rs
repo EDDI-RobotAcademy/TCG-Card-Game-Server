@@ -55,6 +55,7 @@ impl GameHandRepository for GameHandRepositoryImpl {
         return false
     }
 
+    // TODO: naming issue + refactoring 대상
     fn remove_card_list_from_hand(&mut self, account_unique_id: i32, card_list: Vec<i32>) -> bool {
         if let Some(game_hand) = self.game_hand_map.get_mut(&account_unique_id) {
             game_hand.remove_card_list_from_hand(card_list);

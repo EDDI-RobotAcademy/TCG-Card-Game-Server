@@ -7,6 +7,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum::Dummy;
 use crate::game_card_support::entity::game_card_support_effect::GameCardSupportEffect;
 use crate::game_card_support::handler::game_card_support_handler::GameCardSupportHandler;
+use crate::game_card_support::handler::handler_of_20::game_card_support_20_handler_impl::SupportCard_20_Function;
 use crate::game_card_support::handler::handler_of_2::game_card_support_2_handler_impl::SupportCard_2_Function;
 
 use crate::game_card_support::repository::game_card_support_repository::GameCardSupportRepository;
@@ -43,7 +44,7 @@ impl GameCardSupportRepositoryImpl {
         support_card_functions.insert(7, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(10, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(16, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
-        support_card_functions.insert(20, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
+        support_card_functions.insert(20, Box::new(SupportCard_20_Function) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(21, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(24, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(28, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);

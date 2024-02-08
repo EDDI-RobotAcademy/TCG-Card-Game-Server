@@ -1,0 +1,48 @@
+use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
+use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
+use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
+use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
+use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
+use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
+use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+
+#[derive(Debug)]
+pub struct DrawSupportRequestForm {
+    session_id: String,
+    support_card_id: String,
+}
+
+impl DrawSupportRequestForm {
+    pub fn new(session_id: &str, support_card_id: &str) -> Self {
+        DrawSupportRequestForm {
+            session_id: session_id.to_string(),
+            support_card_id: support_card_id.to_string()
+        }
+    }
+    pub fn get_support_card_id(&self) -> &str { &self.support_card_id }
+    pub fn to_session_validation_request(&self) -> GetValueWithKeyRequest {
+        GetValueWithKeyRequest::new(self.session_id.clone().as_str())
+    }
+    pub fn to_check_protocol_hacking_request(&self, account_unique_id: i32, support_card_number: i32) -> CheckProtocolHackingRequest {
+        CheckProtocolHackingRequest::new(account_unique_id, support_card_number)
+    }
+    pub fn to_can_use_card_request(&self, account_unique_id: i32, support_card_number: i32) -> CanUseCardRequest {
+        CanUseCardRequest::new(account_unique_id, support_card_number)
+    }
+    pub fn to_is_it_support_card_request(&self, support_card_number: i32) -> IsItSupportCardRequest {
+        IsItSupportCardRequest::new(support_card_number)
+    }
+    pub fn to_use_game_hand_support_card_request(&self, account_unique_id: i32, support_card_number: i32) -> UseGameHandSupportCardRequest {
+        UseGameHandSupportCardRequest::new(account_unique_id, support_card_number)
+    }
+    pub fn to_place_to_tomb_request(&self, account_unique_id: i32, used_card_id: i32) -> PlaceToTombRequest {
+        PlaceToTombRequest::new(account_unique_id, used_card_id)
+    }
+    pub fn to_calculate_effect_request(&self, support_card_number: i32) -> CalculateEffectRequest {
+        CalculateEffectRequest::new(support_card_number)
+    }
+    pub fn to_draw_deck_request(&self, draw_count: i32) -> GameDeckCardDrawRequest {
+        GameDeckCardDrawRequest::new(self.session_id.clone(), draw_count)
+    }
+}
