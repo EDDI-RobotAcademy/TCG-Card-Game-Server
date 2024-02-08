@@ -11,7 +11,6 @@ use crate::game_card_energy::controller::request_form::attach_general_energy_car
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_card_energy::service::game_card_energy_service::GameCardEnergyService;
 use crate::game_card_energy::service::game_card_energy_service_impl::GameCardEnergyServiceImpl;
-use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_hand::service::game_hand_service::GameHandService;

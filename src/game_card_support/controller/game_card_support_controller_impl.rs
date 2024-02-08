@@ -5,8 +5,11 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::battle_room::service::battle_room_service::BattleRoomService;
+use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::card_kinds::service::card_kinds_service::CardKindsService;
 use crate::card_kinds::service::card_kinds_service_impl::CardKindsServiceImpl;
+use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
 use crate::game_card_support::controller::request_form::energy_boost_support_request_form::EnergyBoostSupportRequestForm;
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
@@ -24,13 +27,17 @@ use crate::game_protocol_validation::service::game_protocol_validation_service::
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
+use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
+use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 pub struct GameCardSupportControllerImpl {
+    battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
     game_card_support_service: Arc<AsyncMutex<GameCardSupportServiceImpl>>,
+    notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
     game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
     game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
@@ -40,7 +47,9 @@ pub struct GameCardSupportControllerImpl {
 }
 
 impl GameCardSupportControllerImpl {
-    pub fn new(game_card_support_service: Arc<AsyncMutex<GameCardSupportServiceImpl>>,
+    pub fn new(battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
+               game_card_support_service: Arc<AsyncMutex<GameCardSupportServiceImpl>>,
+               notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
                game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
                game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
@@ -49,7 +58,9 @@ impl GameCardSupportControllerImpl {
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,) -> Self {
 
         GameCardSupportControllerImpl {
+            battle_room_service,
             game_card_support_service,
+            notify_player_action_service,
             game_protocol_validation_service,
             game_hand_service,
             game_deck_service,
@@ -64,7 +75,9 @@ impl GameCardSupportControllerImpl {
                 Arc::new(
                     AsyncMutex::new(
                         GameCardSupportControllerImpl::new(
+                            BattleRoomServiceImpl::get_instance(),
                             GameCardSupportServiceImpl::get_instance(),
+                            NotifyPlayerActionServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance(),
                             GameHandServiceImpl::get_instance(),
                             GameDeckServiceImpl::get_instance(),
@@ -153,18 +166,35 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let boost_race_reference = energy_from_deck_info.get_race();
 
         // TODO: 세션을 제외하고 애초에 UI에서 숫자로 전송하면 더 좋다.
-        let unit_index_number_string = energy_boost_support_request_form.get_unit_index_number();
-        let unit_index_number = unit_index_number_string.parse::<i32>().unwrap();
+        let unit_card_index_string = energy_boost_support_request_form.get_unit_index_number();
+        let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
 
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
         let attach_multiple_energy_to_unit_index_response = game_field_unit_service_guard.attach_multiple_energy_to_field_unit_index(
             energy_boost_support_request_form.to_attach_multiple_energy_to_unit_index_request(
                 account_unique_id,
-                unit_index_number,
+                unit_card_index,
                 *boost_race_reference,
                 energy_from_deck_info.get_energy_count())).await;
 
-        // 10. Notify Service를 호출하여 Opponent에게 무엇을 할 것인지 알려줌
+        // 10. 상대방의 고유 id 값을 확보
+        let battle_room_service_guard = self.battle_room_service.lock().await;
+        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+            energy_boost_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+
+        // 11. Notify Service를 호출하여 Opponent에게 무엇을 할 것인지 알려줌
+        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
+        let notify_to_opponent_what_you_do_response = notify_player_action_service_guard.notify_to_opponent_you_use_energy_boost(
+            energy_boost_support_request_form.to_notify_to_opponent_you_use_energy_card_request(
+                find_opponent_by_account_id_response.get_opponent_unique_id(),
+                unit_card_index,
+                usage_hand_card,
+                calculated_effect_response.get_energy_from_deck().get_energy_count(),
+                calculated_effect_response.get_need_to_find_card_id())).await;
+        if !notify_to_opponent_what_you_do_response.is_success() {
+            println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
+            return EnergyBoostSupportResponseForm::new(false)
+        }
 
         EnergyBoostSupportResponseForm::new(true)
     }
