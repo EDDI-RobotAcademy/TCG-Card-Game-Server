@@ -5,11 +5,13 @@ use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
 use crate::card_grade::repository::card_grade_repository::CardGradeRepository;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
+use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::common::csv::csv_reader::{build_card_grade_dictionary, csv_read};
 use crate::common::path::root_path::RootPath;
 
 pub struct CardGradeRepositoryImpl {
-    card_grade_map: Arc<AsyncMutex<HashMap<i32, i32>>>,
+    card_grade_map: Arc<AsyncMutex<HashMap<i32, GradeEnum>>>,
 }
 
 impl CardGradeRepositoryImpl {
@@ -49,24 +51,26 @@ impl CardGradeRepositoryImpl {
 
 #[async_trait]
 impl CardGradeRepository for CardGradeRepositoryImpl {
-    async fn get_card_grade(&self, card_number: &i32) -> Option<i32> {
+    async fn get_card_grade(&self, card_number: &i32) -> GradeEnum {
         let card_grade_map_guard = self.card_grade_map.lock().await;
-        card_grade_map_guard.get(card_number).cloned()
+        *card_grade_map_guard.get(card_number).unwrap_or(&GradeEnum::Dummy)
     }
 
-    async fn get_legend_mythical_card_list(&self, card_list: Vec<i32>) -> Vec<(i32)>{
+    async fn get_grade_by_specific_race_card_list(&self, race_specific_card_id_list: Vec<i32>) -> Vec<(i32, GradeEnum)> {
         let card_grade_map_guard = self.card_grade_map.lock().await;
-        let mut legend_mythical_card_list : Vec<(i32)> = Vec::new();
-        println!("{}", card_grade_map_guard[&58]);
+        let mut card_grade_list_by_race : Vec<(i32, GradeEnum)> = Vec::new();
 
-        for card_num in card_list {
-            if(card_grade_map_guard[&card_num] == 4 || card_grade_map_guard[&card_num] == 5) {
-                legend_mythical_card_list.push(card_num);
+        for card_grade in card_grade_map_guard.clone() {
+            for race_card in race_specific_card_id_list.clone() {
+                if (card_grade.0 == race_card) {
+                    let card_tuple = (race_card, card_grade.1.clone());
+                    card_grade_list_by_race.push(card_tuple);
+                }
             }
         }
-        legend_mythical_card_list
-    }
 
+        card_grade_list_by_race
+    }
 }
 
 #[cfg(test)]
@@ -80,12 +84,7 @@ mod tests {
         let card_number: i32 = 6;
         let card_grade = card_grade_repository_guard.get_card_grade(&card_number).await;
 
-        match card_grade {
-            Some(grade) => {
-                println!("Card Grade: {}", grade);
-                assert_eq!(grade, 1);
-            }
-            None => println!("Card not found."),
-        }
+        println!("Card Grade: {:?}", card_grade);
+        assert_eq!(card_grade, GradeEnum::Common);
     }
 }

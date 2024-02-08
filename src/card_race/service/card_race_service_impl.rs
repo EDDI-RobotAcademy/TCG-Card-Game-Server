@@ -7,6 +7,7 @@ use crate::card_race::repository::card_race_repository::CardRaceRepository;
 
 use crate::card_race::repository::card_race_repository_impl::CardRaceRepositoryImpl;
 use crate::card_race::service::card_race_service::CardRaceService;
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 
 pub struct CardRaceServiceImpl {
     card_race_repository: Arc<AsyncMutex<CardRaceRepositoryImpl>>
@@ -32,7 +33,7 @@ impl CardRaceServiceImpl {
 
 #[async_trait]
 impl CardRaceService for CardRaceServiceImpl {
-    async fn get_card_race(&self, card_number: &i32) -> Option<i32> {
+    async fn get_card_race(&self, card_number: &i32) -> RaceEnum {
         println!("CardRaceServiceImpl: get_card_race()");
 
         let card_race_repository_guard = self.card_race_repository.lock().await;
@@ -52,13 +53,7 @@ mod tests {
         let card_number: i32 = 6;
 
         let card_race = card_race_repo_guard.get_card_race(&card_number).await;
-
-        match card_race {
-            Some(race) => {
-                println!("Card Grade: {}", race);
-                assert_eq!(race, 1);
-            }
-            None => println!("Card not found."),
-        }
+        println!("Card Grade: {:?}", card_race);
+        assert_eq!(card_race, RaceEnum::Undead);
     }
 }

@@ -3,6 +3,7 @@ use indexmap::IndexMap;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
@@ -54,14 +55,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         }
     }
 
-    // TODO: 수량 1개
-    fn attach_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race: RaceEnumValue, quantity: i32) {
+    // TODO: 수량 1개 (enum 관련 사항을 어떻게 처리 할 것인가 고찰이 필요함)
+    fn attach_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race_enum: RaceEnum, quantity: i32) {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let race = RaceEnumValue::from(race_enum as i32);
             game_field_unit.add_energy_to_unit(unit_card_number, race, quantity);
         }
     }
 
-    // TODO: 여러 개
+    // TODO: 여러 개 (enum 관련 사항을 어떻게 처리 할 것인가 고찰이 필요함)
     fn attach_multiple_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race_number: i32, quantity: i32) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             let race = RaceEnumValue::from(race_number);
@@ -128,13 +130,16 @@ mod tests {
         game_field_unit_repository.add_unit_to_game_field(1, unit_card_number);
         println!("Initial state: {:?}", game_field_unit_repository.get_game_field_unit_map());
 
-        let race = RaceEnumValue::Undead;
+        // let race = RaceEnumValue::Undead;
+        let race_enum = RaceEnum::Undead;
+        let race = RaceEnumValue::from(race_enum as i32);
         let quantity = 1;
-        game_field_unit_repository.attach_energy_to_game_field_unit(1, unit_card_number, race, quantity);
+        game_field_unit_repository.attach_energy_to_game_field_unit(1, unit_card_number, race_enum, quantity);
         println!("After attaching energy: {:?}", game_field_unit_repository.get_game_field_unit_map());
 
         let game_field_unit = game_field_unit_repository.get_game_field_unit_map().get(&1).unwrap();
-        let attached_energy = game_field_unit.get_all_unit_list_in_game_field()[0].get_attached_energy().get_energy_quantity(&race);
+        let attached_energy = game_field_unit.get_all_unit_list_in_game_field()[0].
+            get_attached_energy().get_energy_quantity(&race);
         assert_eq!(attached_energy, Some(&quantity));
     }
 

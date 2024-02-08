@@ -76,7 +76,6 @@ impl ShopService for ShopServiceImpl {
         let account_number_str = redis_repository_guard.get(get_card_default_request.account_id()).await;
         let account_unique_id: Result<i32, _> = account_number_str.expect("REASON").parse();
 
-
         match account_unique_id {
             Ok(int_type_account_id) => {
                 // 뽑을 카드 리스트

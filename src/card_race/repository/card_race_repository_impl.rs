@@ -6,11 +6,13 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::card_grade::repository::card_grade_repository::CardGradeRepository;
 use crate::card_race::repository::card_race_repository::CardRaceRepository;
+use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::common::csv::csv_reader::{build_card_race_dictionary, csv_read};
 use crate::common::path::root_path::RootPath;
 
 pub struct CardRaceRepositoryImpl {
-    card_race_map: Arc<AsyncMutex<HashMap<i32, i32>>>,
+    card_race_map: Arc<AsyncMutex<HashMap<i32, RaceEnum>>>,
 }
 
 impl CardRaceRepositoryImpl {
@@ -50,12 +52,12 @@ impl CardRaceRepositoryImpl {
 
 #[async_trait]
 impl CardRaceRepository for CardRaceRepositoryImpl {
-    async fn get_card_race(&self, card_number: &i32) -> Option<i32> {
+    async fn get_card_race(&self, card_number: &i32) -> RaceEnum {
         let card_race_map_guard = self.card_race_map.lock().await;
-        card_race_map_guard.get(card_number).cloned()
+        *card_race_map_guard.get(card_number).unwrap_or(&RaceEnum::Dummy)
     }
 
-    async fn get_specific_race_card_list(&self , race_value : i32) -> Vec<i32> {
+    async fn get_specific_race_card_list(&self , race_value: RaceEnum) -> Vec<i32> {
         let mut specific_race_card_list = Vec::new();
         let card_race_map_guard = self.card_race_map.lock().await;
 
@@ -81,12 +83,7 @@ mod tests {
         let card_number: i32 = 6;
         let card_race = card_race_repository_guard.get_card_race(&card_number).await;
 
-        match card_race {
-            Some(race) => {
-                println!("Card Grade: {}", race);
-                assert_eq!(race, 1);
-            }
-            None => println!("Card not found."),
-        }
+        println!("Card Grade: {:?}", card_race);
+        assert_eq!(card_race, RaceEnum::Undead);
     }
 }

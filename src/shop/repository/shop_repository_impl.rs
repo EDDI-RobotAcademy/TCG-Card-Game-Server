@@ -10,6 +10,7 @@ use rand::Rng;
 use crate::account_card::entity::account_card::account_cards::{account_id, card_count, card_id};
 use crate::account_card::entity::account_card::account_cards::dsl::account_cards;
 use crate::account_card::entity::account_card::AccountCard;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::csv::csv_reader::csv_read;
 
 use crate::common::env::env_detector::EnvDetector;
