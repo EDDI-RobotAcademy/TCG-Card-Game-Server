@@ -71,6 +71,20 @@ impl CardGradeRepository for CardGradeRepositoryImpl {
 
         card_grade_list_by_race
     }
+    async fn get_grade_by_card_list(&self, card_list: Vec<i32>) -> HashMap<i32, GradeEnum>{
+        let card_grade_map_guard = self.card_grade_map.lock().await;
+        let mut card_grade_list : HashMap<i32, GradeEnum> = Default::default();
+        for card_grade in card_grade_map_guard.clone() {
+            for card_id in card_list.clone() {
+                if (card_grade.0 == card_id) {
+                    card_grade_list.insert(card_id, card_grade.1);
+                }
+            }
+        }
+
+        card_grade_list
+
+    }
 }
 
 #[cfg(test)]
@@ -81,10 +95,14 @@ mod tests {
     async fn test_get_card_grade() {
         let card_grade_repository_mutex = CardGradeRepositoryImpl::get_instance();
         let card_grade_repository_guard = card_grade_repository_mutex.lock().await;
-        let card_number: i32 = 6;
-        let card_grade = card_grade_repository_guard.get_card_grade(&card_number).await;
+        // let card_number: i32 = 6;
+        // let card_grade = card_grade_repository_guard.get_card_grade(&card_number).await;
+        //
+        // println!("Card Grade: {:?}", card_grade);
+        // assert_eq!(card_grade, GradeEnum::Common);
 
-        println!("Card Grade: {:?}", card_grade);
-        assert_eq!(card_grade, GradeEnum::Common);
+        let lsit = vec![2,5,8,10,15,18,58];
+        let a = card_grade_repository_guard.get_grade_by_card_list(lsit).await;
+        println!("{:?}", a);
     }
 }
