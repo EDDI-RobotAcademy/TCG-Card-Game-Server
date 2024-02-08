@@ -187,13 +187,16 @@ impl AccountService for AccountServiceImpl {
     async fn account_delete(&self, account_delete_request: AccountDeleteRequest) -> AccountDeleteResponse {
         println!("AccountServiceImpl: account_delete()");
 
-        // TODO: 지금 너무 위험한 방식입니다. 세션 정보 없이 사용자 ID, PW 만으로 지웠다가는 다른 사람 것을 통채로 밀어버릴 수 있습니다.
-        // TODO: 세션 정보를 받아서 지금 로그인 되어있는 사용자의 고유 ID 와 user_id 로 찾은 계정의 고유값이 일치하는지도 확인을 추가로 해야합니다.
-        let account_repository_guard = self.repository.lock().await;
-        let account = account_delete_request.to_account().unwrap();
+        let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
+        println!("account_delete_request.session_id(): {:?}", account_delete_request.session_id());
+        let user_id_with_session_id_option_string = redis_repository_guard.get(account_delete_request.session_id()).await;
+        let user_id_with_session_id_string = user_id_with_session_id_option_string.unwrap();
+        let user_id_with_session_id_str = user_id_with_session_id_string.as_str();
+        drop(redis_repository_guard);
 
-        if let Some(found_account) = account_repository_guard.find_by_user_id(account.user_id()).await.unwrap() {
-            if verify(&account_delete_request.password(), &found_account.password()).unwrap() {
+        let account_repository_guard = self.repository.lock().await;
+        if let Ok(Some(found_account)) = account_repository_guard.find_by_user_id(user_id_with_session_id_str).await {
+            if verify(&account_delete_request.password(), &found_account.password()).unwrap() && &account_delete_request.user_id() == &found_account.user_id {
                 let account_unique_id = found_account.id;
 
                 let account_card_repository_guard = self.account_card_repository.lock().await;
@@ -216,18 +219,19 @@ impl AccountService for AccountServiceImpl {
                 let _ = account_point_repository_guard.delete_account_points(account_unique_id).await;
                 drop(account_point_repository_guard);
 
-                // TODO: redis 도 정리해야 함
+                let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
+                let _ = redis_repository_guard.del(account_delete_request.session_id()).await;
+                drop(redis_repository_guard);
 
                 let _ = account_repository_guard.delete(found_account).await;
                 drop(account_repository_guard);
 
-                // TODO: redis 를 정리했기 때문에 UI 쪽 sessionInfo 를 지울 수 있도록 "" 도 함께 돌려줘야 함
-                return AccountDeleteResponse::new(true)
+                return AccountDeleteResponse::new(true, "".to_string())
             }
         }
 
         println!("Account is not found.");
-        AccountDeleteResponse::new(false)
+        AccountDeleteResponse::new(false, account_delete_request.session_id().to_string())
     }
 
     async fn account_modify(&self, account_modify_request: AccountModifyRequest) -> AccountModifyResponse {
@@ -264,7 +268,7 @@ mod tests {
         let account_service_mutex = AccountServiceImpl::get_instance();
         let account_service = account_service_mutex.lock().await;
 
-        let account_delete_request = AccountDeleteRequest::new("test", "test".to_string());
+        let account_delete_request = AccountDeleteRequest::new("test_id", "test_password".to_string(), "test_redis_token".to_string());
 
         account_service.account_delete(account_delete_request).await;
     }
