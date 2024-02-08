@@ -88,7 +88,7 @@ impl GameProtocolValidationServiceImpl {
         if let target_card_number = can_use_card_request.get_support_card_number() {
             let card_grade_repository_guard = self.card_grade_repository.lock().await;
             if let card_grade = card_grade_repository_guard.get_card_grade(&target_card_number).await {
-                return card_grade == GradeEnum::Mythical && round == 4;
+                return card_grade == GradeEnum::Mythical && round >= 5;
             }
         }
 
