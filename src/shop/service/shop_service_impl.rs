@@ -98,7 +98,7 @@ impl ShopService for ShopServiceImpl {
         let account_number_str = redis_repository_guard.get(get_card_default_request.account_id()).await;
         let account_unique_id: Result<i32, _> = account_number_str.expect("REASON").parse();
 
-        let get_race_specific_card_list = card_race_repository.get_specific_race_card_list(get_card_default_request.race_name().parse::<i32>().unwrap()).await;
+        let get_race_specific_card_list = card_race_repository.get_specific_race_card_list(get_card_default_request.get_race_enum()).await;
         let gacha_card_list = card_grade_repository.get_grade_by_specific_race_card_list(get_race_specific_card_list).await;
 
         match account_unique_id {

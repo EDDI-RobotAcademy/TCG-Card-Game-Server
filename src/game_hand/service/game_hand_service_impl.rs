@@ -260,13 +260,8 @@ impl GameHandService for GameHandServiceImpl {
             return UseGameHandEnergyCardResponse::new(false)
         }
 
-        // TODO: Dictionary 값 아직 enum 처리 안되어 있음
         let card_race_repository_guard = self.card_race_repository.lock().await;
-        let race_option = card_race_repository_guard.get_card_race(&energy_card_id).await;
-        let race_string = race_option.unwrap();
-
-        // TODO: 그로 인해 race_option 값을 문자열 기반으로 매칭해야함
-        let race_enum = GameHandServiceImpl::convert_race_string_to_enum(&race_string.to_string()).await;
+        let race_enum = card_race_repository_guard.get_card_race(&energy_card_id).await;
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         game_field_unit_repository_guard.attach_energy_to_game_field_unit(account_unique_id, unit_card_number, race_enum, 1);
