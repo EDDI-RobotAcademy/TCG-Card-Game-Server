@@ -3,18 +3,20 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+
 use crate::account_deck_card::repository::account_deck_card_repository::AccountDeckCardRepository;
 use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
 use crate::common::converter::hash_to_vector_converter::HashToVectorConverter;
-use crate::game_deck::entity::game_deck_card::GameDeckCard;
 use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
 
 use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
 use crate::game_deck::service::game_deck_service::GameDeckService;
+use crate::game_deck::service::request::found_card_from_deck_request::FoundCardFromDeckRequest;
 use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
 use crate::game_deck::service::request::game_deck_card_list_request::GameDeckCardListRequest;
 use crate::game_deck::service::request::game_deck_card_redraw_request::GameDeckCardRedrawRequest;
 use crate::game_deck::service::request::game_deck_card_shuffled_list_request::GameDeckCardShuffledListRequest;
+use crate::game_deck::service::response::found_card_from_deck_response::FoundCardFromDeckResponse;
 use crate::game_deck::service::response::game_deck_card_draw_list_response::GameDeckCardDrawListResponse;
 use crate::game_deck::service::response::game_deck_card_redraw_response::GameDeckCardRedrawResponse;
 use crate::game_deck::service::response::game_deck_card_shuffled_list_response::GameDeckCardShuffledListResponse;
@@ -174,7 +176,24 @@ impl GameDeckService for GameDeckServiceImpl {
         let redrawn_card_vector = game_deck_repository_guard.draw_deck_card(account_unique_id, draw_count);
         let remaining_deck_vector = self.get_game_deck_card_ids(account_unique_id).await;
 
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        game_hand_repository_guard.add_card_list_to_hand(account_unique_id, redrawn_card_vector.clone());
+
+        drop(game_hand_repository_guard);
+
         GameDeckCardRedrawResponse::new(redrawn_card_vector, remaining_deck_vector)
+    }
+
+    async fn find_by_card_id_with_count(&self, found_card_from_deck_request: FoundCardFromDeckRequest) -> FoundCardFromDeckResponse {
+        println!("GameDeckServiceImpl: find_by_card_id_with_count()");
+
+        let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
+        let found_card_list = game_deck_repository_guard.find_by_card_id_with_count(
+            found_card_from_deck_request.get_account_unique_id(),
+            found_card_from_deck_request.get_need_to_find_card_id(),
+            found_card_from_deck_request.get_energy_count());
+
+        FoundCardFromDeckResponse::new(found_card_list)
     }
 }
 

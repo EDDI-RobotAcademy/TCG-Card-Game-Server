@@ -1,2 +1,2 @@
-mod game_card_support_repository;
-mod game_card_support_repository_impl;
+pub mod game_card_support_repository;
+pub mod game_card_support_repository_impl;

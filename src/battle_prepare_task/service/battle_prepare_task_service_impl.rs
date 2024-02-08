@@ -30,7 +30,7 @@ use crate::game_round::repository::game_round_repository_impl::GameRoundReposito
 use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
 use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
 
-
+// TODO: 사실상 지금 필요 없어졌으나 우선은 유지시킴 (비즈니스 로직에 지대한 영향 없음)
 pub struct BattlePrepareTaskServiceImpl {
     battle_ready_account_hash_repository: Arc<AsyncMutex<BattleReadyAccountHashRepositoryImpl>>,
     game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>,

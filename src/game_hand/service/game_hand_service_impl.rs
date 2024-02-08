@@ -3,6 +3,8 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::battle_room::repository::battle_room_repository::BattleRoomRepository;
+use crate::battle_room::repository::battle_room_repository_impl::BattleRoomRepositoryImpl;
 
 use crate::card_grade::repository::card_grade_repository::CardGradeRepository;
 use crate::card_grade::repository::card_grade_repository_impl::CardGradeRepositoryImpl;
@@ -23,13 +25,17 @@ use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryI
 use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::request::put_cards_on_deck_request::{PutCardsOnDeckRequest};
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
+use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
 use crate::game_hand::service::response::put_cards_on_deck_response::PutCardsOnDeckResponse;
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
+use crate::game_hand::service::response::use_game_hand_support_card_response::UseGameHandSupportCardResponse;
 use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 use crate::game_tomb::repository::game_tomb_repository::GameTombRepository;
 use crate::game_tomb::repository::game_tomb_repository_impl::GameTombRepositoryImpl;
+use crate::notify_player_action::repository::notify_player_action_repository::NotifyPlayerActionRepository;
+use crate::notify_player_action::repository::notify_player_action_repository_impl::NotifyPlayerActionRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
@@ -42,6 +48,8 @@ pub struct GameHandServiceImpl {
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
     card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
     card_race_repository: Arc<AsyncMutex<CardRaceRepositoryImpl>>,
+    battle_room_repository: Arc<AsyncMutex<BattleRoomRepositoryImpl>>,
+    notify_player_action_repository: Arc<AsyncMutex<NotifyPlayerActionRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
 }
 
@@ -54,6 +62,8 @@ impl GameHandServiceImpl {
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
                card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
                card_race_repository: Arc<AsyncMutex<CardRaceRepositoryImpl>>,
+               battle_room_repository: Arc<AsyncMutex<BattleRoomRepositoryImpl>>,
+               notify_player_action_repository: Arc<AsyncMutex<NotifyPlayerActionRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     ) -> Self {
         GameHandServiceImpl {
@@ -65,6 +75,8 @@ impl GameHandServiceImpl {
             card_kinds_repository,
             card_grade_repository,
             card_race_repository,
+            battle_room_repository,
+            notify_player_action_repository,
             redis_in_memory_repository
         }
     }
@@ -83,6 +95,8 @@ impl GameHandServiceImpl {
                             CardKindsRepositoryImpl::get_instance(),
                             CardGradeRepositoryImpl::get_instance(),
                             CardRaceRepositoryImpl::get_instance(),
+                            BattleRoomRepositoryImpl::get_instance(),
+                            NotifyPlayerActionRepositoryImpl::get_instance(),
                             RedisInMemoryRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
@@ -144,16 +158,6 @@ impl GameHandService for GameHandServiceImpl {
         let card_i32_list_to_be_changed =
             VectorStringToVectorInteger::vector_string_to_vector_i32(card_string_list_to_be_changed);
 
-        // protocol hacking prevention
-        for card in &card_i32_list_to_be_changed {
-            if self.check_protocol_hacking(account_unique_id, *card).await {
-                println!("프로토콜 조작 감지: 해킹범을 검거합시다!");
-                return PutCardsOnDeckResponse::new(false)
-            } else {
-                continue
-            }
-        }
-
         // removing hand cards
         let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
         if let Some(user_game_hand) =
@@ -188,6 +192,7 @@ impl GameHandService for GameHandServiceImpl {
         let unit_card_number_string = use_game_hand_unit_card_request.get_unit_number();
         let unit_card_number = unit_card_number_string.parse::<i32>().unwrap();
 
+        // TODO: 이 파트는 ProtocolSecurityService 에서 처리하고 HandController에서 호출하도록 구성하는 것읻 더 좋음 (재사용성 측면에도 이득)
         if self.check_protocol_hacking(account_unique_id, unit_card_number).await {
             println!("프로토콜 조작 감지: 해킹범을 검거합시다!");
             return UseGameHandUnitCardResponse::new(false)
@@ -195,7 +200,7 @@ impl GameHandService for GameHandServiceImpl {
 
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
         let maybe_unit_card = card_kinds_repository_guard.get_card_kind(&unit_card_number).await;
-        if maybe_unit_card.unwrap() != KindsEnum::Unit as i32 {
+        if maybe_unit_card != KindsEnum::Unit {
             return UseGameHandUnitCardResponse::new(false)
         }
 
@@ -216,6 +221,17 @@ impl GameHandService for GameHandServiceImpl {
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         game_field_unit_repository_guard.add_unit_to_game_field(account_unique_id, specific_card.get_card());
 
+        // 상대방의 고유 id 값을 확보
+        let battle_room_repository_guard = self.battle_room_repository.lock().await;
+        // let room_number_option = battle_room_repository_guard.what_is_the_room_number(account_unique_id).await;
+        // let room_number = room_number_option.unwrap();
+        let opponent_unique_id = battle_room_repository_guard.find_opponent_unique_id(account_unique_id).await;
+
+        // TODO: 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
+        // notify_to_opponent_what_you_do(opponent_unique_id, unit_card_number)
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        notify_player_action_repository_guard.notify_to_opponent_what_you_do(opponent_unique_id.unwrap(), unit_card_number).await;
+
         UseGameHandUnitCardResponse::new(true)
     }
 
@@ -234,12 +250,12 @@ impl GameHandService for GameHandServiceImpl {
 
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
         let maybe_energy_card = card_kinds_repository_guard.get_card_kind(&energy_card_id).await;
-        if maybe_energy_card.unwrap() != KindsEnum::Energy as i32 {
+        if maybe_energy_card != KindsEnum::Energy {
             return UseGameHandEnergyCardResponse::new(false)
         }
 
         let maybe_unit_card = card_kinds_repository_guard.get_card_kind(&unit_card_number).await;
-        if maybe_unit_card.unwrap() != KindsEnum::Unit as i32 {
+        if maybe_unit_card != KindsEnum::Unit {
             return UseGameHandEnergyCardResponse::new(false)
         }
 
@@ -258,5 +274,21 @@ impl GameHandService for GameHandServiceImpl {
         game_tomb_repository_guard.add_used_card_to_tomb(account_unique_id, energy_card_id);
 
         UseGameHandEnergyCardResponse::new(true)
+    }
+
+    async fn use_support_card(&mut self, use_game_hand_support_card_request: UseGameHandSupportCardRequest) -> UseGameHandSupportCardResponse {
+        println!("GameHandServiceImpl: use_support_card()");
+
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        let specific_card_option = game_hand_repository_guard.use_specific_card(
+            use_game_hand_support_card_request.get_account_unique_id(),
+            use_game_hand_support_card_request.get_support_card_number());
+
+        if specific_card_option.is_none() {
+            return UseGameHandSupportCardResponse::new(-1)
+        }
+        let specific_card = specific_card_option.unwrap();
+
+        UseGameHandSupportCardResponse::new(specific_card.get_card())
     }
 }
