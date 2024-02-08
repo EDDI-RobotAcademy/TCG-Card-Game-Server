@@ -1,4 +1,12 @@
 use std::collections::HashMap;
+use std::sync::Arc;
+use lazy_static::lazy_static;
+
+use tokio::sync::Mutex as AsyncMutex;
+
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_item::entity::game_card_item_effect::GameCardItemEffect;
 use crate::game_card_item::handler::game_card_item_handler::GameCardItemHandler;
 use crate::game_card_item::handler::handler_of_8::game_card_item_8_handler_impl::ItemCard_8_Function;
 use crate::game_card_item::repository::game_card_item_repository::GameCardItemRepository;
@@ -12,10 +20,14 @@ pub struct GameCardItemRepositoryImpl {
 struct NoneFunction;
 
 impl GameCardItemHandler for NoneFunction {
-    unsafe fn use_item_card(&self, use_item_card_request: UseItemCardRequest) -> UseItemCardResponse {
+    unsafe fn use_item_card(&self) -> GameCardItemEffect {
         println!("아직 구현되지 않은 기능입니다.");
 
-        UseItemCardResponse
+        GameCardItemEffect::new(
+            RaceEnum::Dummy,
+            -1,
+            -1,
+            GradeEnum::Dummy)
     }
 }
 
@@ -49,13 +61,24 @@ impl GameCardItemRepositoryImpl {
     fn get_function(&self, number: i32) -> Option<&Box<dyn GameCardItemHandler>> {
         self.item_card_functions.get(&number)
     }
+
+    pub fn get_instance() -> Arc<AsyncMutex<GameCardItemRepositoryImpl>> {
+        lazy_static! {
+            static ref INSTANCE: Arc<AsyncMutex<GameCardItemRepositoryImpl>> =
+                Arc::new(
+                    AsyncMutex::new(
+                        GameCardItemRepositoryImpl::new()));
+        }
+        INSTANCE.clone()
+    }
 }
 
 impl GameCardItemRepository for GameCardItemRepositoryImpl {
-    unsafe fn call_item_card_repository_table(&self, use_support_card_request: UseItemCardRequest) -> UseItemCardResponse {
+    unsafe fn call_item_card_repository_handler(&self, item_card_id: i32) -> GameCardItemEffect {
         println!("GameCardSupportRepositoryImpl: call_support_card_repository_table()");
 
-        UseItemCardResponse
+        let item_card_execution_handler = self.item_card_functions.get(&item_card_id);
+        item_card_execution_handler.unwrap().use_item_card()
     }
 }
 
@@ -71,30 +94,13 @@ mod tests {
     fn test_game_card_item_repository_impl() {
         let repository = GameCardItemRepositoryImpl::new();
 
-        let number1 = 2;
-        let function1 = repository.get_function(number1);
-        assert!(function1.is_some());
+        let item_number = 8;
+        let function = repository.get_function(item_number);
+        assert!(function.is_some());
 
-        let response1 = unsafe { function1.unwrap().use_item_card(UseItemCardRequest) };
-        assert_eq!(response1, UseItemCardResponse);
-
-        let number2 = 93;
-        let function2 = repository.get_function(number2);
-        assert!(function2.is_none());
-    }
-
-    #[test]
-    fn test_none_function() {
-        let mut output = Vec::new();
-        let mut capture = io::Cursor::new(&mut output);
-        writeln!(capture, "아직 구현되지 않은 기능입니다.").unwrap();
-
-        let none_function = NoneFunction;
-        let request = UseItemCardRequest;
-        unsafe { none_function.use_item_card(request); }
-
-        let captured_output = String::from_utf8(output.clone()).unwrap();
-        assert_eq!(captured_output.trim(), "아직 구현되지 않은 기능입니다.");
+        let response = unsafe { function.unwrap().use_item_card() };
+        assert_eq!(response.get_required_energy().get_required_energy_race(), &RaceEnum::Undead);
+        println!("item effect: {:?}", response)
     }
 }
 
