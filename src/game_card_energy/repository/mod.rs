@@ -1,0 +1,2 @@
+pub mod game_card_energy_repository;
+pub mod game_card_energy_repository_impl;
