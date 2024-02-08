@@ -89,7 +89,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
     async fn request_to_use_energy_boost_support(&self, energy_boost_support_request_form: EnergyBoostSupportRequestForm) -> EnergyBoostSupportResponseForm {
         println!("GameCardSupportControllerImpl: request_to_use_energy_boost_support()");
 
-        // 0. Redis에서 토큰을 가지고 있는지 검증
+        // 1. Redis에서 토큰을 가지고 있는지 검증
         let account_unique_id = self.is_valid_session(energy_boost_support_request_form.to_session_validation_request()).await;
         if account_unique_id == -1 {
             return EnergyBoostSupportResponseForm::new(false)
@@ -99,8 +99,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let support_card_number_string = energy_boost_support_request_form.get_support_card_number();
         let support_card_number = support_card_number_string.parse::<i32>().unwrap();
 
-        // TODO: 쪼갤 것인지 고민이 필요하다 생각했지만 무조건 쪼개자 (만들다 보니 이거 했는지 안 했는지 확인이 어려움)
-        // 1.1. GameProtocolValidation Service 호출하여 Hand에 있는지 확인하여 해킹 여부 검증
+        // 2. GameProtocolValidation Service 호출하여 Hand에 있는지 확인하여 해킹 여부 검증
         let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
         let check_protocol_hacking_response = game_protocol_validation_service_guard.check_protocol_hacking(
             energy_boost_support_request_form.to_check_protocol_hacking_request(account_unique_id, support_card_number)).await;
@@ -109,7 +108,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return EnergyBoostSupportResponseForm::new(false)
         }
 
-        // 1.2. CardKinds Service를 호출하여 실제 서포트 카드가 맞는지 확인
+        // 3. CardKinds Service를 호출하여 실제 서포트 카드가 맞는지 확인
         let is_it_support_response = game_protocol_validation_service_guard.is_it_support_card(
             energy_boost_support_request_form.to_is_it_support_card_request(support_card_number)).await;
         if !is_it_support_response.is_success() {
@@ -117,7 +116,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return EnergyBoostSupportResponseForm::new(false)
         }
 
-        // 1.3. GameProtocolValidation Service 호출하여 사용 가능한지 조건 검사 (신화 > 4라운드 제약)
+        // 4. GameProtocolValidation Service 호출하여 사용 가능한지 조건 검사 (신화 > 4라운드 제약)
         let can_use_card_response = game_protocol_validation_service_guard.can_use_card(
             energy_boost_support_request_form.to_can_use_card_request(account_unique_id, support_card_number)).await;
         if !can_use_card_response.is_success() {
@@ -125,23 +124,23 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return EnergyBoostSupportResponseForm::new(false)
         }
 
-        // 2. Hand Service 호출하여 카드 사용
+        // 5. Hand Service 호출하여 카드 사용
         let mut game_hand_service_guard = self.game_hand_service.lock().await;
         let use_game_hand_support_card_response = game_hand_service_guard.use_support_card(
             energy_boost_support_request_form.to_use_game_hand_support_card_request(account_unique_id, support_card_number)).await;
         let usage_hand_card = use_game_hand_support_card_response.found_card_id();
 
-        // 3. Support 카드 사용이므로 Tomb Service 호출하여 무덤 배치
+        // 6. Support 카드 사용이므로 Tomb Service 호출하여 무덤 배치
         let mut game_tomb_service_guard = self.game_tomb_service.lock().await;
         let place_to_tomb_response = game_tomb_service_guard.add_used_card_to_tomb(
             energy_boost_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
 
-        // 4. 효과를 적용하기 위해 Support Card Service 호출하여 필요 효과 설정
+        // 7. 효과를 적용하기 위해 Support Card Service 호출하여 필요 효과 설정
         let mut game_card_support_service_guard = self.game_card_support_service.lock().await;
         let calculated_effect_response = game_card_support_service_guard.use_support_card(
             energy_boost_support_request_form.to_calculate_effect_request(support_card_number)).await;
 
-        // 5. 가져온 효과를 기반으로 Deck Service 호출하여 에너지 카드 수량만큼 가능한 검색하여 배치
+        // 8. 가져온 효과를 기반으로 Deck Service 호출하여 에너지 카드 수량만큼 가능한 검색하여 배치
         let mut game_deck_service_guard = self.game_deck_service.lock().await;
         let found_card_from_deck_response = game_deck_service_guard.find_by_card_id_with_count(
             energy_boost_support_request_form.to_found_card_from_deck_request(
@@ -149,24 +148,23 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
                 calculated_effect_response.get_need_to_find_card_id(),
                 calculated_effect_response.get_energy_from_deck().get_energy_count())).await;
 
-        // 6. Field Unit Service를 호출하여 배치한 에너지 부착
+        // 9. Field Unit Service를 호출하여 배치한 에너지 부착
         let energy_from_deck_info = calculated_effect_response.get_energy_from_deck();
         let boost_race_reference = energy_from_deck_info.get_race();
-        let boost_race = *boost_race_reference;
 
         // TODO: 세션을 제외하고 애초에 UI에서 숫자로 전송하면 더 좋다.
-        let unit_number_string = energy_boost_support_request_form.get_unit_number();
-        let unit_number = unit_number_string.parse::<i32>().unwrap();
+        let unit_index_number_string = energy_boost_support_request_form.get_unit_index_number();
+        let unit_index_number = unit_index_number_string.parse::<i32>().unwrap();
 
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let attach_multiple_energy_to_unit_response = game_field_unit_service_guard.attach_multiple_energy_to_game_field_unit(
-            energy_boost_support_request_form.to_attach_multiple_energy_to_field_unit_request(
+        let attach_multiple_energy_to_unit_index_response = game_field_unit_service_guard.attach_multiple_energy_to_field_unit_index(
+            energy_boost_support_request_form.to_attach_multiple_energy_to_unit_index_request(
                 account_unique_id,
-                unit_number,
-                boost_race as i32,
+                unit_index_number,
+                *boost_race_reference,
                 energy_from_deck_info.get_energy_count())).await;
 
-        // 7. Notify Service를 호출하여 Opponent에게 무엇을 할 것인지 알려줌
+        // 10. Notify Service를 호출하여 Opponent에게 무엇을 할 것인지 알려줌
 
         EnergyBoostSupportResponseForm::new(true)
     }

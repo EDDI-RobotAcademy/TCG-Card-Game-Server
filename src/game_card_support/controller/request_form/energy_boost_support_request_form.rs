@@ -1,7 +1,8 @@
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
 use crate::game_deck::service::request::found_card_from_deck_request::FoundCardFromDeckRequest;
-use crate::game_field_unit::service::request::attach_multiple_energy_to_field_unit_request::AttachMultipleEnergyToFieldUnitRequest;
+use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
@@ -11,15 +12,15 @@ use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyR
 #[derive(Debug)]
 pub struct EnergyBoostSupportRequestForm {
     session_id: String,
-    unit_number: String,
+    unit_index_number: String,
     support_card_number: String,
 }
 
 impl EnergyBoostSupportRequestForm {
-    pub fn new(session_id: String, unit_number: String, support_card_number: String) -> Self {
+    pub fn new(session_id: String, unit_index_number: String, support_card_number: String) -> Self {
         EnergyBoostSupportRequestForm {
             session_id: session_id.to_string(),
-            unit_number: unit_number.to_string(),
+            unit_index_number: unit_index_number.to_string(),
             support_card_number: support_card_number.to_string(),
         }
     }
@@ -27,8 +28,8 @@ impl EnergyBoostSupportRequestForm {
     pub fn get_session_id(&self) -> &str {
         &self.session_id
     }
-    pub fn get_unit_number(&self) -> &str {
-        &self.unit_number
+    pub fn get_unit_index_number(&self) -> &str {
+        &self.unit_index_number
     }
     pub fn get_support_card_number(&self) -> &str {
         &self.support_card_number
@@ -67,11 +68,11 @@ impl EnergyBoostSupportRequestForm {
         FoundCardFromDeckRequest::new(account_unique_id, need_to_find_card_id, energy_count)
     }
 
-    pub fn to_attach_multiple_energy_to_field_unit_request(&self, account_unique_id: i32,
+    pub fn to_attach_multiple_energy_to_unit_index_request(&self, account_unique_id: i32,
                                                            unit_number: i32,
-                                                           boost_race: i32,
-                                                           energy_count: i32) -> AttachMultipleEnergyToFieldUnitRequest {
+                                                           boost_race: RaceEnum,
+                                                           energy_count: i32) -> AttachMultipleEnergyToUnitIndexRequest {
 
-        AttachMultipleEnergyToFieldUnitRequest::new(account_unique_id, unit_number, boost_race, energy_count)
+        AttachMultipleEnergyToUnitIndexRequest::new(account_unique_id, unit_number, boost_race, energy_count)
     }
 }
