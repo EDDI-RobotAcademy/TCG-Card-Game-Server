@@ -32,6 +32,7 @@ use crate::request_generator::check_battle_prepare_request_generator::create_che
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
 use crate::request_generator::account_deck_card_request_generator::{create_account_deck_card_list_request_form, create_account_deck_configuration_request_form};
 use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
+use crate::request_generator::mulligan_request_generator::create_mulligan_request_form;
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::request_generator::shop_request_generator::{create_get_card_default_request};
 use crate::request_generator::use_hand_energy_request_generator::create_use_hand_energy_request_form;
@@ -227,7 +228,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            32 => {
+            31 => {
                 // Account Card List
                 if let Some(request) = create_account_card_list_request(&data) {
                     let account_card_service_mutex = AccountCardServiceImpl::get_instance();
@@ -331,7 +332,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     let shop_service_mutex = ShopServiceImpl::get_instance();
                     let mut shop_service = shop_service_mutex.lock().await;
 
-                    let response = shop_service.get_card_default(request).await;
+                    let response = shop_service.get_specific_race_card_default(request).await;
                     let response_type = Some(ResponseType::SHOP_GET_CARD_DEFAULT(response));
 
                     response_type
@@ -403,6 +404,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = client_program_service.client_exit_program(request).await;
                     let response_type = Some(ResponseType::PROGRAM_EXIT(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            7777 => {
+                // Mulligan
+                if let Some(request_form) = create_mulligan_request_form(&data) {
+                    let game_hand_controller_mutex = GameHandControllerImpl::get_instance();
+                    let game_hand_controller = game_hand_controller_mutex.lock().await;
+
+                    let response_form = game_hand_controller.execute_mulligan_procedure(request_form).await;
+                    let response_type = Some(ResponseType::CHANGE_FIRST_HAND(response_form));
 
                     response_type
                 } else {
