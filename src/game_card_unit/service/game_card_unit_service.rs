@@ -1,8 +1,9 @@
 use async_trait::async_trait;
-use crate::game_card_unit::entity::game_card_unit_effect::GameCardUnitEffect;
-use crate::game_card_unit::service::request::calculate_unit_effect_request::CalculateUnitEffectRequest;
+
+use crate::game_card_unit::service::request::summary_unit_card_info_request::SummaryUnitCardInfoRequest;
+use crate::game_card_unit::service::response::summary_unit_card_info_response::SummaryUnitCardInfoResponse;
 
 #[async_trait]
 pub trait GameCardUnitService {
-    async fn use_unit_card(&mut self, calculate_unit_effect_request: CalculateUnitEffectRequest) -> GameCardUnitEffect;
+    async fn summary_unit_card(&mut self, summary_unit_card_info_request: SummaryUnitCardInfoRequest) -> SummaryUnitCardInfoResponse;
 }

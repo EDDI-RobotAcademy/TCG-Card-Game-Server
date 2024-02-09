@@ -1,5 +1,5 @@
-use crate::game_card_unit::entity::game_card_unit_effect::GameCardUnitEffect;
+use crate::game_card_unit::entity::game_card_unit_info::GameCardUnitInfo;
 
 pub trait GameCardUnitHandler: Send {
-    unsafe fn use_specific_unit_card(&self) -> GameCardUnitEffect;
+    unsafe fn summary_unit_card(&self) -> GameCardUnitInfo;
 }

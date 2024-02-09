@@ -6,8 +6,9 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 
-use crate::game_card_unit::entity::game_card_unit_effect::GameCardUnitEffect;
+use crate::game_card_unit::entity::game_card_unit_info::GameCardUnitInfo;
 use crate::game_card_unit::handler::game_card_unit_handler::GameCardUnitHandler;
+use crate::game_card_unit::handler::handler_of_31::game_card_unit_31_handler_impl::UnitCard_31_Function;
 use crate::game_card_unit::handler::handler_of_6::game_card_unit_6_handler_impl::UnitCard_6_Function;
 use crate::game_card_unit::repository::game_card_unit_repository::GameCardUnitRepository;
 
@@ -18,10 +19,10 @@ pub struct GameCardUnitRepositoryImpl {
 struct NoneUnitFunction;
 
 impl GameCardUnitHandler for NoneUnitFunction {
-    unsafe fn use_specific_unit_card(&self) -> GameCardUnitEffect {
+    unsafe fn summary_unit_card(&self) -> GameCardUnitInfo {
         println!("아직 구현되지 않은 기능입니다.");
 
-        GameCardUnitEffect::new(
+        GameCardUnitInfo::new(
             RaceEnum::Dummy,
             GradeEnum::Dummy,
             -1,
@@ -30,9 +31,9 @@ impl GameCardUnitHandler for NoneUnitFunction {
             -1,
             -1,
             -1,
-            -1,
-            -1,
-            -1,
+            false,
+            false,
+            false,
             -1)
     }
 }
@@ -49,7 +50,7 @@ impl GameCardUnitRepositoryImpl {
         unit_card_functions.insert(23, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(26, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(27, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
-        unit_card_functions.insert(31, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
+        unit_card_functions.insert(31, Box::new(UnitCard_31_Function) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(32, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(34, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(38, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
@@ -139,11 +140,11 @@ impl GameCardUnitRepositoryImpl {
 }
 
 impl GameCardUnitRepository for GameCardUnitRepositoryImpl {
-    unsafe fn call_unit_card_repository_handler(&self, unit_card_id: i32) -> GameCardUnitEffect {
+    unsafe fn call_unit_card_repository_handler(&self, unit_card_id: i32) -> GameCardUnitInfo {
         println!("GameCardUnitRepositoryImpl: call_unit_card_repository_handler()");
 
-        let support_card_execution_handler = self.unit_card_functions.get(&unit_card_id);
-        support_card_execution_handler.unwrap().use_specific_unit_card()
+        let unit_card_summary_handler = self.unit_card_functions.get(&unit_card_id);
+        unit_card_summary_handler.unwrap().summary_unit_card()
     }
 }
 
@@ -164,8 +165,8 @@ mod tests {
         let function1 = repository.get_function(unit_card_id);
         assert!(function1.is_some());
 
-        let response = unsafe { function1.unwrap().use_specific_unit_card() };
-        assert_eq!(response.race(), RaceEnum::Human);
+        let response = unsafe { function1.unwrap().summary_unit_card() };
+        assert_eq!(response.get_race(), RaceEnum::Human);
 
         println!("6번 유닛: {:?}", response)
     }

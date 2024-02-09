@@ -1,1 +1,1 @@
-pub mod game_card_unit_effect;
+pub mod game_card_unit_info;

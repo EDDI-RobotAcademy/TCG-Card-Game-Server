@@ -3,6 +3,7 @@ use indexmap::IndexMap;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
@@ -46,9 +47,25 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         true
     }
 
-    fn add_unit_to_game_field(&mut self, account_unique_id: i32, unit_card_number: i32) -> bool {
+    // TODO: unit 스펙 관련 사항이 필요함
+    fn add_unit_to_game_field(&mut self,
+                              account_unique_id: i32,
+                              unit_card_number: i32,
+                              unit_race: RaceEnum,
+                              unit_grade: GradeEnum,
+                              unit_attack_point: i32,
+                              unit_health_point: i32,
+                              unit_attack_required_energy: i32) -> bool {
+
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            game_field_unit.add_unit_to_game_field(GameFieldUnitCard::new(unit_card_number));
+            game_field_unit.add_unit_to_game_field(
+                GameFieldUnitCard::new(
+                    unit_card_number,
+                    unit_race,
+                    unit_grade,
+                    unit_attack_point,
+                    unit_health_point,
+                    unit_attack_required_energy));
             true
         } else {
             false
@@ -125,7 +142,14 @@ mod tests {
         game_field_unit_repository.create_game_field_unit_object(1);
 
         let unit_card_number = 42;
-        let result = game_field_unit_repository.add_unit_to_game_field(1, unit_card_number);
+        let result = game_field_unit_repository.add_unit_to_game_field(
+            1,
+            unit_card_number,
+            RaceEnum::Chaos,
+            GradeEnum::Legend,
+            35,
+            30,
+            2);
 
         assert!(result);
 
@@ -138,7 +162,14 @@ mod tests {
         game_field_unit_repository.create_game_field_unit_object(1);
 
         let unit_card_number = 42;
-        game_field_unit_repository.add_unit_to_game_field(1, unit_card_number);
+        game_field_unit_repository.add_unit_to_game_field(
+            1,
+            unit_card_number,
+            RaceEnum::Human,
+            GradeEnum::Legend,
+            35,
+            30,
+            1);
         println!("Initial state: {:?}", game_field_unit_repository.get_game_field_unit_map());
 
         // let race = RaceEnumValue::Undead;
@@ -160,10 +191,42 @@ mod tests {
         game_field_unit_repository.create_game_field_unit_object(1);
 
         let unit_card_number = 42;
-        let result = game_field_unit_repository.add_unit_to_game_field(1, unit_card_number);
-        let result = game_field_unit_repository.add_unit_to_game_field(1, 6);
-        let result = game_field_unit_repository.add_unit_to_game_field(1, 2);
-        let result = game_field_unit_repository.add_unit_to_game_field(1, 13);
+        let result = game_field_unit_repository.add_unit_to_game_field(
+            1,
+            unit_card_number,
+            RaceEnum::Human,
+            GradeEnum::Legend,
+            35,
+            30,
+            2);
+
+        let result = game_field_unit_repository.add_unit_to_game_field(
+            1,
+            6,
+            RaceEnum::Undead,
+            GradeEnum::Legend,
+            35,
+            30,
+            2);
+
+        let result = game_field_unit_repository.add_unit_to_game_field(
+            1,
+            2,
+            RaceEnum::Trent,
+            GradeEnum::Legend,
+            35,
+            30,
+            2);
+
+        let result = game_field_unit_repository.add_unit_to_game_field(
+            1,
+            13,
+            RaceEnum::Chaos,
+            GradeEnum::Legend,
+            35,
+            30,
+            2);
+
         assert!(result);
 
         println!("Test Output: {:?}", game_field_unit_repository.get_game_field_unit_map());

@@ -9,6 +9,7 @@ use crate::game_card_support::controller::response_form::energy_boost_support_re
 use crate::game_card_unit::controller::game_card_unit_controller::GameCardUnitController;
 use crate::game_card_unit::controller::request_form::deploy_unit_request_form::DeployUnitRequestForm;
 use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
+use crate::game_card_unit::service::game_card_unit_service::GameCardUnitService;
 
 use crate::game_card_unit::service::game_card_unit_service_impl::GameCardUnitServiceImpl;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
@@ -116,10 +117,23 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             deploy_unit_request_form.to_use_game_hand_unit_card_request(account_unique_id, unit_card_id)).await;
         let usage_hand_card_id = use_game_hand_unit_card_response.get_found_unit_card_id();
 
+        // TODO: 배틀 필드에 배치 할 유닛 카드 정보 요약
+        let mut game_card_service_guard = self.game_card_unit_service.lock().await;
+        let unit_card_info_response = game_card_service_guard.summary_unit_card(
+            deploy_unit_request_form.to_summary_unit_card_info_request(unit_card_id)).await;
+
         // 5. Battle Field에 유닛 배치
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
         let add_unit_to_game_field_response = game_field_unit_service_guard.add_unit_to_game_field(
-            deploy_unit_request_form.to_add_unit_to_game_field_request(account_unique_id, usage_hand_card_id)).await;
+            deploy_unit_request_form.to_add_unit_to_game_field_request(
+                account_unique_id,
+                usage_hand_card_id,
+                unit_card_info_response.get_unit_race(),
+                unit_card_info_response.get_unit_grade(),
+                unit_card_info_response.get_unit_attack_point(),
+                unit_card_info_response.get_unit_health_point(),
+                unit_card_info_response.get_unit_attack_required_energy())).await;
+
         if !add_unit_to_game_field_response.is_success() {
             println!("필드에 유닛 배치 중 문제가 발생하였습니다.");
             return DeployUnitResponseForm::new(false)

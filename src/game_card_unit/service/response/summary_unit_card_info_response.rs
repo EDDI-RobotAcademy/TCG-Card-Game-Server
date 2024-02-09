@@ -1,10 +1,9 @@
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_unit::entity::game_card_unit_info::GameCardUnitInfo;
 
 #[derive(Debug)]
-pub struct AddUnitToGameFieldRequest {
-    account_unique_id: i32,
-    unit_card_id: i32,
+pub struct SummaryUnitCardInfoResponse {
     unit_race: RaceEnum,
     unit_grade: GradeEnum,
     unit_attack_point: i32,
@@ -12,32 +11,20 @@ pub struct AddUnitToGameFieldRequest {
     unit_attack_required_energy: i32,
 }
 
-impl AddUnitToGameFieldRequest {
-    pub fn new(account_unique_id: i32,
-               unit_card_id: i32,
-               unit_race: RaceEnum,
-               unit_grade: GradeEnum,
-               unit_attack_point: i32,
-               unit_health_point: i32,
-               unit_attack_required_energy: i32,) -> Self {
+impl SummaryUnitCardInfoResponse {
+    pub fn new(
+        unit_race: RaceEnum,
+        unit_grade: GradeEnum,
+        unit_attack_point: i32,
+        unit_health_point: i32,
+        unit_attack_required_energy: i32) -> Self {
 
-        AddUnitToGameFieldRequest {
-            account_unique_id,
-            unit_card_id,
+        Self {
             unit_race,
             unit_grade,
             unit_attack_point,
             unit_health_point,
-            unit_attack_required_energy
-        }
-    }
-
-    pub fn get_account_unique_id(&self) -> i32 {
-        self.account_unique_id
-    }
-
-    pub fn get_unit_card_id(&self) -> i32 {
-        self.unit_card_id
+            unit_attack_required_energy }
     }
 
     pub fn get_unit_race(&self) -> RaceEnum {
@@ -59,4 +46,15 @@ impl AddUnitToGameFieldRequest {
     pub fn get_unit_attack_required_energy(&self) -> i32 {
         self.unit_attack_required_energy
     }
+
+    pub fn from_game_card_unit_info(game_card_unit_info: GameCardUnitInfo) -> SummaryUnitCardInfoResponse {
+
+        SummaryUnitCardInfoResponse::new(
+            game_card_unit_info.get_race(),
+            game_card_unit_info.get_grade(),
+            game_card_unit_info.get_attack_point(),
+            game_card_unit_info.get_health_point(),
+            game_card_unit_info.get_attack_required_energy())
+    }
+
 }

@@ -195,9 +195,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let opponent_target_unit_index_string = target_death_item_request_form.get_opponent_target_unit_index();
         let opponent_target_unit_index = opponent_target_unit_index_string.parse::<i32>().unwrap();
 
-        // 10. Field Unit Service를 호출하여 상대 유닛에 즉사 적용 여부 판정(alternatives 필요 여부)
-
-        // TODO: 즉사 or alternatives
+        // TODO: 즉사 or alternatives 고민
         // if (grade > 전설) { alternatives }
         // 즉사 로직 구동
 
