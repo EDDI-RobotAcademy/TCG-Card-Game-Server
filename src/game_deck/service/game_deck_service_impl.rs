@@ -15,12 +15,10 @@ use crate::game_deck::service::request::found_card_from_deck_request::FoundCardF
 use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
 use crate::game_deck::service::request::game_deck_card_list_request::GameDeckCardListRequest;
 use crate::game_deck::service::request::game_deck_start_card_list_request::{GameDeckStartCardListRequest};
-use crate::game_deck::service::request::game_deck_card_redraw_request::GameDeckCardRedrawRequest;
 use crate::game_deck::service::request::game_deck_card_shuffle_request::{GameDeckCardShuffleRequest};
 use crate::game_deck::service::response::found_card_from_deck_response::FoundCardFromDeckResponse;
 use crate::game_deck::service::response::game_deck_card_draw_list_response::GameDeckCardDrawListResponse;
 use crate::game_deck::service::response::game_deck_card_list_response::GameDeckCardListResponse;
-use crate::game_deck::service::response::game_deck_card_redraw_response::GameDeckCardRedrawResponse;
 use crate::game_deck::service::response::game_deck_card_shuffle_response::{GameDeckCardShuffleResponse};
 use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
 use crate::game_hand::repository::game_hand_repository::GameHandRepository;
@@ -169,29 +167,6 @@ impl GameDeckService for GameDeckServiceImpl {
         let deck_card_list = self.get_game_deck_card_ids(account_unique_id).await;
 
         GameDeckCardListResponse::new(deck_card_list)
-    }
-
-    async fn shuffle_and_redraw_deck(&self, game_deck_card_redraw_request: GameDeckCardRedrawRequest) -> GameDeckCardRedrawResponse {
-        println!("GameDeckServiceImpl: shuffle_and_redraw_deck()");
-
-        let session_id = game_deck_card_redraw_request.get_session_id();
-        let account_unique_id = self.parse_account_unique_id(session_id).await;
-
-        let draw_count = game_deck_card_redraw_request.get_redraw_card_count();
-
-        let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
-
-        game_deck_repository_guard.shuffle_game_deck(account_unique_id);
-
-        let redrawn_card_vector = game_deck_repository_guard.draw_deck_card(account_unique_id, draw_count);
-        let remaining_deck_vector = self.get_game_deck_card_ids(account_unique_id).await;
-
-        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
-        game_hand_repository_guard.add_card_list_to_hand(account_unique_id, redrawn_card_vector.clone());
-
-        drop(game_hand_repository_guard);
-
-        GameDeckCardRedrawResponse::new(redrawn_card_vector, remaining_deck_vector)
     }
 
     async fn find_by_card_id_with_count(&self, found_card_from_deck_request: FoundCardFromDeckRequest) -> FoundCardFromDeckResponse {
