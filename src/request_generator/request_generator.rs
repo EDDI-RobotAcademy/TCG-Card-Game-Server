@@ -44,6 +44,7 @@ use crate::request_generator::session_request_generator::create_session_login_re
 use crate::request_generator::shop_request_generator::create_get_card_default_request;
 use crate::request_generator::deploy_unit_request_form_generator::create_deploy_unit_request_form;
 use crate::request_generator::energy_boost_support_request_form_generator::create_energy_boost_support_request_form;
+use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
 use crate::shop::service::shop_service::ShopService;
@@ -390,6 +391,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             1005 => {
+                // Energy Boost Support Usage
                 if let Some(request_form) = create_energy_boost_support_request_form(&data) {
                     let game_card_support_controller_mutex = GameCardSupportControllerImpl::get_instance();
                     let game_card_support_controller = game_card_support_controller_mutex.lock().await;
@@ -410,6 +412,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = game_card_energy_controller.request_to_attach_general_energy(request_form).await;
                     let response_type = Some(ResponseType::ATTACH_GENERAL_ENERGY(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1013 => {
+                // Draw Support Usage
+                if let Some(request_form) = create_general_draw_support_request_form(&data) {
+                    let game_card_support_controller_mutex = GameCardSupportControllerImpl::get_instance();
+                    let game_card_support_controller = game_card_support_controller_mutex.lock().await;
+
+                    let response_form = game_card_support_controller.request_to_use_draw_support(request_form).await;
+                    let response_type = Some(ResponseType::GENERAL_DRAW_SUPPORT_USAGE(response_form));
 
                     response_type
                 } else {
