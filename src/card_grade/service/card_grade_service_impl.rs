@@ -70,4 +70,17 @@ mod tests {
         println!("Card Grade: {:?}", card_grade);
         assert_eq!(card_grade, GradeEnum::Common);
     }
+    #[test]
+    async fn test_get_cards_below_target_grade() {
+        let card_list = vec![25, 8, 36, 19, 2, 26, 35, 93, 32, 31, 30, 151, 20, 33, 9, 27];
+        let target_grade = GradeEnum::Hero;
+
+        let card_grade_service_mutex = CardGradeServiceImpl::get_instance();
+        let card_grade_service_mutex_guard = card_grade_service_mutex.lock().await;
+
+        let card_list_below_hero_grade = card_grade_service_mutex_guard.get_cards_below_target_grade(card_list, target_grade).await;
+
+        assert_eq!(card_list_below_hero_grade.len(), 12);
+        println!("Cards below hero grade : {:?}", card_list_below_hero_grade)
+    }
 }
