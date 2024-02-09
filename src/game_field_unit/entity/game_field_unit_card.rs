@@ -22,6 +22,7 @@ impl GameFieldUnitCard {
                unit_attack_point: i32,
                unit_health_point: i32,
                unit_attack_required_energy: i32) -> GameFieldUnitCard {
+
         GameFieldUnitCard {
             field_unit_card,
             attached_energy_map: AttachedEnergyMap::new(),
@@ -46,6 +47,10 @@ impl GameFieldUnitCard {
     }
     pub fn get_unit_health_point(&self) -> &UnitHealthPoint {
         &self.unit_health_point
+    }
+
+    pub fn increase_max_health(&mut self, increase_point: i32) {
+        self.unit_health_point.increase_max_health(increase_point);
     }
 }
 
@@ -89,5 +94,25 @@ mod tests {
         println!("{:?}", game_field_unit_card);
 
         println!("Test passed: FieldUnit creation, getter, attach_energy, and print_state");
+    }
+
+    #[test]
+    fn test_increase_max_health() {
+        let mut game_field_unit_card = GameFieldUnitCard::new(
+            5,
+            RaceEnum::Chaos,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
+        println!("game_field_unit_card: {:?}", game_field_unit_card);
+
+        game_field_unit_card.increase_max_health(10);
+        println!("game_field_unit_card: {:?}", game_field_unit_card);
+
+        assert_eq!(game_field_unit_card.get_unit_health_point().get_max_health_point(), 30);
+        assert_eq!(game_field_unit_card.get_unit_health_point().get_current_health_point(), 30);
+
+        println!("Test passed: increase_max_health");
     }
 }
