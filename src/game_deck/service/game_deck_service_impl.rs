@@ -175,7 +175,7 @@ impl GameDeckService for GameDeckServiceImpl {
         let found_card_list = game_deck_repository_guard.find_by_card_id_with_count(
             found_card_from_deck_request.get_account_unique_id(),
             found_card_from_deck_request.get_need_to_find_card_id(),
-            found_card_from_deck_request.get_energy_count());
+            found_card_from_deck_request.get_card_count());
 
         FoundCardFromDeckResponse::new(found_card_list)
     }
