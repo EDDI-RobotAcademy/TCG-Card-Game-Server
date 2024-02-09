@@ -11,6 +11,7 @@ impl GameFieldEnergy {
         self.energy_count
     }
     pub fn add_energy_count(&mut self) { self.energy_count += 1 }
+    pub fn remove_energy_count(&mut self) { self.energy_count -= 1 }
 }
 
 #[cfg(test)]
@@ -26,5 +27,12 @@ mod tests {
         let energy = GameFieldEnergy { energy_count: 7 };
         assert_eq!(energy.get_energy_count(), 7);
         println!("Getter test passed. Energy count: {}", energy.get_energy_count());
+    }
+
+    #[test]
+    fn test_remove_energy_count() {
+        let mut energy = GameFieldEnergy::new(3);
+        energy.remove_energy_count();
+        assert_eq!(energy.get_energy_count(), 2)
     }
 }
