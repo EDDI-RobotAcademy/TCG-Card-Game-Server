@@ -20,7 +20,7 @@ pub struct GameCardItemRepositoryImpl {
 struct NoneFunction;
 
 impl GameCardItemHandler for NoneFunction {
-    unsafe fn use_item_card(&self) -> GameCardItemEffect {
+    unsafe fn summary_item_card(&self) -> GameCardItemEffect {
         println!("아직 구현되지 않은 기능입니다.");
 
         GameCardItemEffect::new(
@@ -77,8 +77,8 @@ impl GameCardItemRepository for GameCardItemRepositoryImpl {
     unsafe fn call_item_card_repository_handler(&self, item_card_id: i32) -> GameCardItemEffect {
         println!("GameCardSupportRepositoryImpl: call_support_card_repository_table()");
 
-        let item_card_execution_handler = self.item_card_functions.get(&item_card_id);
-        item_card_execution_handler.unwrap().use_item_card()
+        let item_card_summary_handler = self.item_card_functions.get(&item_card_id);
+        item_card_summary_handler.unwrap().summary_item_card()
     }
 }
 

@@ -27,9 +27,11 @@ use crate::game_hand::service::request::put_cards_on_deck_request::{PutCardsOnDe
 
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
+use crate::game_hand::service::request::use_game_hand_item_card_request::UseGameHandItemCardRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
 use crate::game_hand::service::response::put_cards_on_deck_response::PutCardsOnDeckResponse;
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
+use crate::game_hand::service::response::use_game_hand_item_card_response::UseGameHandItemCardResponse;
 use crate::game_hand::service::response::use_game_hand_support_card_response::UseGameHandSupportCardResponse;
 use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
@@ -191,7 +193,7 @@ impl GameHandService for GameHandServiceImpl {
         let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
         let specific_card_option = game_hand_repository_guard.use_specific_card(
             use_game_hand_support_card_request.get_account_unique_id(),
-            use_game_hand_support_card_request.get_support_card_number());
+            use_game_hand_support_card_request.get_support_card_id());
 
         if specific_card_option.is_none() {
             return UseGameHandSupportCardResponse::new(-1)
@@ -231,5 +233,21 @@ impl GameHandService for GameHandServiceImpl {
         let energy_card = maybe_energy_card.unwrap();
 
         UseGameHandEnergyCardResponse::new(energy_card.get_card())
+    }
+
+    async fn use_item_card(&mut self, use_game_hand_item_card_request: UseGameHandItemCardRequest) -> UseGameHandItemCardResponse {
+        println!("GameHandServiceImpl: use_unit_card()");
+
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        let maybe_item_card = game_hand_repository_guard.use_specific_card(
+            use_game_hand_item_card_request.get_account_unique_id(),
+            use_game_hand_item_card_request.get_item_card_id());
+
+        if maybe_item_card.is_none() {
+            return UseGameHandItemCardResponse::new(-1)
+        }
+        let item_card = maybe_item_card.unwrap();
+
+        UseGameHandItemCardResponse::new(item_card.get_card())
     }
 }
