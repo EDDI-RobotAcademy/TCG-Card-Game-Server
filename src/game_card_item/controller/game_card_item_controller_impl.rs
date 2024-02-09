@@ -5,6 +5,9 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::card_grade::service::card_grade_service::CardGradeService;
+use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::game_card_item::controller::game_card_item_controller::GameCardItemController;
 use crate::game_card_item::controller::request_form::target_death_item_request_form::TargetDeathItemRequestForm;
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
@@ -16,6 +19,7 @@ use crate::game_card_item::service::response::summary_item_card_effect_response:
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_card_support::entity::game_card_support_effect::GameCardSupportEffect;
 use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
+use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
@@ -37,6 +41,7 @@ use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyR
 pub struct GameCardItemControllerImpl {
     game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
     game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
+    card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
     battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
     game_card_item_service: Arc<AsyncMutex<GameCardItemServiceImpl>>,
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
@@ -47,6 +52,7 @@ pub struct GameCardItemControllerImpl {
 impl GameCardItemControllerImpl {
     pub fn new(game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
                game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
+               card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
                battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
                game_card_item_service: Arc<AsyncMutex<GameCardItemServiceImpl>>,
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
@@ -56,6 +62,7 @@ impl GameCardItemControllerImpl {
         GameCardItemControllerImpl {
             game_hand_service,
             game_tomb_service,
+            card_grade_service,
             battle_room_service,
             game_card_item_service,
             game_field_unit_service,
@@ -71,6 +78,7 @@ impl GameCardItemControllerImpl {
                         GameCardItemControllerImpl::new(
                             GameHandServiceImpl::get_instance(),
                             GameTombServiceImpl::get_instance(),
+                            CardGradeServiceImpl::get_instance(),
                             BattleRoomServiceImpl::get_instance(),
                             GameCardItemServiceImpl::get_instance(),
                             GameFieldUnitServiceImpl::get_instance(),
@@ -195,11 +203,23 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let opponent_target_unit_index_string = target_death_item_request_form.get_opponent_target_unit_index();
         let opponent_target_unit_index = opponent_target_unit_index_string.parse::<i32>().unwrap();
 
-        // TODO: 즉사 or alternatives 고민
-        // if (grade > 전설) { alternatives }
-        // 즉사 로직 구동
+        // 10. 타겟 인덱스 유닛이 신화 미만인지 확인
+        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+        let find_target_unit_id_by_index_response = game_field_unit_service_guard.find_target_unit_id_by_index(
+            target_death_item_request_form.to_find_target_unit_id_by_index_request(
+                find_opponent_by_account_id_response.get_opponent_unique_id(),
+                opponent_target_unit_index)).await;
 
-        // 11. Field Unit Service를 호출하여 상대 유닛에 즉사 스킬 적용
+        let card_grade_service_guard = self.card_grade_service.lock().await;
+        let opponent_target_unit_grade = card_grade_service_guard.get_card_grade(
+            &find_target_unit_id_by_index_response.get_found_opponent_unit_id()).await;
+
+        // 11. Field Unit Service를 호출하여 상대 유닛에 Alternatives 적용
+        if opponent_target_unit_grade == GradeEnum::Mythical {
+
+        }
+
+        // 12. Field Unit Service를 호출하여 상대 유닛에 즉사 적용
         // let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
         // let attach_multiple_energy_to_unit_index_response = game_field_unit_service_guard.apply_death_to_opponent_field_unit_index(
         //     target_death_item_request_form.to_apply_death_to_opponent_field_unit_index_request(
