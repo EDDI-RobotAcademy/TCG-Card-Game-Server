@@ -36,14 +36,28 @@ impl GameFieldUnit {
 #[cfg(test)]
 mod tests {
     use rand::Rng;
+    use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
+    use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
     use super::*;
 
     #[test]
     fn test_add_game_field_unit() {
         let mut game_field_unit = GameFieldUnit::new();
 
-        let field_unit1 = GameFieldUnitCard::new(12);
-        let field_unit2 = GameFieldUnitCard::new(34);
+        let field_unit1 = GameFieldUnitCard::new(
+            12,
+            RaceEnum::Chaos,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
+        let field_unit2 = GameFieldUnitCard::new(
+            34,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
 
         game_field_unit.add_unit_to_game_field(field_unit1);
         game_field_unit.add_unit_to_game_field(field_unit2);
@@ -61,8 +75,21 @@ mod tests {
     fn test_add_energy_to_unit() {
         let mut game_field_unit = GameFieldUnit::new();
 
-        let field_unit1 = GameFieldUnitCard::new(3);
-        let field_unit2 = GameFieldUnitCard::new(7);
+        let field_unit1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Human,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
+
+        let field_unit2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Undead,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
 
         game_field_unit.add_unit_to_game_field(field_unit1);
         game_field_unit.add_unit_to_game_field(field_unit2);
@@ -87,8 +114,21 @@ mod tests {
     fn test_find_unit_by_id() {
         let mut game_field_unit = GameFieldUnit::new();
 
-        let field_unit1 = GameFieldUnitCard::new(3);
-        let field_unit2 = GameFieldUnitCard::new(7);
+        let field_unit1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
+
+        let field_unit2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Trent,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
 
         game_field_unit.add_unit_to_game_field(field_unit1);
         game_field_unit.add_unit_to_game_field(field_unit2);
@@ -108,8 +148,21 @@ mod tests {
     fn test_add_energy_to_indexed_unit() {
         let mut game_field_unit = GameFieldUnit::new();
 
-        let field_unit1 = GameFieldUnitCard::new(3);
-        let field_unit2 = GameFieldUnitCard::new(7);
+        let field_unit1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Machine,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
+
+        let field_unit2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Chaos,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
 
         game_field_unit.add_unit_to_game_field(field_unit1);
         game_field_unit.add_unit_to_game_field(field_unit2);

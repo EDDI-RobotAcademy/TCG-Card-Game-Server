@@ -39,14 +39,29 @@ impl GameFieldUnitCardList {
 #[cfg(test)]
 mod tests {
     use rand::Rng;
+    use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
+    use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
     use super::*;
 
     #[test]
     fn test_field_unit_list() {
         let mut game_field_unit_card_list = GameFieldUnitCardList::new();
 
-        let game_field_unit_card1 = GameFieldUnitCard::new(3);
-        let game_field_unit_card2 = GameFieldUnitCard::new(7);
+        let game_field_unit_card1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
+
+        let game_field_unit_card2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Machine,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card2);
 
@@ -62,8 +77,21 @@ mod tests {
     fn test_attach_energy_to_unit() {
         let mut game_field_unit_card_list = GameFieldUnitCardList::new();
 
-        let game_field_unit_card1 = GameFieldUnitCard::new(3);
-        let game_field_unit_card2 = GameFieldUnitCard::new(7);
+        let game_field_unit_card1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
+
+        let game_field_unit_card2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Human,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card2);
 
@@ -82,8 +110,21 @@ mod tests {
     fn test_find_unit_by_id() {
         let mut game_field_unit_card_list = GameFieldUnitCardList::new();
 
-        let game_field_unit_card1 = GameFieldUnitCard::new(3);
-        let game_field_unit_card2 = GameFieldUnitCard::new(7);
+        let game_field_unit_card1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
+
+        let game_field_unit_card2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Trent,
+            GradeEnum::Hero,
+            20,
+            20,
+            1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card2);
 
@@ -105,7 +146,14 @@ mod tests {
 
         for _ in 0..7 {
             let random_id = rng.gen_range(1..=100);
-            let game_field_unit_card = GameFieldUnitCard::new(random_id);
+            let game_field_unit_card = GameFieldUnitCard::new(
+                random_id,
+                RaceEnum::Angel,
+                GradeEnum::Hero,
+                20,
+                20,
+                1);
+
             println!("random_id: {}", random_id);
             game_field_unit_card_list.add_field_unit(game_field_unit_card);
             test_vector.push(random_id);
@@ -129,7 +177,14 @@ mod tests {
 
         for _ in 0..7 {
             let random_id = rng.gen_range(1..=100);
-            let game_field_unit_card = GameFieldUnitCard::new(random_id);
+            let game_field_unit_card = GameFieldUnitCard::new(
+                random_id,
+                RaceEnum::Chaos,
+                GradeEnum::Hero,
+                20,
+                20,
+                1);
+
             game_field_unit_card_list.add_field_unit(game_field_unit_card);
         }
 

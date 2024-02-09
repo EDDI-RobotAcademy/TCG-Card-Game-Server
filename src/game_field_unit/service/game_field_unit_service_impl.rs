@@ -50,7 +50,13 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let response = game_field_unit_repository_guard.add_unit_to_game_field(
-            add_unit_to_game_field_request.get_account_unique_id(), add_unit_to_game_field_request.get_unit_card_id());
+            add_unit_to_game_field_request.get_account_unique_id(),
+            add_unit_to_game_field_request.get_unit_card_id(),
+            add_unit_to_game_field_request.get_unit_race(),
+            add_unit_to_game_field_request.get_unit_grade(),
+            add_unit_to_game_field_request.get_unit_attack_point(),
+            add_unit_to_game_field_request.get_unit_health_point(),
+            add_unit_to_game_field_request.get_unit_attack_required_energy(),);
 
         AddUnitToGameFieldResponse::new(response)
     }
