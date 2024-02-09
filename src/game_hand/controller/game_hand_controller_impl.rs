@@ -1,4 +1,3 @@
-use std::ops::Deref;
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
@@ -18,7 +17,6 @@ pub struct GameHandControllerImpl {
     game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
     game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
-    // redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
 }
 
 impl GameHandControllerImpl {
@@ -29,7 +27,6 @@ impl GameHandControllerImpl {
             game_hand_service,
             game_deck_service,
             game_protocol_validation_service,
-            // redis_in_memory_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameHandControllerImpl>> {
