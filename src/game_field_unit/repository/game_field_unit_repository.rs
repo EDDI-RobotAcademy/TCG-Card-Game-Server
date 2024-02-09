@@ -12,7 +12,10 @@ pub trait GameFieldUnitRepository {
                               unit_grade: GradeEnum,
                               unit_attack_point: i32,
                               unit_health_point: i32,
-                              unit_attack_required_energy: i32) -> bool;
+                              unit_attack_required_energy: i32,
+                              first_passive_skill: bool,
+                              second_passive_skill: bool,
+                              third_passive_skill: bool) -> bool;
     fn attach_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race_enum: RaceEnum, quantity: i32);
     fn attach_multiple_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race_number: i32, quantity: i32) -> bool;
     fn find_unit_by_id(&self, account_unique_id: i32, unit_card_number: i32) -> Option<&GameFieldUnitCard>;

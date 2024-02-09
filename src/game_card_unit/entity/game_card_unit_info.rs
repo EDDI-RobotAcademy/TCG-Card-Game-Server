@@ -85,15 +85,15 @@ impl GameCardUnitInfo {
         self.military_occupational_specialty
     }
 
-    pub fn get_first_passive_skill(&self) -> bool {
+    pub fn has_first_passive_skill(&self) -> bool {
         self.first_passive_skill
     }
 
-    pub fn get_second_passive_skill(&self) -> bool {
+    pub fn has_second_passive_skill(&self) -> bool {
         self.second_passive_skill
     }
 
-    pub fn get_third_passive_skill(&self) -> bool {
+    pub fn has_third_passive_skill(&self) -> bool {
         self.third_passive_skill
     }
 }

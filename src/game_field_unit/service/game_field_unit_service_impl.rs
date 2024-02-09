@@ -56,7 +56,10 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             add_unit_to_game_field_request.get_unit_grade(),
             add_unit_to_game_field_request.get_unit_attack_point(),
             add_unit_to_game_field_request.get_unit_health_point(),
-            add_unit_to_game_field_request.get_unit_attack_required_energy(),);
+            add_unit_to_game_field_request.get_unit_attack_required_energy(),
+            add_unit_to_game_field_request.has_third_passive_skill(),
+            add_unit_to_game_field_request.has_second_passive_skill(),
+            add_unit_to_game_field_request.has_third_passive_skill());
 
         AddUnitToGameFieldResponse::new(response)
     }

@@ -58,7 +58,10 @@ impl DeployUnitRequestForm {
                                              unit_grade: GradeEnum,
                                              unit_attack_point: i32,
                                              unit_health_point: i32,
-                                             unit_attack_required_energy: i32,) -> AddUnitToGameFieldRequest {
+                                             unit_attack_required_energy: i32,
+                                             first_passive_skill: bool,
+                                             second_passive_skill: bool,
+                                             third_passive_skill: bool) -> AddUnitToGameFieldRequest {
 
         AddUnitToGameFieldRequest::new(
             account_unique_id,
@@ -67,7 +70,10 @@ impl DeployUnitRequestForm {
             unit_grade,
             unit_attack_point,
             unit_health_point,
-            unit_attack_required_energy)
+            unit_attack_required_energy,
+            first_passive_skill,
+            second_passive_skill,
+            third_passive_skill)
     }
 
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {

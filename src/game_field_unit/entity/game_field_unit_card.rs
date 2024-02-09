@@ -13,6 +13,9 @@ pub struct GameFieldUnitCard {
     unit_attack_point: i32,
     unit_health_point: UnitHealthPoint,
     unit_attack_required_energy: i32,
+    has_first_passive_skill: bool,
+    has_second_passive_skill: bool,
+    has_third_passive_skill: bool,
 }
 
 impl GameFieldUnitCard {
@@ -21,7 +24,10 @@ impl GameFieldUnitCard {
                field_unit_grade: GradeEnum,
                unit_attack_point: i32,
                unit_health_point: i32,
-               unit_attack_required_energy: i32) -> GameFieldUnitCard {
+               unit_attack_required_energy: i32,
+               has_first_passive_skill: bool,
+               has_second_passive_skill: bool,
+               has_third_passive_skill: bool) -> GameFieldUnitCard {
 
         GameFieldUnitCard {
             field_unit_card,
@@ -30,7 +36,10 @@ impl GameFieldUnitCard {
             field_unit_grade,
             unit_attack_point,
             unit_health_point: UnitHealthPoint::new(unit_health_point),
-            unit_attack_required_energy
+            unit_attack_required_energy,
+            has_first_passive_skill,
+            has_second_passive_skill,
+            has_third_passive_skill
         }
     }
 
@@ -42,11 +51,12 @@ impl GameFieldUnitCard {
         &self.attached_energy_map
     }
 
-    pub fn attach_energy(&mut self, race: RaceEnumValue, quantity: i32) {
-        self.attached_energy_map.add_energy(race, quantity);
-    }
     pub fn get_unit_health_point(&self) -> &UnitHealthPoint {
         &self.unit_health_point
+    }
+
+    pub fn attach_energy(&mut self, race: RaceEnumValue, quantity: i32) {
+        self.attached_energy_map.add_energy(race, quantity);
     }
 
     pub fn increase_max_health(&mut self, increase_point: i32) {
@@ -66,7 +76,11 @@ mod tests {
             GradeEnum::Hero,
             20,
             20,
-            1);
+            1,
+            false,
+            false,
+            false);
+
         assert_eq!(game_field_unit_card.get_card(), 5);
         println!("Test passed: FieldUnit creation and getter");
     }
@@ -79,7 +93,11 @@ mod tests {
             GradeEnum::Hero,
             20,
             20,
-            1);
+            1,
+            false,
+            false,
+            false);
+
         assert_eq!(game_field_unit_card.get_card(), 5);
         assert_eq!(game_field_unit_card.get_attached_energy().get_all_energy().len(), 0);
 
@@ -104,7 +122,11 @@ mod tests {
             GradeEnum::Hero,
             20,
             20,
-            1);
+            1,
+            false,
+            false,
+            false);
+
         println!("game_field_unit_card: {:?}", game_field_unit_card);
 
         game_field_unit_card.increase_max_health(10);
