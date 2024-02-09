@@ -8,7 +8,7 @@ use crate::game_card_item::service::response::use_item_card_response::UseItemCar
 pub struct ItemCard_8_Function;
 
 impl GameCardItemHandler for ItemCard_8_Function {
-    unsafe fn use_item_card(&self) -> GameCardItemEffect {
+    unsafe fn summary_item_card(&self) -> GameCardItemEffect {
         println!("ItemCard_8_Function: use_item_card()");
 
         GameCardItemEffect::new(RaceEnum::Undead, 2, 30, GradeEnum::Legend)
