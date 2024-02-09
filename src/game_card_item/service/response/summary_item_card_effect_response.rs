@@ -45,8 +45,8 @@ impl SummaryItemCardEffectResponse {
         let required_energy = game_card_item_effect.get_required_energy();
         SummaryItemCardEffectResponse::new(
             *required_energy.get_required_energy_race(),
-            *required_energy.get_required_energy_count(),
-            *game_card_item_effect.get_alternatives_damage(),
-            *game_card_item_effect.get_apply_target_minimum_grade())
+            required_energy.get_required_energy_count(),
+            game_card_item_effect.get_alternatives_damage(),
+            game_card_item_effect.get_apply_target_minimum_grade())
     }
 }

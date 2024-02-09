@@ -114,7 +114,7 @@ impl GameCardItemControllerImpl {
         let mut game_hand_service_guard = self.game_hand_service.lock().await;
         let use_game_hand_item_card_response = game_hand_service_guard.use_item_card(use_game_hand_item_card_request).await;
         drop(game_hand_service_guard);
-        use_game_hand_item_card_response.found_card_id()
+        use_game_hand_item_card_response.get_found_item_card_id()
     }
 
     async fn place_used_card_to_tomb(&self, place_to_tomb_request: PlaceToTombRequest) {
@@ -180,7 +180,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         // 7. Hand Service 호출하여 카드 사용
         let usage_hand_card = self.use_item_card(
-            target_death_item_request_form.to_use_game_hand_support_card_request(account_unique_id, item_card_id)).await;
+            target_death_item_request_form.to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
 
         // 8. Item 카드 사용이므로 Tomb Service 호출하여 무덤 배치
         self.place_used_card_to_tomb(
