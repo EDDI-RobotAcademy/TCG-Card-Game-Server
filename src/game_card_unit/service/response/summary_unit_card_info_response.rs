@@ -9,6 +9,9 @@ pub struct SummaryUnitCardInfoResponse {
     unit_attack_point: i32,
     unit_health_point: i32,
     unit_attack_required_energy: i32,
+    first_passive_skill: bool,
+    second_passive_skill: bool,
+    third_passive_skill: bool,
 }
 
 impl SummaryUnitCardInfoResponse {
@@ -17,14 +20,20 @@ impl SummaryUnitCardInfoResponse {
         unit_grade: GradeEnum,
         unit_attack_point: i32,
         unit_health_point: i32,
-        unit_attack_required_energy: i32) -> Self {
+        unit_attack_required_energy: i32,
+        first_passive_skill: bool,
+        second_passive_skill: bool,
+        third_passive_skill: bool) -> Self {
 
         Self {
             unit_race,
             unit_grade,
             unit_attack_point,
             unit_health_point,
-            unit_attack_required_energy }
+            unit_attack_required_energy,
+            first_passive_skill,
+            second_passive_skill,
+            third_passive_skill}
     }
 
     pub fn get_unit_race(&self) -> RaceEnum {
@@ -47,6 +56,18 @@ impl SummaryUnitCardInfoResponse {
         self.unit_attack_required_energy
     }
 
+    pub fn has_first_passive_skill(&self) -> bool {
+        self.first_passive_skill
+    }
+
+    pub fn has_second_passive_skill(&self) -> bool {
+        self.second_passive_skill
+    }
+
+    pub fn has_third_passive_skill(&self) -> bool {
+        self.third_passive_skill
+    }
+
     pub fn from_game_card_unit_info(game_card_unit_info: GameCardUnitInfo) -> SummaryUnitCardInfoResponse {
 
         SummaryUnitCardInfoResponse::new(
@@ -54,7 +75,9 @@ impl SummaryUnitCardInfoResponse {
             game_card_unit_info.get_grade(),
             game_card_unit_info.get_attack_point(),
             game_card_unit_info.get_health_point(),
-            game_card_unit_info.get_attack_required_energy())
+            game_card_unit_info.get_attack_required_energy(),
+            game_card_unit_info.has_first_passive_skill(),
+            game_card_unit_info.has_second_passive_skill(),
+            game_card_unit_info.has_third_passive_skill())
     }
-
 }

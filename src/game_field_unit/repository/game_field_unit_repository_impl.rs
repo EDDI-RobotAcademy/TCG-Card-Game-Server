@@ -55,7 +55,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
                               unit_grade: GradeEnum,
                               unit_attack_point: i32,
                               unit_health_point: i32,
-                              unit_attack_required_energy: i32) -> bool {
+                              unit_attack_required_energy: i32,
+                              first_passive_skill: bool,
+                              second_passive_skill: bool,
+                              third_passive_skill: bool) -> bool {
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             game_field_unit.add_unit_to_game_field(
@@ -65,7 +68,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
                     unit_grade,
                     unit_attack_point,
                     unit_health_point,
-                    unit_attack_required_energy));
+                    unit_attack_required_energy,
+                    first_passive_skill,
+                    second_passive_skill,
+                    third_passive_skill));
             true
         } else {
             false
@@ -158,7 +164,10 @@ mod tests {
             GradeEnum::Legend,
             35,
             30,
-            2);
+            2,
+            false,
+            false,
+            false);
 
         assert!(result);
 
@@ -178,7 +187,11 @@ mod tests {
             GradeEnum::Legend,
             35,
             30,
-            1);
+            1,
+            false,
+            false,
+            false);
+
         println!("Initial state: {:?}", game_field_unit_repository.get_game_field_unit_map());
 
         // let race = RaceEnumValue::Undead;
@@ -207,7 +220,10 @@ mod tests {
             GradeEnum::Legend,
             35,
             30,
-            2);
+            2,
+            false,
+            false,
+            false);
 
         let result = game_field_unit_repository.add_unit_to_game_field(
             1,
@@ -216,7 +232,10 @@ mod tests {
             GradeEnum::Legend,
             35,
             30,
-            2);
+            2,
+            false,
+            false,
+            false);
 
         let result = game_field_unit_repository.add_unit_to_game_field(
             1,
@@ -225,7 +244,10 @@ mod tests {
             GradeEnum::Legend,
             35,
             30,
-            2);
+            2,
+            false,
+            false,
+            false);
 
         let result = game_field_unit_repository.add_unit_to_game_field(
             1,
@@ -234,7 +256,10 @@ mod tests {
             GradeEnum::Legend,
             35,
             30,
-            2);
+            2,
+            false,
+            false,
+            false);
 
         assert!(result);
 
@@ -265,7 +290,10 @@ mod tests {
             GradeEnum::Legend,
             35,
             30,
-            2);
+            2,
+            false,
+            false,
+            false);
 
         let current_max_health = game_field_unit_repository.get_game_field_unit_map()[&1]
             .get_all_unit_list_in_game_field()[0]
