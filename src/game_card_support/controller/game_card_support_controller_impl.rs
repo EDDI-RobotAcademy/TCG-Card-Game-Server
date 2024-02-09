@@ -167,7 +167,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         }
 
         // TODO: 세션을 제외하고 애초에 UI 에서 숫자로 전송하면 더 좋다.
-        let support_card_number_string = energy_boost_support_request_form.get_support_card_number();
+        let support_card_number_string = energy_boost_support_request_form.get_support_card_id();
         let support_card_number = support_card_number_string.parse::<i32>().unwrap();
 
         // 2. Hand 에 있는지 확인하여 해킹 여부 검증
