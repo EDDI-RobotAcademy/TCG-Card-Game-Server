@@ -15,4 +15,5 @@ mod account_card_request_generator;
 mod deploy_unit_request_form_generator;
 mod attach_general_energy_card_request_form_generator;
 mod mulligan_request_generator;
+mod energy_boost_support_request_form_generator;
 
