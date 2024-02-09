@@ -16,7 +16,7 @@ use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyR
 pub struct EnergyBoostSupportRequestForm {
     session_id: String,
     unit_index_number: String,
-    support_card_number: String,
+    support_card_id: String,
 }
 
 impl EnergyBoostSupportRequestForm {
@@ -24,7 +24,7 @@ impl EnergyBoostSupportRequestForm {
         EnergyBoostSupportRequestForm {
             session_id: session_id.to_string(),
             unit_index_number: unit_index_number.to_string(),
-            support_card_number: support_card_number.to_string(),
+            support_card_id: support_card_number.to_string(),
         }
     }
 
@@ -34,8 +34,8 @@ impl EnergyBoostSupportRequestForm {
     pub fn get_unit_index_number(&self) -> &str {
         &self.unit_index_number
     }
-    pub fn get_support_card_number(&self) -> &str {
-        &self.support_card_number
+    pub fn get_support_card_id(&self) -> &str {
+        &self.support_card_id
     }
 
     pub fn to_session_validation_request(&self) -> GetValueWithKeyRequest {

@@ -20,6 +20,8 @@ use crate::client_program::service::client_program_service::ClientProgramService
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
 use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
 use crate::game_card_energy::controller::game_card_energy_controller_impl::GameCardEnergyControllerImpl;
+use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
+use crate::game_card_support::controller::game_card_support_controller_impl::GameCardSupportControllerImpl;
 use crate::game_card_unit::controller::game_card_unit_controller::GameCardUnitController;
 use crate::game_card_unit::controller::game_card_unit_controller_impl::GameCardUnitControllerImpl;
 use crate::game_deck::service::game_deck_service::GameDeckService;
@@ -41,6 +43,7 @@ use crate::request_generator::mulligan_request_generator::create_mulligan_reques
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::request_generator::shop_request_generator::create_get_card_default_request;
 use crate::request_generator::deploy_unit_request_form_generator::create_deploy_unit_request_form;
+use crate::request_generator::energy_boost_support_request_form_generator::create_energy_boost_support_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
 use crate::shop::service::shop_service::ShopService;
@@ -380,6 +383,19 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = game_card_unit_controller.request_to_deploy_unit(request_form).await;
                     let response_type = Some(ResponseType::DEPLOY_UNIT_USAGE(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1005 => {
+                if let Some(request_form) = create_energy_boost_support_request_form(&data) {
+                    let game_card_support_controller_mutex = GameCardSupportControllerImpl::get_instance();
+                    let game_card_support_controller = game_card_support_controller_mutex.lock().await;
+
+                    let response_form = game_card_support_controller.request_to_use_energy_boost_support(request_form).await;
+                    let response_type = Some(ResponseType::ENERGY_BOOST_SUPPORT_USAGE(response_form));
 
                     response_type
                 } else {
