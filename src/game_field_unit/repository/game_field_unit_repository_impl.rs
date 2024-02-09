@@ -125,6 +125,17 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             false
         }
     }
+
+    fn find_target_unit_id_by_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32) -> i32 {
+        if let Some(opponent_game_field_unit) = self.game_field_unit_map.get(&opponent_unique_id) {
+            if (0..opponent_game_field_unit.get_all_unit_list_in_game_field().len() as i32).contains(&opponent_target_unit_index) {
+                let target_unit_card = &opponent_game_field_unit.get_all_unit_list_in_game_field()[opponent_target_unit_index as usize];
+
+                return target_unit_card.get_card();
+            }
+        }
+        -1
+    }
 }
 
 #[cfg(test)]
@@ -309,5 +320,38 @@ mod tests {
             .get_max_health_point();
 
         assert_eq!(updated_max_health, current_max_health + increase_amount);
+    }
+
+    #[tokio::test]
+    async fn test_find_target_unit_id_by_index() {
+        let mut game_field_unit_repository = GameFieldUnitRepositoryImpl::new();
+        game_field_unit_repository.create_game_field_unit_object(1);
+
+        let opponent_unique_id = 2;
+        let opponent_target_unit_index = 1;
+
+        let result = game_field_unit_repository.find_target_unit_id_by_index(opponent_unique_id, opponent_target_unit_index);
+        println!("Test Output: {:?}", game_field_unit_repository.get_game_field_unit_map());
+        assert_eq!(result, -1);
+
+        game_field_unit_repository.create_game_field_unit_object(2);
+        game_field_unit_repository.add_unit_to_game_field(
+            2,
+            34,
+            RaceEnum::Chaos,
+            GradeEnum::Legend,
+            35,
+            30,
+            2,
+            false,
+            false,
+            false);
+
+        let opponent_unique_id = 2;
+        let opponent_target_unit_index = 0;
+
+        let result = game_field_unit_repository.find_target_unit_id_by_index(opponent_unique_id, opponent_target_unit_index);
+        println!("Test Output: {:?}", game_field_unit_repository.get_game_field_unit_map());
+        assert_eq!(result, 34);
     }
 }

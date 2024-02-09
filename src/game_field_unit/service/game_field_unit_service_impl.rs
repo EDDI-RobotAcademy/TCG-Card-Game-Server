@@ -12,10 +12,12 @@ use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitServi
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
+use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 
 use crate::game_field_unit::service::response::add_unit_to_game_field_response::AddUnitToGameFieldResponse;
 use crate::game_field_unit::service::response::attach_single_energy_to_unit_index_response::AttachSingleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attach_multiple_energy_to_unit_index_response::AttachMultipleEnergyToUnitIndexResponse;
+use crate::game_field_unit::service::response::find_target_unit_id_by_index_response::FindTargetUnitIdByIndexResponse;
 
 
 pub struct GameFieldUnitServiceImpl {
@@ -88,5 +90,16 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             attach_multiple_energy_to_unit_index_request.get_quantity());
 
         AttachMultipleEnergyToUnitIndexResponse::new(true)
+    }
+
+    async fn find_target_unit_id_by_index(&mut self, find_target_unit_id_by_index_request: FindTargetUnitIdByIndexRequest) -> FindTargetUnitIdByIndexResponse {
+        println!("GameFieldUnitServiceImpl: find_target_unit_id_by_index()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let found_target_unit_id = game_field_unit_repository_guard.find_target_unit_id_by_index(
+            find_target_unit_id_by_index_request.get_opponent_unique_id(),
+            find_target_unit_id_by_index_request.get_opponent_target_unit_index());
+
+        FindTargetUnitIdByIndexResponse::new(found_target_unit_id)
     }
 }
