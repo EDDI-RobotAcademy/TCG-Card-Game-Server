@@ -1,4 +1,7 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
+use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_unit::service::request::summary_unit_card_info_request::SummaryUnitCardInfoRequest;
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
@@ -44,9 +47,27 @@ impl DeployUnitRequestForm {
             account_unique_id, unit_card_id)
     }
 
-    pub fn to_add_unit_to_game_field_request(&self, account_unique_id: i32, unit_card_id: i32) -> AddUnitToGameFieldRequest {
+    pub fn to_summary_unit_card_info_request(&self, unit_card_id: i32) -> SummaryUnitCardInfoRequest {
+        SummaryUnitCardInfoRequest::new(unit_card_id)
+    }
+
+    pub fn to_add_unit_to_game_field_request(&self,
+                                             account_unique_id: i32,
+                                             unit_card_id: i32,
+                                             unit_race: RaceEnum,
+                                             unit_grade: GradeEnum,
+                                             unit_attack_point: i32,
+                                             unit_health_point: i32,
+                                             unit_attack_required_energy: i32,) -> AddUnitToGameFieldRequest {
+
         AddUnitToGameFieldRequest::new(
-            account_unique_id, unit_card_id)
+            account_unique_id,
+            unit_card_id,
+            unit_race,
+            unit_grade,
+            unit_attack_point,
+            unit_health_point,
+            unit_attack_required_energy)
     }
 
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
