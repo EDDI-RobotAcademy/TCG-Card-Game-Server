@@ -98,7 +98,7 @@ mod tests {
         let function = repository.get_function(item_number);
         assert!(function.is_some());
 
-        let response = unsafe { function.unwrap().use_item_card() };
+        let response = unsafe { function.unwrap().summary_item_card() };
         assert_eq!(response.get_required_energy().get_required_energy_race(), &RaceEnum::Undead);
         println!("item effect: {:?}", response)
     }
