@@ -110,6 +110,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         return false
     }
+
+    fn increase_max_health_of_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: usize, amount: i32) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            game_field_unit.increase_max_health_of_indexed_unit(unit_card_index, amount);
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[cfg(test)]
@@ -241,5 +250,36 @@ mod tests {
         let found_unit = game_field_unit_repository.find_unit_by_id(1, 12312);
         println!("Found Unit: {:?}", found_unit);
         assert!(found_unit.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_increase_max_health_of_indexed_unit_in_repository() {
+        let mut game_field_unit_repository = GameFieldUnitRepositoryImpl::new();
+        game_field_unit_repository.create_game_field_unit_object(1);
+
+        let unit_card_number = 42;
+        game_field_unit_repository.add_unit_to_game_field(
+            1,
+            unit_card_number,
+            RaceEnum::Chaos,
+            GradeEnum::Legend,
+            35,
+            30,
+            2);
+
+        let current_max_health = game_field_unit_repository.get_game_field_unit_map()[&1]
+            .get_all_unit_list_in_game_field()[0]
+            .get_unit_health_point()
+            .get_max_health_point();
+
+        let increase_amount = 10;
+        game_field_unit_repository.increase_max_health_of_indexed_unit(1, 0, increase_amount);
+
+        let updated_max_health = game_field_unit_repository.get_game_field_unit_map()[&1]
+            .get_all_unit_list_in_game_field()[0]
+            .get_unit_health_point()
+            .get_max_health_point();
+
+        assert_eq!(updated_max_health, current_max_health + increase_amount);
     }
 }

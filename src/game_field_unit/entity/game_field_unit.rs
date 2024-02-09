@@ -31,6 +31,10 @@ impl GameFieldUnit {
     pub fn add_energy_to_indexed_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32) {
         self.game_field_unit.add_energy_to_indexed_unit(unit_card_index, race_enum, quantity);
     }
+
+    pub fn increase_max_health_of_indexed_unit(&mut self, unit_card_index: usize, amount: i32) {
+        self.game_field_unit.increase_max_health_of_indexed_unit(unit_card_index, amount);
+    }
 }
 
 #[cfg(test)]
@@ -182,5 +186,37 @@ mod tests {
             game_field_unit.get_all_unit_list_in_game_field()[index_to_add_energy].get_attached_energy().get_energy_quantity(&race_enum),
             Some(&quantity)
         );
+    }
+
+    #[test]
+    fn test_increase_max_health_of_indexed_unit_in_game_field() {
+        let mut game_field_unit = GameFieldUnit::new();
+        let mut rng = rand::thread_rng();
+
+        for _ in 0..3 {
+            let random_id = rng.gen_range(1..=100);
+            let game_field_unit_card = GameFieldUnitCard::new(
+                random_id,
+                RaceEnum::Chaos,
+                GradeEnum::Hero,
+                20,
+                20,
+                1);
+
+            game_field_unit.add_unit_to_game_field(game_field_unit_card);
+        }
+
+        let index_to_increase_max_health = rng.gen_range(0..3);
+        let original_max_health = game_field_unit.get_all_unit_list_in_game_field()[index_to_increase_max_health].get_unit_health_point().get_max_health_point();
+        let increase_amount = rng.gen_range(1..=10);
+
+        game_field_unit.increase_max_health_of_indexed_unit(index_to_increase_max_health, increase_amount);
+
+        let updated_max_health = game_field_unit.get_all_unit_list_in_game_field()[index_to_increase_max_health].get_unit_health_point().get_max_health_point();
+
+        println!("Original Max Health: {}", original_max_health);
+        println!("Updated Max Health: {}", updated_max_health);
+
+        assert_eq!(updated_max_health, original_max_health + increase_amount);
     }
 }
