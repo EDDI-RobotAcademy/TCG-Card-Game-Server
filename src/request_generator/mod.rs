@@ -11,9 +11,10 @@ pub mod what_is_the_room_number_request_generator;
 pub mod check_battle_prepare_request_generator;
 pub mod account_point_request_generator;
 pub mod game_deck_card_list_request_generator;
-mod account_card_request_generator;
-mod deploy_unit_request_form_generator;
-mod attach_general_energy_card_request_form_generator;
-mod mulligan_request_generator;
-mod energy_boost_support_request_form_generator;
+pub mod account_card_request_generator;
+pub mod deploy_unit_request_form_generator;
+pub mod attach_general_energy_card_request_form_generator;
+pub mod mulligan_request_generator;
+pub mod energy_boost_support_request_form_generator;
+pub mod general_draw_support_request_form_generator;
 
