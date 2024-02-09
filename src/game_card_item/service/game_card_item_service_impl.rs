@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::game_card_energy::service::response::summary_energy_card_effect_response::SummaryEnergyCardEffectResponse;
 
 use crate::game_card_item::entity::game_card_item_effect::GameCardItemEffect;
 use crate::game_card_item::repository::game_card_item_repository::GameCardItemRepository;
@@ -10,6 +11,8 @@ use crate::game_card_item::repository::game_card_item_repository::GameCardItemRe
 use crate::game_card_item::repository::game_card_item_repository_impl::GameCardItemRepositoryImpl;
 use crate::game_card_item::service::game_card_item_service::GameCardItemService;
 use crate::game_card_item::service::request::calculate_item_effect_request::CalculateItemEffectRequest;
+use crate::game_card_item::service::request::summary_item_card_effect_request::SummaryItemCardEffectRequest;
+use crate::game_card_item::service::response::summary_item_card_effect_response::SummaryItemCardEffectResponse;
 
 pub struct GameCardItemServiceImpl {
     game_card_item_repository: Arc<AsyncMutex<GameCardItemRepositoryImpl>>,
@@ -45,5 +48,16 @@ impl GameCardItemService for GameCardItemServiceImpl {
         };
 
         return game_card_item_effect
+    }
+
+    async fn summary_item_card(&mut self, summary_item_card_effect_request: SummaryItemCardEffectRequest) -> SummaryItemCardEffectResponse {
+        println!("GameCardEnergyServiceImpl: summary_item_card()");
+
+        let game_card_item_repository_guard = self.game_card_item_repository.lock().await;
+        let summary_item_card_effect_response = unsafe {
+            game_card_item_repository_guard.call_item_card_repository_handler(summary_item_card_effect_request.get_item_card_id())
+        };
+
+        return SummaryItemCardEffectResponse::from_summary_item_card_effect(summary_item_card_effect_response)
     }
 }

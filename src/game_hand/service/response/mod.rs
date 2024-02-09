@@ -2,3 +2,4 @@ pub mod use_game_hand_unit_card_response;
 pub mod put_cards_on_deck_response;
 pub mod use_game_hand_support_card_response;
 pub mod use_game_hand_energy_card_response;
+pub mod use_game_hand_item_card_response;

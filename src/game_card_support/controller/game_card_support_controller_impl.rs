@@ -146,6 +146,7 @@ impl GameCardSupportControllerImpl {
         game_tomb_service_guard.add_used_card_to_tomb(place_to_tomb_request).await;
     }
 
+    // TODO: hand에서도 use, summary_effect에서도 use라 혼동 -> summary_effect에서는 summary로 표현하도록 수정 필요
     async fn get_summary_of_support_card(&self, calculate_effect_request: CalculateEffectRequest) -> GameCardSupportEffect {
         let mut game_card_support_service_guard = self.game_card_support_service.lock().await;
         let game_card_support_effect = game_card_support_service_guard.use_support_card(calculate_effect_request).await;
