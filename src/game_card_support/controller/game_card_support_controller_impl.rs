@@ -1,15 +1,10 @@
-use std::num::ParseIntError;
-use std::ops::Deref;
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
-
 use tokio::sync::Mutex as AsyncMutex;
+
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
-use crate::card_kinds::service::card_kinds_service::CardKindsService;
-use crate::card_kinds::service::card_kinds_service_impl::CardKindsServiceImpl;
-use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
 use crate::game_card_support::controller::request_form::draw_support_request_form::DrawSupportRequestForm;
 use crate::game_card_support::controller::request_form::energy_boost_support_request_form::EnergyBoostSupportRequestForm;
@@ -20,7 +15,6 @@ use crate::game_card_support::service::game_card_support_service::GameCardSuppor
 
 use crate::game_card_support::service::game_card_support_service_impl::GameCardSupportServiceImpl;
 use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
-use crate::game_card_support::service::response::use_support_card_response::UseSupportCardResponse;
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
@@ -28,21 +22,16 @@ use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnit
 use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
-use crate::game_hand::service::response::use_game_hand_support_card_response::UseGameHandSupportCardResponse;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
-use crate::game_protocol_validation::service::response::can_use_card_response::CanUseCardResponse;
-use crate::game_protocol_validation::service::response::check_protocol_hacking_response::CheckProtocolHackingResponse;
-use crate::game_protocol_validation::service::response::is_it_support_card_response::IsItSupportCardResponse;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
-use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;

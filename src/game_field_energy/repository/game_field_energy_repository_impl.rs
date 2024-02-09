@@ -52,6 +52,18 @@ impl GameFieldEnergyRepository for GameFieldEnergyRepositoryImpl {
 
         false
     }
+    fn remove_field_energy_with_amount(&mut self, account_unique_id: i32, amount: i32) -> bool {
+        println!("FieldEnergyRepositoryImpl: remove_field_energy_with_amount()");
+
+        if let Some(game_field_energy) = self.game_field_energy_map.get_mut(&account_unique_id) {
+            for _ in 0..amount {
+                game_field_energy.remove_energy_count();
+            }
+            return true
+        }
+
+        false
+    }
 }
 
 #[cfg(test)]
@@ -84,7 +96,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_increment_of_field_energy() {
+    async fn test_increment_and_decrement_of_field_energy() {
         let repository = GameFieldEnergyRepositoryImpl::new();
         let instance = Arc::new(AsyncMutex::new(repository));
 
@@ -101,7 +113,16 @@ mod tests {
         assert_eq!(
             guard.get_game_field_energy_map().get(&account_unique_id),
             Some(&GameFieldEnergy::new(2))
-        )
+        );
+
+        guard.remove_field_energy_with_amount(account_unique_id, 2);
+
+        println!("{:?}", guard.get_game_field_energy_map());
+
+        assert_eq!(
+            guard.get_game_field_energy_map().get(&account_unique_id),
+            Some(&GameFieldEnergy::new(0))
+        );
     }
 
     #[tokio::test]
