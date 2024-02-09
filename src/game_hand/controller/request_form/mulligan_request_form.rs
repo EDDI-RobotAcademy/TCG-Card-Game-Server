@@ -1,5 +1,8 @@
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
+use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
+use crate::game_deck::service::request::game_deck_card_list_request::GameDeckCardListRequest;
 use crate::game_deck::service::request::game_deck_card_redraw_request::GameDeckCardRedrawRequest;
+use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
 use crate::game_hand::service::request::put_cards_on_deck_request::PutCardsOnDeckRequest;
 use crate::game_protocol_validation::service::request::check_cards_from_hand_request::CheckCardsFromHandRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
@@ -38,5 +41,17 @@ impl MulliganRequestForm {
             VectorStringToVectorInteger::vector_string_to_vector_i32(self.will_be_changed_card_list.clone());
 
         CheckCardsFromHandRequest::new(&self.session_id, maybe_hand_card_list)
+    }
+    pub fn to_shuffle_deck_request(&self) -> GameDeckCardShuffleRequest {
+        GameDeckCardShuffleRequest::new(self.session_id.clone())
+    }
+    pub fn to_draw_deck_request(&self) -> GameDeckCardDrawRequest {
+        GameDeckCardDrawRequest::new(
+            self.session_id.clone(),
+            self.will_be_changed_card_list.clone().len() as i32
+        )
+    }
+    pub fn to_get_deck_request(&self) -> GameDeckCardListRequest {
+        GameDeckCardListRequest::new(self.session_id.clone())
     }
 }

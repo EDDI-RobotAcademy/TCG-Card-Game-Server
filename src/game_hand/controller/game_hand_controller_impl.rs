@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
@@ -47,7 +48,6 @@ impl GameHandControllerImpl {
 
 #[async_trait]
 impl GameHandController for GameHandControllerImpl {
-    // TODO: redis 랑 naming issue 해결해서 깔끔하게 refactoring 필요
     async fn execute_mulligan_procedure(&self, mulligan_request_form: MulliganRequestForm) -> MulliganResponseForm {
         println!("GameHandControllerImpl: execute_mulligan_procedure()");
 
@@ -78,14 +78,21 @@ impl GameHandController for GameHandControllerImpl {
         drop(game_hand_service_guard);
 
         // deck service
-        let shuffle_and_redraw_request = mulligan_request_form.to_shuffle_and_redraw_card_request();
         let mut game_deck_service_guard = self.game_deck_service.lock().await;
 
-        let shuffle_and_redraw_response =
-            game_deck_service_guard.shuffle_and_redraw_deck(shuffle_and_redraw_request).await;
+        let shuffle_deck_request = mulligan_request_form.to_shuffle_deck_request();
+        game_deck_service_guard.shuffle_deck(shuffle_deck_request).await;
+
+        let draw_deck_request = mulligan_request_form.to_draw_deck_request();
+        let draw_deck_response = game_deck_service_guard.draw_deck(draw_deck_request).await;
+        let draw_card_list_by_mulligan = draw_deck_response.get_drawn_card_list().clone();
+
+        let get_deck_request = mulligan_request_form.to_get_deck_request();
+        let get_deck_response = game_deck_service_guard.get_deck(get_deck_request).await;
+        let deck_card_list_after_mulligan = get_deck_response.get_deck_card_list().clone();
 
         drop(game_deck_service_guard);
 
-        return shuffle_and_redraw_response.to_change_first_hand_response_form()
+        MulliganResponseForm::new(draw_card_list_by_mulligan, deck_card_list_after_mulligan)
     }
 }
