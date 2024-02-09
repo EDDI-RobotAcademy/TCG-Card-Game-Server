@@ -40,6 +40,10 @@ impl GameFieldUnitCardList {
             unit.increase_max_health(amount);
         }
     }
+
+    pub fn find_unit_by_index(&self, index: usize) -> &GameFieldUnitCard {
+        &self.game_field_unit_card_list[index]
+    }
 }
 
 #[cfg(test)]
@@ -59,7 +63,10 @@ mod tests {
             GradeEnum::Hero,
             20,
             20,
-            1);
+            1,
+            false,
+            false,
+            false);
 
         let game_field_unit_card2 = GameFieldUnitCard::new(
             7,
@@ -67,7 +74,11 @@ mod tests {
             GradeEnum::Hero,
             20,
             20,
-            1);
+            1,
+            false,
+            false,
+            false);
+
         game_field_unit_card_list.add_field_unit(game_field_unit_card1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card2);
 
@@ -89,7 +100,10 @@ mod tests {
             GradeEnum::Hero,
             20,
             20,
-            1);
+            1,
+            false,
+            false,
+            false);
 
         let game_field_unit_card2 = GameFieldUnitCard::new(
             7,
@@ -97,7 +111,10 @@ mod tests {
             GradeEnum::Hero,
             20,
             20,
-            1);
+            1,
+            false,
+            false,
+            false);
         game_field_unit_card_list.add_field_unit(game_field_unit_card1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card2);
 
@@ -122,7 +139,10 @@ mod tests {
             GradeEnum::Hero,
             20,
             20,
-            1);
+            1,
+            false,
+            false,
+            false);
 
         let game_field_unit_card2 = GameFieldUnitCard::new(
             7,
@@ -130,7 +150,11 @@ mod tests {
             GradeEnum::Hero,
             20,
             20,
-            1);
+            1,
+            false,
+            false,
+            false);
+
         game_field_unit_card_list.add_field_unit(game_field_unit_card1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card2);
 
@@ -158,7 +182,10 @@ mod tests {
                 GradeEnum::Hero,
                 20,
                 20,
-                1);
+                1,
+                false,
+                false,
+                false);
 
             println!("random_id: {}", random_id);
             game_field_unit_card_list.add_field_unit(game_field_unit_card);
@@ -189,7 +216,10 @@ mod tests {
                 GradeEnum::Hero,
                 20,
                 20,
-                1);
+                1,
+                false,
+                false,
+                false);
 
             game_field_unit_card_list.add_field_unit(game_field_unit_card);
         }
@@ -225,7 +255,10 @@ mod tests {
                 GradeEnum::Hero,
                 20,
                 20,
-                1);
+                1,
+                false,
+                false,
+                false);
 
             game_field_unit_card_list.add_field_unit(game_field_unit_card);
         }
@@ -242,5 +275,43 @@ mod tests {
         println!("Updated Max Health: {}", updated_max_health);
 
         assert_eq!(updated_max_health, original_max_health + increase_amount);
+    }
+
+    #[test]
+    fn test_find_unit_by_index() {
+        let mut game_field_unit_card_list = GameFieldUnitCardList::new();
+
+        let game_field_unit_card1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false);
+
+        let game_field_unit_card2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Trent,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false);
+
+        game_field_unit_card_list.add_field_unit(game_field_unit_card1);
+        game_field_unit_card_list.add_field_unit(game_field_unit_card2);
+
+        let unit_at_index_0 = game_field_unit_card_list.find_unit_by_index(0);
+        println!("Unit at index 0: {:?}", unit_at_index_0);
+        assert_eq!(unit_at_index_0.get_card(), 3);
+
+        let unit_at_index_1 = game_field_unit_card_list.find_unit_by_index(1);
+        println!("Unit at index 1: {:?}", unit_at_index_1);
+        assert_eq!(unit_at_index_1.get_card(), 7);
     }
 }
