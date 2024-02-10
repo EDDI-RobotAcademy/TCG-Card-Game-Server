@@ -60,6 +60,8 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
     }
 
     fn shuffle_game_deck(&mut self, account_unique_id: i32) -> bool {
+        println!("GameDeckRepositoryImpl: shuffle_game_deck()");
+
         if let Some(game_deck) = self.game_deck_map.get_mut(&account_unique_id) {
             game_deck.shuffle_game_deck();
             true
@@ -69,6 +71,8 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
     }
 
     fn draw_deck_card(&mut self, account_unique_id: i32, draw_count: i32) -> Vec<i32> {
+        println!("GameDeckRepositoryImpl: draw_deck_card()");
+
         if let Some(game_deck) = self.game_deck_map.get_mut(&account_unique_id) {
             return game_deck.draw_game_deck(draw_count as usize)
         }
@@ -77,6 +81,8 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
     }
 
     fn add_cards_to_deck(&mut self, account_unique_id: i32, cards: Vec<i32>) -> bool {
+        println!("GameDeckRepositoryImpl: add_cards_to_deck()");
+
         if let Some(game_deck) = self.game_deck_map.get_mut(&account_unique_id) {
             for card in cards {
                 let game_deck_card_form = GameDeckCard::new(card);
@@ -86,11 +92,11 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
         true
     }
 
-    fn find_by_card_id_with_count(&mut self, account_id: i32, need_to_find_card_id: i32, energy_count: i32) -> Vec<i32> {
+    fn find_by_card_id_with_count(&mut self, account_id: i32, need_to_find_card_id: i32, card_count: i32) -> Vec<i32> {
         println!("GameDeckRepositoryImpl: find_by_card_id()");
 
         if let Some(game_deck) = self.game_deck_map.get_mut(&account_id) {
-            return game_deck.find_cards_by_id_with_count(need_to_find_card_id, energy_count as usize);
+            return game_deck.find_cards_by_id_with_count(need_to_find_card_id, card_count as usize);
         }
 
         Vec::new()
