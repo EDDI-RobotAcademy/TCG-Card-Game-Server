@@ -3,6 +3,7 @@ use indexmap::IndexMap;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 
@@ -135,6 +136,19 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             }
         }
         -1
+    }
+
+    fn apply_damage_to_target_unit_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32, damage: i32) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&opponent_unique_id) {
+            let target_unit_index = opponent_target_unit_index as usize;
+
+            if target_unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
+                game_field_unit.apply_damage_to_indexed_unit(target_unit_index, damage);
+                return true;
+            }
+        }
+
+        false
     }
 }
 
@@ -353,5 +367,93 @@ mod tests {
         let result = game_field_unit_repository.find_target_unit_id_by_index(opponent_unique_id, opponent_target_unit_index);
         println!("Test Output: {:?}", game_field_unit_repository.get_game_field_unit_map());
         assert_eq!(result, 34);
+    }
+
+    #[tokio::test]
+    async fn test_apply_damage_to_target_unit_index() {
+        let mut game_field_unit_repository = GameFieldUnitRepositoryImpl::new();
+        game_field_unit_repository.create_game_field_unit_object(1);
+
+        game_field_unit_repository.add_unit_to_game_field(
+            1,
+            42,
+            RaceEnum::Chaos,
+            GradeEnum::Legend,
+            35,
+            30,
+            2,
+            false,
+            false,
+            false,
+        );
+
+        game_field_unit_repository.add_unit_to_game_field(
+            1,
+            42,
+            RaceEnum::Chaos,
+            GradeEnum::Legend,
+            35,
+            30,
+            2,
+            false,
+            false,
+            false,
+        );
+
+        game_field_unit_repository.add_unit_to_game_field(
+            1,
+            42,
+            RaceEnum::Chaos,
+            GradeEnum::Legend,
+            35,
+            30,
+            2,
+            false,
+            false,
+            false,
+        );
+
+        game_field_unit_repository.add_unit_to_game_field(
+            1,
+            42,
+            RaceEnum::Chaos,
+            GradeEnum::Legend,
+            35,
+            30,
+            2,
+            false,
+            false,
+            false,
+        );
+
+        game_field_unit_repository.add_unit_to_game_field(
+            1,
+            42,
+            RaceEnum::Chaos,
+            GradeEnum::Legend,
+            35,
+            30,
+            2,
+            false,
+            false,
+            false,
+        );
+
+        println!("Initial state: {:?}", game_field_unit_repository.get_game_field_unit_map());
+
+        let opponent_unique_id = 1;
+        let opponent_target_unit_index = 3;
+        let damage = 10;
+
+        // Act
+        let result = game_field_unit_repository.apply_damage_to_target_unit_index(
+            opponent_unique_id,
+            opponent_target_unit_index,
+            damage,
+        );
+
+        assert!(result);
+
+        println!("Final state: {:?}", game_field_unit_repository.get_game_field_unit_map());
     }
 }

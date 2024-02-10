@@ -20,6 +20,10 @@ impl UnitHealthPoint {
         self.current_health_point
     }
 
+    pub fn set_current_health_point(&mut self, current_health_point: i32) {
+        self.current_health_point = current_health_point;
+    }
+
     pub fn increase_max_health(&mut self, increase_point: i32) {
         self.max_health_point += increase_point;
         self.current_health_point += increase_point;

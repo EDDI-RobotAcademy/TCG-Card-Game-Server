@@ -62,6 +62,13 @@ impl GameFieldUnitCard {
     pub fn increase_max_health(&mut self, increase_point: i32) {
         self.unit_health_point.increase_max_health(increase_point);
     }
+
+    pub fn apply_damage(&mut self, damage: i32) {
+        let remaining_health = self.unit_health_point.get_current_health_point() - damage;
+        let current_health = remaining_health.max(0);
+
+        self.unit_health_point.set_current_health_point(current_health);
+    }
 }
 
 #[cfg(test)]
@@ -136,5 +143,39 @@ mod tests {
         assert_eq!(game_field_unit_card.get_unit_health_point().get_current_health_point(), 30);
 
         println!("Test passed: increase_max_health");
+    }
+
+    #[test]
+    fn test_apply_damage() {
+        let mut game_field_unit_card = GameFieldUnitCard::new(
+            5,
+            RaceEnum::Chaos,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+        );
+
+        println!("unit: {:?}", game_field_unit_card);
+        game_field_unit_card.apply_damage(5);
+
+        assert_eq!(
+            game_field_unit_card.get_unit_health_point().get_current_health_point(),
+            15
+        );
+
+        println!("unit: {:?}", game_field_unit_card);
+        game_field_unit_card.apply_damage(20);
+
+        assert_eq!(
+            game_field_unit_card.get_unit_health_point().get_current_health_point(),
+            0
+        );
+
+        println!("unit: {:?}", game_field_unit_card);
+        println!("Test passed: apply_damage");
     }
 }
