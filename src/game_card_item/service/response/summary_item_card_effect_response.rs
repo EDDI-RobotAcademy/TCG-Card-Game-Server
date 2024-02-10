@@ -25,19 +25,19 @@ impl SummaryItemCardEffectResponse {
                 apply_target_minimum_grade }
     }
 
-    pub fn required_energy_race(&self) -> RaceEnum {
+    pub fn get_required_energy_race(&self) -> RaceEnum {
         self.required_energy_race
     }
 
-    pub fn required_energy_count(&self) -> i32 {
+    pub fn get_required_energy_count(&self) -> i32 {
         self.required_energy_count
     }
 
-    pub fn alternatives_damage(&self) -> i32 {
+    pub fn get_alternatives_damage(&self) -> i32 {
         self.alternatives_damage
     }
 
-    pub fn apply_target_minimum_grade(&self) -> GradeEnum {
+    pub fn get_apply_target_minimum_grade(&self) -> GradeEnum {
         self.apply_target_minimum_grade
     }
 
