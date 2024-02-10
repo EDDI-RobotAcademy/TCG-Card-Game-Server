@@ -50,6 +50,14 @@ impl GameFieldUnitCardList {
             unit.apply_damage(damage);
         }
     }
+
+    pub fn apply_death_to_indexed_unit(&mut self, unit_card_index: usize) {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            let unit_health_point = unit.get_mut_unit_health_point();
+            unit_health_point.set_current_health_point(0);
+            unit.set_is_alive(false);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -72,7 +80,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         let game_field_unit_card2 = GameFieldUnitCard::new(
             7,
@@ -83,7 +92,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         game_field_unit_card_list.add_field_unit(game_field_unit_card1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card2);
@@ -109,7 +119,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         let game_field_unit_card2 = GameFieldUnitCard::new(
             7,
@@ -120,7 +131,9 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
+
         game_field_unit_card_list.add_field_unit(game_field_unit_card1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card2);
 
@@ -148,7 +161,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         let game_field_unit_card2 = GameFieldUnitCard::new(
             7,
@@ -159,7 +173,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         game_field_unit_card_list.add_field_unit(game_field_unit_card1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card2);
@@ -191,7 +206,8 @@ mod tests {
                 1,
                 false,
                 false,
-                false);
+                false,
+                true);
 
             println!("random_id: {}", random_id);
             game_field_unit_card_list.add_field_unit(game_field_unit_card);
@@ -225,7 +241,8 @@ mod tests {
                 1,
                 false,
                 false,
-                false);
+                false,
+                true);
 
             game_field_unit_card_list.add_field_unit(game_field_unit_card);
         }
@@ -264,7 +281,8 @@ mod tests {
                 1,
                 false,
                 false,
-                false);
+                false,
+                true);
 
             game_field_unit_card_list.add_field_unit(game_field_unit_card);
         }
@@ -296,7 +314,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         let game_field_unit_card2 = GameFieldUnitCard::new(
             7,
@@ -307,7 +326,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         game_field_unit_card_list.add_field_unit(game_field_unit_card1);
         game_field_unit_card_list.add_field_unit(game_field_unit_card2);
@@ -335,6 +355,7 @@ mod tests {
             false,
             false,
             false,
+            true
         );
 
         let game_field_unit_card2 = GameFieldUnitCard::new(
@@ -347,6 +368,7 @@ mod tests {
             false,
             false,
             false,
+            true
         );
 
         game_field_unit_card_list.add_field_unit(game_field_unit_card1.clone());

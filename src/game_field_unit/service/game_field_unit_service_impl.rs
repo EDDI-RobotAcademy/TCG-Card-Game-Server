@@ -11,12 +11,14 @@ use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitServi
 
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
+use crate::game_field_unit::service::request::apply_instant_death_to_target_unit_index_request::ApplyInstantDeathToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 
 use crate::game_field_unit::service::response::add_unit_to_game_field_response::AddUnitToGameFieldResponse;
 use crate::game_field_unit::service::response::apply_damage_to_target_unit_index_response::ApplyDamageToTargetUnitIndexResponse;
+use crate::game_field_unit::service::response::apply_instant_death_to_target_unit_index_response::ApplyInstantDeathToTargetUnitIndexResponse;
 use crate::game_field_unit::service::response::attach_single_energy_to_unit_index_response::AttachSingleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attach_multiple_energy_to_unit_index_response::AttachMultipleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::find_target_unit_id_by_index_response::FindTargetUnitIdByIndexResponse;
@@ -109,11 +111,22 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         println!("GameFieldUnitServiceImpl: apply_damage_to_target_unit_index()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        let found_target_unit_id = game_field_unit_repository_guard.apply_damage_to_target_unit_index(
+        let response = game_field_unit_repository_guard.apply_damage_to_target_unit_index(
             apply_damage_to_target_unit_index_response.get_opponent_unique_id(),
             apply_damage_to_target_unit_index_response.get_opponent_target_unit_index(),
             apply_damage_to_target_unit_index_response.get_damage());
 
-        ApplyDamageToTargetUnitIndexResponse::new(found_target_unit_id)
+        ApplyDamageToTargetUnitIndexResponse::new(response)
+    }
+
+    async fn apply_instant_death_to_target_unit_index(&mut self, apply_instant_death_to_target_unit_index_request: ApplyInstantDeathToTargetUnitIndexRequest) -> ApplyInstantDeathToTargetUnitIndexResponse {
+        println!("GameFieldUnitServiceImpl: apply_instant_death_to_target_unit_index()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let response = game_field_unit_repository_guard.apply_instant_death_to_target_unit_index(
+            apply_instant_death_to_target_unit_index_request.get_opponent_unique_id(),
+            apply_instant_death_to_target_unit_index_request.get_opponent_target_unit_index());
+
+        ApplyInstantDeathToTargetUnitIndexResponse::new(response)
     }
 }

@@ -72,7 +72,8 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
                     unit_attack_required_energy,
                     first_passive_skill,
                     second_passive_skill,
-                    third_passive_skill));
+                    third_passive_skill,
+                    true));
             true
         } else {
             false
@@ -144,6 +145,19 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
             if target_unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
                 game_field_unit.apply_damage_to_indexed_unit(target_unit_index, damage);
+                return true;
+            }
+        }
+
+        false
+    }
+
+    fn apply_instant_death_to_target_unit_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&opponent_unique_id) {
+            let target_unit_index = opponent_target_unit_index as usize;
+
+            if target_unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
+                game_field_unit.apply_death_to_indexed_unit(target_unit_index);
                 return true;
             }
         }

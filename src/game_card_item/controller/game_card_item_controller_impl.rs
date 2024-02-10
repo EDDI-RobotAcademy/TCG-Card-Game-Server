@@ -225,11 +225,10 @@ impl GameCardItemController for GameCardItemControllerImpl {
         }
 
         // 12. Field Unit Service를 호출하여 상대 유닛에 즉사 적용
-        // let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        // let attach_multiple_energy_to_unit_index_response = game_field_unit_service_guard.apply_death_to_opponent_field_unit_index(
-        //     target_death_item_request_form.to_apply_death_to_opponent_field_unit_index_request(
-        //         find_opponent_by_account_id_response.get_opponent_unique_id(),
-        //         opponent_target_unit_index)).await;
+        let apply_instant_death_to_target_unit_index_response = game_field_unit_service_guard.apply_instant_death_to_target_unit_index(
+            target_death_item_request_form.to_apply_instant_death_to_target_unit_index_request(
+                find_opponent_by_account_id_response.get_opponent_unique_id(),
+                opponent_target_unit_index)).await;
 
         TargetDeathItemResponseForm::new(true)
     }
