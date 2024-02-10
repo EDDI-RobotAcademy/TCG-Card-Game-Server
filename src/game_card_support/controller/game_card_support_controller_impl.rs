@@ -5,11 +5,19 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::card_grade::service::card_grade_service::CardGradeService;
+use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
+use crate::card_kinds::service::card_kinds_service::CardKindsService;
+use crate::card_kinds::service::card_kinds_service_impl::CardKindsServiceImpl;
+use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
+use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
 use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
 use crate::game_card_support::controller::request_form::draw_support_request_form::DrawSupportRequestForm;
 use crate::game_card_support::controller::request_form::energy_boost_support_request_form::EnergyBoostSupportRequestForm;
+use crate::game_card_support::controller::request_form::search_unit_support_request_form::SearchUnitSupportRequestForm;
 use crate::game_card_support::controller::response_form::draw_support_response_form::DrawSupportResponseForm;
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
+use crate::game_card_support::controller::response_form::search_unit_support_response_form::SearchUnitSupportResponseForm;
 use crate::game_card_support::entity::game_card_support_effect::GameCardSupportEffect;
 use crate::game_card_support::service::game_card_support_service::GameCardSupportService;
 
@@ -46,6 +54,7 @@ pub struct GameCardSupportControllerImpl {
     game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
+    card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
 }
 
 impl GameCardSupportControllerImpl {
@@ -57,7 +66,8 @@ impl GameCardSupportControllerImpl {
                game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
                game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
-               redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,) -> Self {
+               redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
+               card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>) -> Self {
 
         GameCardSupportControllerImpl {
             battle_room_service,
@@ -69,6 +79,7 @@ impl GameCardSupportControllerImpl {
             game_tomb_service,
             game_field_unit_service,
             redis_in_memory_service,
+            card_grade_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardSupportControllerImpl>> {
@@ -85,7 +96,8 @@ impl GameCardSupportControllerImpl {
                             GameDeckServiceImpl::get_instance(),
                             GameTombServiceImpl::get_instance(),
                             GameFieldUnitServiceImpl::get_instance(),
-                            RedisInMemoryServiceImpl::get_instance())));
+                            RedisInMemoryServiceImpl::get_instance(),
+                            CardGradeServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -115,7 +127,7 @@ impl GameCardSupportControllerImpl {
         is_it_support_card_response.is_success()
     }
 
-    //
+    // Card Usage Validation
     async fn is_able_to_use(&self, can_use_card_request: CanUseCardRequest) -> bool {
         let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
         let can_use_card_response = game_protocol_validation_service_guard.can_use_card(can_use_card_request).await;
@@ -123,6 +135,7 @@ impl GameCardSupportControllerImpl {
         can_use_card_response.is_success()
     }
 
+    //
     async fn use_support_card(&self, use_game_hand_support_card_request: UseGameHandSupportCardRequest) -> i32 {
         let mut game_hand_service_guard = self.game_hand_service.lock().await;
         let use_game_hand_support_card_response = game_hand_service_guard.use_support_card(use_game_hand_support_card_request).await;
@@ -242,7 +255,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         EnergyBoostSupportResponseForm::new(true)
     }
 
-    // TODO: NotifyService 추가 필요
+    // TODO: Notify Service 추가 필요
     async fn request_to_use_draw_support(&self, draw_support_request_form: DrawSupportRequestForm) -> DrawSupportResponseForm {
         println!("GameCardSupportControllerImpl: request_to_use_draw_support()");
 
@@ -277,12 +290,6 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return DrawSupportResponseForm::new(Vec::new())
         }
 
-        let usage_hand_card = self.use_support_card(
-            draw_support_request_form.to_use_game_hand_support_card_request(account_unique_id, support_card_number)).await;
-
-        self.place_used_card_to_tomb(
-            draw_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
-
         let card_effect_summary = self.get_summary_of_support_card(
             draw_support_request_form.to_calculate_effect_request(support_card_number)).await;
 
@@ -291,6 +298,107 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             .draw_deck(draw_support_request_form.to_draw_deck_request(card_effect_summary.get_need_to_draw_card_count())).await;
         let drawn_cards = draw_deck_response.get_drawn_card_list().clone();
 
+        let usage_hand_card = self.use_support_card(
+            draw_support_request_form.to_use_game_hand_support_card_request(account_unique_id, support_card_number)).await;
+
+        self.place_used_card_to_tomb(
+            draw_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+
         DrawSupportResponseForm::new(drawn_cards)
+    }
+    // TODO: Notify Service 추가 필요
+    // 여러 장의 유닛 카드 동시에 검색해서 핸드에 추가하는 형태
+    async fn request_to_use_search_unit_support(&self, search_unit_support_request_form: SearchUnitSupportRequestForm) -> SearchUnitSupportResponseForm {
+        println!("GameCardSupportControllerImpl: request_to_use_draw_support()");
+
+        let account_unique_id = self.is_valid_session(
+            search_unit_support_request_form.to_session_validation_request()).await;
+        if account_unique_id == -1 {
+            println!("Invalid session error");
+            return SearchUnitSupportResponseForm::new(false)
+        }
+
+        let support_card_number_string = search_unit_support_request_form.get_support_card_number().to_string();
+        let support_card_number = support_card_number_string.parse::<i32>().unwrap();
+
+        let check_hand_hacking_response = self.is_valid_protocol(
+            search_unit_support_request_form.to_check_protocol_hacking_request(account_unique_id, support_card_number)).await;
+        if !check_hand_hacking_response {
+            println!("Hand hacking detected - account unique id : {}", account_unique_id);
+            return SearchUnitSupportResponseForm::new(false)
+        }
+
+        let is_it_support_response = self.is_it_support_card(
+            search_unit_support_request_form.to_is_it_support_card_request(support_card_number)).await;
+        if !is_it_support_response {
+            println!("Support card hacking detected - account unique id : {}", account_unique_id);
+            return SearchUnitSupportResponseForm::new(false)
+        }
+
+        let can_use_card_response = self.is_able_to_use(
+            search_unit_support_request_form.to_can_use_card_request(account_unique_id, support_card_number)).await;
+        if !can_use_card_response {
+            println!("A mythical grade card can be used after round 4.");
+            return SearchUnitSupportResponseForm::new(false)
+        }
+
+        let card_effect_summary = self.get_summary_of_support_card(
+            search_unit_support_request_form.to_calculate_effect_request(support_card_number)).await;
+
+        let searching_grade_limit = card_effect_summary.get_unit_from_deck().get_grade_limit();
+        let searching_card_count = card_effect_summary.get_unit_from_deck().get_unit_count();
+
+        let target_unit_card_number_list_string = search_unit_support_request_form.get_target_unit_card_list().clone();
+        let target_unit_card_number_list =
+            VectorStringToVectorInteger::vector_string_to_vector_i32(target_unit_card_number_list_string);
+
+        let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
+        let mut card_grade_service_guard = self.card_grade_service.lock().await;
+
+        // card kind & grade check
+        for unit_card_number in target_unit_card_number_list.clone() {
+            let is_it_unit_request = search_unit_support_request_form.to_is_it_unit_card_request(unit_card_number);
+            let is_it_unit_response = game_protocol_validation_service_guard.is_it_unit_card(is_it_unit_request).await;
+            if !is_it_unit_response.is_success() {
+                println!("Target is not unit.");
+                return SearchUnitSupportResponseForm::new(false)
+            }
+            let grade_of_unit = card_grade_service_guard.get_card_grade(&unit_card_number).await;
+            if grade_of_unit as i32 > searching_grade_limit as i32 {
+                println!("Player chose too high grade unit card to search.");
+                return SearchUnitSupportResponseForm::new(false)
+            }
+        }
+
+        // target number check
+        if search_unit_support_request_form.get_target_unit_card_list().len() != searching_card_count as usize {
+            println!("Player should choose {} unit(s) from deck.", searching_card_count);
+            return SearchUnitSupportResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
+        drop(card_grade_service_guard);
+
+        // remove found card from deck & add it to hand
+        let mut game_deck_service_guard = self.game_deck_service.lock().await;
+        for unit_card_number in target_unit_card_number_list.clone() {
+            let search_response = game_deck_service_guard
+                .search_specific_deck_card(search_unit_support_request_form
+                    .to_search_specific_deck_card_request(account_unique_id, unit_card_number)).await;
+            if !search_response.is_success() {
+                println!("Target unit - {} is not found in player's deck.", unit_card_number);
+                return SearchUnitSupportResponseForm::new(false)
+            }
+        }
+
+        drop(game_deck_service_guard);
+
+        let usage_hand_card = self.use_support_card(
+            search_unit_support_request_form.to_use_game_hand_support_card_request(account_unique_id, support_card_number)).await;
+
+        self.place_used_card_to_tomb(
+            search_unit_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+
+        SearchUnitSupportResponseForm::new(true)
     }
 }
