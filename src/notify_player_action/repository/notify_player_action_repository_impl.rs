@@ -106,4 +106,28 @@ impl NotifyPlayerActionRepository for NotifyPlayerActionRepositoryImpl {
 
         true
     }
+
+    // TODO: 에너지 사용 여부도 필요함 (필드, 핸드)
+    async fn notify_to_opponent_you_use_item_instant_death_card(&mut self, opponent_unique_id: i32, unit_card_index: i32, usage_item_card_id: i32) -> bool {
+        println!("NotifyPlayerActionRepositoryImpl: notify_to_opponent_you_use_item_instant_death_card()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    ResponseType::NOTIFY_OPPONENT_TO_ENERGY_USAGE(
+                        NotifyOpponentToEnergyUsage::new(unit_card_index, usage_item_card_id))))).await;
+
+        true
+    }
 }
