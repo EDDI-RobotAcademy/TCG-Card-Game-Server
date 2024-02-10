@@ -44,6 +44,12 @@ impl GameFieldUnitCardList {
     pub fn find_unit_by_index(&self, index: usize) -> &GameFieldUnitCard {
         &self.game_field_unit_card_list[index]
     }
+
+    pub fn apply_damage_to_indexed_unit(&mut self, unit_card_index: usize, damage: i32) {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            unit.apply_damage(damage);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -313,5 +319,50 @@ mod tests {
         let unit_at_index_1 = game_field_unit_card_list.find_unit_by_index(1);
         println!("Unit at index 1: {:?}", unit_at_index_1);
         assert_eq!(unit_at_index_1.get_card(), 7);
+    }
+
+    #[test]
+    fn test_apply_damage_to_indexed_unit() {
+        let mut game_field_unit_card_list = GameFieldUnitCardList::new();
+
+        let game_field_unit_card1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+        );
+
+        let game_field_unit_card2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Trent,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+        );
+
+        game_field_unit_card_list.add_field_unit(game_field_unit_card1.clone());
+        game_field_unit_card_list.add_field_unit(game_field_unit_card2.clone());
+
+        let original_health = game_field_unit_card_list.find_unit_by_index(0).get_unit_health_point().get_current_health_point();
+        let damage_amount = 5;
+        let index_to_apply_damage = 0;
+
+        game_field_unit_card_list.apply_damage_to_indexed_unit(index_to_apply_damage, damage_amount);
+
+        let updated_health = game_field_unit_card_list.find_unit_by_index(0).get_unit_health_point().get_current_health_point();
+
+        println!("Original Health: {}", original_health);
+        println!("Updated Health: {}", updated_health);
+
+        assert_eq!(updated_health, original_health - damage_amount);
     }
 }

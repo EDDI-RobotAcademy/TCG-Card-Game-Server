@@ -39,6 +39,10 @@ impl GameFieldUnit {
     pub fn find_unit_by_index(&self, index: usize) -> &GameFieldUnitCard {
         self.game_field_unit.find_unit_by_index(index)
     }
+
+    pub fn apply_damage_to_indexed_unit(&mut self, unit_card_index: usize, damage: i32) {
+        self.game_field_unit.apply_damage_to_indexed_unit(unit_card_index, damage);
+    }
 }
 
 #[cfg(test)]
@@ -290,4 +294,48 @@ mod tests {
         assert_eq!(unit_at_index_1.get_card(), 7);
     }
 
+    #[test]
+    fn test_apply_damage_to_indexed_unit_in_game_field() {
+        let mut game_field_unit = GameFieldUnit::new();
+
+        let field_unit1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+        );
+
+        let field_unit2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Trent,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+        );
+
+        game_field_unit.add_unit_to_game_field(field_unit1.clone());
+        game_field_unit.add_unit_to_game_field(field_unit2.clone());
+
+        let original_health = game_field_unit.find_unit_by_index(0).get_unit_health_point().get_current_health_point();
+        let damage_amount = 5;
+        let index_to_apply_damage = 0;
+
+        game_field_unit.apply_damage_to_indexed_unit(index_to_apply_damage, damage_amount);
+
+        let updated_health = game_field_unit.find_unit_by_index(0).get_unit_health_point().get_current_health_point();
+
+        println!("Original Health: {}", original_health);
+        println!("Updated Health: {}", updated_health);
+
+        assert_eq!(updated_health, original_health - damage_amount);
+    }
 }

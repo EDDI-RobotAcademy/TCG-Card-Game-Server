@@ -203,6 +203,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let opponent_target_unit_index_string = target_death_item_request_form.get_opponent_target_unit_index();
         let opponent_target_unit_index = opponent_target_unit_index_string.parse::<i32>().unwrap();
 
+        // TODO: 추후 즉사 면역인 언데드 등등에 대한 조건도 필요함
         // 10. 타겟 인덱스 유닛이 신화 미만인지 확인
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
         let find_target_unit_id_by_index_response = game_field_unit_service_guard.find_target_unit_id_by_index(
@@ -216,7 +217,11 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         // 11. Field Unit Service를 호출하여 상대 유닛에 Alternatives 적용
         if opponent_target_unit_grade == GradeEnum::Mythical {
-
+            game_field_unit_service_guard.apply_damage_to_target_unit_index(
+                target_death_item_request_form.to_apply_damage_to_target_unit_index(
+                    find_opponent_by_account_id_response.get_opponent_unique_id(),
+                    opponent_target_unit_index,
+                    summarized_item_effect_response.get_alternatives_damage())).await;
         }
 
         // 12. Field Unit Service를 호출하여 상대 유닛에 즉사 적용
