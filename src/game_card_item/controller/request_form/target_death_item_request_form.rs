@@ -3,6 +3,7 @@ use crate::game_card_item::service::request::summary_item_card_effect_request::S
 use crate::game_card_support::controller::request_form::energy_boost_support_request_form::EnergyBoostSupportRequestForm;
 use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
+use crate::game_field_unit::service::request::apply_instant_death_to_target_unit_index_request::ApplyInstantDeathToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_hand::service::request::use_game_hand_item_card_request::UseGameHandItemCardRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
@@ -83,5 +84,10 @@ impl TargetDeathItemRequestForm {
     pub fn to_apply_damage_to_target_unit_index(&self, opponent_unique_id: i32, opponent_target_unit_index: i32, damage: i32) -> ApplyDamageToTargetUnitIndexRequest {
         ApplyDamageToTargetUnitIndexRequest::new(
             opponent_unique_id, opponent_target_unit_index, damage)
+    }
+
+    pub fn to_apply_instant_death_to_target_unit_index_request(&self, opponent_unique_id: i32, opponent_target_unit_index: i32) -> ApplyInstantDeathToTargetUnitIndexRequest {
+        ApplyInstantDeathToTargetUnitIndexRequest::new(
+            opponent_unique_id, opponent_target_unit_index)
     }
 }
