@@ -355,7 +355,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
         let mut card_grade_service_guard = self.card_grade_service.lock().await;
 
-        // card kind & grade check
+        // card kind && grade check
         for unit_card_number in target_unit_card_number_list.clone() {
             let is_it_unit_request = search_unit_support_request_form.to_is_it_unit_card_request(unit_card_number);
             let is_it_unit_response = game_protocol_validation_service_guard.is_it_unit_card(is_it_unit_request).await;
@@ -379,7 +379,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         drop(game_protocol_validation_service_guard);
         drop(card_grade_service_guard);
 
-        // remove found card from deck & add it to hand
+        // remove found card from deck && add it to hand && shuffle
         let mut game_deck_service_guard = self.game_deck_service.lock().await;
         for unit_card_number in target_unit_card_number_list.clone() {
             let search_response = game_deck_service_guard
@@ -390,6 +390,8 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
                 return SearchUnitSupportResponseForm::new(false)
             }
         }
+
+        game_deck_service_guard.shuffle_deck(search_unit_support_request_form.to_shuffle_deck_request()).await;
 
         drop(game_deck_service_guard);
 
