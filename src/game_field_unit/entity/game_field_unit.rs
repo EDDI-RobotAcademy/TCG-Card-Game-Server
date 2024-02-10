@@ -43,6 +43,10 @@ impl GameFieldUnit {
     pub fn apply_damage_to_indexed_unit(&mut self, unit_card_index: usize, damage: i32) {
         self.game_field_unit.apply_damage_to_indexed_unit(unit_card_index, damage);
     }
+
+    pub fn apply_death_to_indexed_unit(&mut self, unit_card_index: usize) {
+        self.game_field_unit.apply_death_to_indexed_unit(unit_card_index);
+    }
 }
 
 #[cfg(test)]
@@ -65,7 +69,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         let field_unit2 = GameFieldUnitCard::new(
             34,
@@ -76,7 +81,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         game_field_unit.add_unit_to_game_field(field_unit1);
         game_field_unit.add_unit_to_game_field(field_unit2);
@@ -103,7 +109,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         let field_unit2 = GameFieldUnitCard::new(
             7,
@@ -114,7 +121,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         game_field_unit.add_unit_to_game_field(field_unit1);
         game_field_unit.add_unit_to_game_field(field_unit2);
@@ -148,7 +156,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         let field_unit2 = GameFieldUnitCard::new(
             7,
@@ -159,7 +168,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         game_field_unit.add_unit_to_game_field(field_unit1);
         game_field_unit.add_unit_to_game_field(field_unit2);
@@ -188,7 +198,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         let field_unit2 = GameFieldUnitCard::new(
             7,
@@ -199,7 +210,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         game_field_unit.add_unit_to_game_field(field_unit1);
         game_field_unit.add_unit_to_game_field(field_unit2);
@@ -237,7 +249,8 @@ mod tests {
                 1,
                 false,
                 false,
-                false);
+                false,
+                true);
 
             game_field_unit.add_unit_to_game_field(game_field_unit_card);
         }
@@ -269,7 +282,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         let field_unit2 = GameFieldUnitCard::new(
             7,
@@ -280,7 +294,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         game_field_unit.add_unit_to_game_field(field_unit1);
         game_field_unit.add_unit_to_game_field(field_unit2);
@@ -308,6 +323,7 @@ mod tests {
             false,
             false,
             false,
+            true
         );
 
         let field_unit2 = GameFieldUnitCard::new(
@@ -320,6 +336,7 @@ mod tests {
             false,
             false,
             false,
+            true
         );
 
         game_field_unit.add_unit_to_game_field(field_unit1.clone());

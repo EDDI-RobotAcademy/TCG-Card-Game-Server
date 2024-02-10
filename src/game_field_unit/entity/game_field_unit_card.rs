@@ -16,6 +16,7 @@ pub struct GameFieldUnitCard {
     has_first_passive_skill: bool,
     has_second_passive_skill: bool,
     has_third_passive_skill: bool,
+    is_alive: bool,
 }
 
 impl GameFieldUnitCard {
@@ -27,7 +28,8 @@ impl GameFieldUnitCard {
                unit_attack_required_energy: i32,
                has_first_passive_skill: bool,
                has_second_passive_skill: bool,
-               has_third_passive_skill: bool) -> GameFieldUnitCard {
+               has_third_passive_skill: bool,
+               is_alive: bool) -> GameFieldUnitCard {
 
         GameFieldUnitCard {
             field_unit_card,
@@ -39,7 +41,8 @@ impl GameFieldUnitCard {
             unit_attack_required_energy,
             has_first_passive_skill,
             has_second_passive_skill,
-            has_third_passive_skill
+            has_third_passive_skill,
+            is_alive
         }
     }
 
@@ -53,6 +56,18 @@ impl GameFieldUnitCard {
 
     pub fn get_unit_health_point(&self) -> &UnitHealthPoint {
         &self.unit_health_point
+    }
+
+    pub fn get_mut_unit_health_point(&mut self) -> &mut UnitHealthPoint {
+        &mut self.unit_health_point
+    }
+
+    pub fn is_alive(&self) -> bool {
+        self.is_alive
+    }
+
+    pub fn set_is_alive(&mut self, is_alive: bool) {
+        self.is_alive = is_alive;
     }
 
     pub fn attach_energy(&mut self, race: RaceEnumValue, quantity: i32) {
@@ -86,7 +101,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         assert_eq!(game_field_unit_card.get_card(), 5);
         println!("Test passed: FieldUnit creation and getter");
@@ -103,7 +119,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         assert_eq!(game_field_unit_card.get_card(), 5);
         assert_eq!(game_field_unit_card.get_attached_energy().get_all_energy().len(), 0);
@@ -132,7 +149,8 @@ mod tests {
             1,
             false,
             false,
-            false);
+            false,
+            true);
 
         println!("game_field_unit_card: {:?}", game_field_unit_card);
 
@@ -157,6 +175,7 @@ mod tests {
             false,
             false,
             false,
+            true
         );
 
         println!("unit: {:?}", game_field_unit_card);
