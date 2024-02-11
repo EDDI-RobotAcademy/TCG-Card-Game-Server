@@ -9,10 +9,12 @@ use crate::notify_player_action::repository::notify_player_action_repository::No
 use crate::notify_player_action::repository::notify_player_action_repository_impl::NotifyPlayerActionRepositoryImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::request::notify_to_opponent_you_deploy_unit_request::NotifyToOpponentYouDeployUnitRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_draw_support_card_request::NotifyToOpponentYouUseDrawSupportCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_boost_card_request::NotifyToOpponentYouUseEnergyBoostCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyToOpponentYouUseEnergyCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_card_request::NotifyToOpponentYouUseItemCardRequest;
 use crate::notify_player_action::service::response::notify_to_opponent_you_deploy_unit_response::NotifyToOpponentYouDeployUnitResponse;
+use crate::notify_player_action::service::response::notify_to_opponent_you_use_draw_support_card_response::NotifyToOpponentYouUseDrawSupportCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_energy_boost_card_response::NotifyToOpponentYouUseEnergyBoostCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_energy_card_response::NotifyToOpponentYouUseEnergyCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_card_response::NotifyToOpponentYouUseItemCardResponse;
@@ -92,5 +94,17 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
             notify_to_opponent_you_use_item_card_request.get_usage_item_card_id()).await;
 
         NotifyToOpponentYouUseItemCardResponse::new(notify_to_opponent_you_use_item_card_response)
+    }
+
+    async fn notify_to_opponent_you_use_draw_support_card(&mut self, notify_to_opponent_you_use_draw_support_card_request: NotifyToOpponentYouUseDrawSupportCardRequest) -> NotifyToOpponentYouUseDrawSupportCardResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_draw_support_card()");
+
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        let notify_to_opponent_you_use_draw_support_card_response = notify_player_action_repository_guard.notify_to_opponent_you_use_draw_support_card(
+            notify_to_opponent_you_use_draw_support_card_request.get_opponent_unique_id(),
+            notify_to_opponent_you_use_draw_support_card_request.get_usage_hand_card_id(),
+            notify_to_opponent_you_use_draw_support_card_request.get_draw_card_count()).await;
+
+        NotifyToOpponentYouUseDrawSupportCardResponse::new(notify_to_opponent_you_use_draw_support_card_response)
     }
 }
