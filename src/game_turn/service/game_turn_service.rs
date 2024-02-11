@@ -6,6 +6,5 @@ use crate::game_turn::service::response::decide_first_turn_response::DecideFirst
 #[async_trait]
 pub trait GameTurnService {
 
-    async fn decide_first_turn_object(&mut self, decide_first_turn_request1: DecideFirstTurnRequest,
-                                                  decide_first_turn_request2: DecideFirstTurnRequest) -> DecideFirstTurnResponse;
+    async fn decide_first_turn_object(&mut self, decide_first_turn_request: DecideFirstTurnRequest) -> DecideFirstTurnResponse;
 }

@@ -17,4 +17,6 @@ pub mod attach_general_energy_card_request_form_generator;
 pub mod mulligan_request_generator;
 pub mod energy_boost_support_request_form_generator;
 pub mod general_draw_support_request_form_generator;
+mod first_turn_decision_wait_queue_request_generator;
+
 

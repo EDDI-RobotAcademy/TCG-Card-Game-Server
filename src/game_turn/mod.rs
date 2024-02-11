@@ -1,3 +1,4 @@
 pub mod entity;
 pub mod repository;
-mod service;
+pub(crate) mod service;
+mod controller;
