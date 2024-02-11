@@ -128,8 +128,8 @@ impl NotifyPlayerActionRepository for NotifyPlayerActionRepositoryImpl {
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    ResponseType::NOTIFY_OPPONENT_TO_ENERGY_USAGE(
-                        NotifyOpponentToEnergyUsage::new(unit_card_index, usage_item_card_id))))).await;
+                    ResponseType::NOTIFY_OPPONENT_TO_INSTANT_DEATH_ITEM_USAGE(
+                        NotifyOpponentToInstantDeathItemUsage::new(unit_card_index, usage_item_card_id))))).await;
 
         true
     }
