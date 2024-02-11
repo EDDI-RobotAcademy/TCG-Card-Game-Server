@@ -1,3 +1,4 @@
+use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
 use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
@@ -6,6 +7,7 @@ use crate::game_protocol_validation::service::request::can_use_card_request::Can
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_draw_support_card_request::NotifyToOpponentYouUseDrawSupportCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -42,6 +44,12 @@ impl DrawSupportRequestForm {
     }
     pub fn to_calculate_effect_request(&self, support_card_number: i32) -> CalculateEffectRequest {
         CalculateEffectRequest::new(support_card_number)
+    }
+    pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
+        FindOpponentByAccountIdRequest::new(account_unique_id)
+    }
+    pub fn to_notify_opponent_you_use_draw_support_card_request(&self, opponent_unique_id: i32, usage_card_id: i32, draw_count: i32) -> NotifyToOpponentYouUseDrawSupportCardRequest {
+        NotifyToOpponentYouUseDrawSupportCardRequest::new(opponent_unique_id, usage_card_id, draw_count)
     }
     pub fn to_draw_deck_request(&self, draw_count: i32) -> GameDeckCardDrawRequest {
         GameDeckCardDrawRequest::new(self.session_id.clone(), draw_count)

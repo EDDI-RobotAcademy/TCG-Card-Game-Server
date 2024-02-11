@@ -7,9 +7,6 @@ use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::card_grade::service::card_grade_service::CardGradeService;
 use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
-use crate::card_kinds::service::card_kinds_service::CardKindsService;
-use crate::card_kinds::service::card_kinds_service_impl::CardKindsServiceImpl;
-use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
 use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
 use crate::game_card_support::controller::request_form::draw_support_request_form::DrawSupportRequestForm;
@@ -255,7 +252,6 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         EnergyBoostSupportResponseForm::new(true)
     }
 
-    // TODO: Notify Service 추가 필요
     async fn request_to_use_draw_support(&self, draw_support_request_form: DrawSupportRequestForm) -> DrawSupportResponseForm {
         println!("GameCardSupportControllerImpl: request_to_use_draw_support()");
 
@@ -293,6 +289,24 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let card_effect_summary = self.get_summary_of_support_card(
             draw_support_request_form.to_calculate_effect_request(support_card_number)).await;
 
+        let battle_room_service_guard = self.battle_room_service.lock().await;
+        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+            draw_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+
+        drop(battle_room_service_guard);
+
+        let found_opponent_unique_id = find_opponent_by_account_id_response.get_opponent_unique_id();
+        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
+        let notify_opponent_you_use_draw_support_response = notify_player_action_service_guard.notify_to_opponent_you_use_draw_support_card(
+            draw_support_request_form.to_notify_opponent_you_use_draw_support_card_request(
+                found_opponent_unique_id,
+                support_card_number,
+                card_effect_summary.get_need_to_draw_card_count())).await;
+        if !notify_opponent_you_use_draw_support_response.is_success() {
+            println!("Notification Error - please check network connection.");
+            return DrawSupportResponseForm::new(Vec::new())
+        }
+
         let game_deck_service_guard = self.game_deck_service.lock().await;
         let draw_deck_response = game_deck_service_guard
             .draw_deck(draw_support_request_form.to_draw_deck_request(card_effect_summary.get_need_to_draw_card_count())).await;
@@ -306,6 +320,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         DrawSupportResponseForm::new(drawn_cards)
     }
+
     // TODO: Notify Service 추가 필요
     // 여러 장의 유닛 카드 동시에 검색해서 핸드에 추가하는 형태
     async fn request_to_use_search_unit_support(&self, search_unit_support_request_form: SearchUnitSupportRequestForm) -> SearchUnitSupportResponseForm {
