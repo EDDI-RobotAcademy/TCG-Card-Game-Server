@@ -3,3 +3,4 @@ pub mod game_deck_card_draw_list_response;
 pub mod game_deck_start_card_list_response;
 pub mod found_card_from_deck_response;
 pub mod game_deck_card_list_response;
+pub mod search_specific_deck_card_response;
