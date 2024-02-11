@@ -13,11 +13,13 @@ use crate::notify_player_action::service::request::notify_to_opponent_you_use_dr
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_boost_card_request::NotifyToOpponentYouUseEnergyBoostCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyToOpponentYouUseEnergyCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_card_request::NotifyToOpponentYouUseItemCardRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_search_support_card_request::NotifyOpponentYouUseSearchSupportRequest;
 use crate::notify_player_action::service::response::notify_to_opponent_you_deploy_unit_response::NotifyToOpponentYouDeployUnitResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_draw_support_card_response::NotifyToOpponentYouUseDrawSupportCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_energy_boost_card_response::NotifyToOpponentYouUseEnergyBoostCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_energy_card_response::NotifyToOpponentYouUseEnergyCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_card_response::NotifyToOpponentYouUseItemCardResponse;
+use crate::notify_player_action::service::response::notify_to_opponent_you_use_support_card_response::NotifyOpponentYouUseSupportCardResponse;
 
 pub struct NotifyPlayerActionServiceImpl {
     notify_player_action_repository: Arc<AsyncMutex<NotifyPlayerActionRepositoryImpl>>,
@@ -106,5 +108,17 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
             notify_to_opponent_you_use_draw_support_card_request.get_draw_card_count()).await;
 
         NotifyToOpponentYouUseDrawSupportCardResponse::new(notify_to_opponent_you_use_draw_support_card_response)
+    }
+
+    async fn notify_opponent_you_use_search_support_card(&mut self, notify_opponent_you_use_search_support_request: NotifyOpponentYouUseSearchSupportRequest) -> NotifyOpponentYouUseSupportCardResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_opponent_you_use_search_support_card()");
+
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        let notify_opponent_you_use_search_support_card = notify_player_action_repository_guard.notify_opponent_you_use_search_support_card(
+            notify_opponent_you_use_search_support_request.get_opponent_unique_id(),
+            notify_opponent_you_use_search_support_request.get_usage_hand_card_id(),
+            notify_opponent_you_use_search_support_request.get_found_card_count()).await;
+
+        NotifyOpponentYouUseSupportCardResponse::new(notify_opponent_you_use_search_support_card)
     }
 }
