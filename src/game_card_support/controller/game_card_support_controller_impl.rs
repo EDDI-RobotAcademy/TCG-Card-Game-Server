@@ -491,10 +491,14 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         let found_opponent_unique_id = find_opponent_by_account_id_response.get_opponent_unique_id();
         let mut game_field_energy_service_guard = self.game_field_energy_service.lock().await;
-        game_field_energy_service_guard.remove_field_energy_with_amount(
+        let remove_field_energy_with_amount_response = game_field_energy_service_guard.remove_field_energy_with_amount(
             remove_opponent_field_energy_support_request_form.to_remove_field_energy_with_amount_request(
                 found_opponent_unique_id,
                 card_effect_summary.get_removal_amount_of_opponent_field_energy())).await;
+        if !remove_field_energy_with_amount_response.get_is_success() {
+            println!("Failed to remove opponent's field energy.");
+            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+        }
 
         drop(game_field_energy_service_guard);
 
@@ -510,6 +514,8 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
                 found_opponent_unique_id,
                 support_card_number,
                 card_effect_summary.get_removal_amount_of_opponent_field_energy())).await;
+
+        // TODO: 만약 공지가 제대로 되지 않았다고 하면 어떻게 진행할 것인가; 여기에서 return false 해버리면 지난 logic 은 그대로 수행된 채로 남게 됨
         if !notify_opponent_you_use_support_card_response.is_success() {
             println!("Notification Error - Failed to notice field energy remove support card usage to opponent.");
         }
