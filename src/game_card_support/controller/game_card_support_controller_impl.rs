@@ -321,7 +321,6 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         DrawSupportResponseForm::new(drawn_cards)
     }
 
-    // TODO: Notify Service 추가 필요
     // 여러 장의 유닛 카드 동시에 검색해서 핸드에 추가하는 형태
     async fn request_to_use_search_unit_support(&self, search_unit_support_request_form: SearchUnitSupportRequestForm) -> SearchUnitSupportResponseForm {
         println!("GameCardSupportControllerImpl: request_to_use_draw_support()");
@@ -415,6 +414,25 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         self.place_used_card_to_tomb(
             search_unit_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+
+        let battle_room_service_guard = self.battle_room_service.lock().await;
+        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+            search_unit_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+
+        drop(battle_room_service_guard);
+
+        let found_opponent_unique_id = find_opponent_by_account_id_response.get_opponent_unique_id();
+        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
+        let notify_opponent_you_use_support_card_response = notify_player_action_service_guard.notify_opponent_you_use_search_support_card(
+            search_unit_support_request_form.to_notify_opponent_you_use_search_support_card(
+                found_opponent_unique_id,
+                support_card_number,
+                target_unit_card_number_list.len() as i32)).await;
+        if !notify_opponent_you_use_support_card_response.is_success() {
+            println!("Notification Error - Failed to notice search unit support card usage to opponent.");
+        }
+
+        drop(notify_player_action_service_guard);
 
         SearchUnitSupportResponseForm::new(true)
     }

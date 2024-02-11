@@ -1,5 +1,5 @@
+use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
-use crate::game_deck::service::request::found_card_from_deck_request::FoundCardFromDeckRequest;
 use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
 use crate::game_deck::service::request::search_specific_deck_card_request::SearchSpecificDeckCardRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
@@ -8,6 +8,7 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_protocol_validation::service::request::is_it_unit_card_request::IsItUnitCardRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_search_support_card_request::NotifyOpponentYouUseSearchSupportRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -52,10 +53,20 @@ impl SearchUnitSupportRequestForm {
     pub fn to_calculate_effect_request(&self, support_card_number: i32) -> CalculateEffectRequest {
         CalculateEffectRequest::new(support_card_number)
     }
+    pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
+        FindOpponentByAccountIdRequest::new(account_unique_id)
+    }
     pub fn to_search_specific_deck_card_request(&self, account_unique_id: i32, target_card_id: i32) -> SearchSpecificDeckCardRequest {
         SearchSpecificDeckCardRequest::new(account_unique_id, target_card_id)
     }
     pub fn to_shuffle_deck_request(&self) -> GameDeckCardShuffleRequest {
         GameDeckCardShuffleRequest::new(self.session_id.clone())
+    }
+    pub fn to_notify_opponent_you_use_search_support_card(&self, opponent_unique_id: i32, usage_support_card_id: i32, found_card_count: i32) -> NotifyOpponentYouUseSearchSupportRequest {
+        NotifyOpponentYouUseSearchSupportRequest::new(
+            opponent_unique_id,
+            usage_support_card_id,
+            found_card_count,
+        )
     }
 }
