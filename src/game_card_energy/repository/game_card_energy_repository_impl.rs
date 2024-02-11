@@ -5,6 +5,8 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_energy::entity::effect::Effect;
+use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_card_energy::entity::summary_energy_card_effect::SummaryEnergyCardEffect;
 
 use crate::game_card_energy::handler::game_card_energy_handler::GameCardEnergyHandler;
@@ -22,7 +24,7 @@ impl GameCardEnergyHandler for NoneEnergyFunction {
         println!("아직 구현되지 않은 기능입니다.");
 
         SummaryEnergyCardEffect::new(
-            RaceEnum::Dummy)
+            RaceEnum::Dummy, vec![StatusEffect::new(Effect::Dummy, -1, -1, -1)])
     }
 }
 
@@ -35,7 +37,7 @@ impl GameCardEnergyRepositoryImpl {
         energy_card_functions.insert(110, Box::new(NoneEnergyFunction) as Box<dyn GameCardEnergyHandler>);
         energy_card_functions.insert(111, Box::new(NoneEnergyFunction) as Box<dyn GameCardEnergyHandler>);
         energy_card_functions.insert(118, Box::new(NoneEnergyFunction) as Box<dyn GameCardEnergyHandler>);
-        energy_card_functions.insert(151, Box::new(NoneEnergyFunction) as Box<dyn GameCardEnergyHandler>);
+        // energy_card_functions.insert(151, Box::new(EnergyCard_151_Function) as Box<dyn GameCardEnergyHandler>);
         energy_card_functions.insert(185, Box::new(NoneEnergyFunction) as Box<dyn GameCardEnergyHandler>);
 
         GameCardEnergyRepositoryImpl { energy_card_functions }
