@@ -4,7 +4,6 @@ use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
 
-use crate::game_card_unit::repository::game_card_unit_repository_impl::GameCardUnitRepositoryImpl;
 use crate::notify_player_action::repository::notify_player_action_repository::NotifyPlayerActionRepository;
 use crate::notify_player_action::repository::notify_player_action_repository_impl::NotifyPlayerActionRepositoryImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
@@ -12,6 +11,7 @@ use crate::notify_player_action::service::request::notify_to_opponent_you_deploy
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_draw_support_card_request::NotifyToOpponentYouUseDrawSupportCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_boost_card_request::NotifyToOpponentYouUseEnergyBoostCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyToOpponentYouUseEnergyCardRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_field_energy_remove_support_card_request::NotifyToOpponentYouUseFieldEnergyRemoveSupportCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_instant_death_request::NotifyToOpponentYouUseItemInstantDeathRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_instant_death_alternatives_request::NotifyToOpponentYouUseItemInstantDeathAlternativesRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_search_support_card_request::NotifyOpponentYouUseSearchSupportRequest;
@@ -132,11 +132,23 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
         println!("NotifyPlayerActionServiceImpl: notify_opponent_you_use_search_support_card()");
 
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
-        let notify_opponent_you_use_search_support_card = notify_player_action_repository_guard.notify_opponent_you_use_search_support_card(
+        let notify_opponent_you_use_search_support_card_response = notify_player_action_repository_guard.notify_opponent_you_use_search_support_card(
             notify_opponent_you_use_search_support_request.get_opponent_unique_id(),
             notify_opponent_you_use_search_support_request.get_usage_hand_card_id(),
             notify_opponent_you_use_search_support_request.get_found_card_count()).await;
 
-        NotifyOpponentYouUseSupportCardResponse::new(notify_opponent_you_use_search_support_card)
+        NotifyOpponentYouUseSupportCardResponse::new(notify_opponent_you_use_search_support_card_response)
+    }
+
+    async fn notify_opponent_you_use_field_energy_remove_support_card(&mut self, notify_to_opponent_you_use_field_energy_remove_support_card_request: NotifyToOpponentYouUseFieldEnergyRemoveSupportCardRequest) -> NotifyOpponentYouUseSupportCardResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_opponent_you_use_search_support_card()");
+
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        let notify_opponent_you_use_field_energy_remove_support_card_response = notify_player_action_repository_guard.notify_opponent_you_use_remove_field_energy_support_card(
+            notify_to_opponent_you_use_field_energy_remove_support_card_request.get_opponent_unique_id(),
+            notify_to_opponent_you_use_field_energy_remove_support_card_request.get_usage_hand_card_id(),
+            notify_to_opponent_you_use_field_energy_remove_support_card_request.get_field_energy_to_remove()).await;
+
+        NotifyOpponentYouUseSupportCardResponse::new(notify_opponent_you_use_field_energy_remove_support_card_response)
     }
 }

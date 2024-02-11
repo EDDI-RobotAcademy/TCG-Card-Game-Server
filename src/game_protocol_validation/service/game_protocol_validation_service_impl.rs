@@ -9,10 +9,7 @@ use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
-use crate::game_card_support::service::request::use_support_card_request::UseSupportCardRequest;
-use crate::game_card_support::service::response::use_support_card_response::UseSupportCardResponse;
 use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryImpl;
-use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
 use crate::game_protocol_validation::repository::game_protocol_validation_repository_impl::GameProtocolValidationRepositoryImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
@@ -22,7 +19,6 @@ use crate::game_protocol_validation::service::request::is_it_energy_card_request
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_protocol_validation::service::request::is_it_unit_card_request::IsItUnitCardRequest;
-use crate::game_protocol_validation::service::request::support_card_protocol_validation_request::SupportCardProtocolValidationRequest;
 use crate::game_protocol_validation::service::response::can_use_card_response::CanUseCardResponse;
 use crate::game_protocol_validation::service::response::check_cards_from_hand_response::CheckCardsFromHandResponse;
 use crate::game_protocol_validation::service::response::check_protocol_hacking_response::CheckProtocolHackingResponse;
