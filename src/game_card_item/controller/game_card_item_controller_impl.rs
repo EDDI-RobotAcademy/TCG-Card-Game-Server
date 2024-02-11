@@ -316,11 +316,12 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         // 즉사기가 적용되어 실제 사망 처리 되었음을 알림
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_to_opponent_you_use_item_card_response = notify_player_action_service_guard.notify_to_opponent_you_use_item_card(
-            target_death_item_request_form.to_notify_to_opponent_you_use_item_card_request(
-                find_opponent_by_account_id_response.get_opponent_unique_id(),
-                opponent_target_unit_index,
-                usage_hand_card)).await;
+        let notify_to_opponent_you_use_item_card_response = notify_player_action_service_guard
+            .notify_to_opponent_you_use_item_instant_death(
+                target_death_item_request_form.to_notify_to_opponent_you_use_item_instant_death_request(
+                    find_opponent_by_account_id_response.get_opponent_unique_id(),
+                    opponent_target_unit_index,
+                    usage_hand_card)).await;
 
         if !notify_to_opponent_you_use_item_card_response.is_success() {
             println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");

@@ -12,7 +12,7 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_card_request::NotifyToOpponentYouUseItemCardRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_instant_death_request::NotifyToOpponentYouUseItemInstantDeathRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_instant_death_alternatives_request::NotifyToOpponentYouUseItemInstantDeathAlternativesRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
@@ -94,11 +94,11 @@ impl TargetDeathItemRequestForm {
     }
 
     // TODO: Hand 에너지, 필드 에너지 사용 여부도 필요함
-    pub fn to_notify_to_opponent_you_use_item_card_request(&self,
-                                                           opponent_unique_id: i32,
-                                                           opponent_target_unit_index: i32,
-                                                           usage_hand_card: i32) -> NotifyToOpponentYouUseItemCardRequest {
-        NotifyToOpponentYouUseItemCardRequest::new(
+    pub fn to_notify_to_opponent_you_use_item_instant_death_request(&self,
+                                                                    opponent_unique_id: i32,
+                                                                    opponent_target_unit_index: i32,
+                                                                    usage_hand_card: i32) -> NotifyToOpponentYouUseItemInstantDeathRequest {
+        NotifyToOpponentYouUseItemInstantDeathRequest::new(
             opponent_unique_id, opponent_target_unit_index, usage_hand_card)
     }
 

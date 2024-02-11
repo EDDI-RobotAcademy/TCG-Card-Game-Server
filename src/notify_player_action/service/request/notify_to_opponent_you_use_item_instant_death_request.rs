@@ -1,13 +1,13 @@
 #[derive(Debug)]
-pub struct NotifyToOpponentYouUseItemCardRequest {
+pub struct NotifyToOpponentYouUseItemInstantDeathRequest {
     opponent_unique_id: i32,
     opponent_target_unit_index: i32,
     usage_item_card_id: i32,
 }
 
-impl NotifyToOpponentYouUseItemCardRequest {
+impl NotifyToOpponentYouUseItemInstantDeathRequest {
     pub fn new(opponent_unique_id: i32, opponent_target_unit_index: i32, usage_item_card_id: i32) -> Self {
-        NotifyToOpponentYouUseItemCardRequest {
+        NotifyToOpponentYouUseItemInstantDeathRequest {
             opponent_unique_id,
             opponent_target_unit_index,
             usage_item_card_id
