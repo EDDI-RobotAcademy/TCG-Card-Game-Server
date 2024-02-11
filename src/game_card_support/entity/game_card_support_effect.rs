@@ -9,6 +9,7 @@ pub struct GameCardSupportEffect {
     need_to_find_card_id: i32,
     need_to_draw_card_count: i32,
     unit_from_deck: UnitFromDeck,
+    removal_amount_of_opponent_field_energy: i32,
 }
 
 impl GameCardSupportEffect {
@@ -17,7 +18,8 @@ impl GameCardSupportEffect {
             energy_from_deck: EnergyFromDeck::new(race, energy_count),
             need_to_find_card_id: -1,
             need_to_draw_card_count: -1,
-            unit_from_deck: UnitFromDeck::new(GradeEnum::Dummy, -1)
+            unit_from_deck: UnitFromDeck::new(GradeEnum::Dummy, -1),
+            removal_amount_of_opponent_field_energy: -1,
         }
     }
 
@@ -43,6 +45,12 @@ impl GameCardSupportEffect {
     pub fn set_unit_from_deck(&mut self, search_grade_limit: GradeEnum, search_unit_count: i32) {
         self.unit_from_deck.set_grade_limit(search_grade_limit);
         self.unit_from_deck.set_unit_count(search_unit_count);
+    }
+
+    // removal of opponent field energy
+    pub fn get_removal_amount_of_opponent_field_energy(&self) -> i32 { self.removal_amount_of_opponent_field_energy }
+    pub fn set_removal_amount_of_opponent_field_energy(&mut self, amount: i32) {
+        self.removal_amount_of_opponent_field_energy = amount;
     }
 }
 

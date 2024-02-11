@@ -7,13 +7,14 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum::Dummy;
 use crate::game_card_support::entity::game_card_support_effect::GameCardSupportEffect;
 use crate::game_card_support::handler::game_card_support_handler::GameCardSupportHandler;
+
 use crate::game_card_support::handler::handler_of_20::game_card_support_20_handler_impl::SupportCard_20_Function;
 use crate::game_card_support::handler::handler_of_2::game_card_support_2_handler_impl::SupportCard_2_Function;
+use crate::game_card_support::handler::handler_of_30::game_card_support_30_handler_impl::SupportCard_30_Function;
+use crate::game_card_support::handler::handler_of_36::game_card_support_36_handler_impl::SupportCard_36_Function;
 
 use crate::game_card_support::repository::game_card_support_repository::GameCardSupportRepository;
 use crate::game_card_support::service::request::use_support_card_request::UseSupportCardRequest;
-use crate::game_card_support::service::response::use_support_card_response::UseSupportCardResponse;
-use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryImpl;
 
 
 pub struct GameCardSupportRepositoryImpl {
@@ -49,7 +50,8 @@ impl GameCardSupportRepositoryImpl {
         support_card_functions.insert(24, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(28, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(29, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
-        support_card_functions.insert(36, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
+        support_card_functions.insert(30, Box::new(SupportCard_30_Function) as Box<dyn GameCardSupportHandler>);
+        support_card_functions.insert(36, Box::new(SupportCard_36_Function) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(41, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(47, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(65, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);

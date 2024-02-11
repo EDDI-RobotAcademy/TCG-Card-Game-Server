@@ -1,0 +1,1 @@
+pub mod game_card_support_36_handler_impl;
