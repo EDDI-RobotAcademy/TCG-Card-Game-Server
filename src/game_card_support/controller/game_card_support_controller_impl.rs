@@ -21,7 +21,7 @@ use crate::game_card_support::entity::game_card_support_effect::GameCardSupportE
 use crate::game_card_support::service::game_card_support_service::GameCardSupportService;
 
 use crate::game_card_support::service::game_card_support_service_impl::GameCardSupportServiceImpl;
-use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
+use crate::game_card_support::service::request::summarize_support_card_effect_request::SummarizeSupportCardEffectRequest;
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
 use crate::game_field_energy::service::game_field_energy_service::GameFieldEnergyService;
@@ -153,10 +153,9 @@ impl GameCardSupportControllerImpl {
         game_tomb_service_guard.add_used_card_to_tomb(place_to_tomb_request).await;
     }
 
-    // TODO: hand에서도 use, summary_effect에서도 use라 혼동 -> summary_effect에서는 summary로 표현하도록 수정 필요
-    async fn get_summary_of_support_card(&self, calculate_effect_request: CalculateEffectRequest) -> GameCardSupportEffect {
+    async fn get_summary_of_support_card(&self, summarize_support_card_effect_request: SummarizeSupportCardEffectRequest) -> GameCardSupportEffect {
         let mut game_card_support_service_guard = self.game_card_support_service.lock().await;
-        let game_card_support_effect = game_card_support_service_guard.use_support_card(calculate_effect_request).await;
+        let game_card_support_effect = game_card_support_service_guard.use_support_card(summarize_support_card_effect_request).await;
         drop(game_card_support_service_guard);
         game_card_support_effect
     }
@@ -212,7 +211,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         // 7. 효과를 적용하기 위해 Support Card Service 호출하여 필요 효과 설정
         let calculated_effect_response = self.get_summary_of_support_card(
-            energy_boost_support_request_form.to_calculate_effect_request(support_card_number)).await;
+            energy_boost_support_request_form.to_summarize_support_card_effect_request(support_card_number)).await;
 
         // 8. 가져온 효과를 기반으로 Deck Service 호출하여 에너지 카드 수량만큼 가능한 검색하여 배치
         let mut game_deck_service_guard = self.game_deck_service.lock().await;
@@ -295,7 +294,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         }
 
         let card_effect_summary = self.get_summary_of_support_card(
-            draw_support_request_form.to_calculate_effect_request(support_card_number)).await;
+            draw_support_request_form.to_summarize_support_card_effect_request(support_card_number)).await;
 
         let game_deck_service_guard = self.game_deck_service.lock().await;
         let draw_deck_response = game_deck_service_guard
@@ -366,7 +365,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         }
 
         let card_effect_summary = self.get_summary_of_support_card(
-            search_unit_support_request_form.to_calculate_effect_request(support_card_number)).await;
+            search_unit_support_request_form.to_summarize_support_card_effect_request(support_card_number)).await;
 
         let searching_grade_limit = card_effect_summary.get_unit_from_deck().get_grade_limit();
         let searching_card_count = card_effect_summary.get_unit_from_deck().get_unit_count();
@@ -481,7 +480,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         }
 
         let card_effect_summary = self.get_summary_of_support_card(
-            remove_opponent_field_energy_support_request_form.to_calculate_effect_request(support_card_number)).await;
+            remove_opponent_field_energy_support_request_form.to_summarize_support_card_effect_request(support_card_number)).await;
 
         let battle_room_service_guard = self.battle_room_service.lock().await;
         let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(

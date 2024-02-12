@@ -1,11 +1,11 @@
 #[derive(Clone)]
-pub struct CalculateEffectRequest {
+pub struct SummarizeSupportCardEffectRequest {
     support_card_number: i32,
 }
 
-impl CalculateEffectRequest {
+impl SummarizeSupportCardEffectRequest {
     pub fn new(support_card_number: i32) -> Self {
-        CalculateEffectRequest {
+        SummarizeSupportCardEffectRequest {
             support_card_number
         }
     }

@@ -7,7 +7,7 @@ use crate::game_card_support::entity::game_card_support_effect::GameCardSupportE
 use crate::game_card_support::repository::game_card_support_repository::GameCardSupportRepository;
 use crate::game_card_support::repository::game_card_support_repository_impl::GameCardSupportRepositoryImpl;
 use crate::game_card_support::service::game_card_support_service::GameCardSupportService;
-use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
+use crate::game_card_support::service::request::summarize_support_card_effect_request::SummarizeSupportCardEffectRequest;
 
 pub struct GameCardSupportServiceImpl {
     game_card_support_repository: Arc<AsyncMutex<GameCardSupportRepositoryImpl>>,
@@ -34,12 +34,12 @@ impl GameCardSupportServiceImpl {
 
 #[async_trait]
 impl GameCardSupportService for GameCardSupportServiceImpl {
-    async fn use_support_card(&mut self, calculate_effect_request: CalculateEffectRequest) -> GameCardSupportEffect {
+    async fn use_support_card(&mut self, summarize_support_card_effect_request: SummarizeSupportCardEffectRequest) -> GameCardSupportEffect {
         println!("GameCardSupportServiceImpl: use_support_card()");
 
         let game_card_support_repository_guard = self.game_card_support_repository.lock().await;
         let game_card_support_effect = unsafe {
-            game_card_support_repository_guard.call_support_card_repository_handler(calculate_effect_request.get_support_card_number())
+            game_card_support_repository_guard.call_support_card_repository_handler(summarize_support_card_effect_request.get_support_card_number())
         };
 
         return game_card_support_effect

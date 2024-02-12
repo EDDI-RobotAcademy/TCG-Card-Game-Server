@@ -20,7 +20,6 @@ use crate::game_card_item::service::request::summary_item_card_effect_request::S
 use crate::game_card_item::service::response::summary_item_card_effect_response::SummaryItemCardEffectResponse;
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_card_support::entity::game_card_support_effect::GameCardSupportEffect;
-use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_hand::service::game_hand_service::GameHandService;

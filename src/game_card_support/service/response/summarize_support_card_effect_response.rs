@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
-pub struct CalculateEffectResponse {
+pub struct SummarizeSupportCardEffectResponse {
     is_success: bool,
 }
 
-impl CalculateEffectResponse {
+impl SummarizeSupportCardEffectResponse {
     pub fn new(is_success: bool) -> Self {
-        CalculateEffectResponse { is_success }
+        SummarizeSupportCardEffectResponse { is_success }
     }
 }
