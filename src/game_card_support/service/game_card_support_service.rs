@@ -4,5 +4,5 @@ use crate::game_card_support::service::request::summarize_support_card_effect_re
 
 #[async_trait]
 pub trait GameCardSupportService {
-    async fn use_support_card(&mut self, summarize_support_card_effect_request: SummarizeSupportCardEffectRequest) -> GameCardSupportEffect;
+    async fn summarize_support_card_effect(&mut self, summarize_support_card_effect_request: SummarizeSupportCardEffectRequest) -> GameCardSupportEffect;
 }

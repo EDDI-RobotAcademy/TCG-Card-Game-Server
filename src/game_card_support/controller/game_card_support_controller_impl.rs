@@ -107,7 +107,6 @@ impl GameCardSupportControllerImpl {
         INSTANCE.clone()
     }
 
-    // Redis Session Validation
     async fn is_valid_session(&self, request: GetValueWithKeyRequest) -> i32 {
         let redis_in_memory_service_guard = self.redis_in_memory_service.lock().await;
         let session_validation_response = redis_in_memory_service_guard.get_value_with_key(request).await;
@@ -116,7 +115,6 @@ impl GameCardSupportControllerImpl {
         value_string.parse::<i32>().unwrap_or_else(|_| { -1 })
     }
 
-    // Protocol Hacking Validation
     async fn is_valid_protocol(&self, check_protocol_hacking_request: CheckProtocolHackingRequest) -> bool {
         let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
         let check_protocol_hacking_response = game_protocol_validation_service_guard.check_protocol_hacking(check_protocol_hacking_request).await;
@@ -124,7 +122,6 @@ impl GameCardSupportControllerImpl {
         check_protocol_hacking_response.is_success()
     }
 
-    // Card Kind Validation
     async fn is_it_support_card(&self, is_it_support_card_request: IsItSupportCardRequest) -> bool {
         let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
         let is_it_support_card_response = game_protocol_validation_service_guard.is_it_support_card(is_it_support_card_request).await;
@@ -132,7 +129,6 @@ impl GameCardSupportControllerImpl {
         is_it_support_card_response.is_success()
     }
 
-    // Card Usage Validation
     async fn is_able_to_use(&self, can_use_card_request: CanUseCardRequest) -> bool {
         let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
         let can_use_card_response = game_protocol_validation_service_guard.can_use_card(can_use_card_request).await;
@@ -140,7 +136,6 @@ impl GameCardSupportControllerImpl {
         can_use_card_response.is_success()
     }
 
-    //
     async fn use_support_card(&self, use_game_hand_support_card_request: UseGameHandSupportCardRequest) -> i32 {
         let mut game_hand_service_guard = self.game_hand_service.lock().await;
         let use_game_hand_support_card_response = game_hand_service_guard.use_support_card(use_game_hand_support_card_request).await;
@@ -155,7 +150,7 @@ impl GameCardSupportControllerImpl {
 
     async fn get_summary_of_support_card(&self, summarize_support_card_effect_request: SummarizeSupportCardEffectRequest) -> GameCardSupportEffect {
         let mut game_card_support_service_guard = self.game_card_support_service.lock().await;
-        let game_card_support_effect = game_card_support_service_guard.use_support_card(summarize_support_card_effect_request).await;
+        let game_card_support_effect = game_card_support_service_guard.summarize_support_card_effect(summarize_support_card_effect_request).await;
         drop(game_card_support_service_guard);
         game_card_support_effect
     }

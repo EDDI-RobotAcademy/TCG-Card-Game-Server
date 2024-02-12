@@ -5,7 +5,7 @@ use crate::game_card_support::handler::game_card_support_handler::GameCardSuppor
 pub struct SupportCard_2_Function;
 
 impl GameCardSupportHandler for SupportCard_2_Function {
-    unsafe fn use_specific_support_card(&self) -> GameCardSupportEffect {
+    unsafe fn generate_support_card_effect_summary(&self) -> GameCardSupportEffect {
         println!("SupportCard_2_Function: use_specific_support_card()");
 
         let mut game_card_support_effect = GameCardSupportEffect::new(RaceEnum::Undead, 2);
