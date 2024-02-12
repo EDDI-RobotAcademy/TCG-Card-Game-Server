@@ -35,7 +35,7 @@ impl GameCardSupportServiceImpl {
 #[async_trait]
 impl GameCardSupportService for GameCardSupportServiceImpl {
     async fn summarize_support_card_effect(&mut self, summarize_support_card_effect_request: SummarizeSupportCardEffectRequest) -> GameCardSupportEffect {
-        println!("GameCardSupportServiceImpl: use_support_card()");
+        println!("GameCardSupportServiceImpl: summarize_support_card_effect()");
 
         let game_card_support_repository_guard = self.game_card_support_repository.lock().await;
         let game_card_support_effect = unsafe {

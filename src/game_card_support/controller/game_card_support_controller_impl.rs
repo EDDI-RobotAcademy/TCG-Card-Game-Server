@@ -5,6 +5,7 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::card_grade::service::card_grade_service::CardGradeService;
 use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
@@ -154,6 +155,13 @@ impl GameCardSupportControllerImpl {
         drop(game_card_support_service_guard);
         game_card_support_effect
     }
+
+    async fn get_opponent_unique_id(&self, find_opponent_by_account_id_request: FindOpponentByAccountIdRequest) -> i32 {
+        let battle_room_service_guard = self.battle_room_service.lock().await;
+        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(find_opponent_by_account_id_request).await;
+        drop(battle_room_service_guard);
+        find_opponent_by_account_id_response.get_opponent_unique_id()
+    }
 }
 
 #[async_trait]
@@ -233,15 +241,14 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
                 energy_from_deck_info.get_energy_count())).await;
 
         // 10. 상대방의 고유 id 값을 확보
-        let battle_room_service_guard = self.battle_room_service.lock().await;
-        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+        let opponent_unique_id = self.get_opponent_unique_id(
             energy_boost_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
         // 11. Notify Service를 호출하여 Opponent에게 무엇을 할 것인지 알려줌
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_to_opponent_what_you_do_response = notify_player_action_service_guard.notify_to_opponent_you_use_energy_boost(
             energy_boost_support_request_form.to_notify_to_opponent_you_use_energy_card_request(
-                find_opponent_by_account_id_response.get_opponent_unique_id(),
+                opponent_unique_id,
                 unit_card_index,
                 usage_hand_card,
                 calculated_effect_response.get_energy_from_deck().get_energy_count(),
@@ -302,17 +309,13 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         self.place_used_card_to_tomb(
             draw_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
 
-        let battle_room_service_guard = self.battle_room_service.lock().await;
-        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+        let opponent_unique_id = self.get_opponent_unique_id(
             draw_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
-        drop(battle_room_service_guard);
-
-        let found_opponent_unique_id = find_opponent_by_account_id_response.get_opponent_unique_id();
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_opponent_you_use_draw_support_response = notify_player_action_service_guard.notify_to_opponent_you_use_draw_support_card(
             draw_support_request_form.to_notify_opponent_you_use_draw_support_card_request(
-                found_opponent_unique_id,
+                opponent_unique_id,
                 support_card_number,
                 card_effect_summary.get_need_to_draw_card_count())).await;
         if !notify_opponent_you_use_draw_support_response.is_success() {
@@ -418,17 +421,13 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         self.place_used_card_to_tomb(
             search_unit_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
 
-        let battle_room_service_guard = self.battle_room_service.lock().await;
-        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+        let opponent_unique_id = self.get_opponent_unique_id(
             search_unit_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
-        drop(battle_room_service_guard);
-
-        let found_opponent_unique_id = find_opponent_by_account_id_response.get_opponent_unique_id();
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_opponent_you_use_support_card_response = notify_player_action_service_guard.notify_opponent_you_use_search_support_card(
             search_unit_support_request_form.to_notify_opponent_you_use_search_support_card(
-                found_opponent_unique_id,
+                opponent_unique_id,
                 support_card_number,
                 target_unit_card_number_list.len() as i32)).await;
         if !notify_opponent_you_use_support_card_response.is_success() {
@@ -477,17 +476,13 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let card_effect_summary = self.get_summary_of_support_card(
             remove_opponent_field_energy_support_request_form.to_summarize_support_card_effect_request(support_card_number)).await;
 
-        let battle_room_service_guard = self.battle_room_service.lock().await;
-        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+        let opponent_unique_id = self.get_opponent_unique_id(
             remove_opponent_field_energy_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
-        drop(battle_room_service_guard);
-
-        let found_opponent_unique_id = find_opponent_by_account_id_response.get_opponent_unique_id();
         let mut game_field_energy_service_guard = self.game_field_energy_service.lock().await;
         let remove_field_energy_with_amount_response = game_field_energy_service_guard.remove_field_energy_with_amount(
             remove_opponent_field_energy_support_request_form.to_remove_field_energy_with_amount_request(
-                found_opponent_unique_id,
+                opponent_unique_id,
                 card_effect_summary.get_removal_amount_of_opponent_field_energy())).await;
         if !remove_field_energy_with_amount_response.get_is_success() {
             println!("Failed to remove opponent's field energy.");
@@ -505,7 +500,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_opponent_you_use_support_card_response = notify_player_action_service_guard.notify_opponent_you_use_field_energy_remove_support_card(
             remove_opponent_field_energy_support_request_form.to_notify_to_opponent_you_use_field_energy_remove_support_card_request(
-                found_opponent_unique_id,
+                opponent_unique_id,
                 support_card_number,
                 card_effect_summary.get_removal_amount_of_opponent_field_energy())).await;
 
