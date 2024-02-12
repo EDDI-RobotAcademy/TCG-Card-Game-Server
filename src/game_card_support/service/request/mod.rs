@@ -1,1 +1,1 @@
-pub mod calculate_effect_request;
+pub mod summarize_support_card_effect_request;

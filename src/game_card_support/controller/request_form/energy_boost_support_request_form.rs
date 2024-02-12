@@ -1,7 +1,7 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_support::service::request::summarize_support_card_effect_request::SummarizeSupportCardEffectRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
-use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
 use crate::game_deck::service::request::found_card_from_deck_request::FoundCardFromDeckRequest;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
@@ -9,7 +9,6 @@ use crate::game_protocol_validation::service::request::can_use_card_request::Can
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_boost_card_request::NotifyToOpponentYouUseEnergyBoostCardRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyToOpponentYouUseEnergyCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -63,8 +62,8 @@ impl EnergyBoostSupportRequestForm {
         PlaceToTombRequest::new(account_unique_id, used_card_id)
     }
 
-    pub fn to_calculate_effect_request(&self, support_card_number: i32) -> CalculateEffectRequest {
-        CalculateEffectRequest::new(support_card_number)
+    pub fn to_summarize_support_card_effect_request(&self, support_card_number: i32) -> SummarizeSupportCardEffectRequest {
+        SummarizeSupportCardEffectRequest::new(support_card_number)
     }
 
     pub fn to_found_card_from_deck_request(&self, account_unique_id: i32, need_to_find_card_id: i32, energy_count: i32) -> FoundCardFromDeckRequest {

@@ -23,7 +23,7 @@ pub struct GameCardSupportRepositoryImpl {
 struct NoneFunction;
 
 impl GameCardSupportHandler for NoneFunction {
-    unsafe fn use_specific_support_card(&self) -> GameCardSupportEffect {
+    unsafe fn generate_support_card_effect_summary(&self) -> GameCardSupportEffect {
         println!("아직 구현되지 않은 기능입니다.");
 
         GameCardSupportEffect::new(Dummy, 0)
@@ -94,6 +94,6 @@ impl GameCardSupportRepository for GameCardSupportRepositoryImpl {
         println!("GameCardSupportRepositoryImpl: call_support_card_repository_handler()");
 
         let support_card_execution_handler = self.support_card_functions.get(&support_card_id);
-        support_card_execution_handler.unwrap().use_specific_support_card()
+        support_card_execution_handler.unwrap().generate_support_card_effect_summary()
     }
 }

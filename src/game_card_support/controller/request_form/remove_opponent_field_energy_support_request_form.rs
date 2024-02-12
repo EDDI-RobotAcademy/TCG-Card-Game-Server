@@ -1,5 +1,5 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
-use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
+use crate::game_card_support::service::request::summarize_support_card_effect_request::SummarizeSupportCardEffectRequest;
 use crate::game_field_energy::service::request::remove_field_energy_with_amount_request::RemoveFieldEnergyWithAmountRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
@@ -41,8 +41,8 @@ impl RemoveOpponentFieldEnergySupportRequestForm {
     pub fn to_place_to_tomb_request(&self, account_unique_id: i32, used_card_id: i32) -> PlaceToTombRequest {
         PlaceToTombRequest::new(account_unique_id, used_card_id)
     }
-    pub fn to_calculate_effect_request(&self, support_card_number: i32) -> CalculateEffectRequest {
-        CalculateEffectRequest::new(support_card_number)
+    pub fn to_summarize_support_card_effect_request(&self, support_card_number: i32) -> SummarizeSupportCardEffectRequest {
+        SummarizeSupportCardEffectRequest::new(support_card_number)
     }
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
         FindOpponentByAccountIdRequest::new(account_unique_id)

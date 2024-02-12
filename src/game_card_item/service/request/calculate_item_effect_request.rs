@@ -1,5 +1,3 @@
-use crate::game_card_support::service::request::calculate_effect_request::CalculateEffectRequest;
-
 #[derive(Clone)]
 pub struct CalculateItemEffectRequest {
     item_card_number: i32,
