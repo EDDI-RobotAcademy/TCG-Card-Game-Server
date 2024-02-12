@@ -54,13 +54,8 @@ impl GameCardUnitService for GameCardUnitServiceImpl {
 
 #[cfg(test)]
 mod tests {
-    use std::io;
-    use std::io::Write;
     use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
-    use crate::common::card_attributes::card_race::card_race_enum::RaceEnum::{Human, Undead};
-    use crate::game_card_support::repository::game_card_support_repository_impl::GameCardSupportRepositoryImpl;
     use super::*;
-    use crate::game_card_support::service::request::use_support_card_request::UseSupportCardRequest;
 
     #[tokio::test]
     async fn test_game_card_unit_service() {
