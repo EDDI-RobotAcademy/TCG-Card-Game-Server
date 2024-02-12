@@ -8,7 +8,9 @@ use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl
 
 use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
 use crate::game_card_energy::controller::request_form::attach_general_energy_card_request_form::AttachGeneralEnergyCardRequestForm;
+use crate::game_card_energy::controller::request_form::attach_special_energy_card_request_form::AttachSpecialEnergyCardRequestForm;
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
+use crate::game_card_energy::controller::response_form::attach_special_energy_card_response_form::AttachSpecialEnergyCardResponseForm;
 use crate::game_card_energy::service::game_card_energy_service::GameCardEnergyService;
 use crate::game_card_energy::service::game_card_energy_service_impl::GameCardEnergyServiceImpl;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
@@ -151,5 +153,62 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
         }
 
         AttachGeneralEnergyCardResponseForm::new(true)
+    }
+
+    async fn request_to_attach_special_energy(&self, attach_special_energy_request_form: AttachSpecialEnergyCardRequestForm) -> AttachSpecialEnergyCardResponseForm {
+        println!("GameCardEnergyControllerImpl: request_to_attach_energy()");
+
+        // 1. 세션 아이디를 검증합니다.
+        let account_unique_id = self.is_valid_session(attach_special_energy_request_form.to_session_validation_request()).await;
+        if account_unique_id == -1 {
+            return AttachSpecialEnergyCardResponseForm::new(false)
+        }
+
+        // TODO: 세션을 제외하고 애초에 UI에서 숫자로 전송하면 더 좋다.
+        let energy_card_id_string = attach_special_energy_request_form.get_energy_card_id();
+        let energy_card_id = energy_card_id_string.parse::<i32>().unwrap();
+
+        // 2. GameProtocolValidation Service 호출하여 Hand에 있는지 확인하여 해킹 여부 검증
+        let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
+        let check_protocol_hacking_response = game_protocol_validation_service_guard.check_protocol_hacking(
+            attach_special_energy_request_form.to_check_protocol_hacking_request(account_unique_id, energy_card_id)).await;
+        if !check_protocol_hacking_response.is_success() {
+            println!("해킹범을 검거합니다!");
+            return AttachSpecialEnergyCardResponseForm::new(false)
+        }
+
+        // 3. CardKinds Service를 호출하여 실제 에너지 카드가 맞는지 확인
+        let is_it_energy_response = game_protocol_validation_service_guard.is_it_energy_card(
+            attach_special_energy_request_form.to_is_it_energy_card_request(energy_card_id)).await;
+        if !is_it_energy_response.is_success() {
+            println!("에너지 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
+            return AttachSpecialEnergyCardResponseForm::new(false)
+        }
+
+        // 4. Hand Service 호출하여 에너지 카드 사용
+        let mut game_hand_service_guard = self.game_hand_service.lock().await;
+        let use_game_hand_unit_card_response = game_hand_service_guard.use_energy_card(
+            attach_special_energy_request_form.to_use_game_hand_energy_card_request(account_unique_id, energy_card_id)).await;
+        let usage_hand_card_id = use_game_hand_unit_card_response.get_found_energy_card_id();
+
+        // 5. Special Energy 카드 Summarized Effect 산출
+        let mut game_card_energy_service_guard = self.game_card_energy_service.lock().await;
+        let energy_card_effect_response = game_card_energy_service_guard.summary_energy_effect(
+            attach_special_energy_request_form.to_summary_energy_card_effect_request(energy_card_id)).await;
+
+        // TODO: 세션을 제외하고 애초에 UI에서 숫자로 전송하면 더 좋다.
+        let unit_card_index_string = attach_special_energy_request_form.get_unit_card_index();
+        let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
+
+        // 6. Battle Field 유닛에 특수 에너지 붙이기
+
+        // 7. 상대방의 고유 id 값을 확보
+        let battle_room_service_guard = self.battle_room_service.lock().await;
+        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+            attach_special_energy_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+
+        // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
+
+        AttachSpecialEnergyCardResponseForm::new(true)
     }
 }
