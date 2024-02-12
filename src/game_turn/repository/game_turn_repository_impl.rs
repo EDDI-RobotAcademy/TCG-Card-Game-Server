@@ -6,7 +6,6 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::game_turn::entity::game_turn::GameTurn;
 use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
-use crate::game_turn::service::request::decide_first_turn_request::Gesture;
 use crate::game_turn::service::response::decide_first_turn_response::DecideFirstTurnResponse;
 
 
@@ -59,24 +58,27 @@ impl GameTurnRepository for GameTurnRepositoryImpl {
         -1
     }
 
-    fn decide_first_turn(&mut self, account_unique_id1:i32,choice1:Gesture,
-                                    account_unique_id2:i32,choice2:Gesture) -> DecideFirstTurnResponse {
+    fn decide_first_turn(&mut self, account_unique_id1:i32,choice1:String,
+                                    account_unique_id2:i32,choice2:String) -> DecideFirstTurnResponse {
         println!("GameTurnRepositoryImpl: decide_first_turn()");
-        let (winner_account_unique_id, result_is_draw) = match (choice1, choice2) {
-            (Gesture::Rock, Gesture::Scissors) | (Gesture::Paper, Gesture::Rock) | (Gesture::Scissors, Gesture::Paper) => {
-                println!("{} 선공 ",account_unique_id1);
+        let (winner_account_unique_id, result_is_draw) = match (choice1.as_str(), choice2.as_str()) {
+            ("Rock", "Scissors") | ("Paper", "Rock") | ("Scissors", "Paper") => {
+                println!("{} 선공 ", account_unique_id1);
                 (account_unique_id1, false)
                 // 플레이어 1이 이길 때
             }
-            (Gesture::Scissors, Gesture::Rock) | (Gesture::Rock, Gesture::Paper) | (Gesture::Paper, Gesture::Scissors) => {
-                println!("{} 선공 ",account_unique_id2);
-                (account_unique_id2, false)  // 플레이어 2가 이길 때
+            ("Scissors", "Rock") | ("Rock", "Paper") | ("Paper", "Scissors") => {
+                println!("{} 선공 ", account_unique_id2);
+                (account_unique_id2, false)
+                // 플레이어 2가 이길 때
+            }
+            _ => {
+                // 그 외의 경우 (무승부)
+                println!("무승부");
+                (0, true)
             }
 
-            _ =>{
-                println!("무승부! 한판더");
-                (0, true)
-            },  // 비길 때
+
         };
 
 

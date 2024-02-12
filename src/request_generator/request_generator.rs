@@ -18,6 +18,8 @@ use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueu
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
+use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service::FirstTurnDecisionWaitQueueService;
+use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service_impl::FirstTurnDecisionWaitQueueServiceImpl;
 use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
 use crate::game_card_energy::controller::game_card_energy_controller_impl::GameCardEnergyControllerImpl;
 use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
@@ -44,6 +46,7 @@ use crate::request_generator::session_request_generator::create_session_login_re
 use crate::request_generator::shop_request_generator::create_get_card_default_request;
 use crate::request_generator::deploy_unit_request_form_generator::create_deploy_unit_request_form;
 use crate::request_generator::energy_boost_support_request_form_generator::create_energy_boost_support_request_form;
+use crate::request_generator::first_turn_decision_wait_queue_request_generator::create_first_turn_decision_wait_queue_request;
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
@@ -237,6 +240,21 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            19 => {
+                // First Turn Decision Wait Queue
+                if let Some(request) = create_first_turn_decision_wait_queue_request(&data) {
+                    let first_turn_decision_wait_queue_service_mutex = FirstTurnDecisionWaitQueueServiceImpl::get_instance();
+                    let mut first_turn_decision_wait_queue_service = first_turn_decision_wait_queue_service_mutex.lock().await;
+
+                    let response = first_turn_decision_wait_queue_service.enqueue_player_session_id_to_wait_queue(request).await;
+                    let response_type = Some(ResponseType::FIRST_TURN_DECISION_WAIT_QUEUE(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+
             31 => {
                 // Account Card List
                 if let Some(request) = create_account_card_list_request(&data) {
