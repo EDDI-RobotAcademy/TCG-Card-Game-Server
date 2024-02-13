@@ -83,6 +83,7 @@ mod game_card_energy;
 mod card_activation_energy;
 mod card_attack_point;
 mod card_health_point;
+mod game_card_active_skill;
 
 #[tokio::main]
 async fn main() {
