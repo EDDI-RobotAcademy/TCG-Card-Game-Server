@@ -134,7 +134,6 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         ApplyInstantDeathToTargetUnitIndexResponse::new(response)
     }
 
-
     async fn get_current_health_point_of_field_unit_by_index(&self, get_current_health_point_of_field_unit_by_index_request: GetCurrentHealthPointOfFieldUnitByIndexRequest) -> GetCurrentHealthPointOfFieldUnitByIndexResponse {
         println!("GameFieldUnitServiceImpl: get_current_health_point_of_field_unit_by_index()");
 
@@ -148,6 +147,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         } else {
             GetCurrentHealthPointOfFieldUnitByIndexResponse::new(-1)
         }
+    }
 
     async fn attach_special_energy_to_field_unit_index(&mut self, attach_special_energy_to_unit_index_request: AttachSpecialEnergyToUnitIndexRequest) -> AttachSpecialEnergyToUnitIndexResponse {
         println!("GameFieldUnitServiceImpl: attach_special_energy_to_field_unit_index()");

@@ -12,6 +12,7 @@ use crate::notify_player_action::service::request::notify_to_opponent_you_use_dr
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_boost_card_request::NotifyToOpponentYouUseEnergyBoostCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyToOpponentYouUseEnergyCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_field_energy_remove_support_card_request::NotifyToOpponentYouUseFieldEnergyRemoveSupportCardRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_field_energy_increase_request::NotifyOpponentYouUseItemFieldEnergyIncreaseRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_instant_death_request::NotifyToOpponentYouUseItemInstantDeathRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_instant_death_alternatives_request::NotifyToOpponentYouUseItemInstantDeathAlternativesRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_search_support_card_request::NotifyOpponentYouUseSearchSupportRequest;
@@ -150,5 +151,17 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
             notify_to_opponent_you_use_field_energy_remove_support_card_request.get_field_energy_to_remove()).await;
 
         NotifyOpponentYouUseSupportCardResponse::new(notify_opponent_you_use_field_energy_remove_support_card_response)
+    }
+
+    async fn notify_opponent_you_use_item_field_energy_increase_item_card(&mut self, notify_opponent_you_use_item_field_energy_increase_request: NotifyOpponentYouUseItemFieldEnergyIncreaseRequest) -> NotifyToOpponentYouUseItemCardResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_opponent_you_use_search_support_card()");
+
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        let notify_opponent_you_use_item_field_energy_increase_item_card_response = notify_player_action_repository_guard.notify_opponent_you_use_item_field_energy_increase_card(
+            notify_opponent_you_use_item_field_energy_increase_request.get_opponent_unique_id(),
+            notify_opponent_you_use_item_field_energy_increase_request.get_usage_item_card_id(),
+            notify_opponent_you_use_item_field_energy_increase_request.get_increased_field_energy()).await;
+
+        NotifyToOpponentYouUseItemCardResponse::new(notify_opponent_you_use_item_field_energy_increase_item_card_response)
     }
 }
