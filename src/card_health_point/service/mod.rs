@@ -1,0 +1,2 @@
+pub mod card_health_point_service;
+pub mod card_health_point_service_impl;
