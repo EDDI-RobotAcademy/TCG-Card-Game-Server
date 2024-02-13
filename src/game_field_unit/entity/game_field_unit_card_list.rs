@@ -1,3 +1,4 @@
+use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 
@@ -56,6 +57,12 @@ impl GameFieldUnitCardList {
             let unit_health_point = unit.get_mut_unit_health_point();
             unit_health_point.set_current_health_point(0);
             unit.set_is_alive(false);
+        }
+    }
+
+    pub fn add_special_energy_to_indexed_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32, status_effect_list: Vec<StatusEffect>) {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            unit.attach_special_energy(race_enum, quantity, status_effect_list);
         }
     }
 }

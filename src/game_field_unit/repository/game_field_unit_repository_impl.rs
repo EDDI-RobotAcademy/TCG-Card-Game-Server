@@ -6,6 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_energy::entity::status_effect::StatusEffect;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
@@ -171,6 +172,22 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         }
 
         false
+    }
+
+    fn attach_special_energy_to_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: i32, race_enum: RaceEnum, quantity: i32, status_effect_list: Vec<StatusEffect>) -> bool {
+        println!("GameFieldUnitRepositoryImpl: attach_special_energy_to_indexed_unit()");
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            game_field_unit.add_special_energy_to_indexed_unit(
+                unit_card_index as usize,
+                RaceEnumValue::from(race_enum as i32),
+                quantity,
+                status_effect_list);
+
+            return true
+        }
+
+        return false
     }
 }
 
