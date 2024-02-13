@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::battle_room::service::battle_room_service::BattleRoomService;
 
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::game_card_active_skill::controller::game_card_active_skill_controller::GameCardActiveSkillController;
@@ -86,7 +87,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         // 2. TODO: 프로토콜 검증 할 때가 아니라 패스
 
-        // 3. 공격을 요청한 인덱스 유닛의 카드 id 값 파악
+        // 3. Active Skill을 시전하는 인덱스 유닛의 카드 id 값 파악
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
         let add_unit_to_game_field_response = game_field_unit_service_guard
             .find_active_skill_usage_unit_id_by_index(
@@ -98,16 +99,31 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
         let usage_skill_index = usage_skill_index_string.parse::<i32>().unwrap();
 
         let mut game_card_active_skill_service_guard = self.game_card_active_skill_service.lock().await;
-        let response = game_card_active_skill_service_guard
+        let summary_active_skill_effect_response = game_card_active_skill_service_guard
             .summary_active_skill(
                 targeting_active_skill_request_form.to_summary_active_skill_effect_response(
                     unit_card_index, usage_skill_index)).await;
 
-        // 5. Attack Opponent
-        // let active_skill_usage_card_index_string = targeting_active_skill_request_form.get_opponent_target_card_index();
-        // let active_skill_usage_card_index = active_skill_usage_card_index_string.parse::<i32>().unwrap();
+        // 5. 상대 고유값 찾기
+        let battle_room_service_guard = self.battle_room_service.lock().await;
+        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+            targeting_active_skill_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
-        // 6. Notify Opponent
+        // 6. Attack Opponent
+        let target_card_index_string = targeting_active_skill_request_form.get_opponent_target_card_index();
+        let target_card_index = target_card_index_string.parse::<i32>().unwrap();
+
+        game_field_unit_service_guard.apply_damage_to_target_unit_index(
+            targeting_active_skill_request_form.to_apply_damage_to_target_unit_index(
+                find_opponent_by_account_id_response.get_opponent_unique_id(),
+                target_card_index,
+                summary_active_skill_effect_response.get_skill_damage())).await;
+
+        // 7. 공격 당한 유닛 사망 판정
+
+        // 8. 사망 판정 값이 참이라면 무덤으로 보내기
+
+        // 9. Notify Opponent
 
         TargetingActiveSkillResponseForm::new(true)
     }
