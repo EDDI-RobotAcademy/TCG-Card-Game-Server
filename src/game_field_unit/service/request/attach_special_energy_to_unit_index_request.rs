@@ -73,6 +73,6 @@ mod tests {
 
         // Printing the request and status_effect_list for debugging
         println!("AttachSpecialEnergyToUnitIndexRequest: {:?}", request);
-        println!("StatusEffectList: {:?}", request.status_effect_list());
+        println!("StatusEffectList: {:?}", request.get_status_effect_list());
     }
 }
