@@ -183,7 +183,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         // TODO: 여기서 어떤 정보를 다룰 것인지에 대한 고찰이 필요함 (사망한 유닛들 ? 기타 등등)
-        game_field_unit_repository_guard.apply_status_effect_damage_iteratively(
+        game_field_unit_repository_guard.apply_harmful_status_effect_damage_iteratively(
             apply_status_effect_damage_iteratively_request.get_account_unique_id());
 
         ApplyStatusEffectDamageIterativelyResponse::new(true)
