@@ -4,6 +4,7 @@ use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
+use crate::game_field_unit::entity::harmful_status_effect::HarmfulStatusEffect;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 use crate::game_field_unit::entity::unit_health_point::UnitHealthPoint;
 
@@ -20,6 +21,7 @@ pub struct GameFieldUnitCard {
     has_second_passive_skill: bool,
     has_third_passive_skill: bool,
     extra_status_effect_list: Vec<ExtraStatusEffect>,
+    harmful_status_effect_list: Vec<HarmfulStatusEffect>,
     is_alive: bool,
 }
 
@@ -47,6 +49,7 @@ impl GameFieldUnitCard {
             has_second_passive_skill,
             has_third_passive_skill,
             extra_status_effect_list: Vec::new(),
+            harmful_status_effect_list: Vec::new(),
             is_alive
         }
     }
@@ -90,6 +93,8 @@ impl GameFieldUnitCard {
         self.unit_health_point.set_current_health_point(current_health);
     }
 
+    // TODO: 이 부분도 Domain이 점점 커지고 있음 (Deadline 고려하면 현재는 수습 불가)
+    // 네이밍 이슈로 harmful_status_effect를 별개로 구성 (해로운 효과와 에너지 부착으로 추가 획득한 효과가 구별되어야함)
     pub fn attach_special_energy(&mut self, race: RaceEnumValue, quantity: i32, status_effect_list: Vec<StatusEffect>) {
         self.attached_energy_map.add_energy(race, quantity);
         for status_effect in status_effect_list.iter().cloned() {
@@ -99,6 +104,71 @@ impl GameFieldUnitCard {
                 status_effect.get_status_duration_turn(),
                 status_effect.get_effect_damage(),
                 status_effect.get_reuse_turn()));
+        }
+    }
+
+    // 공격을 통한 상태 이상 부여
+    pub fn impose_harmful_state(&mut self, harmful_state: ExtraStatusEffect) {
+        let harmful_status_effect = HarmfulStatusEffect::new(
+            harmful_state.get_extra_effect().clone(),
+            harmful_state.get_status_duration_turn(),
+            harmful_state.get_effect_damage(),
+            harmful_state.get_reuse_turn(),
+        );
+
+        self.harmful_status_effect_list.push(harmful_status_effect);
+    }
+
+    pub fn impose_harmful_state_list(&mut self, harmful_states: Vec<ExtraStatusEffect>) {
+        for harmful_state in harmful_states {
+            self.impose_harmful_state(harmful_state);
+        }
+    }
+
+    // 상태 이상에 따른 데미지 및 효과 처리
+    pub fn apply_status_effect_damage(&mut self) {
+        let mut index_to_remove = Vec::new();
+
+        for index in (0..self.harmful_status_effect_list.len()).rev() {
+            self.apply_damage_from_effect(index);
+            self.decrease_status_duration(index);
+            self.decrease_reuse_turn(index);
+
+            // 만약 상태 지속 턴이 0이 되었을 경우 해당 상태 효과를 제거
+            if self.harmful_status_effect_list[index].get_status_duration_turn() == 0 {
+                index_to_remove.push(index);
+            }
+        }
+
+        // index_to_remove에 저장된 인덱스들을 제거
+        for index in index_to_remove {
+            self.harmful_status_effect_list.remove(index);
+        }
+    }
+
+    // ExtraStatusEffect의 효과 데미지 적용
+    fn apply_damage_from_effect(&mut self, index: usize) {
+        let effect_damage = self.harmful_status_effect_list[index].get_effect_damage();
+        if effect_damage > 0 {
+            let current_health = self.unit_health_point.get_current_health_point();
+            let new_health = current_health.saturating_sub(effect_damage);
+            self.unit_health_point.set_current_health_point(new_health);
+        }
+    }
+
+    // ExtraStatusEffect의 상태 지속 턴 감소
+    fn decrease_status_duration(&mut self, index: usize) {
+        let current_duration = self.harmful_status_effect_list[index].get_status_duration_turn();
+        if current_duration > 0 {
+            self.harmful_status_effect_list[index].set_status_duration_turn(current_duration - 1);
+        }
+    }
+
+    // ExtraStatusEffect의 재사용 턴 감소 (빙결의 경우 같은 유닛을 계속 얼릴 수 없음)
+    fn decrease_reuse_turn(&mut self, index: usize) {
+        let current_reuse_turn = self.harmful_status_effect_list[index].get_reuse_turn();
+        if current_reuse_turn > 0 {
+            self.harmful_status_effect_list[index].set_reuse_turn(current_reuse_turn - 1);
         }
     }
 }
@@ -213,5 +283,86 @@ mod tests {
 
         println!("unit: {:?}", game_field_unit_card);
         println!("Test passed: apply_damage");
+    }
+
+    #[test]
+    fn test_apply_status_effect_damage() {
+        let mut game_field_unit_card = GameFieldUnitCard::new(
+            5,
+            RaceEnum::Chaos,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+            true
+        );
+
+        game_field_unit_card.extra_status_effect_list.push(ExtraStatusEffect::new(
+            ExtraEffect::Freeze,
+            2,
+            5,
+            3,
+        ));
+
+        println!("Before apply_status_effect_damage: {:?}", game_field_unit_card);
+        game_field_unit_card.apply_status_effect_damage();
+        println!("Test result: {:?}", game_field_unit_card);
+
+        game_field_unit_card.apply_status_effect_damage();
+        println!("Test result: {:?}", game_field_unit_card);
+
+        game_field_unit_card.apply_status_effect_damage();
+        println!("Test result: {:?}", game_field_unit_card);
+    }
+
+    #[test]
+    fn test_impose_harmful_state_and_apply_damage() {
+        let mut game_field_unit_card = GameFieldUnitCard::new(
+            5,
+            RaceEnum::Chaos,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+            true
+        );
+
+        let harmful_state = ExtraStatusEffect::new(ExtraEffect::Darkfire, 5, 5, 0);
+        game_field_unit_card.impose_harmful_state(harmful_state.clone());
+
+        println!("Before apply_status_effect_damage: {:?}", game_field_unit_card);
+        game_field_unit_card.apply_status_effect_damage();
+        println!("Test result after 1st apply_status_effect_damage: {:?}", game_field_unit_card);
+
+        assert_eq!(
+            game_field_unit_card.get_unit_health_point().get_current_health_point(),
+            15
+        );
+
+        // TODO: 같은 상태 이상에 대해서 적용되는 duration 값만 초기화하도록 구성이 필요함
+        // game_field_unit_card.impose_harmful_state(harmful_state.clone());
+        game_field_unit_card.apply_status_effect_damage();
+
+        println!("Test result after 2nd apply_status_effect_damage: {:?}", game_field_unit_card);
+
+        assert_eq!(
+            game_field_unit_card.get_unit_health_point().get_current_health_point(),
+            10
+        );
+
+        game_field_unit_card.apply_status_effect_damage();
+
+        println!("Test result after 3rd apply_status_effect_damage: {:?}", game_field_unit_card);
+
+        assert_eq!(
+            game_field_unit_card.get_unit_health_point().get_current_health_point(),
+            5
+        );
     }
 }

@@ -1,4 +1,5 @@
 use crate::game_card_energy::entity::status_effect::StatusEffect;
+use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::game_field_unit_card_list::GameFieldUnitCardList;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
@@ -56,6 +57,16 @@ impl GameFieldUnit {
             quantity,
             status_effect_list);
     }
+
+    pub fn impose_harmful_state_to_indexed_unit(&mut self, unit_card_index: usize, harmful_state: ExtraStatusEffect) {
+        self.game_field_unit.impose_harmful_state_to_indexed_unit(unit_card_index, harmful_state);
+    }
+
+    pub fn apply_status_effect_damage_iteratively(&mut self) {
+        self.game_field_unit.apply_status_effect_damage_iteratively();
+    }
+
+
 }
 
 #[cfg(test)]
@@ -63,6 +74,7 @@ mod tests {
     use rand::Rng;
     use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
     use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+    use crate::game_field_unit::entity::extra_effect::ExtraEffect;
     use super::*;
 
     #[test]
@@ -363,5 +375,28 @@ mod tests {
         println!("Updated Health: {}", updated_health);
 
         assert_eq!(updated_health, original_health - damage_amount);
+    }
+
+    #[test]
+    fn test_apply_status_effect_damage_iteratively() {
+        let mut game_field_unit = GameFieldUnit::new();
+
+        let unit1 = GameFieldUnitCard::new(1, RaceEnum::Human, GradeEnum::Hero, 20, 20, 1, false, false, false, true);
+        let unit2 = GameFieldUnitCard::new(2, RaceEnum::Trent, GradeEnum::Hero, 20, 20, 1, false, false, false, true);
+        game_field_unit.add_unit_to_game_field(unit1);
+        game_field_unit.add_unit_to_game_field(unit2);
+
+        let harmful_state = ExtraStatusEffect::new(ExtraEffect::Darkfire, 2, 5, 3);
+        game_field_unit.game_field_unit.impose_harmful_state_list_iteratively(vec![harmful_state.clone()]);
+        game_field_unit.apply_status_effect_damage_iteratively();
+
+        for index in 0..game_field_unit.get_all_unit_list_in_game_field().len() {
+            let updated_health = game_field_unit.find_unit_by_index(index).get_unit_health_point().get_current_health_point();
+            let expected_damage = harmful_state.get_effect_damage();
+            println!("Unit at index {}: Updated Health: {}, Expected Damage: {}", index, updated_health, expected_damage);
+            assert_eq!(updated_health, 20 - expected_damage);
+        }
+
+        println!("game_field_unit: {:?}", game_field_unit);
     }
 }

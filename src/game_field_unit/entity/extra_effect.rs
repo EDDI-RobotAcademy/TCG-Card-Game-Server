@@ -10,7 +10,7 @@ impl From<i32> for ExtraEffect {
         match value {
             1 => ExtraEffect::Freeze,
             2 => ExtraEffect::Darkfire,
-            _ => ExtraEffect::Dummy, // Default to Dummy for unknown values
+            _ => ExtraEffect::Dummy,
         }
     }
 }
