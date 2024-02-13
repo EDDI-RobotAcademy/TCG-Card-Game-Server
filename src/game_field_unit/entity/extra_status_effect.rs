@@ -22,6 +22,10 @@ impl ExtraStatusEffect {
         &self.effect
     }
 
+    pub fn set_status_duration_turn(&mut self, status_duration_turn: i32) {
+        self.status_duration_turn = status_duration_turn;
+    }
+
     pub fn get_status_duration_turn(&self) -> i32 {
         self.status_duration_turn
     }
@@ -32,5 +36,9 @@ impl ExtraStatusEffect {
 
     pub fn get_reuse_turn(&self) -> i32 {
         self.reuse_turn
+    }
+
+    pub fn set_reuse_turn(&mut self, reuse_turn: i32) {
+        self.reuse_turn = reuse_turn;
     }
 }

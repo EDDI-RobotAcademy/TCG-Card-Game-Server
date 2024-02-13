@@ -8,6 +8,7 @@ use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_que
 use crate::first_turn_decision_wait_queue::service::request::first_turn_decision_wait_queue_request::FirstTurnDecisionWaitQueueRequest;
 use crate::first_turn_decision_wait_queue::service::response::first_turn_decision_wait_queue_response::FirstTurnDecisionWaitQueueResponse;
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
+use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
@@ -116,7 +117,10 @@ impl GameTurnController for GameTurnControllerImpl {
         // TODO: 2. 현재 요청한 사람이 이번 턴의 주도권을 가지고 있던 사람인지 검증
 
         // 3. 자신의 필드 유닛들 중 턴 종료 시 데미지를 받는 케이스를 적용
-        
+        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+        let apply_status_effect_damage_iteratively_response = game_field_unit_service_guard.apply_status_effect_damage_iteratively(
+            turn_end_request_form.to_apply_status_effect_damage_iteratively_request(
+                account_unique_id)).await;
 
         // 4. 죽은 유닛들이 있는지 전체 순회하며 확인
 

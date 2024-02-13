@@ -65,6 +65,12 @@ impl GameFieldUnitCardList {
             unit.attach_special_energy(race_enum, quantity, status_effect_list);
         }
     }
+
+    pub fn apply_status_effect_damage_iteratively(&mut self) {
+        for unit in &mut self.game_field_unit_card_list {
+            unit.apply_status_effect_damage();
+        }
+    }
 }
 
 #[cfg(test)]
@@ -72,6 +78,8 @@ mod tests {
     use rand::Rng;
     use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
     use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+    use crate::game_field_unit::entity::extra_effect::ExtraEffect;
+    use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
     use super::*;
 
     #[test]
@@ -393,5 +401,50 @@ mod tests {
         println!("Updated Health: {}", updated_health);
 
         assert_eq!(updated_health, original_health - damage_amount);
+    }
+
+    #[test]
+    fn test_apply_status_effect_damage_iteratively() {
+        let mut game_field_unit_card_list = GameFieldUnitCardList::new();
+
+        let game_field_unit_card1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+            true);
+
+        let game_field_unit_card2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Trent,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+            true);
+
+        game_field_unit_card1.extra_status_effect_list.push(ExtraStatusEffect::new(
+            ExtraEffect::Darkfire,
+            2,
+            5,
+            3,
+        ));
+
+        game_field_unit_card_list.add_field_unit(game_field_unit_card1.clone());
+        game_field_unit_card_list.add_field_unit(game_field_unit_card2.clone());
+
+        println!("Before applying status effect damage: {:?}", game_field_unit_card_list);
+
+        game_field_unit_card_list.apply_status_effect_damage_iteratively();
+
+        println!("After applying status effect damage: {:?}", game_field_unit_card_list);
     }
 }

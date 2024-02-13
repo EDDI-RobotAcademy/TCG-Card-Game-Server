@@ -12,6 +12,7 @@ use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitServi
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::apply_instant_death_to_target_unit_index_request::ApplyInstantDeathToTargetUnitIndexRequest;
+use crate::game_field_unit::service::request::apply_status_effect_damage_iteratively_request::ApplyStatusEffectDamageIterativelyRequest;
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_special_energy_to_unit_index_request::AttachSpecialEnergyToUnitIndexRequest;
@@ -22,6 +23,7 @@ use crate::game_field_unit::service::request::get_current_health_point_of_field_
 use crate::game_field_unit::service::response::add_unit_to_game_field_response::AddUnitToGameFieldResponse;
 use crate::game_field_unit::service::response::apply_damage_to_target_unit_index_response::ApplyDamageToTargetUnitIndexResponse;
 use crate::game_field_unit::service::response::apply_instant_death_to_target_unit_index_response::ApplyInstantDeathToTargetUnitIndexResponse;
+use crate::game_field_unit::service::response::apply_status_effect_damage_iteratively_response::ApplyStatusEffectDamageIterativelyResponse;
 use crate::game_field_unit::service::response::attach_single_energy_to_unit_index_response::AttachSingleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attach_multiple_energy_to_unit_index_response::AttachMultipleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attach_special_energy_to_unit_index_response::AttachSpecialEnergyToUnitIndexResponse;
@@ -174,5 +176,16 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             find_active_skill_usage_unit_id_by_index_request.get_active_skill_usage_unit_index());
 
         FindActiveSkillUsageUnitIdByIndexResponse::new(found_target_unit_id)
+    }
+
+    async fn apply_status_effect_damage_iteratively(&mut self, apply_status_effect_damage_iteratively_request: ApplyStatusEffectDamageIterativelyRequest) -> ApplyStatusEffectDamageIterativelyResponse {
+        println!("GameFieldUnitServiceImpl: apply_status_effect_damage_iteratively()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        // TODO: 여기서 어떤 정보를 다룰 것인지에 대한 고찰이 필요함 (사망한 유닛들 ? 기타 등등)
+        game_field_unit_repository_guard.apply_status_effect_damage_iteratively(
+            apply_status_effect_damage_iteratively_request.get_account_unique_id());
+
+        ApplyStatusEffectDamageIterativelyResponse::new(true)
     }
 }

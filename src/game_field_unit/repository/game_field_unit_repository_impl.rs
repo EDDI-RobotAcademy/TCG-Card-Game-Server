@@ -189,6 +189,11 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         return false
     }
+
+    // TODO: Game Field Unit이 너무 거대해지고 있음 (그러나 당장 고려 할 수 없는 상황임)
+    fn apply_status_effect_damage_iteratively(&mut self, account_unique_id: i32) -> bool {
+        true
+    }
 }
 
 #[cfg(test)]

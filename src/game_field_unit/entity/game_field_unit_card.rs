@@ -101,6 +101,52 @@ impl GameFieldUnitCard {
                 status_effect.get_reuse_turn()));
         }
     }
+
+    pub fn apply_status_effect_damage(&mut self) {
+        let mut index_to_remove = Vec::new();
+
+        for index in (0..self.extra_status_effect_list.len()).rev() {
+            self.apply_damage_from_effect(index);
+            self.decrease_status_duration(index);
+            self.decrease_reuse_turn(index);
+
+            // 만약 상태 지속 턴이 0이 되었을 경우 해당 상태 효과를 제거
+            if self.extra_status_effect_list[index].get_status_duration_turn() == 0 {
+                index_to_remove.push(index);
+            }
+        }
+
+        // index_to_remove에 저장된 인덱스들을 제거
+        for index in index_to_remove {
+            self.extra_status_effect_list.remove(index);
+        }
+    }
+
+    // ExtraStatusEffect의 효과 데미지 적용
+    fn apply_damage_from_effect(&mut self, index: usize) {
+        let effect_damage = self.extra_status_effect_list[index].get_effect_damage();
+        if effect_damage > 0 {
+            let current_health = self.unit_health_point.get_current_health_point();
+            let new_health = current_health.saturating_sub(effect_damage);
+            self.unit_health_point.set_current_health_point(new_health);
+        }
+    }
+
+    // ExtraStatusEffect의 상태 지속 턴 감소
+    fn decrease_status_duration(&mut self, index: usize) {
+        let current_duration = self.extra_status_effect_list[index].get_status_duration_turn();
+        if current_duration > 0 {
+            self.extra_status_effect_list[index].set_status_duration_turn(current_duration - 1);
+        }
+    }
+
+    // ExtraStatusEffect의 재사용 턴 감소 (빙결의 경우 같은 유닛을 계속 얼릴 수 없음)
+    fn decrease_reuse_turn(&mut self, index: usize) {
+        let current_reuse_turn = self.extra_status_effect_list[index].get_reuse_turn();
+        if current_reuse_turn > 0 {
+            self.extra_status_effect_list[index].set_reuse_turn(current_reuse_turn - 1);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -213,5 +259,38 @@ mod tests {
 
         println!("unit: {:?}", game_field_unit_card);
         println!("Test passed: apply_damage");
+    }
+
+    #[test]
+    fn test_apply_status_effect_damage() {
+        let mut game_field_unit_card = GameFieldUnitCard::new(
+            5,
+            RaceEnum::Chaos,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+            true
+        );
+
+        game_field_unit_card.extra_status_effect_list.push(ExtraStatusEffect::new(
+            ExtraEffect::Freeze,
+            2,
+            5,
+            3,
+        ));
+
+        println!("Before apply_status_effect_damage: {:?}", game_field_unit_card);
+        game_field_unit_card.apply_status_effect_damage();
+        println!("Test result: {:?}", game_field_unit_card);
+
+        game_field_unit_card.apply_status_effect_damage();
+        println!("Test result: {:?}", game_field_unit_card);
+
+        game_field_unit_card.apply_status_effect_damage();
+        println!("Test result: {:?}", game_field_unit_card);
     }
 }
