@@ -21,11 +21,11 @@ impl SummaryActiveSkillEffectResponse {
             skill_damage }
     }
 
-    pub fn skill_type(&self) -> &SkillType {
+    pub fn get_skill_type(&self) -> &SkillType {
         &self.skill_type
     }
 
-    pub fn skill_damage(&self) -> i32 {
+    pub fn get_skill_damage(&self) -> i32 {
         self.skill_damage
     }
 
