@@ -10,4 +10,5 @@ pub trait NotifyPlayerActionRepository {
     async fn notify_to_opponent_you_use_draw_support_card(&mut self, opponent_unique_id: i32, usage_support_card_id: i32, draw_card_count: i32) -> bool;
     async fn notify_opponent_you_use_search_support_card(&mut self, opponent_unique_id: i32, usage_support_card_id: i32, found_card_count: i32) -> bool;
     async fn notify_opponent_you_use_remove_field_energy_support_card(&mut self, opponent_unique_id: i32, usage_support_card_id: i32, amount_to_remove: i32) -> bool;
+    async fn notify_opponent_you_use_item_field_energy_increase_card(&mut self, opponent_unique_id: i32, usage_item_card_id: i32, increased_field_energy: i32) -> bool;
 }

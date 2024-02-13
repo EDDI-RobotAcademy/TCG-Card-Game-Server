@@ -1,3 +1,4 @@
+use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::game_field_unit_card_list::GameFieldUnitCardList;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
@@ -46,6 +47,14 @@ impl GameFieldUnit {
 
     pub fn apply_death_to_indexed_unit(&mut self, unit_card_index: usize) {
         self.game_field_unit.apply_death_to_indexed_unit(unit_card_index);
+    }
+
+    pub fn add_special_energy_to_indexed_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32, status_effect_list: Vec<StatusEffect>) {
+        self.game_field_unit.add_special_energy_to_indexed_unit(
+            unit_card_index,
+            race_enum,
+            quantity,
+            status_effect_list);
     }
 }
 
