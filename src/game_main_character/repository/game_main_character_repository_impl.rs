@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use diesel::dsl::max;
 use indexmap::IndexMap;
 use lazy_static::lazy_static;
 
@@ -18,7 +19,7 @@ impl GameMainCharacterRepositoryImpl {
         }
     }
 
-    pub(crate) fn get_game_main_character_map(&mut self) -> &mut IndexMap<i32, GameMainCharacter> {
+    pub fn get_game_main_character_map(&mut self) -> &mut IndexMap<i32, GameMainCharacter> {
         &mut self.game_main_character_map
     }
 
@@ -42,6 +43,16 @@ impl GameMainCharacterRepository for GameMainCharacterRepositoryImpl {
 
         true
     }
+
+    fn apply_damage_to_main_character(&mut self, account_unique_id: i32, damage: i32) -> bool {
+        println!("GameMainCharacterRepositoryImpl: apply_damage_to_main_character()");
+
+        if let Some(game_main_character) = self.game_main_character_map.get_mut(&account_unique_id) {
+            game_main_character.decrease_health_point(damage);
+        }
+
+        true
+    }
 }
 
 #[cfg(test)]
@@ -56,6 +67,12 @@ mod tests {
         assert!(result);
 
         println!("Test Output: {:?}", game_main_character_repository.get_game_main_character_map());
+
+        let apply_damage = game_main_character_repository.apply_damage_to_main_character(1, 30);
+
+        assert!(apply_damage);
+
+        println!("After applying damage: {:?}", game_main_character_repository.get_game_main_character_map());
     }
 
     #[tokio::test]

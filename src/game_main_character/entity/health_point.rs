@@ -11,6 +11,8 @@ impl HealthPoint {
     pub fn get_health(&self) -> i32 {
         self.number
     }
+
+    pub fn lose_health(&mut self, damage: i32) { self.number -= damage }
 }
 
 #[cfg(test)]
@@ -19,12 +21,11 @@ mod tests {
 
     #[test]
     fn test_health_point() {
-        let health_point = HealthPoint::new(100);
+        let mut health_point = HealthPoint::new(100);
         println!("HealthPoint: {}", health_point.get_health());
         assert_eq!(health_point.get_health(), 100);
 
-        let health_point = HealthPoint::new(75);
-        println!("HealthPoint: {}", health_point.get_health());
-        assert_eq!(health_point.get_health(), 75);
+        health_point.lose_health(5);
+        assert_eq!(health_point.get_health(), 95)
     }
 }
