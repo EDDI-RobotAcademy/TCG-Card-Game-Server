@@ -1,0 +1,2 @@
+pub mod game_card_active_skill_repository;
+pub mod game_card_active_skill_repository_impl;
