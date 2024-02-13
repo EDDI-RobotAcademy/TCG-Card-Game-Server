@@ -24,7 +24,7 @@ impl GameCardUnitHandler for UnitCard_26_Function {
 
         let mut game_card_unit_effect = GameCardUnitInfo::new(
             RaceEnum::Undead,
-            GradeEnum::Mythical,
+            GradeEnum::Uncommon,
             10,
             15,
             1,
