@@ -116,7 +116,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
         // TODO: 2. 현재 요청한 사람이 이번 턴의 주도권을 가지고 있던 사람인지 검증
 
-        // 3. 자신의 필드 유닛들 중 턴 종료 시 데미지를 받는 케이스를 적용
+        // 3. 자신의 필드 유닛들 중 턴 종료 시 데미지를 받는 케이스를 적용 (현재 상황에서 화상 데미지)
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
         let apply_status_effect_damage_iteratively_response = game_field_unit_service_guard.apply_status_effect_damage_iteratively(
             turn_end_request_form.to_apply_status_effect_damage_iteratively_request(
