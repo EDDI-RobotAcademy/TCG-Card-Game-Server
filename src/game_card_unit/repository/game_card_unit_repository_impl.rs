@@ -8,7 +8,11 @@ use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 
 use crate::game_card_unit::entity::game_card_unit_info::GameCardUnitInfo;
 use crate::game_card_unit::handler::game_card_unit_handler::GameCardUnitHandler;
+use crate::game_card_unit::handler::handler_of_19::game_card_unit_19_handler_impl::UnitCard_19_Function;
+use crate::game_card_unit::handler::handler_of_26::game_card_unit_26_handler_impl::UnitCard_26_Function;
+use crate::game_card_unit::handler::handler_of_27::game_card_unit_27_handler_impl::UnitCard_27_Function;
 use crate::game_card_unit::handler::handler_of_31::game_card_unit_31_handler_impl::UnitCard_31_Function;
+use crate::game_card_unit::handler::handler_of_32::game_card_unit_32_handler_impl::UnitCard_32_Function;
 use crate::game_card_unit::handler::handler_of_6::game_card_unit_6_handler_impl::UnitCard_6_Function;
 use crate::game_card_unit::repository::game_card_unit_repository::GameCardUnitRepository;
 
@@ -45,13 +49,13 @@ impl GameCardUnitRepositoryImpl {
         unit_card_functions.insert(11, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(17, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(18, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
-        unit_card_functions.insert(19, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
+        unit_card_functions.insert(19, Box::new(UnitCard_19_Function) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(22, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(23, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
-        unit_card_functions.insert(26, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
-        unit_card_functions.insert(27, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
+        unit_card_functions.insert(26, Box::new(UnitCard_26_Function) as Box<dyn GameCardUnitHandler>);
+        unit_card_functions.insert(27, Box::new(UnitCard_27_Function) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(31, Box::new(UnitCard_31_Function) as Box<dyn GameCardUnitHandler>);
-        unit_card_functions.insert(32, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
+        unit_card_functions.insert(32, Box::new(UnitCard_32_Function) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(34, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(38, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
         unit_card_functions.insert(39, Box::new(NoneUnitFunction) as Box<dyn GameCardUnitHandler>);
