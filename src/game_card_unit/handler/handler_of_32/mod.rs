@@ -1,1 +1,1 @@
-mod game_card_unit_32_handler_impl;
+pub mod game_card_unit_32_handler_impl;
