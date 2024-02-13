@@ -152,6 +152,7 @@ impl GameCardUnitRepository for GameCardUnitRepositoryImpl {
 mod tests {
     use super::*;
 
+
     #[test]
     fn test_game_card_support_repository_impl() {
         let repository = GameCardUnitRepositoryImpl::new();

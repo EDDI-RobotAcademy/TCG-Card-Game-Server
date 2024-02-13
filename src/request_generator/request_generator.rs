@@ -18,6 +18,8 @@ use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueu
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
+use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service::FirstTurnDecisionWaitQueueService;
+use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service_impl::FirstTurnDecisionWaitQueueServiceImpl;
 use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
 use crate::game_card_energy::controller::game_card_energy_controller_impl::GameCardEnergyControllerImpl;
 use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
@@ -28,6 +30,7 @@ use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
 use crate::game_hand::controller::game_hand_controller::GameHandController;
 use crate::game_hand::controller::game_hand_controller_impl::GameHandControllerImpl;
+use crate::game_turn::controller::game_turn_controller_impl::GameTurnControllerImpl;
 use crate::request_generator::account_card_request_generator::create_account_card_list_request;
 use crate::request_generator::account_deck_request_generator::{create_deck_delete_request, create_deck_list_request, create_deck_modify_request, create_deck_register_request};
 use crate::request_generator::account_point_request_generator::{create_gain_gold_request, create_pay_gold_request};
@@ -44,6 +47,9 @@ use crate::request_generator::session_request_generator::create_session_login_re
 use crate::request_generator::shop_request_generator::create_get_card_default_request;
 use crate::request_generator::deploy_unit_request_form_generator::create_deploy_unit_request_form;
 use crate::request_generator::energy_boost_support_request_form_generator::create_energy_boost_support_request_form;
+use crate::request_generator::first_turn_decision_wait_queue_request_form_generator::create_first_turn_decision_wait_queue_request_form;
+use crate::game_turn::controller::game_turn_controller::GameTurnController;
+use crate::request_generator::first_turn_decision_request_generator::create_first_turn_decision_request_form;
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
@@ -238,6 +244,36 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            19 => {
+                // First Turn Decision Wait Queue
+                if let Some(request_form) = create_first_turn_decision_wait_queue_request_form(&data) {
+                    let game_turn_controller_mutex = GameTurnControllerImpl::get_instance();
+                    let mut game_turn_controller_mutex_guard = game_turn_controller_mutex.lock().await;
+
+                    let response_form = game_turn_controller_mutex_guard.execute_first_turn_decision_wait_queue_procedure(request_form).await;
+                    let response_type = Some(ResponseType::FIRST_TURN_DECISION_WAIT_QUEUE(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+
+            20 => {
+                // First Turn Decision
+                if let Some(request_form) = create_first_turn_decision_request_form(&data) {
+                    let game_turn_controller_mutex = GameTurnControllerImpl::get_instance();
+                    let mut game_turn_controller_mutex_guard = game_turn_controller_mutex.lock().await;
+
+                    let response_form = game_turn_controller_mutex_guard.execute_first_turn_decision_procedure(request_form).await;
+                    let response_type = Some(ResponseType::FIRST_TURN_DECISION(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+
             31 => {
                 // Account Card List
                 if let Some(request) = create_account_card_list_request(&data) {

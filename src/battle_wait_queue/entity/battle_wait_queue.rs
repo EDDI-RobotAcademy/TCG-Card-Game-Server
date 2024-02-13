@@ -17,7 +17,7 @@ impl BattleWaitQueue {
         let mut guard = self.player_id_list.lock().await;
         guard.push(player_id);
 
-        println!("player_id_list: {:?}", guard);
+        println!("이거 맞니>>>player_id_list: {:?}", guard);
     }
 
     pub async fn dequeue_player(&self) -> Option<i32> {
