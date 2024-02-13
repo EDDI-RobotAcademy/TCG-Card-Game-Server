@@ -193,8 +193,8 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         // 5. Special Energy 카드 Summarized Effect 산출
         let mut game_card_energy_service_guard = self.game_card_energy_service.lock().await;
-        let energy_card_effect_response = game_card_energy_service_guard.summary_energy_effect(
-            attach_special_energy_request_form.to_summary_energy_card_effect_request(energy_card_id)).await;
+        let special_energy_card_effect_response = game_card_energy_service_guard.summary_special_energy_effect(
+            attach_special_energy_request_form.to_summary_special_energy_card_effect_request(energy_card_id)).await;
 
         // TODO: 세션을 제외하고 애초에 UI에서 숫자로 전송하면 더 좋다.
         let unit_card_index_string = attach_special_energy_request_form.get_unit_card_index();
@@ -202,16 +202,16 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         // 6. Battle Field 유닛에 특수 에너지 붙이기
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        // let attach_energy_to_field_unit_response = game_field_unit_service_guard.attach_special_energy_to_field_unit_index(
-        //     attach_special_energy_request_form.to_attach_special_energy_to_field_unit_request(
-        //         account_unique_id,
-        //         unit_card_index,
-        //         energy_card_effect_response.get_race(),
-        //         energy_card_effect_response)).await;
-        // if !attach_energy_to_field_unit_response.is_success() {
-        //     println!("필드에 유닛에게 에너지를 부착하는 과정에서 문제가 발생하였습니다.");
-        //     return AttachSpecialEnergyCardResponseForm::new(false)
-        // }
+        let attach_energy_to_field_unit_response = game_field_unit_service_guard.attach_special_energy_to_field_unit_index(
+            attach_special_energy_request_form.to_attach_special_energy_to_field_unit_request(
+                account_unique_id,
+                unit_card_index,
+                special_energy_card_effect_response.get_race(),
+                special_energy_card_effect_response.get_status_effect_list().to_vec())).await;
+        if !attach_energy_to_field_unit_response.is_success() {
+            println!("필드에 유닛에게 에너지를 부착하는 과정에서 문제가 발생하였습니다.");
+            return AttachSpecialEnergyCardResponseForm::new(false)
+        }
 
         // 7. 상대방의 고유 id 값을 확보
         let battle_room_service_guard = self.battle_room_service.lock().await;
