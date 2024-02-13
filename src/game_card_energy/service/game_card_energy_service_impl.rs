@@ -8,7 +8,9 @@ use crate::game_card_energy::repository::game_card_energy_repository_impl::GameC
 
 use crate::game_card_energy::service::game_card_energy_service::GameCardEnergyService;
 use crate::game_card_energy::service::request::summary_energy_card_effect_request::SummaryEnergyCardEffectRequest;
+use crate::game_card_energy::service::request::summary_special_energy_card_effect_request::SummarySpecialEnergyCardEffectRequest;
 use crate::game_card_energy::service::response::summary_energy_card_effect_response::SummaryEnergyCardEffectResponse;
+use crate::game_card_energy::service::response::summary_special_energy_card_effect_response::SummarySpecialEnergyCardEffectResponse;
 
 pub struct GameCardEnergyServiceImpl {
     game_card_energy_repository: Arc<AsyncMutex<GameCardEnergyRepositoryImpl>>,
@@ -45,5 +47,17 @@ impl GameCardEnergyService for GameCardEnergyServiceImpl {
         };
 
         return SummaryEnergyCardEffectResponse::from_summary_energy_card_effect(summary_energy_card_effect_response)
+    }
+
+    async fn summary_special_energy_effect(&mut self, summary_special_energy_card_effect_request: SummarySpecialEnergyCardEffectRequest) -> SummarySpecialEnergyCardEffectResponse {
+        println!("GameCardEnergyServiceImpl: summary_special_energy_effect()");
+
+        let game_card_energy_repository_guard = self.game_card_energy_repository.lock().await;
+        let summary_special_energy_card_effect_response = unsafe {
+            game_card_energy_repository_guard.call_energy_card_repository_handler(
+                summary_special_energy_card_effect_request.get_special_energy_card_id())
+        };
+
+        return SummarySpecialEnergyCardEffectResponse::from_summary_special_energy_card_effect(summary_special_energy_card_effect_response)
     }
 }

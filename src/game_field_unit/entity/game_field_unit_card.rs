@@ -1,6 +1,10 @@
+use std::os::linux::raw::stat;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect;
+use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 use crate::game_field_unit::entity::unit_health_point::UnitHealthPoint;
 
@@ -16,6 +20,7 @@ pub struct GameFieldUnitCard {
     has_first_passive_skill: bool,
     has_second_passive_skill: bool,
     has_third_passive_skill: bool,
+    extra_status_effect_list: Vec<ExtraStatusEffect>,
     is_alive: bool,
 }
 
@@ -42,6 +47,7 @@ impl GameFieldUnitCard {
             has_first_passive_skill,
             has_second_passive_skill,
             has_third_passive_skill,
+            extra_status_effect_list: Vec::new(),
             is_alive
         }
     }
@@ -83,6 +89,18 @@ impl GameFieldUnitCard {
         let current_health = remaining_health.max(0);
 
         self.unit_health_point.set_current_health_point(current_health);
+    }
+
+    pub fn attach_special_energy(&mut self, race: RaceEnumValue, quantity: i32, status_effect_list: Vec<StatusEffect>) {
+        self.attached_energy_map.add_energy(race, quantity);
+        for status_effect in status_effect_list.iter().cloned() {
+            let effect_number = status_effect.get_effect().to_i32();
+            self.extra_status_effect_list.push(ExtraStatusEffect::new(
+                ExtraEffect::from(effect_number),
+                status_effect.get_status_duration_turn(),
+                status_effect.get_effect_damage(),
+                status_effect.get_reuse_turn()));
+        }
     }
 }
 

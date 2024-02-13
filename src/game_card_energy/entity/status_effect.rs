@@ -30,7 +30,7 @@ impl StatusEffect {
         self.effect_damage
     }
 
-    pub fn reuse_turn(&self) -> i32 {
+    pub fn get_reuse_turn(&self) -> i32 {
         self.reuse_turn
     }
 }
