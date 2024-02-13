@@ -4,3 +4,4 @@ pub mod attach_multiple_energy_to_unit_index_response;
 pub mod find_target_unit_id_by_index_response;
 pub mod apply_damage_to_target_unit_index_response;
 pub mod apply_instant_death_to_target_unit_index_response;
+pub mod get_current_health_point_of_field_unit_by_index_response;

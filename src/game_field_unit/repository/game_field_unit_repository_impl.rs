@@ -108,6 +108,14 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         }
     }
 
+    fn find_indexed_unit(&self, account_unique_id: i32, unit_card_index: i32) -> Option<&GameFieldUnitCard> {
+        if let Some(game_field_unit) = self.game_field_unit_map.get(&account_unique_id) {
+            Some(game_field_unit.find_unit_by_index(unit_card_index as usize))
+        } else {
+            None
+        }
+    }
+
     fn attach_multiple_energy_to_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: i32, race_enum: RaceEnum, quantity: i32) -> bool {
         println!("GameFieldUnitRepositoryImpl: attach_multiple_energy_to_indexed_unit()");
 
@@ -348,6 +356,64 @@ mod tests {
             .get_max_health_point();
 
         assert_eq!(updated_max_health, current_max_health + increase_amount);
+    }
+
+    #[tokio::test]
+    async fn test_find_indexed_unit() {
+        let mut game_field_unit_repository = GameFieldUnitRepositoryImpl::new();
+        game_field_unit_repository.create_game_field_unit_object(1);
+
+        let unit_card_number = 42;
+        let result = game_field_unit_repository.add_unit_to_game_field(
+            1,
+            unit_card_number,
+            RaceEnum::Human,
+            GradeEnum::Legend,
+            35,
+            30,
+            2,
+            false,
+            false,
+            false);
+
+        let result = game_field_unit_repository.add_unit_to_game_field(
+            1,
+            6,
+            RaceEnum::Undead,
+            GradeEnum::Legend,
+            35,
+            30,
+            2,
+            false,
+            false,
+            false);
+
+        let result = game_field_unit_repository.add_unit_to_game_field(
+            1,
+            2,
+            RaceEnum::Trent,
+            GradeEnum::Legend,
+            35,
+            30,
+            2,
+            false,
+            false,
+            false);
+
+        let result = game_field_unit_repository.add_unit_to_game_field(
+            1,
+            13,
+            RaceEnum::Chaos,
+            GradeEnum::Legend,
+            35,
+            30,
+            2,
+            false,
+            false,
+            false);
+
+        let found_indexed_unit = game_field_unit_repository.find_indexed_unit(1,3);
+        println!("{:?}", found_indexed_unit)
     }
 
     #[tokio::test]

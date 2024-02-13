@@ -15,6 +15,7 @@ use crate::game_field_unit::service::request::apply_instant_death_to_target_unit
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
+use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 
 use crate::game_field_unit::service::response::add_unit_to_game_field_response::AddUnitToGameFieldResponse;
 use crate::game_field_unit::service::response::apply_damage_to_target_unit_index_response::ApplyDamageToTargetUnitIndexResponse;
@@ -22,6 +23,7 @@ use crate::game_field_unit::service::response::apply_instant_death_to_target_uni
 use crate::game_field_unit::service::response::attach_single_energy_to_unit_index_response::AttachSingleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attach_multiple_energy_to_unit_index_response::AttachMultipleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::find_target_unit_id_by_index_response::FindTargetUnitIdByIndexResponse;
+use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
 
 
 pub struct GameFieldUnitServiceImpl {
@@ -128,5 +130,20 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             apply_instant_death_to_target_unit_index_request.get_opponent_target_unit_index());
 
         ApplyInstantDeathToTargetUnitIndexResponse::new(response)
+    }
+
+    async fn get_current_health_point_of_field_unit_by_index(&self, get_current_health_point_of_field_unit_by_index_request: GetCurrentHealthPointOfFieldUnitByIndexRequest) -> GetCurrentHealthPointOfFieldUnitByIndexResponse {
+        println!("GameFieldUnitServiceImpl: get_current_health_point_of_field_unit_by_index()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let found_field_unit_response = game_field_unit_repository_guard.find_indexed_unit(
+            get_current_health_point_of_field_unit_by_index_request.get_account_unique_id(),
+            get_current_health_point_of_field_unit_by_index_request.get_field_unit_index());
+
+        return if let Some(found_field_unit) = found_field_unit_response {
+            GetCurrentHealthPointOfFieldUnitByIndexResponse::new(found_field_unit.get_unit_health_point().get_current_health_point())
+        } else {
+            GetCurrentHealthPointOfFieldUnitByIndexResponse::new(-1)
+        }
     }
 }
