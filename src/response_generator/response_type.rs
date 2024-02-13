@@ -29,6 +29,7 @@ use crate::game_card_unit::controller::response_form::deploy_unit_response_form:
 use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
 use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
 use crate::game_turn::controller::response_form::first_turn_decision_response_form::FirstTurnDecisionResponseForm;
+use crate::notify_player_action::entity::notify_opponent_increase_field_energy_item_usage::NotifyOpponentIncreaseFieldEnergyItemUsage;
 use crate::notify_player_action::entity::notify_opponent_remove_field_energy_support_usage::NotifyOpponentRemoveFieldEnergySupportUsage;
 use crate::notify_player_action::entity::notify_opponent_search_support_usage::NotifyOpponentSearchSupportUsage;
 use crate::notify_player_action::entity::notify_opponent_to_draw_support_usage::NotifyOpponentToDrawSupportUsage;
@@ -37,6 +38,7 @@ use crate::notify_player_action::entity::notify_opponent_to_energy_usage::Notify
 use crate::notify_player_action::entity::notify_opponent_to_instant_death_item_alternatives_usage::NotifyOpponentToInstantDeathItemAlternativesUsage;
 use crate::notify_player_action::entity::notify_opponent_to_instant_death_item_usage::NotifyOpponentToInstantDeathItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_unit_deploy::NotifyOpponentToUnitDeploy;
+use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_card_response::NotifyToOpponentYouUseItemCardResponse;
 
 use crate::shop::service::response::free_card_response::FreeCardResponse;
 use crate::shop::service::response::get_card_default_response::GetCardDefaultResponse;
@@ -102,6 +104,7 @@ pub enum ResponseType {
     NOTIFY_OPPONENT_TO_DRAW_SUPPORT_USAGE(NotifyOpponentToDrawSupportUsage),
     NOTIFY_OPPONENT_SEARCH_SUPPORT_USAGE(NotifyOpponentSearchSupportUsage),
     NOTIFY_OPPONENT_REMOVE_FIELD_ENERGY_SUPPORT_USAGE(NotifyOpponentRemoveFieldEnergySupportUsage),
+    NOTIFY_OPPONENT_INCREASE_FIELD_ENERGY_ITEM_USAGE(NotifyOpponentIncreaseFieldEnergyItemUsage),
 
     // Mulligan
     CHANGE_FIRST_HAND(MulliganResponseForm),

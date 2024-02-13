@@ -1,0 +1,2 @@
+pub mod card_health_point_repository;
+pub mod card_health_point_repository_impl;

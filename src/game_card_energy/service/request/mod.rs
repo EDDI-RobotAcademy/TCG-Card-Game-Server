@@ -1,1 +1,2 @@
 pub mod summary_energy_card_effect_request;
+pub mod summary_special_energy_card_effect_request;

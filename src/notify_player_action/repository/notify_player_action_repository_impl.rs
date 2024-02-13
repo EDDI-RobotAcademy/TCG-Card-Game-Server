@@ -5,6 +5,7 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 
 use crate::connection_context::repository::connection_context_repository_impl::ConnectionContextRepositoryImpl;
+use crate::notify_player_action::entity::notify_opponent_increase_field_energy_item_usage::NotifyOpponentIncreaseFieldEnergyItemUsage;
 use crate::notify_player_action::entity::notify_opponent_remove_field_energy_support_usage::NotifyOpponentRemoveFieldEnergySupportUsage;
 use crate::notify_player_action::entity::notify_opponent_search_support_usage::NotifyOpponentSearchSupportUsage;
 use crate::notify_player_action::entity::notify_opponent_to_draw_support_usage::NotifyOpponentToDrawSupportUsage;
@@ -224,6 +225,28 @@ impl NotifyPlayerActionRepository for NotifyPlayerActionRepositoryImpl {
                 AsyncMutex::new(
                     ResponseType::NOTIFY_OPPONENT_REMOVE_FIELD_ENERGY_SUPPORT_USAGE(
                         NotifyOpponentRemoveFieldEnergySupportUsage::new(usage_support_card_id, amount_to_remove))))).await;
+
+        true
+    }
+
+    async fn notify_opponent_you_use_item_field_energy_increase_card(&mut self, opponent_unique_id: i32, usage_item_card_id: i32, increased_field_energy: i32) -> bool {
+        println!("NotifyPlayerActionRepositoryImpl: notify_opponent_you_use_item_field_energy_increase_card()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    ResponseType::NOTIFY_OPPONENT_INCREASE_FIELD_ENERGY_ITEM_USAGE(NotifyOpponentIncreaseFieldEnergyItemUsage::new(usage_item_card_id, increased_field_energy))))).await;
 
         true
     }

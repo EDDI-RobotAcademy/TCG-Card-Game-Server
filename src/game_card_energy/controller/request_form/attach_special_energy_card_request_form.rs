@@ -1,7 +1,10 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_card_energy::service::request::summary_energy_card_effect_request::SummaryEnergyCardEffectRequest;
+use crate::game_card_energy::service::request::summary_special_energy_card_effect_request::SummarySpecialEnergyCardEffectRequest;
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
+use crate::game_field_unit::service::request::attach_special_energy_to_unit_index_request::AttachSpecialEnergyToUnitIndexRequest;
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_energy_card_request::IsItEnergyCardRequest;
@@ -52,12 +55,19 @@ impl AttachSpecialEnergyCardRequestForm {
             account_unique_id, energy_card_id)
     }
 
-    pub fn to_summary_energy_card_effect_request(&self, energy_card_id: i32) -> SummaryEnergyCardEffectRequest {
-        SummaryEnergyCardEffectRequest::new(
+    pub fn to_summary_special_energy_card_effect_request(&self, energy_card_id: i32) -> SummarySpecialEnergyCardEffectRequest {
+        SummarySpecialEnergyCardEffectRequest::new(
             energy_card_id)
     }
 
+    pub fn to_attach_special_energy_to_field_unit_request(&self,
+                                                          account_unique_id: i32,
+                                                          unit_card_index: i32,
+                                                          race_enum: RaceEnum,
+                                                          status_effect_list: Vec<StatusEffect>) -> AttachSpecialEnergyToUnitIndexRequest {
 
+        AttachSpecialEnergyToUnitIndexRequest::new(account_unique_id, unit_card_index, race_enum, status_effect_list)
+    }
 
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
         FindOpponentByAccountIdRequest::new(

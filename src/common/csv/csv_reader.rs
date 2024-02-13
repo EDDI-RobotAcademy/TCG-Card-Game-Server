@@ -190,6 +190,89 @@ pub fn build_card_race_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32
 
     card_race_dictionary
 }
+pub fn build_shop_card_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, (RaceEnum, GradeEnum)> {
+    let mut shop_card_dictionary = HashMap::new();
+
+    for record in csv_content.iter() {
+        let card_number = record[0].parse::<i32>();
+        let card_race = record[2].parse::<i32>();
+        let card_grade = record[3].parse::<i32>();
+
+        if let (Ok(card_number), Ok(card_race), Ok(card_grade)) = (card_number, card_race, card_grade) {
+            let race_enum = match card_race {
+                0 => RaceEnum::Dummy,
+                1 => RaceEnum::Undead,
+                2 => RaceEnum::Human,
+                3 => RaceEnum::Trent,
+                4 => RaceEnum::Angel,
+                5 => RaceEnum::Machine,
+                6 => RaceEnum::Chaos,
+                _ => {
+                    eprintln!("Invalid card race value: {}", card_race);
+                    RaceEnum::Dummy
+                }
+            };
+            let grade_enum = match card_grade {
+                0 => GradeEnum::Dummy,
+                1 => GradeEnum::Common,
+                2 => GradeEnum::Uncommon,
+                3 => GradeEnum::Hero,
+                4 => GradeEnum::Legend,
+                5 => GradeEnum::Mythical,
+                _ => {
+                    eprintln!("Invalid card grade value: {}", card_grade);
+                    GradeEnum::Dummy
+                }
+            };
+
+            shop_card_dictionary.insert(card_number, (race_enum, grade_enum));
+        } else {
+            eprintln!("Failed to parse card number: {:?}", record[0]);
+            eprintln!("Failed to parse card race: {:?}", record[2]);
+        }
+    }
+
+    shop_card_dictionary
+}
+
+pub fn build_card_activation_energy_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
+    let mut card_activation_energy_dictionary = HashMap::new();
+
+    for record in csv_content.iter() {
+        let card_number = record[0].parse::<i32>().unwrap();
+        let card_activation_energy = record[6].parse::<i32>().unwrap();
+        // card_activation_energy 어떤 record를 부여하는지 아니 상근아 csv기준 0~해서 7번같아요
+            card_activation_energy_dictionary.insert(card_number, card_activation_energy);
+
+    }
+
+    card_activation_energy_dictionary
+}
+
+pub fn build_card_attack_point_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
+    let mut card_attack_point_dictionary= HashMap::new();
+
+    for record in csv_content.iter() {
+        let card_number = record[0].parse::<i32>().unwrap();
+        let card_attack_point = record[7].parse::<i32>().unwrap();
+            card_attack_point_dictionary.insert(card_number, card_attack_point);
+    }
+
+    card_attack_point_dictionary
+}
+
+pub fn build_card_health_point_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32, i32> {
+    let mut card_health_point_dictionary = HashMap::new();
+
+    for record in csv_content.iter() {
+        let card_number = record[0].parse::<i32>().unwrap();
+        let card_health_point = record[8].parse::<i32>().unwrap();
+            card_health_point_dictionary.insert(card_number, card_health_point);
+
+    }
+
+    card_health_point_dictionary
+}
 
 
 // 카드 종류(서포트, 아이템 등등)

@@ -42,16 +42,20 @@ impl GameFieldEnergyRepository for GameFieldEnergyRepositoryImpl {
 
         true
     }
-    fn add_field_energy(&mut self, account_unique_id: i32) -> bool {
+
+    fn add_field_energy_with_amount(&mut self, account_unique_id: i32, amount: i32) -> bool {
         println!("FieldEnergyRepositoryImpl: add_field_energy()");
 
         if let Some(game_field_energy) = self.game_field_energy_map.get_mut(&account_unique_id) {
-            game_field_energy.add_energy_count();
+            for _ in 0..amount {
+                game_field_energy.add_energy_count();
+            }
             return true
         }
 
         false
     }
+
     fn remove_field_energy_with_amount(&mut self, account_unique_id: i32, amount: i32) -> bool {
         println!("FieldEnergyRepositoryImpl: remove_field_energy_with_amount()");
 
@@ -106,13 +110,13 @@ mod tests {
 
         assert!(result);
 
-        guard.add_field_energy(account_unique_id);
+        guard.add_field_energy_with_amount(account_unique_id, 3);
 
         println!("{:?}", guard.get_game_field_energy_map());
 
         assert_eq!(
             guard.get_game_field_energy_map().get(&account_unique_id),
-            Some(&GameFieldEnergy::new(2))
+            Some(&GameFieldEnergy::new(4))
         );
 
         guard.remove_field_energy_with_amount(account_unique_id, 2);
@@ -121,7 +125,7 @@ mod tests {
 
         assert_eq!(
             guard.get_game_field_energy_map().get(&account_unique_id),
-            Some(&GameFieldEnergy::new(0))
+            Some(&GameFieldEnergy::new(2))
         );
     }
 
