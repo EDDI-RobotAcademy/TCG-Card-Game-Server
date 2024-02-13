@@ -80,6 +80,8 @@ mod notify_player_action;
 mod game_protocol_validation;
 mod game_card_unit;
 mod game_card_energy;
+mod shop_gacha;
+mod shop_card_for_gacha;
 
 #[tokio::main]
 async fn main() {
