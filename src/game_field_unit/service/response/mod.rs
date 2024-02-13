@@ -6,3 +6,4 @@ pub mod apply_damage_to_target_unit_index_response;
 pub mod apply_instant_death_to_target_unit_index_response;
 pub mod get_current_health_point_of_field_unit_by_index_response;
 pub mod attach_special_energy_to_unit_index_response;
+pub mod find_active_skill_usage_unit_id_by_index_response;
