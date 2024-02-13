@@ -1,4 +1,5 @@
 use crate::game_card_energy::entity::status_effect::StatusEffect;
+use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 
@@ -65,6 +66,27 @@ impl GameFieldUnitCardList {
             unit.attach_special_energy(race_enum, quantity, status_effect_list);
         }
     }
+
+    pub fn impose_harmful_state_to_indexed_unit(&mut self, unit_card_index: usize, harmful_state: ExtraStatusEffect) {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            unit.impose_harmful_state(harmful_state);
+        }
+    }
+
+    // 해로운 효과 전역에 뿌리기
+    pub fn impose_harmful_state_list_iteratively(&mut self, harmful_state_list: Vec<ExtraStatusEffect>) {
+        for unit in &mut self.game_field_unit_card_list {
+            for harmful_state in harmful_state_list.iter() {
+                unit.impose_harmful_state(harmful_state.clone());
+            }
+        }
+    }
+
+    pub fn apply_status_effect_damage_iteratively(&mut self) {
+        for unit in &mut self.game_field_unit_card_list {
+            unit.apply_status_effect_damage();
+        }
+    }
 }
 
 #[cfg(test)]
@@ -72,6 +94,8 @@ mod tests {
     use rand::Rng;
     use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
     use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+    use crate::game_field_unit::entity::extra_effect::ExtraEffect;
+    use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
     use super::*;
 
     #[test]
@@ -393,5 +417,96 @@ mod tests {
         println!("Updated Health: {}", updated_health);
 
         assert_eq!(updated_health, original_health - damage_amount);
+    }
+
+    #[test]
+    fn test_impose_harmful_state_to_indexed_unit() {
+        let mut game_field_unit_card_list = GameFieldUnitCardList::new();
+
+        let game_field_unit_card1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+            true);
+
+        let game_field_unit_card2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Trent,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+            true);
+
+        game_field_unit_card_list.add_field_unit(game_field_unit_card1.clone());
+        game_field_unit_card_list.add_field_unit(game_field_unit_card2.clone());
+
+        let harmful_state = ExtraStatusEffect::new(ExtraEffect::Darkfire, 2, 5, 3);
+
+        let unit_card_index = 1;
+        println!("Before imposing harmful state to indexed unit: {:?}", game_field_unit_card_list);
+
+        game_field_unit_card_list.impose_harmful_state_to_indexed_unit(unit_card_index, harmful_state.clone());
+
+        println!("After imposing harmful state to indexed unit: {:?}", game_field_unit_card_list);
+
+        let affected_unit = game_field_unit_card_list.find_unit_by_index(unit_card_index);
+        println!("After imposing harmful state to indexed unit: {:?}", affected_unit);
+
+        game_field_unit_card_list.apply_status_effect_damage_iteratively();
+        let affected_unit = game_field_unit_card_list.find_unit_by_index(unit_card_index);
+        println!("After imposing harmful state to indexed unit: {:?}", affected_unit);
+    }
+
+    #[test]
+    fn test_impose_harmful_state_list_iteratively() {
+        let mut game_field_unit_card_list = GameFieldUnitCardList::new();
+
+        let game_field_unit_card1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+            true);
+
+        let game_field_unit_card2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Trent,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+            true);
+
+        game_field_unit_card_list.add_field_unit(game_field_unit_card1.clone());
+        game_field_unit_card_list.add_field_unit(game_field_unit_card2.clone());
+
+        let harmful_state_list = vec![
+            ExtraStatusEffect::new(ExtraEffect::Darkfire, 2, 5, 3),
+            ExtraStatusEffect::new(ExtraEffect::Freeze, 3, 0, 2),
+        ];
+
+        println!("Before imposing harmful state list: {:?}", game_field_unit_card_list);
+
+        game_field_unit_card_list.impose_harmful_state_list_iteratively(harmful_state_list);
+
+        println!("After imposing harmful state list: {:?}", game_field_unit_card_list);
     }
 }

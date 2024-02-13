@@ -1,16 +1,16 @@
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct ExtraStatusEffect {
+pub struct HarmfulStatusEffect {
     effect: ExtraEffect,
     status_duration_turn: i32,
     effect_damage: i32,
     reuse_turn: i32,
 }
 
-impl ExtraStatusEffect {
-    pub fn new(effect: ExtraEffect, status_duration_turn: i32, effect_damage: i32, reuse_turn: i32) -> ExtraStatusEffect {
-        ExtraStatusEffect {
+impl HarmfulStatusEffect {
+    pub fn new(effect: ExtraEffect, status_duration_turn: i32, effect_damage: i32, reuse_turn: i32) -> HarmfulStatusEffect {
+        HarmfulStatusEffect {
             effect: effect.clone(),
             status_duration_turn,
             effect_damage,
@@ -18,7 +18,7 @@ impl ExtraStatusEffect {
         }
     }
 
-    pub fn get_extra_effect(&self) -> &ExtraEffect {
+    pub fn get_harmful_effect(&self) -> &ExtraEffect {
         &self.effect
     }
 
@@ -38,6 +38,7 @@ impl ExtraStatusEffect {
         self.reuse_turn
     }
 
+    // TODO: 가만 보니까 어차피 duration 만료되어 효과 삭제 된 이후 의미가 없음
     pub fn set_reuse_turn(&mut self, reuse_turn: i32) {
         self.reuse_turn = reuse_turn;
     }
