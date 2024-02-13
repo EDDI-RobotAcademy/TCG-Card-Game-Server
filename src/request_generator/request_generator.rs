@@ -20,6 +20,8 @@ use crate::client_program::service::client_program_service::ClientProgramService
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
 use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
 use crate::game_card_energy::controller::game_card_energy_controller_impl::GameCardEnergyControllerImpl;
+use crate::game_card_item::controller::game_card_item_controller::GameCardItemController;
+use crate::game_card_item::controller::game_card_item_controller_impl::GameCardItemControllerImpl;
 use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
 use crate::game_card_support::controller::game_card_support_controller_impl::GameCardSupportControllerImpl;
 use crate::game_card_unit::controller::game_card_unit_controller::GameCardUnitController;
@@ -44,6 +46,7 @@ use crate::request_generator::session_request_generator::create_session_login_re
 use crate::request_generator::shop_request_generator::create_get_card_default_request;
 use crate::request_generator::deploy_unit_request_form_generator::create_deploy_unit_request_form;
 use crate::request_generator::energy_boost_support_request_form_generator::create_energy_boost_support_request_form;
+use crate::request_generator::game_card_item_request_form_generator::create_add_field_energy_by_field_unit_health_point_request_form;
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
@@ -414,6 +417,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = game_card_support_controller.request_to_use_remove_opponent_field_energy_support(request_form).await;
                     let response_type = Some(ResponseType::REMOVE_OPPONENT_FIELD_ENERGY_SUPPORT_USAGE(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1009 => {
+                // Add Field Energy by Field Unit HP Item Card Usage
+                if let Some(request_form) = create_add_field_energy_by_field_unit_health_point_request_form(&data) {
+                    let game_card_item_controller_mutex = GameCardItemControllerImpl::get_instance();
+                    let game_card_item_controller = game_card_item_controller_mutex.lock().await;
+
+                    let response_form = game_card_item_controller.request_to_use_add_field_energy_with_field_unit_health_point(request_form).await;
+                    let response_type = Some(ResponseType::ADD_FIELD_ENERGY_BY_FIELD_UNIT_HEALTH_POINT_ITEM_USAGE(response_form));
 
                     response_type
                 } else {
