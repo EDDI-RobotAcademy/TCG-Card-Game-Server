@@ -1,0 +1,2 @@
+pub mod shop_card_for_gacha_repository;
+pub mod shop_card_for_gacha_repository_impl;
