@@ -8,6 +8,8 @@ use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl
 use crate::game_card_active_skill::controller::game_card_active_skill_controller::GameCardActiveSkillController;
 use crate::game_card_active_skill::controller::request_form::targeting_active_skill_request_form::TargetingActiveSkillRequestForm;
 use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
+use crate::game_card_active_skill::service::game_card_active_skill_service::GameCardActiveSkillService;
+use crate::game_card_active_skill::service::game_card_active_skill_service_impl::GameCardActiveSkillServiceImpl;
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
@@ -22,6 +24,7 @@ pub struct GameCardActiveSkillControllerImpl {
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
     notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
+    game_card_active_skill_service: Arc<AsyncMutex<GameCardActiveSkillServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
 }
 
@@ -30,6 +33,7 @@ impl GameCardActiveSkillControllerImpl {
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
+               game_card_active_skill_service: Arc<AsyncMutex<GameCardActiveSkillServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>) -> Self {
 
         GameCardActiveSkillControllerImpl {
@@ -37,6 +41,7 @@ impl GameCardActiveSkillControllerImpl {
             game_field_unit_service,
             redis_in_memory_service,
             notify_player_action_service,
+            game_card_active_skill_service,
             game_protocol_validation_service,
         }
     }
@@ -50,6 +55,7 @@ impl GameCardActiveSkillControllerImpl {
                             GameFieldUnitServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
                             NotifyPlayerActionServiceImpl::get_instance(),
+                            GameCardActiveSkillServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance())));
         }
         INSTANCE.clone()
@@ -82,20 +88,26 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         // 3. 공격을 요청한 인덱스 유닛의 카드 id 값 파악
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        // TODO: 네이밍 이슈가 존재함 (자신의 것도 index로 찾고 상대것도 index로 찾으므로 찾는 api 보다는 변수로 구별해야함)
         let add_unit_to_game_field_response = game_field_unit_service_guard
             .find_active_skill_usage_unit_id_by_index(
                 targeting_active_skill_request_form.to_find_active_skill_usage_unit_id_by_index_request(
                     account_unique_id, unit_card_index)).await;
 
         // 4. Active Skill Summary 획득
+        let usage_skill_index_string = targeting_active_skill_request_form.get_usage_skill_index();
+        let usage_skill_index = usage_skill_index_string.parse::<i32>().unwrap();
 
-        let opponent_target_card_index_string = targeting_active_skill_request_form.get_opponent_target_card_index();
-        let opponent_target_card_index = opponent_target_card_index_string.parse::<i32>().unwrap();
+        let mut game_card_active_skill_service_guard = self.game_card_active_skill_service.lock().await;
+        let response = game_card_active_skill_service_guard
+            .summary_active_skill(
+                targeting_active_skill_request_form.to_summary_active_skill_effect_response(
+                    unit_card_index, usage_skill_index)).await;
 
-        // 4. Attack Opponent
+        // 5. Attack Opponent
+        // let active_skill_usage_card_index_string = targeting_active_skill_request_form.get_opponent_target_card_index();
+        // let active_skill_usage_card_index = active_skill_usage_card_index_string.parse::<i32>().unwrap();
 
-        // 5. Notify Opponent
+        // 6. Notify Opponent
 
         TargetingActiveSkillResponseForm::new(true)
     }

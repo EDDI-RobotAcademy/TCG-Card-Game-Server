@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SkillType {
     Dummy = 0,
     BroadArea = 1,
