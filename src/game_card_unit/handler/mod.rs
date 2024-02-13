@@ -4,3 +4,4 @@ pub mod handler_of_31;
 mod handler_of_19;
 mod handler_of_26;
 mod handler_of_27;
+mod handler_of_32;
