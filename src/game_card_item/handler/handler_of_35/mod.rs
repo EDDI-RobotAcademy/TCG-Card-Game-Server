@@ -1,0 +1,1 @@
+pub mod game_card_item_35_handler_impl;
