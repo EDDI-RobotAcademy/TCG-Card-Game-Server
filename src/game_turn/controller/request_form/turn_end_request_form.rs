@@ -1,4 +1,5 @@
 use crate::game_field_unit::service::request::apply_status_effect_damage_iteratively_request::ApplyStatusEffectDamageIterativelyRequest;
+use crate::game_turn::service::request::next_turn_request::NextTurnRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -25,5 +26,9 @@ impl TurnEndRequestForm {
 
     pub fn to_apply_status_effect_damage_iteratively_request(&self, account_unique_id: i32) -> ApplyStatusEffectDamageIterativelyRequest {
         ApplyStatusEffectDamageIterativelyRequest::new(account_unique_id)
+    }
+
+    pub fn to_next_turn_request(&self, account_unique_id: i32) -> NextTurnRequest {
+        NextTurnRequest::new(account_unique_id)
     }
 }

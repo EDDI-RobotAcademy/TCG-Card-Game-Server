@@ -8,8 +8,9 @@ use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
 use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
 use crate::game_turn::service::game_turn_service::GameTurnService;
 use crate::game_turn::service::request::first_turn_decision_request::FirstTurnDecisionRequest;
+use crate::game_turn::service::request::next_turn_request::NextTurnRequest;
 use crate::game_turn::service::response::first_turn_decision_response::FirstTurnDecisionResponse;
-
+use crate::game_turn::service::response::next_turn_response::NextTurnResponse;
 
 
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
@@ -57,6 +58,7 @@ impl GameTurnServiceImpl {
 
 #[async_trait]
 impl GameTurnService for GameTurnServiceImpl {
+    // TODO: Need Refactor
     async fn first_turn_decision_object(&mut self, decide_first_turn_request: FirstTurnDecisionRequest)-> FirstTurnDecisionResponse {
         println!("GameTurnServiceImpl: first_turn_decision_object()");
         let first_turn_decision_wait_queue_repository_guard = self.first_turn_decision_wait_queue_repository.lock().await;
@@ -76,5 +78,14 @@ impl GameTurnService for GameTurnServiceImpl {
         drop(game_turn_repository_guard);
 
         FirstTurnDecisionResponse::new(result.0,result.1,result.2)
+    }
+
+    async fn next_turn(&mut self, next_turn_request: NextTurnRequest) -> NextTurnResponse {
+        println!("GameTurnServiceImpl: first_turn_decision_object()");
+
+        let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
+        game_turn_repository_guard.next_game_turn(next_turn_request.get_account_unique_id());
+
+        NextTurnResponse::new(true)
     }
 }

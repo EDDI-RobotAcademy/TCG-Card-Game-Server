@@ -3,6 +3,8 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::battle_room::service::battle_room_service::BattleRoomService;
+use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service::FirstTurnDecisionWaitQueueService;
 use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service_impl::FirstTurnDecisionWaitQueueServiceImpl;
 use crate::first_turn_decision_wait_queue::service::request::first_turn_decision_wait_queue_request::FirstTurnDecisionWaitQueueRequest;
@@ -28,6 +30,7 @@ use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyR
 
 pub struct GameTurnControllerImpl {
     game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
+    battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
     // TODO: Need Refactor
@@ -37,6 +40,7 @@ pub struct GameTurnControllerImpl {
 
 impl GameTurnControllerImpl {
     pub fn new(game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
+               battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                // TODO: Need Refactor
@@ -44,6 +48,7 @@ impl GameTurnControllerImpl {
 
         GameTurnControllerImpl {
             game_turn_service,
+            battle_room_service,
             game_field_unit_service,
             redis_in_memory_service,
             // TODO: Need Refactor
@@ -57,6 +62,7 @@ impl GameTurnControllerImpl {
                     AsyncMutex::new(
                         GameTurnControllerImpl::new(
                             GameTurnServiceImpl::get_instance(),
+                            BattleRoomServiceImpl::get_instance(),
                             GameFieldUnitServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
                             // TODO: Need Refactor
@@ -127,10 +133,18 @@ impl GameTurnController for GameTurnControllerImpl {
         // 5. 죽은 유닛들 무덤으로 배치
 
         // 6. 양측 턴을 증가시키기 위해 opponent id도 찾아야함
+        let battle_room_service_guard = self.battle_room_service.lock().await;
+        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+            turn_end_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
         // 7. 당신의 턴 증가
+        let mut game_turn_service_guard = self.game_turn_service.lock().await;
+        let next_turn_response = game_turn_service_guard
+            .next_turn(turn_end_request_form.to_next_turn_request(account_unique_id)).await;
 
         // 8. 상대방의 턴 증가
+        let next_turn_response = game_turn_service_guard
+            .next_turn(turn_end_request_form.to_next_turn_request(find_opponent_by_account_id_response.get_opponent_unique_id())).await;
 
         // 9. 턴 종료 상황에서 상태 이상으로 죽은 유닛들, 데미지 등등을 알려줘야함
 
