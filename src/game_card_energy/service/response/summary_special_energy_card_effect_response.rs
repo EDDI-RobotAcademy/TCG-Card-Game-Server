@@ -16,6 +16,10 @@ impl SummarySpecialEnergyCardEffectResponse {
         self.race
     }
 
+    pub fn get_status_effect_list(&self) -> &Vec<StatusEffect> {
+        &self.status_effect_list
+    }
+
     pub fn from_summary_special_energy_card_effect(summary_energy_card_effect: SummaryEnergyCardEffect) -> SummarySpecialEnergyCardEffectResponse {
         SummarySpecialEnergyCardEffectResponse::new(
             *summary_energy_card_effect.get_energy_card().get_race(),
