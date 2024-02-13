@@ -80,6 +80,9 @@ mod notify_player_action;
 mod game_protocol_validation;
 mod game_card_unit;
 mod game_card_energy;
+mod card_activation_energy;
+mod card_attack_point;
+mod card_health_point;
 
 #[tokio::main]
 async fn main() {

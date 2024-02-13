@@ -1,0 +1,2 @@
+pub mod card_activation_energy_repository;
+pub mod card_activation_energy_repository_impl;
