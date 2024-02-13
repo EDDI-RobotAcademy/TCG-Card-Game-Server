@@ -9,6 +9,7 @@ use crate::game_card_active_skill::controller::game_card_active_skill_controller
 use crate::game_card_active_skill::controller::request_form::targeting_active_skill_request_form::TargetingActiveSkillRequestForm;
 use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
+use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
@@ -79,7 +80,15 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         // 2. TODO: 프로토콜 검증 할 때가 아니라 패스
 
-        // 3. Active Skill Summary 획득
+        // 3. 공격을 요청한 인덱스 유닛의 카드 id 값 파악
+        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+        // TODO: 네이밍 이슈가 존재함 (자신의 것도 index로 찾고 상대것도 index로 찾으므로 찾는 api 보다는 변수로 구별해야함)
+        let add_unit_to_game_field_response = game_field_unit_service_guard
+            .find_active_skill_usage_unit_id_by_index(
+                targeting_active_skill_request_form.to_find_active_skill_usage_unit_id_by_index_request(
+                    account_unique_id, unit_card_index)).await;
+
+        // 4. Active Skill Summary 획득
 
         let opponent_target_card_index_string = targeting_active_skill_request_form.get_opponent_target_card_index();
         let opponent_target_card_index = opponent_target_card_index_string.parse::<i32>().unwrap();

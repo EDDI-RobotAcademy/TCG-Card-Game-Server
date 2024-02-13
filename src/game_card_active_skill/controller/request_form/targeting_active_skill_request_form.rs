@@ -1,3 +1,4 @@
+use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 pub struct TargetingActiveSkillRequestForm {
@@ -29,5 +30,10 @@ impl TargetingActiveSkillRequestForm {
 
     pub fn to_session_validation_request(&self) -> GetValueWithKeyRequest {
         GetValueWithKeyRequest::new(self.session_id.clone().as_str())
+    }
+
+    pub fn to_find_active_skill_usage_unit_id_by_index_request(&self, account_unique_id: i32, unit_card_index: i32) -> FindActiveSkillUsageUnitIdByIndexRequest {
+        FindActiveSkillUsageUnitIdByIndexRequest::new(
+            account_unique_id, unit_card_index)
     }
 }
