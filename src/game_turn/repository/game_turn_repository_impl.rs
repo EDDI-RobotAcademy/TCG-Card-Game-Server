@@ -6,8 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::game_turn::entity::game_turn::GameTurn;
 use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
-use crate::game_turn::service::request::decide_first_turn_request::Gesture;
-use crate::game_turn::service::response::decide_first_turn_response::DecideFirstTurnResponse;
+
 
 
 pub struct GameTurnRepositoryImpl {
@@ -59,28 +58,37 @@ impl GameTurnRepository for GameTurnRepositoryImpl {
         -1
     }
 
-    fn decide_first_turn(&mut self, account_unique_id1:i32,choice1:Gesture,
-                                    account_unique_id2:i32,choice2:Gesture) -> DecideFirstTurnResponse {
+    fn decide_first_turn(&mut self, account_id: i32, player1_account_id:i32,player1_choice:String,
+                                                     player2_account_id:i32,player2_choice:String,) -> (i32,bool,bool) {
         println!("GameTurnRepositoryImpl: decide_first_turn()");
-        let (winner_account_unique_id, result_is_draw) = match (choice1, choice2) {
-            (Gesture::Rock, Gesture::Scissors) | (Gesture::Paper, Gesture::Rock) | (Gesture::Scissors, Gesture::Paper) => {
-                println!("{} 선공 ",account_unique_id1);
-                (account_unique_id1, false)
+
+        let (winner_account_unique_id, am_i_win, result_is_draw) = match (player1_choice.as_str(),
+                                                                                          player2_choice.as_str(), )
+        {
+            ("Rock", "Scissors") | ("Paper", "Rock") | ("Scissors", "Paper") => {
+                if account_id == player1_account_id {
+                    (player1_account_id, true, false)
+                } else {
+                    (player1_account_id, false, false)
+                }
                 // 플레이어 1이 이길 때
             }
-            (Gesture::Scissors, Gesture::Rock) | (Gesture::Rock, Gesture::Paper) | (Gesture::Paper, Gesture::Scissors) => {
-                println!("{} 선공 ",account_unique_id2);
-                (account_unique_id2, false)  // 플레이어 2가 이길 때
+            ("Scissors", "Rock") | ("Rock", "Paper") | ("Paper", "Scissors") => {
+                if account_id == player2_account_id {
+                    (player2_account_id, true, false)
+                } else {
+                    (player2_account_id, false, false)
+                }
+                // 플레이어 2가 이길 때
             }
-
-            _ =>{
-                println!("무승부! 한판더");
-                (0, true)
-            },  // 비길 때
+            _ => {
+                // 그 외의 경우 (무승부)
+                println!("무승부");
+                (0, false, true)
+            }
         };
+        (winner_account_unique_id, am_i_win, result_is_draw)
 
-
-        DecideFirstTurnResponse::new(winner_account_unique_id,result_is_draw)
     }
 }
 

@@ -19,5 +19,8 @@ pub mod energy_boost_support_request_form_generator;
 pub mod general_draw_support_request_form_generator;
 pub mod search_unit_support_request_form_generator;
 pub mod opponent_field_energy_remove_support_request_form_generator;
+pub mod first_turn_decision_wait_queue_request_form_generator;
+pub mod first_turn_decision_request_generator;
 pub mod game_card_item_request_form_generator;
+
 

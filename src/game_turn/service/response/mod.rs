@@ -1,1 +1,1 @@
-pub(crate) mod decide_first_turn_response;
+pub(crate) mod first_turn_decision_response;

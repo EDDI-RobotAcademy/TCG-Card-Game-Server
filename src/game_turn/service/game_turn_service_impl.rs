@@ -3,12 +3,13 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::first_turn_decision_wait_queue::repository::first_turn_decision_wait_queue_repository_impl::FirstTurnDecisionWaitQueueRepositoryImpl;
 use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
 use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
 use crate::game_turn::service::game_turn_service::GameTurnService;
-use crate::game_turn::service::request::decide_first_turn_request::DecideFirstTurnRequest;
-use crate::game_turn::service::response::decide_first_turn_response::DecideFirstTurnResponse;
-use crate::game_turn::service::request::decide_first_turn_request::Gesture;
+use crate::game_turn::service::request::first_turn_decision_request::FirstTurnDecisionRequest;
+use crate::game_turn::service::response::first_turn_decision_response::FirstTurnDecisionResponse;
+
 
 
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
@@ -17,15 +18,18 @@ use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepo
 pub struct GameTurnServiceImpl {
     game_turn_repository: Arc<AsyncMutex<GameTurnRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+    first_turn_decision_wait_queue_repository:Arc<AsyncMutex<FirstTurnDecisionWaitQueueRepositoryImpl>>
 
 }
 
 impl GameTurnServiceImpl {
     pub fn new(game_turn_repository: Arc<AsyncMutex<GameTurnRepositoryImpl>>,
-               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>) -> Self {
+               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+               first_turn_decision_wait_queue_repository:Arc<AsyncMutex<FirstTurnDecisionWaitQueueRepositoryImpl>>) -> Self {
         GameTurnServiceImpl {
             game_turn_repository,
-            redis_in_memory_repository
+            redis_in_memory_repository,
+            first_turn_decision_wait_queue_repository
         }
     }
 
@@ -36,7 +40,8 @@ impl GameTurnServiceImpl {
                     AsyncMutex::new(
                         GameTurnServiceImpl::new(
                             GameTurnRepositoryImpl::get_instance(),
-                            RedisInMemoryRepositoryImpl::get_instance())));
+                            RedisInMemoryRepositoryImpl::get_instance(),
+                        FirstTurnDecisionWaitQueueRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -52,48 +57,24 @@ impl GameTurnServiceImpl {
 
 #[async_trait]
 impl GameTurnService for GameTurnServiceImpl {
-    async fn decide_first_turn_object(&mut self, decide_first_turn_request1: DecideFirstTurnRequest,
-                                                 decide_first_turn_request2: DecideFirstTurnRequest) -> DecideFirstTurnResponse {
-        println!("GameTurnServiceImpl: decide_first_turn_object()");
-        let session_id1 = decide_first_turn_request1.get_session_id();
-        let choice1 = decide_first_turn_request1.get_choice();
-        let session_id2 = decide_first_turn_request2.get_session_id();
-        let choice2 = decide_first_turn_request2.get_choice();
+    async fn first_turn_decision_object(&mut self, decide_first_turn_request: FirstTurnDecisionRequest)-> FirstTurnDecisionResponse {
+        println!("GameTurnServiceImpl: first_turn_decision_object()");
+        let first_turn_decision_wait_queue_repository_guard = self.first_turn_decision_wait_queue_repository.lock().await;
+        let wait_queue_clone_mutex = first_turn_decision_wait_queue_repository_guard.get_first_turn_decision_wait_queue();
+        let wait_queue_clone_guard = wait_queue_clone_mutex.lock().await;
+        let mut players_data = wait_queue_clone_guard.dequeue_player_tuple().await;
+        let player1=players_data.unwrap();
+        let mut players_data = wait_queue_clone_guard.dequeue_player_tuple().await;
+        let player2=players_data.unwrap();
+        let session_id = decide_first_turn_request.get_session_id();
+        let account_id=self.get_account_unique_id(session_id).await;
 
-        let account_unique_id1 = self.get_account_unique_id(session_id1).await;
-        let account_unique_id2 = self.get_account_unique_id(session_id2).await;
+
 
         let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
-        let result = game_turn_repository_guard.decide_first_turn(account_unique_id1,choice1,account_unique_id2,choice2);
+        let result = game_turn_repository_guard.decide_first_turn(account_id,player1.0,player1.1,player2.0,player2.1);
+        drop(game_turn_repository_guard);
 
-
-        DecideFirstTurnResponse::new(result.first_player, result.result_is_draw)
+        FirstTurnDecisionResponse::new(result.0,result.1,result.2)
     }
-}
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    use tokio::test;
-    use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
-    use crate::game_turn::service::request::decide_first_turn_request::Gesture;
-    use crate::game_turn::service::request::decide_first_turn_request::DecideFirstTurnRequest;
-    use crate::game_turn::service::response::decide_first_turn_response::DecideFirstTurnResponse;
-
-
-    #[test]
-    async fn test_decide_first_turn_object() {
-        let game_turn_service_mutex = GameTurnServiceImpl::get_instance();
-        let mut game_turn_service_mutex_guard = game_turn_service_mutex.lock().await;
-        let session_id1="test1";
-        let session_id2="test2";
-        let choice1=Gesture::Rock;
-        let choice2=Gesture::Scissors;
-        let request1 = DecideFirstTurnRequest::new(session_id1.to_string(), choice1);
-        let request2 = DecideFirstTurnRequest::new(session_id2.to_string(), choice2);
-        let result = game_turn_service_mutex_guard.decide_first_turn_object(request1,request2).await;
-        println!("{:?}",result);
-    }
-
-
 }
