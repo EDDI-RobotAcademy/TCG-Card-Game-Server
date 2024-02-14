@@ -175,9 +175,9 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         // 2. 프로토콜 검증
 
         // 3. Battle Field에서 공격하는 유닛의 index를 토대로 id 값 확보 (이거 필요한가 ???)
-        // let attacker_unit_card_index_string = attack_unit_request_form.get_attacker_unit_index();
-        // let attacker_unit_card_index = attacker_unit_card_index_string.parse::<i32>().unwrap();
-        //
+        let attacker_unit_card_index_string = attack_unit_request_form.get_attacker_unit_index();
+        let attacker_unit_card_index = attacker_unit_card_index_string.parse::<i32>().unwrap();
+
         // let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
         // let find_unit_id_by_index_response = game_field_unit_service_guard
         //     .find_target_unit_id_by_index(
@@ -185,7 +185,12 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         //             account_unique_id,
         //             attacker_unit_card_index)).await;
 
-        // 4. 유닛 인덱스에서 기본 공격력 정
+        // 4. 유닛 인덱스에서 기본 공격력 정보 확보
+        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+        let find_unit_id_by_index_response = game_field_unit_service_guard
+            .acquire_unit_attack_point(
+                attack_unit_request_form.to_acquire_unit_attack_point_request(
+                    account_unique_id, attacker_unit_card_index)).await;
 
         AttackUnitResponseForm::new(true)
     }
