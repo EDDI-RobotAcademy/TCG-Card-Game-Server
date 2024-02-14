@@ -98,6 +98,12 @@ impl GameFieldUnitCardList {
             unit.impose_extra_effect_state(extra_state);
         }
     }
+
+    pub fn remove_energy_from_indexed_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32) {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            unit.detach_energy(race_enum, quantity);
+        }
+    }
 }
 
 #[cfg(test)]

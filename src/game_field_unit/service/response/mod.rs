@@ -13,3 +13,4 @@ pub mod acquire_unit_extra_effect_response;
 pub mod attack_target_unit_with_extra_effect_response;
 pub mod apply_passive_skill_list_response;
 pub mod apply_catastrophic_damage_to_field_unit_response;
+pub mod detach_multiple_energy_from_field_unit_response;

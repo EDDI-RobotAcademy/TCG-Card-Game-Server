@@ -90,6 +90,10 @@ impl GameFieldUnitCard {
         self.attached_energy_map.add_energy(race, quantity);
     }
 
+    pub fn detach_energy(&mut self, race_enum: RaceEnumValue, quantity: i32) {
+        self.attached_energy_map.remove_energy(&race_enum, quantity);
+    }
+
     pub fn increase_max_health(&mut self, increase_point: i32) {
         self.unit_health_point.increase_max_health(increase_point);
     }

@@ -21,6 +21,18 @@ impl AttachedEnergyMap {
         self.energy_map.get(race)
     }
 
+    pub fn remove_energy(&mut self, race: &RaceEnumValue, quantity: i32) {
+        if let Some(energy) = self.energy_map.get_mut(race) {
+            for _ in 0..quantity {
+                *energy -= 1;
+                if *energy == 0 {
+                    self.energy_map.remove_entry(race);
+                    break
+                }
+            }
+        }
+    }
+
     pub fn get_all_energy(&self) -> &HashMap<RaceEnumValue, i32> {
         &self.energy_map
     }
@@ -56,5 +68,22 @@ mod tests {
         println!("{:?}", attached_energy_map);
 
         println!("Test passed: AttachedEnergyMap add_energy and getter");
+    }
+
+    #[test]
+    fn test_remove_energy() {
+        let mut attached_energy_map = AttachedEnergyMap::new();
+
+        attached_energy_map.add_energy(RaceEnumValue::Human, 5);
+        attached_energy_map.add_energy(RaceEnumValue::Undead, 3);
+
+        attached_energy_map.remove_energy(&RaceEnumValue::Human, 2);
+        attached_energy_map.remove_energy(&RaceEnumValue::Undead, 1);
+
+        println!("{:?}", attached_energy_map);
+
+        attached_energy_map.remove_energy(&RaceEnumValue::Undead, 2);
+
+        println!("{:?}", attached_energy_map);
     }
 }
