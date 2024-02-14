@@ -10,6 +10,9 @@ pub struct GameCardItemEffect {
     alternatives_damage: i32,
     apply_target_minimum_grade: GradeEnum,
     field_energy_calculator: FieldEnergyAdditionCalculator,
+    catastrophic_damage_for_field_unit: i32,
+    catastrophic_damage_for_main_character: i32,
+    will_be_lost_deck_card_count: i32,
 }
 
 impl GameCardItemEffect {
@@ -23,6 +26,9 @@ impl GameCardItemEffect {
             alternatives_damage,
             apply_target_minimum_grade,
             field_energy_calculator: FieldEnergyAdditionCalculator::new(-1),
+            catastrophic_damage_for_field_unit: -1,
+            catastrophic_damage_for_main_character: -1,
+            will_be_lost_deck_card_count: -1,
         }
     }
 
@@ -49,6 +55,30 @@ impl GameCardItemEffect {
     pub fn get_field_energy_addition_calculator(&self) -> FieldEnergyAdditionCalculator {
         self.field_energy_calculator
     }
+
+    pub fn set_catastrophic_damage_for_field_unit(&mut self, damage_for_field_unit: i32) {
+        self.catastrophic_damage_for_field_unit = damage_for_field_unit;
+    }
+
+    pub fn get_catastrophic_damage_for_field_unit(&self) -> i32 {
+        self.catastrophic_damage_for_field_unit
+    }
+
+    pub fn set_catastrophic_damage_for_main_character(&mut self, damage_for_main_character: i32) {
+        self.catastrophic_damage_for_main_character = damage_for_main_character;
+    }
+
+    pub fn get_catastrophic_damage_for_main_character(&self) -> i32 {
+        self.catastrophic_damage_for_main_character
+    }
+
+    pub fn set_will_be_lost_deck_card_count(&mut self, will_be_lost_deck_card_count: i32) {
+        self.will_be_lost_deck_card_count = will_be_lost_deck_card_count;
+    }
+
+    pub fn get_will_be_lost_deck_card_count(&self) -> i32 {
+        self.will_be_lost_deck_card_count
+    }
 }
 
 #[cfg(test)]
@@ -73,7 +103,12 @@ mod tests {
         let calculation_result = game_card_item_effect
             .get_field_energy_addition_calculator().calculation_of_field_energy_increment(23);
 
-
         assert_eq!(calculation_result, 4);
+
+        game_card_item_effect.set_catastrophic_damage_for_field_unit(10);
+        game_card_item_effect.set_catastrophic_damage_for_main_character(10);
+        game_card_item_effect.set_will_be_lost_deck_card_count(1);
+
+        println!("Energy From Deck: {:?}", game_card_item_effect);
     }
 }

@@ -5,23 +5,26 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
-use crate::battle_room::service::response::find_opponent_by_account_id_response::FindOpponentByAccountIdResponse;
+
 use crate::card_grade::service::card_grade_service::CardGradeService;
 use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
-use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
+
 use crate::game_card_item::controller::game_card_item_controller::GameCardItemController;
 use crate::game_card_item::controller::request_form::add_field_energy_with_field_unit_health_point_item_request_form::AddFieldEnergyWithFieldUnitHealthPointRequestForm;
+use crate::game_card_item::controller::request_form::catastrophic_damage_item_request_form::CatastrophicDamageItemRequestForm;
 use crate::game_card_item::controller::request_form::target_death_item_request_form::TargetDeathItemRequestForm;
 use crate::game_card_item::controller::response_form::add_field_energy_with_field_unit_health_point_item_response_form::AddFieldEnergyWithFieldUnitHealthPointResponseForm;
+use crate::game_card_item::controller::response_form::catastrophic_damage_item_response_form::CatastrophicDamageItemResponseForm;
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_card_item::service::game_card_item_service::GameCardItemService;
 
 use crate::game_card_item::service::game_card_item_service_impl::GameCardItemServiceImpl;
 use crate::game_card_item::service::request::summary_item_card_effect_request::SummaryItemCardEffectRequest;
 use crate::game_card_item::service::response::summary_item_card_effect_response::SummaryItemCardEffectResponse;
-use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
-use crate::game_card_support::entity::game_card_support_effect::GameCardSupportEffect;
+use crate::game_deck::service::game_deck_service::GameDeckService;
+use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
+
 use crate::game_field_energy::service::game_field_energy_service::GameFieldEnergyService;
 use crate::game_field_energy::service::game_field_energy_service_impl::GameFieldEnergyServiceImpl;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
@@ -29,13 +32,17 @@ use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnit
 use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
 use crate::game_hand::service::request::use_game_hand_item_card_request::UseGameHandItemCardRequest;
-use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
+use crate::game_lost_zone::service::game_lost_zone_service::GameLostZoneService;
+use crate::game_lost_zone::service::game_lost_zone_service_impl::GameLostZoneServiceImpl;
+use crate::game_main_character::service::game_main_character_service::GameMainCharacterService;
+use crate::game_main_character::service::game_main_character_service_impl::GameMainCharacterServiceImpl;
+
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
-use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
+
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
@@ -56,6 +63,9 @@ pub struct GameCardItemControllerImpl {
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
     notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
     game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
+    game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
+    game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
+    game_lost_zone_service: Arc<AsyncMutex<GameLostZoneServiceImpl>>,
 }
 
 impl GameCardItemControllerImpl {
@@ -68,7 +78,10 @@ impl GameCardItemControllerImpl {
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
-               game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,) -> Self {
+               game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
+               game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
+               game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
+               game_lost_zone_service: Arc<AsyncMutex<GameLostZoneServiceImpl>>,) -> Self {
 
         GameCardItemControllerImpl {
             game_hand_service,
@@ -81,6 +94,9 @@ impl GameCardItemControllerImpl {
             redis_in_memory_service,
             notify_player_action_service,
             game_field_energy_service,
+            game_main_character_service,
+            game_deck_service,
+            game_lost_zone_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardItemControllerImpl>> {
@@ -98,7 +114,10 @@ impl GameCardItemControllerImpl {
                             GameProtocolValidationServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
                             NotifyPlayerActionServiceImpl::get_instance(),
-                            GameFieldEnergyServiceImpl::get_instance())));
+                            GameFieldEnergyServiceImpl::get_instance(),
+                            GameMainCharacterServiceImpl::get_instance(),
+                            GameDeckServiceImpl::get_instance(),
+                            GameLostZoneServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -378,5 +397,102 @@ impl GameCardItemController for GameCardItemControllerImpl {
             add_field_energy_with_field_unit_health_point_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
 
         AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(true)
+    }
+
+    async fn request_to_use_catastrophic_damage_item(&self, catastrophic_damage_item_request_form: CatastrophicDamageItemRequestForm) -> CatastrophicDamageItemResponseForm {
+        println!("GameCardItemControllerImpl: request_to_use_catastrophic_damage_item()");
+
+        let account_unique_id = self.is_valid_session(catastrophic_damage_item_request_form.to_session_validation_request()).await;
+        if account_unique_id == -1 {
+            println!("유효하지 않은 세션입니다.");
+            return CatastrophicDamageItemResponseForm::new(false)
+        }
+
+        // TODO: 프로토콜 검증은 추후 추가
+
+        let item_card_id_string = catastrophic_damage_item_request_form.get_item_card_id();
+        let item_card_id = item_card_id_string.parse::<i32>().unwrap();
+
+        let mut summarized_item_effect_response = self.get_summary_of_item_card(
+            catastrophic_damage_item_request_form.to_summary_item_effect_request(item_card_id)).await;
+
+        let damage_for_field_unit = summarized_item_effect_response.get_catastrophic_damage_for_field_unit();
+        let damage_for_main_character = summarized_item_effect_response.get_catastrophic_damage_for_main_character();
+
+        let mut battle_room_service_guard = self.battle_room_service.lock().await;
+        let opponent_unique_id = battle_room_service_guard
+            .find_opponent_by_account_unique_id(
+                catastrophic_damage_item_request_form
+                    .to_find_opponent_by_account_id_request(account_unique_id)).await.get_opponent_unique_id();
+
+        drop(battle_room_service_guard);
+
+        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+        let apply_catastrophic_damage_to_opponent_field_unit_response = game_field_unit_service_guard
+            .apply_catastrophic_damage_to_field_unit(
+                catastrophic_damage_item_request_form
+                    .to_apply_catastrophic_damage_to_field_unit_request(opponent_unique_id, damage_for_field_unit)).await;
+
+        if !apply_catastrophic_damage_to_opponent_field_unit_response.is_success() {
+            println!("상대 유닛 전체에 피해를 주는 데에 실패하였습니다.");
+            return CatastrophicDamageItemResponseForm::new(false)
+        }
+
+        drop(game_field_unit_service_guard);
+
+        // 상대 본체에는 피해를 가하지 않는 경우가 있을 수 있으므로 다음과 같이 처리
+        if damage_for_main_character != -1 {
+            let mut game_main_character_service_guard = self.game_main_character_service.lock().await;
+            let apply_damage_to_main_character_response = game_main_character_service_guard
+                .apply_damage_to_main_character(
+                    catastrophic_damage_item_request_form
+                        .to_apply_damage_to_main_character(opponent_unique_id, damage_for_main_character)).await;
+
+            if !apply_damage_to_main_character_response.is_success() {
+                println!("상대 본체에 피해를 주는 데에 실패하였습니다.");
+                return CatastrophicDamageItemResponseForm::new(false)
+            }
+
+            drop(game_main_character_service_guard);
+        }
+
+        let will_be_lost_deck_card_count = summarized_item_effect_response.get_will_be_lost_deck_card_count();
+
+        // 다른 광역기의 경우 로스트 존으로 이동시키는 기능이 없을 수 있으므로 다음과 같이 처리
+        if will_be_lost_deck_card_count != -1 {
+            let mut game_deck_service_guard = self.game_deck_service.lock().await;
+            let draw_cards_from_deck_response = game_deck_service_guard
+                .draw_cards_from_deck(
+                    catastrophic_damage_item_request_form
+                        .to_draw_cards_from_deck_request(opponent_unique_id, will_be_lost_deck_card_count)).await;
+
+            drop(game_deck_service_guard);
+
+            let mut will_be_lost_deck_card_list = draw_cards_from_deck_response.get_drawn_card_list().clone();
+            let mut game_lost_zone_service_guard = self.game_lost_zone_service.lock().await;
+            for will_be_lost_card in will_be_lost_deck_card_list {
+                let place_card_to_lost_zone_response = game_lost_zone_service_guard
+                    .place_card_to_lost_zone(
+                        catastrophic_damage_item_request_form
+                            .to_place_card_to_lost_zone_request(opponent_unique_id, will_be_lost_card)).await;
+                if !place_card_to_lost_zone_response.is_success() {
+                    println!("상대 카드를 로스트 존으로 이동하는데에 실패했습니다.");
+                    return CatastrophicDamageItemResponseForm::new(false)
+                }
+            }
+
+            drop(game_lost_zone_service_guard);
+        }
+
+        // TODO: 결과가 무엇인지 정리하여 상대에게 전달
+        // let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
+        // 여기서 알려줘야 하는 것
+        // 1. 사용한 아이템 카드 아이디
+        // 2. 사용한 카드로 인해 유닛이 입은 광역 데미지
+        // 3. 사용한 카드로 인해 유닛이 입은 광역 데미지
+        // TODO: 남은 체력, 생사 여부까지 같이 판정해서 보내줘야 함
+        // drop(notify_player_action_service_guard);
+
+        CatastrophicDamageItemResponseForm::new(true)
     }
 }
