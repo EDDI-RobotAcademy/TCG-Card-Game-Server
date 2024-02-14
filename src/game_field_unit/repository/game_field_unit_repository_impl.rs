@@ -232,6 +232,24 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         let indexed_unit_reference = self.find_indexed_unit(account_unique_id, attacker_unit_index).unwrap();
         return indexed_unit_reference.get_extra_status_effect_list();
     }
+
+    fn attack_target_unit_with_extra_effect(
+        &mut self,
+        opponent_unique_id: i32,
+        opponent_unit_index: i32,
+        damage: i32,
+        extra_status_effect_list: Vec<ExtraStatusEffect>
+    ) -> bool {
+        if let Some(mut indexed_unit_reference) = self.find_indexed_unit(opponent_unique_id, opponent_unit_index) {
+            let mut mutable_indexed_unit_reference = indexed_unit_reference.to_owned(); // Assuming GameFieldUnitCard is Clone
+            mutable_indexed_unit_reference.apply_damage(damage);
+            mutable_indexed_unit_reference.impose_harmful_state_list(extra_status_effect_list);
+
+            return true;
+        }
+
+        false
+    }
 }
 
 #[cfg(test)]
