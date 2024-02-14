@@ -10,7 +10,10 @@ pub struct SummaryItemCardEffectResponse {
     required_energy_count: i32,
     alternatives_damage: i32,
     apply_target_minimum_grade: GradeEnum,
-    field_energy_addition_calculator: FieldEnergyAdditionCalculator
+    field_energy_addition_calculator: FieldEnergyAdditionCalculator,
+    catastrophic_damage_for_field_unit: i32,
+    catastrophic_damage_for_main_character: i32,
+    will_be_lost_deck_card_count: i32,
 }
 
 impl SummaryItemCardEffectResponse {
@@ -19,14 +22,20 @@ impl SummaryItemCardEffectResponse {
         required_energy_count: i32,
         alternatives_damage: i32,
         apply_target_minimum_grade: GradeEnum,
-        field_energy_addition_calculator: FieldEnergyAdditionCalculator) -> Self {
+        field_energy_addition_calculator: FieldEnergyAdditionCalculator,
+        catastrophic_damage_for_field_unit: i32,
+        catastrophic_damage_for_main_character: i32,
+        will_be_lost_deck_card_count: i32,) -> Self {
 
             Self {
                 required_energy_race,
                 required_energy_count,
                 alternatives_damage,
                 apply_target_minimum_grade,
-                field_energy_addition_calculator }
+                field_energy_addition_calculator,
+                catastrophic_damage_for_field_unit,
+                catastrophic_damage_for_main_character,
+                will_be_lost_deck_card_count }
     }
 
     pub fn get_required_energy_race(&self) -> RaceEnum {
@@ -47,6 +56,12 @@ impl SummaryItemCardEffectResponse {
 
     pub fn get_field_energy_addition_calculator(&mut self) -> FieldEnergyAdditionCalculator { self.field_energy_addition_calculator }
 
+    pub fn get_catastrophic_damage_for_field_unit(&self) -> i32 { self.catastrophic_damage_for_field_unit }
+
+    pub fn get_catastrophic_damage_for_main_character(&self) -> i32 { self.catastrophic_damage_for_main_character}
+
+    pub fn get_will_be_lost_deck_card_count(&self) -> i32 { self.will_be_lost_deck_card_count }
+
     pub fn from_summary_item_card_effect(game_card_item_effect: GameCardItemEffect) -> SummaryItemCardEffectResponse {
         let required_energy = game_card_item_effect.get_required_energy();
         SummaryItemCardEffectResponse::new(
@@ -54,6 +69,9 @@ impl SummaryItemCardEffectResponse {
             required_energy.get_required_energy_count(),
             game_card_item_effect.get_alternatives_damage(),
             game_card_item_effect.get_apply_target_minimum_grade(),
-            game_card_item_effect.get_field_energy_addition_calculator())
+            game_card_item_effect.get_field_energy_addition_calculator(),
+            game_card_item_effect.get_catastrophic_damage_for_field_unit(),
+            game_card_item_effect.get_catastrophic_damage_for_main_character(),
+            game_card_item_effect.get_will_be_lost_deck_card_count())
     }
 }

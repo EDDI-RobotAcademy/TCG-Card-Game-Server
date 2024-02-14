@@ -8,6 +8,7 @@ use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_item::entity::game_card_item_effect::GameCardItemEffect;
 use crate::game_card_item::handler::game_card_item_handler::GameCardItemHandler;
+use crate::game_card_item::handler::handler_of_25::game_card_item_25_handler_impl::ItemCard_25_Function;
 use crate::game_card_item::handler::handler_of_35::game_card_item_35_handler_impl::ItemCard_35_Function;
 use crate::game_card_item::handler::handler_of_8::game_card_item_8_handler_impl::ItemCard_8_Function;
 use crate::game_card_item::repository::game_card_item_repository::GameCardItemRepository;
@@ -38,7 +39,7 @@ impl GameCardItemRepositoryImpl {
         item_card_functions.insert(8, Box::new(ItemCard_8_Function) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(9, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(13, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);
-        item_card_functions.insert(25, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);
+        item_card_functions.insert(25, Box::new(ItemCard_25_Function) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(30, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(33, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(35, Box::new(ItemCard_35_Function) as Box<dyn GameCardItemHandler>);

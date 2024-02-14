@@ -12,3 +12,4 @@ pub mod acquire_unit_attack_point_request;
 pub mod acquire_unit_extra_effect_request;
 pub mod attack_target_unit_with_extra_effect_request;
 pub mod apply_passive_skill_list_request;
+pub mod apply_catastrophic_damage_to_field_unit_request;
