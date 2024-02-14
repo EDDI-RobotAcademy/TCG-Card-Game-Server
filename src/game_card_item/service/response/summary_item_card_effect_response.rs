@@ -14,6 +14,8 @@ pub struct SummaryItemCardEffectResponse {
     catastrophic_damage_for_field_unit: i32,
     catastrophic_damage_for_main_character: i32,
     will_be_lost_deck_card_count: i32,
+    target_count_that_can_be_damaged: i32,
+    unit_list_that_can_be_sacrificed: Vec<i32>,
 }
 
 impl SummaryItemCardEffectResponse {
@@ -25,7 +27,9 @@ impl SummaryItemCardEffectResponse {
         field_energy_addition_calculator: FieldEnergyAdditionCalculator,
         catastrophic_damage_for_field_unit: i32,
         catastrophic_damage_for_main_character: i32,
-        will_be_lost_deck_card_count: i32,) -> Self {
+        will_be_lost_deck_card_count: i32,
+        target_count_that_can_be_damaged: i32,
+        unit_list_that_can_be_sacrificed: Vec<i32>,) -> Self {
 
             Self {
                 required_energy_race,
@@ -35,7 +39,9 @@ impl SummaryItemCardEffectResponse {
                 field_energy_addition_calculator,
                 catastrophic_damage_for_field_unit,
                 catastrophic_damage_for_main_character,
-                will_be_lost_deck_card_count }
+                will_be_lost_deck_card_count,
+                target_count_that_can_be_damaged,
+                unit_list_that_can_be_sacrificed,}
     }
 
     pub fn get_required_energy_race(&self) -> RaceEnum {
@@ -62,6 +68,10 @@ impl SummaryItemCardEffectResponse {
 
     pub fn get_will_be_lost_deck_card_count(&self) -> i32 { self.will_be_lost_deck_card_count }
 
+    pub fn get_target_count_that_can_be_damaged(&self) -> i32 { self.target_count_that_can_be_damaged }
+
+    pub fn get_unit_list_that_can_be_sacrificed(&self) -> Vec<i32> { self.unit_list_that_can_be_sacrificed.clone() }
+
     pub fn from_summary_item_card_effect(game_card_item_effect: GameCardItemEffect) -> SummaryItemCardEffectResponse {
         let required_energy = game_card_item_effect.get_required_energy();
         SummaryItemCardEffectResponse::new(
@@ -72,6 +82,8 @@ impl SummaryItemCardEffectResponse {
             game_card_item_effect.get_field_energy_addition_calculator(),
             game_card_item_effect.get_catastrophic_damage_for_field_unit(),
             game_card_item_effect.get_catastrophic_damage_for_main_character(),
-            game_card_item_effect.get_will_be_lost_deck_card_count())
+            game_card_item_effect.get_will_be_lost_deck_card_count(),
+            game_card_item_effect.get_target_count_that_can_be_damaged(),
+            game_card_item_effect.get_unit_list_that_can_be_sacrificed(),)
     }
 }

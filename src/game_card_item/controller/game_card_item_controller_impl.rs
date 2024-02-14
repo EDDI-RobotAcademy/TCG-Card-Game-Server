@@ -9,12 +9,15 @@ use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl
 use crate::card_grade::service::card_grade_service::CardGradeService;
 use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
+use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
 
 use crate::game_card_item::controller::game_card_item_controller::GameCardItemController;
 use crate::game_card_item::controller::request_form::add_field_energy_with_field_unit_health_point_item_request_form::AddFieldEnergyWithFieldUnitHealthPointRequestForm;
+use crate::game_card_item::controller::request_form::multiple_target_damage_by_field_unit_death_item_request_form::MultipleTargetDamageByFieldUnitDeathItemRequestForm;
 use crate::game_card_item::controller::request_form::catastrophic_damage_item_request_form::CatastrophicDamageItemRequestForm;
 use crate::game_card_item::controller::request_form::target_death_item_request_form::TargetDeathItemRequestForm;
 use crate::game_card_item::controller::response_form::add_field_energy_with_field_unit_health_point_item_response_form::AddFieldEnergyWithFieldUnitHealthPointResponseForm;
+use crate::game_card_item::controller::response_form::multiple_target_damage_by_field_unit_death_item_response_form::MultipleTargetDamageByFieldUnitDeathItemResponseForm;
 use crate::game_card_item::controller::response_form::catastrophic_damage_item_response_form::CatastrophicDamageItemResponseForm;
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_card_item::service::game_card_item_service::GameCardItemService;
@@ -493,6 +496,117 @@ impl GameCardItemController for GameCardItemControllerImpl {
         // TODO: 남은 체력, 생사 여부까지 같이 판정해서 보내줘야 함
         // drop(notify_player_action_service_guard);
 
+        let usage_hand_card = self.use_item_card(
+            catastrophic_damage_item_request_form.to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
+
+        self.place_used_card_to_tomb(
+            catastrophic_damage_item_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+
         CatastrophicDamageItemResponseForm::new(true)
+    }
+
+    async fn request_to_use_applying_multiple_target_damage_by_field_unit_death_item(
+        &self, multiple_target_damage_by_field_unit_death_item_request_form: MultipleTargetDamageByFieldUnitDeathItemRequestForm) -> MultipleTargetDamageByFieldUnitDeathItemResponseForm {
+
+        println!("GameCardItemControllerImpl: request_to_use_catastrophic_damage_by_field_unit_death_item()");
+
+        let account_unique_id = self.is_valid_session(multiple_target_damage_by_field_unit_death_item_request_form.to_session_validation_request()).await;
+        if account_unique_id == -1 {
+            println!("유효하지 않은 세션입니다.");
+            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::new(false)
+        }
+
+        // TODO: 프로토콜 검증은 추후 추가
+
+        // 사용할 변수들 사전 parsing
+        let item_card_id_string = multiple_target_damage_by_field_unit_death_item_request_form.get_item_card_id();
+        let item_card_id = item_card_id_string.parse::<i32>().unwrap();
+
+        let my_field_unit_index_string = multiple_target_damage_by_field_unit_death_item_request_form.get_unit_index();
+        let my_field_unit_index = my_field_unit_index_string.parse::<i32>().unwrap();
+
+        let opponent_target_unit_index_list_string = multiple_target_damage_by_field_unit_death_item_request_form.get_opponent_target_unit_index_list().to_vec();
+        let opponent_target_unit_index_list = VectorStringToVectorInteger::vector_string_to_vector_i32(opponent_target_unit_index_list_string);
+
+        // 사용할 아이템 카드 요약 정보
+        let mut summarized_item_effect_response = self.get_summary_of_item_card(
+            multiple_target_damage_by_field_unit_death_item_request_form
+                .to_summary_item_effect_request(item_card_id)).await;
+
+        let target_unit_count = summarized_item_effect_response.get_target_count_that_can_be_damaged();
+        let can_be_sacrificed_unit_list = summarized_item_effect_response.get_unit_list_that_can_be_sacrificed();
+
+        if target_unit_count != opponent_target_unit_index_list.len() as i32 {
+            println!("{}마리의 상대 유닛을 정확히 지정해주세요!", target_unit_count);
+            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::new(false)
+        }
+
+        // TODO: Naming issue 가 존재. 시간 관점에서, 기능적인 측면에서 의도한 바와 같은 기능을 하여 사용함.
+        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+        let fount_unit_card_id = game_field_unit_service_guard
+            .find_target_unit_id_by_index(
+                multiple_target_damage_by_field_unit_death_item_request_form
+                    .to_find_target_unit_id_by_index_request(account_unique_id,
+                                                             my_field_unit_index)).await.get_found_opponent_unit_id();
+
+        if !can_be_sacrificed_unit_list.contains(&fount_unit_card_id) {
+            println!("제물로 사용할 수 없는 유닛입니다!");
+            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::new(false)
+        }
+
+        let health_point_of_sacrifice = game_field_unit_service_guard
+            .get_current_health_point_of_field_unit_by_index(
+                multiple_target_damage_by_field_unit_death_item_request_form
+                    .to_get_current_health_point_of_field_unit_by_index_request(account_unique_id,
+                                                                                my_field_unit_index)).await.get_current_unit_health_point();
+
+        let apply_instance_death_to_unit_response = game_field_unit_service_guard
+            .apply_instant_death_to_target_unit_index(
+                multiple_target_damage_by_field_unit_death_item_request_form
+                    .to_apply_instance_death_to_field_unit_request(account_unique_id,
+                                                                   my_field_unit_index)).await;
+
+        if !apply_instance_death_to_unit_response.is_success() {
+            println!("희생시킬 수 없는 유닛입니다!");
+            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::new(false)
+        }
+
+        let mut battle_room_service_guard = self.battle_room_service.lock().await;
+        let opponent_unique_id = battle_room_service_guard
+            .find_opponent_by_account_unique_id(
+                multiple_target_damage_by_field_unit_death_item_request_form
+                    .to_find_opponent_by_account_id_request(account_unique_id)).await.get_opponent_unique_id();
+
+        drop(battle_room_service_guard);
+
+        for opponent_unit_index in opponent_target_unit_index_list {
+            let apply_damage_to_target_unit_response = game_field_unit_service_guard
+                .apply_damage_to_target_unit_index(
+                    multiple_target_damage_by_field_unit_death_item_request_form
+                        .to_apply_damage_to_target_unit_request(opponent_unique_id, opponent_unit_index, health_point_of_sacrifice)).await;
+            if !apply_damage_to_target_unit_response.is_success() {
+                println!("제물의 체력 수치만큼 데미지를 주는 과정에서 문제가 발생했습니다!");
+                return MultipleTargetDamageByFieldUnitDeathItemResponseForm::new(false)
+            }
+        }
+
+        drop(game_field_unit_service_guard);
+
+        let usage_hand_item_card = self.use_item_card(
+            multiple_target_damage_by_field_unit_death_item_request_form
+                .to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
+
+        self.place_used_card_to_tomb(
+            multiple_target_damage_by_field_unit_death_item_request_form
+                .to_place_to_tomb_request(account_unique_id, usage_hand_item_card)).await;
+
+        // TODO: 죽은 유닛을 묘지로 보내는 것을 일단 이렇게 처리함
+        // TODO: 사망 판정이 선행되어야 함 (이 과정에서 필드 Indexmap 에서 제거되어야 함)
+        // TODO: 기존에 카드 이동 자체를 담당하는 도메인이 따로 있었어야 할 것이라는 생각이 드는 상황
+        self.place_used_card_to_tomb(
+            multiple_target_damage_by_field_unit_death_item_request_form
+                .to_place_to_tomb_request(account_unique_id, fount_unit_card_id)).await;
+
+        MultipleTargetDamageByFieldUnitDeathItemResponseForm::new(true)
     }
 }
