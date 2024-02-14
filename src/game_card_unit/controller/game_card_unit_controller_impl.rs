@@ -161,7 +161,23 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let passive_skill_response = game_card_passive_skill_service_guard.summary_passive_skill(
             deploy_unit_request_form.to_summary_passive_skill_request(usage_hand_card_id)).await;
 
-        // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
+        // TODO: 여기서도 Domain 분리를 고려하면 좋을텐데 우선은 배제합니다.
+        if !passive_skill_response.is_empty() {
+            // 상황에 따라 공격 / 버프 등등에 대한 고찰이 들어가면 더 좋았을 것임
+            println!("처리 할 패시브 효과가 있습니다");
+
+            // 8. 패시브 스킬 사용 (공격) <- 현재 광역기, 단일 공격기와 물리 공격 면역 뿐임
+            //    그러므로 사실은 Handler 처리를 해주면 더 좋겠지만 우선 그냥 만듬
+            // let passive_skill_effect_list = passive_skill_response.get_passive_skill_effect_list();
+
+            let add_unit_to_game_field_response = game_field_unit_service_guard
+                .apply_passive_skill_list(
+                    deploy_unit_request_form.to_apply_passive_skill_list_request(
+                        find_opponent_by_account_id_response.get_opponent_unique_id(),
+                        passive_skill_response.get_passive_skill_effect_list().clone())).await;
+        }
+
+        // 9. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_to_opponent_what_you_do_response = notify_player_action_service_guard.notify_to_opponent_what_you_do(
             deploy_unit_request_form.to_notify_to_opponent_what_you_do_request(
