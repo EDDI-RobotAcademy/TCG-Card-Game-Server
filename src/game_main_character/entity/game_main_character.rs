@@ -15,6 +15,8 @@ impl GameMainCharacter {
     pub fn get_health_point(&self) -> i32 {
         self.health_point.get_health()
     }
+
+    pub fn decrease_health_point(&mut self, damage: i32) { self.health_point.lose_health(damage) }
 }
 
 #[cfg(test)]

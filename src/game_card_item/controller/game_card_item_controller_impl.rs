@@ -181,7 +181,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let is_it_item_response = self.is_it_item_card(
             target_death_item_request_form.to_is_it_item_card_request(item_card_id)).await;
         if !is_it_item_response {
-            println!("서포트 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
+            println!("아이템 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
             return TargetDeathItemResponseForm::new(false)
         }
 
@@ -199,7 +199,8 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         // TODO: 사용 방식에 대한 논의 필요 <- UI에서 어떻게 보여줄 것인가
         // 6. 필드 에너지 혹은 손패의 에너지가 충분한지 확인
-        // 여기서 summarized_item_effect_response의 required_energy 처리
+        // 여기서 summarized_item_effect_response 의 required_energy 처리
+        let required_energy = summarized_item_effect_response.get_required_energy_count();
 
         // 7. Hand Service 호출하여 카드 사용
         let usage_hand_card = self.use_item_card(
@@ -229,15 +230,6 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let card_grade_service_guard = self.card_grade_service.lock().await;
         let opponent_target_unit_grade = card_grade_service_guard.get_card_grade(
             &find_target_unit_id_by_index_response.get_found_opponent_unit_id()).await;
-
-        // 즉사 아이템 (죽음의 낫) 적용
-        // self.apply_instant_death_to_opponent_unit(
-        //     &find_opponent_by_account_id_response,
-        //     target_death_item_request_form,
-        //     opponent_target_unit_index,
-        //     &summarized_item_effect_response,
-        //     opponent_target_unit_grade,
-        //     usage_hand_card).await;
 
         // 11. Field Unit Service를 호출하여 상대 유닛에 Alternatives 적용
         if opponent_target_unit_grade == GradeEnum::Mythical {
@@ -324,7 +316,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let field_unit_index_string = add_field_energy_with_field_unit_health_point_request_form.get_field_unit_index();
         let field_unit_index = field_unit_index_string.parse::<i32>().unwrap();
 
-        let game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
         let get_current_health_point_of_field_unit_by_index_response = game_field_unit_service_guard
             .get_current_health_point_of_field_unit_by_index(
                 add_field_energy_with_field_unit_health_point_request_form
@@ -350,6 +342,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let add_field_energy_with_amount_response = game_field_energy_service_guard.add_field_energy_with_amount(
             add_field_energy_with_field_unit_health_point_request_form
                 .to_add_field_energy_with_amount_request(account_unique_id, field_energy_amount_to_increase)).await;
+
         if !add_field_energy_with_amount_response.is_success() {
             println!("필드에 에너지를 추가하는 과정에서 문제가 발생했습니다!");
             return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
@@ -370,6 +363,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
             .notify_opponent_you_use_item_field_energy_increase_item_card(
                 add_field_energy_with_field_unit_health_point_request_form
                     .to_notify_opponent_you_use_item_field_energy_increase_request(opponent_unique_id, item_card_id, field_energy_amount_to_increase)).await;
+
         if !notify_opponent_you_use_item_card_response.is_success() {
             println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
             return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
