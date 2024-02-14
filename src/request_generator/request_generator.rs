@@ -52,7 +52,7 @@ use crate::request_generator::energy_boost_support_request_form_generator::creat
 use crate::request_generator::first_turn_decision_wait_queue_request_form_generator::create_first_turn_decision_wait_queue_request_form;
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
 use crate::request_generator::first_turn_decision_request_generator::create_first_turn_decision_request_form;
-use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_request_form, create_target_death_item_request_form};
+use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_add_field_energy_by_field_unit_health_point_request_form, create_catastrophic_damage_item_request_form, create_target_death_item_request_form};
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
@@ -459,6 +459,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            1007 => {
+                // Catastrophic Damage Item Card Usage
+                if let Some(request_form) = create_catastrophic_damage_item_request_form(&data) {
+                    let game_card_item_controller_mutex = GameCardItemControllerImpl::get_instance();
+                    let game_card_item_controller = game_card_item_controller_mutex.lock().await;
+
+                    let response_form = game_card_item_controller.request_to_use_catastrophic_damage_item(request_form).await;
+                    let response_type = Some(ResponseType::CATASTROPHIC_DAMAGE_ITEM_USAGE(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             1008 => {
                 // Remove Opponent Field Energy Support Usage
                 if let Some(request_form) = create_opponent_field_energy_remove_support_request_form(&data) {
@@ -475,7 +489,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             },
             1009 => {
                 // Add Field Energy by Field Unit HP Item Card Usage
-                if let Some(request_form) = create_add_field_energy_by_field_unit_health_point_request_form(&data) {
+                if let Some(request_form) = create_add_field_energy_by_field_unit_health_point_item_request_form(&data) {
                     let game_card_item_controller_mutex = GameCardItemControllerImpl::get_instance();
                     let game_card_item_controller = game_card_item_controller_mutex.lock().await;
 
