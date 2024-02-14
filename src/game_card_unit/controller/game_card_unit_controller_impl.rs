@@ -7,7 +7,9 @@ use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_card_unit::controller::game_card_unit_controller::GameCardUnitController;
+use crate::game_card_unit::controller::request_form::attack_unit_request_form::AttackUnitRequestForm;
 use crate::game_card_unit::controller::request_form::deploy_unit_request_form::DeployUnitRequestForm;
+use crate::game_card_unit::controller::response_form::attack_unit_response_form::AttackUnitResponseForm;
 use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
 use crate::game_card_unit::service::game_card_unit_service::GameCardUnitService;
 
@@ -158,5 +160,33 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         }
 
         return DeployUnitResponseForm::new(true)
+    }
+
+    async fn request_to_attack_unit(&self, attack_unit_request_form: AttackUnitRequestForm) -> AttackUnitResponseForm {
+        println!("GameCardUnitControllerImpl: request_to_attack_unit()");
+
+        // 1. 세션 아이디를 검증합니다.
+        let account_unique_id = self.is_valid_session(attack_unit_request_form.to_session_validation_request()).await;
+        if account_unique_id == -1 {
+            return AttackUnitResponseForm::new(false)
+        }
+
+        // TODO: 프로토콜 검증 (지금 이거 신경 쓸 때가 아님)
+        // 2. 프로토콜 검증
+
+        // 3. Battle Field에서 공격하는 유닛의 index를 토대로 id 값 확보 (이거 필요한가 ???)
+        // let attacker_unit_card_index_string = attack_unit_request_form.get_attacker_unit_index();
+        // let attacker_unit_card_index = attacker_unit_card_index_string.parse::<i32>().unwrap();
+        //
+        // let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+        // let find_unit_id_by_index_response = game_field_unit_service_guard
+        //     .find_target_unit_id_by_index(
+        //         attack_unit_request_form.to_find_target_unit_id_by_index_request(
+        //             account_unique_id,
+        //             attacker_unit_card_index)).await;
+
+        // 4. 유닛 인덱스에서 기본 공격력 정
+
+        AttackUnitResponseForm::new(true)
     }
 }
