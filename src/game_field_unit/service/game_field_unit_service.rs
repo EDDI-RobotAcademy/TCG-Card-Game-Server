@@ -6,6 +6,7 @@ use crate::game_field_unit::service::request::acquire_unit_extra_effect_request:
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::apply_instant_death_to_target_unit_index_request::ApplyInstantDeathToTargetUnitIndexRequest;
+use crate::game_field_unit::service::request::apply_passive_skill_list_request::ApplyPassiveSkillListRequest;
 use crate::game_field_unit::service::request::apply_status_effect_damage_iteratively_request::ApplyStatusEffectDamageIterativelyRequest;
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
@@ -20,6 +21,7 @@ use crate::game_field_unit::service::response::acquire_unit_extra_effect_respons
 use crate::game_field_unit::service::response::add_unit_to_game_field_response::AddUnitToGameFieldResponse;
 use crate::game_field_unit::service::response::apply_damage_to_target_unit_index_response::ApplyDamageToTargetUnitIndexResponse;
 use crate::game_field_unit::service::response::apply_instant_death_to_target_unit_index_response::ApplyInstantDeathToTargetUnitIndexResponse;
+use crate::game_field_unit::service::response::apply_passive_skill_list_response::ApplyPassiveSkillListResponse;
 use crate::game_field_unit::service::response::apply_status_effect_damage_iteratively_response::ApplyStatusEffectDamageIterativelyResponse;
 use crate::game_field_unit::service::response::attach_single_energy_to_unit_index_response::AttachSingleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attach_multiple_energy_to_unit_index_response::AttachMultipleEnergyToUnitIndexResponse;
@@ -44,4 +46,5 @@ pub trait GameFieldUnitService {
     async fn acquire_unit_attack_point(&mut self, acquire_unit_attack_point_request: AcquireUnitAttackPointRequest) -> AcquireUnitAttackPointResponse;
     async fn acquire_unit_extra_effect(&mut self, acquire_unit_extra_effect_request: AcquireUnitExtraEffectRequest) -> AcquireUnitExtraEffectResponse;
     async fn attack_target_unit_with_extra_effect(&mut self, attack_target_unit_with_extra_effect_request: AttackTargetUnitWithExtraEffectRequest) -> AttackTargetUnitWithExtraEffectResponse;
+    async fn apply_passive_skill_list(&mut self, apply_passive_skill_list_request: ApplyPassiveSkillListRequest) -> ApplyPassiveSkillListResponse;
 }

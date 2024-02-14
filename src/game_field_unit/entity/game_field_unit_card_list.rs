@@ -21,6 +21,10 @@ impl GameFieldUnitCardList {
         &self.game_field_unit_card_list
     }
 
+    pub fn get_all_field_unit_list_mut(&mut self) -> &mut Vec<GameFieldUnitCard> {
+        &mut self.game_field_unit_card_list
+    }
+
     pub fn find_unit_by_id(&self, unit_id: i32) -> Option<&GameFieldUnitCard> {
         self.game_field_unit_card_list.iter().find(|card| card.get_card() == unit_id)
     }

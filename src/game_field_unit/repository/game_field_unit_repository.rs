@@ -53,4 +53,9 @@ pub trait GameFieldUnitRepository {
         damage: i32,
         extra_status_effect_list: Vec<ExtraStatusEffect>
     ) -> bool;
+    fn apply_damage_to_every_unit(
+        &mut self,
+        opponent_unique_id: i32,
+        damage: i32,
+    ) -> bool;
 }

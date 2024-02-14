@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::game_card_passive_skill::entity::passive_skill_type::PassiveSkillType;
 
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
@@ -14,6 +15,7 @@ use crate::game_field_unit::service::request::acquire_unit_extra_effect_request:
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::apply_instant_death_to_target_unit_index_request::ApplyInstantDeathToTargetUnitIndexRequest;
+use crate::game_field_unit::service::request::apply_passive_skill_list_request::ApplyPassiveSkillListRequest;
 use crate::game_field_unit::service::request::apply_status_effect_damage_iteratively_request::ApplyStatusEffectDamageIterativelyRequest;
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
@@ -28,6 +30,7 @@ use crate::game_field_unit::service::response::acquire_unit_extra_effect_respons
 use crate::game_field_unit::service::response::add_unit_to_game_field_response::AddUnitToGameFieldResponse;
 use crate::game_field_unit::service::response::apply_damage_to_target_unit_index_response::ApplyDamageToTargetUnitIndexResponse;
 use crate::game_field_unit::service::response::apply_instant_death_to_target_unit_index_response::ApplyInstantDeathToTargetUnitIndexResponse;
+use crate::game_field_unit::service::response::apply_passive_skill_list_response::ApplyPassiveSkillListResponse;
 use crate::game_field_unit::service::response::apply_status_effect_damage_iteratively_response::ApplyStatusEffectDamageIterativelyResponse;
 use crate::game_field_unit::service::response::attach_single_energy_to_unit_index_response::AttachSingleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attach_multiple_energy_to_unit_index_response::AttachMultipleEnergyToUnitIndexResponse;
@@ -228,5 +231,46 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             attack_target_unit_with_extra_effect_request.get_extra_status_effect_list().clone());
 
         AttackTargetUnitWithExtraEffectResponse::new(attack_target_unit_with_extra_effect_response)
+    }
+
+    async fn apply_passive_skill_list(&mut self, apply_passive_skill_list_request: ApplyPassiveSkillListRequest) -> ApplyPassiveSkillListResponse {
+        println!("GameFieldUnitServiceImpl: apply_passive_skill_list()");
+
+        let passive_skill_list = apply_passive_skill_list_request.get_passive_skill_list();
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+
+        // TODO: Need to Refactor
+        for passive_skill in passive_skill_list.iter() {
+            match passive_skill.get_passive_skill_type() {
+                PassiveSkillType::PhysicalImmunity => {
+                    println!("물리 공격 면역 효과를 적용합니다");
+                    // game_field_unit_repository_guard.
+                },
+                PassiveSkillType::BroadArea => {
+                    println!("광역기!");
+
+                    let damage = passive_skill.get_skill_damage();
+
+                    let apply_damage_to_nearly_unit_response = game_field_unit_repository_guard
+                        .apply_damage_to_every_unit(
+                            apply_passive_skill_list_request.get_opponent_unique_id(),
+                            damage);
+                },
+                PassiveSkillType::SingleTarget => {
+                    // println!("단일기!");
+                    //
+                    // let damage = passive_skill.get_skill_damage();
+                    //
+                    // let apply_damage_to_nearly_unit_response = game_field_unit_repository_guard
+                    //     .apply_damage_to_nearly_unit(
+                    //         apply_passive_skill_list_request.get_opponent_unique_id(),
+                    //         damage);
+                },
+                _ => (),
+            }
+        }
+
+        ApplyPassiveSkillListResponse::new(true)
     }
 }
