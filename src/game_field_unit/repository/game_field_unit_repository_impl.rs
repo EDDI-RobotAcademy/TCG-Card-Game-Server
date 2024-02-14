@@ -7,6 +7,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
+use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
@@ -198,6 +199,29 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         } else {
             false
         }
+    }
+
+    fn impose_harmful_state_to_indexed_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_card_index: i32,
+        harmful_state: ExtraStatusEffect,
+    ) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            game_field_unit.impose_harmful_state_to_indexed_unit(unit_card_index as usize, harmful_state);
+            true
+        } else {
+            false
+        }
+    }
+
+    fn acquire_unit_attack_point(
+        &mut self,
+        account_unique_id: i32,
+        attacker_unit_index: i32
+    ) -> i32 {
+        let indexed_unit_reference = self.find_indexed_unit(account_unique_id, attacker_unit_index).unwrap();
+        return indexed_unit_reference.get_unit_attack_point();
     }
 }
 

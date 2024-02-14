@@ -70,6 +70,10 @@ impl GameFieldUnitCard {
         &mut self.unit_health_point
     }
 
+    pub fn get_unit_attack_point(&self) -> i32 {
+        self.unit_attack_point
+    }
+
     pub fn is_alive(&self) -> bool {
         self.is_alive
     }
