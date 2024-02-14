@@ -253,7 +253,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
                             passive_skill.clone());
                 },
                 PassiveSkillType::BroadArea => {
-                    println!("광역기!");
+                    println!("패시브 광역기!");
 
                     let damage = passive_skill.get_skill_damage();
 
@@ -263,10 +263,12 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
                             damage);
                 },
                 PassiveSkillType::SingleTarget => {
-                    println!("단일기!");
+                    println!("패시브 단일기!");
 
                     let damage = passive_skill.get_skill_damage();
 
+                    // TODO: 현재 살아있는 유닛 중 가장 가까운 인덱스의 유닛을 때리도록 구성합니다
+                    // 생존 판정 및 무덤 이동 처리가 되어야 작업 할 수 있음
                     // let apply_damage_to_nearly_unit_response = game_field_unit_repository_guard
                     //     .apply_damage_to_nearly_unit(
                     //         apply_passive_skill_list_request.get_opponent_unique_id(),
