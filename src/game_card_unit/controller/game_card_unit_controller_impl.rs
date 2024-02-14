@@ -192,6 +192,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                 attack_unit_request_form.to_acquire_unit_attack_point_request(
                     account_unique_id, attacker_unit_card_index)).await;
 
+        // 5.
+
         AttackUnitResponseForm::new(true)
     }
 }

@@ -2,15 +2,15 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AcquireUnitAttackPointResponse {
-    is_success: bool
+    attack_point: i32
 }
 
 impl AcquireUnitAttackPointResponse {
-    pub fn new(is_success: bool) -> Self {
-        AcquireUnitAttackPointResponse { is_success }
+    pub fn new(attack_point: i32) -> Self {
+        AcquireUnitAttackPointResponse { attack_point }
     }
 
-    pub fn is_success(&self) -> bool {
-        self.is_success
+    pub fn get_attack_point(&self) -> i32 {
+        self.attack_point
     }
 }

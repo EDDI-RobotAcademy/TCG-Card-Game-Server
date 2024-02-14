@@ -195,10 +195,10 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         println!("GameFieldUnitServiceImpl: apply_status_effect_damage_iteratively()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        game_field_unit_repository_guard.acquire_unit_attack_point(
+        let attack_point = game_field_unit_repository_guard.acquire_unit_attack_point(
             acquire_unit_attack_point_request.get_account_unique_id(),
             acquire_unit_attack_point_request.get_attacker_unit_index());
 
-        AcquireUnitAttackPointResponse::new(true)
+        AcquireUnitAttackPointResponse::new(attack_point)
     }
 }
