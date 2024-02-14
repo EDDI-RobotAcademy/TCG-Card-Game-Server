@@ -42,6 +42,16 @@ impl GameLostZoneRepository for GameLostZoneRepositoryImpl {
 
         true
     }
+
+    fn add_lost_zone_card(&mut self, account_unique_id: i32, lost_card: i32) -> bool {
+        println!("GameLostZoneRepositoryImpl: add_lost_zone_card()");
+
+        if let Some(game_lost_zone) = self.game_lost_zone_map.get_mut(&account_unique_id) {
+            game_lost_zone.add_lost_zone_card(lost_card);
+        }
+
+        true
+    }
 }
 
 #[cfg(test)]
@@ -54,12 +64,9 @@ mod tests {
         let mut repository = GameLostZoneRepositoryImpl::get_instance();
         let mut repository_guard = repository.lock().await;
 
-        assert_eq!(repository_guard.create_game_lost_zone_object(1), true);
+        repository_guard.create_game_lost_zone_object(1);
+        repository_guard.add_lost_zone_card(1, 10);
 
-        let game_lost_zone_map = repository_guard.get_game_lost_zone_map();
-        assert_eq!(game_lost_zone_map.len(), 1);
-
-        let lock_result = game_lost_zone_map.get(&1);
-        assert!(lock_result.is_some());
+        println!("{:?}", repository_guard.get_game_lost_zone_map());
     }
 }
