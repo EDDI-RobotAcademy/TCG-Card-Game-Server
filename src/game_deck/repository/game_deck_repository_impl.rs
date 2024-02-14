@@ -19,7 +19,7 @@ impl GameDeckRepositoryImpl {
         }
     }
 
-    pub(crate) fn get_game_deck_map(&mut self) -> &mut IndexMap<i32, GameDeck> {
+    pub fn get_game_deck_map(&mut self) -> &mut IndexMap<i32, GameDeck> {
         &mut self.game_deck_map
     }
 
