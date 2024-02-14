@@ -3,11 +3,15 @@ use std::sync::Arc;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
-use crate::game_card_active_skill::entity::skill_type::SkillType;
+use crate::game_card_active_skill::entity::active_skill_type::ActiveSkillType;
 use crate::game_card_active_skill::entity::summary_active_skill_effect::SummaryActiveSkillEffect;
 
 use crate::game_card_active_skill::handler::game_card_active_skill_handler::GameCardActiveSkillHandler;
 use crate::game_card_active_skill::repository::game_card_active_skill_repository::GameCardActiveSkillRepository;
+
+use crate::game_card_active_skill::handler::slot::first_slot::handler_of_27::game_card_unit_27_active_slot_1_handler_impl::UnitCard_27_Active_Slot_1_Function;
+
+use crate::game_card_active_skill::handler::slot::second_slot::handler_of_27::game_card_unit_27_active_slot_2_handler_impl::UnitCard_27_Active_Slot_2_Function;
 
 pub struct GameCardActiveSkillRepositoryImpl {
     active_skill_functions: HashMap<i32, HashMap<i32, Box<dyn GameCardActiveSkillHandler>>>,
@@ -20,7 +24,7 @@ impl GameCardActiveSkillHandler for NoneActiveSkillFunction {
         println!("아직 구현되지 않은 기능입니다.");
 
         SummaryActiveSkillEffect::new(
-            SkillType::Dummy, -1, -1)
+            ActiveSkillType::Dummy, -1)
     }
 }
 
@@ -49,7 +53,7 @@ impl GameCardActiveSkillRepositoryImpl {
                 inner_map.insert(22, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
                 inner_map.insert(23, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
                 inner_map.insert(26, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
-                inner_map.insert(27, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
+                inner_map.insert(27, Box::new(UnitCard_27_Active_Slot_1_Function) as Box<dyn GameCardActiveSkillHandler>);
                 inner_map.insert(31, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
                 inner_map.insert(32, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
                 inner_map.insert(34, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
@@ -130,7 +134,7 @@ impl GameCardActiveSkillRepositoryImpl {
                 inner_map.insert(22, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
                 inner_map.insert(23, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
                 inner_map.insert(26, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
-                inner_map.insert(27, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
+                inner_map.insert(27, Box::new(UnitCard_27_Active_Slot_2_Function) as Box<dyn GameCardActiveSkillHandler>);
                 inner_map.insert(31, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
                 inner_map.insert(32, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
                 inner_map.insert(34, Box::new(NoneActiveSkillFunction) as Box<dyn GameCardActiveSkillHandler>);
@@ -310,6 +314,6 @@ impl GameCardActiveSkillRepository for GameCardActiveSkillRepositoryImpl {
             }
         }
 
-        SummaryActiveSkillEffect::new(SkillType::Dummy, -1, -1)
+        SummaryActiveSkillEffect::new(ActiveSkillType::Dummy, -1)
     }
 }
