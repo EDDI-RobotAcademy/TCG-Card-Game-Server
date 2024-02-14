@@ -26,4 +26,8 @@ impl SummaryPassiveSkillEffectResponse {
     pub fn get_passive_skill_effect_list(&self) -> &Vec<SummaryPassiveSkillEffect> {
         &self.passive_skill_effect_list
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.passive_skill_effect_list.is_empty()
+    }
 }
