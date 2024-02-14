@@ -1,5 +1,3 @@
-use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
-
 #[derive(Debug)]
 pub struct ApplyDamageToTargetUnitIndexRequest {
     opponent_unique_id: i32,

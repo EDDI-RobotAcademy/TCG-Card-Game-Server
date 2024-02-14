@@ -13,6 +13,7 @@ use crate::game_field_unit::service::request::acquire_unit_attack_point_request:
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
 
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
+use crate::game_field_unit::service::request::apply_catastrophic_damage_to_field_unit_request::ApplyCatastrophicDamageToFieldUnitRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::apply_instant_death_to_target_unit_index_request::ApplyInstantDeathToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::apply_passive_skill_list_request::ApplyPassiveSkillListRequest;
@@ -28,6 +29,7 @@ use crate::game_field_unit::service::response::acquire_unit_attack_point_respons
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
 
 use crate::game_field_unit::service::response::add_unit_to_game_field_response::AddUnitToGameFieldResponse;
+use crate::game_field_unit::service::response::apply_catastrophic_damage_to_field_unit_response::ApplyCatastrophicDamageToFieldUnitResponse;
 use crate::game_field_unit::service::response::apply_damage_to_target_unit_index_response::ApplyDamageToTargetUnitIndexResponse;
 use crate::game_field_unit::service::response::apply_instant_death_to_target_unit_index_response::ApplyInstantDeathToTargetUnitIndexResponse;
 use crate::game_field_unit::service::response::apply_passive_skill_list_response::ApplyPassiveSkillListResponse;
@@ -279,5 +281,17 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         }
 
         ApplyPassiveSkillListResponse::new(true)
+    }
+
+    async fn apply_catastrophic_damage_to_field_unit(&mut self, apply_catastrophic_damage_to_field_unit_request: ApplyCatastrophicDamageToFieldUnitRequest) -> ApplyCatastrophicDamageToFieldUnitResponse {
+        println!("GameFieldUnitServiceImpl: apply_passive_skill_list()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let apply_catastrophic_damage_result = game_field_unit_repository_guard
+            .apply_damage_to_every_unit(
+                apply_catastrophic_damage_to_field_unit_request.get_opponent_unique_id(),
+                apply_catastrophic_damage_to_field_unit_request.get_catastrophic_damage());
+
+        ApplyCatastrophicDamageToFieldUnitResponse::new(apply_catastrophic_damage_result)
     }
 }
