@@ -198,6 +198,29 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                 attack_unit_request_form.to_acquire_unit_extra_effect_request(
                     account_unique_id, attacker_unit_card_index)).await;
 
+        // 6. 공격을 위해 상대방 고유값 획득
+        let battle_room_service_guard = self.battle_room_service.lock().await;
+        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+            attack_unit_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+
+        // 7. 효과를 가지고 공격
+        let target_unit_card_index_string = attack_unit_request_form.get_target_unit_index();
+        let target_unit_card_index = target_unit_card_index_string.parse::<i32>().unwrap();
+
+        let attack_target_unit_response = game_field_unit_service_guard
+            .attack_target_unit_with_extra_effect(
+                attack_unit_request_form.to_attack_target_unit_with_extra_effect_request(
+                    find_opponent_by_account_id_response.get_opponent_unique_id(),
+                    find_unit_attack_point_response.get_attack_point(),
+                    find_unit_extra_effect_response.get_extra_status_effect_list(),
+                    target_unit_card_index)).await;
+
+        // 8. 공격한 유닛이 죽었는지 판정
+
+        // 9. 죽었다면 무덤 배치
+
+        // 9. 상대방 알림
+
         AttackUnitResponseForm::new(true)
     }
 }
