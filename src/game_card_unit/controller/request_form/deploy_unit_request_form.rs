@@ -89,10 +89,15 @@ impl DeployUnitRequestForm {
     }
 
     pub fn to_apply_passive_skill_list_request(&self,
+                                               account_unique_id: i32,
+                                               unit_card_id: i32,
                                                opponent_unique_id: i32,
                                                summary_passive_skill_effect_list: Vec<SummaryPassiveSkillEffect>) -> ApplyPassiveSkillListRequest {
 
-        ApplyPassiveSkillListRequest::new(opponent_unique_id, summary_passive_skill_effect_list)
+        ApplyPassiveSkillListRequest::new(account_unique_id,
+                                          unit_card_id,
+                                          opponent_unique_id,
+                                          summary_passive_skill_effect_list)
     }
 
     pub fn to_notify_to_opponent_what_you_do_request(&self, opponent_unique_id: i32, usage_hand_card_id: i32) -> NotifyToOpponentYouDeployUnitRequest {

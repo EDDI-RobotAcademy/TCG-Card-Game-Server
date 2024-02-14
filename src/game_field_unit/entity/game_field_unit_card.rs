@@ -179,6 +179,16 @@ impl GameFieldUnitCard {
             self.harmful_status_effect_list[index].set_reuse_turn(current_reuse_turn - 1);
         }
     }
+
+    pub fn impose_extra_effect_state(&mut self, extra_effect_state: ExtraStatusEffect) {
+        self.extra_status_effect_list.push(extra_effect_state);
+    }
+
+    fn impose_extra_effect_state_list(&mut self, extra_effect_state_list: Vec<ExtraStatusEffect>) {
+        for extra_effect_state in extra_effect_state_list {
+            self.impose_extra_effect_state(extra_effect_state);
+        }
+    }
 }
 
 #[cfg(test)]

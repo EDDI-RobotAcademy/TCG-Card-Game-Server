@@ -13,8 +13,9 @@ impl GameFieldUnitCardList {
         GameFieldUnitCardList { game_field_unit_card_list: Vec::new() }
     }
 
-    pub fn add_field_unit(&mut self, card: GameFieldUnitCard) {
+    pub fn add_field_unit(&mut self, card: GameFieldUnitCard) -> i32 {
         self.game_field_unit_card_list.push(card);
+        (self.game_field_unit_card_list.len() - 1) as i32
     }
 
     pub fn get_all_field_unit_list(&self) -> &Vec<GameFieldUnitCard> {
@@ -89,6 +90,12 @@ impl GameFieldUnitCardList {
     pub fn apply_status_effect_damage_iteratively(&mut self) {
         for unit in &mut self.game_field_unit_card_list {
             unit.apply_status_effect_damage();
+        }
+    }
+
+    pub fn impose_extra_effect_state_to_indexed_unit(&mut self, unit_card_index: usize, extra_state: ExtraStatusEffect) {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            unit.impose_extra_effect_state(extra_state);
         }
     }
 }

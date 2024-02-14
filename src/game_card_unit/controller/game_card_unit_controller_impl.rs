@@ -132,6 +132,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             deploy_unit_request_form.to_summary_unit_card_info_request(unit_card_id)).await;
 
         // 5. Battle Field에 유닛 배치
+        // TODO: 여기서 unit_index 값 가져오세요.
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
         let add_unit_to_game_field_response = game_field_unit_service_guard.add_unit_to_game_field(
             deploy_unit_request_form.to_add_unit_to_game_field_request(
@@ -146,7 +147,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                 unit_card_info_response.has_second_passive_skill(),
                 unit_card_info_response.has_third_passive_skill())).await;
 
-        if !add_unit_to_game_field_response.is_success() {
+        if add_unit_to_game_field_response.get_placed_unit_index() == -1 {
             println!("필드에 유닛 배치 중 문제가 발생하였습니다.");
             return DeployUnitResponseForm::new(false)
         }
@@ -173,6 +174,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             let add_unit_to_game_field_response = game_field_unit_service_guard
                 .apply_passive_skill_list(
                     deploy_unit_request_form.to_apply_passive_skill_list_request(
+                        account_unique_id,
+                        add_unit_to_game_field_response.get_placed_unit_index(),
                         find_opponent_by_account_id_response.get_opponent_unique_id(),
                         passive_skill_response.get_passive_skill_effect_list().clone())).await;
         }
