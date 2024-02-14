@@ -219,6 +219,15 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
             attach_special_energy_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
         // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
+        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
+        let notify_to_opponent_what_you_do_response = notify_player_action_service_guard.notify_to_opponent_you_use_energy_card(
+            attach_special_energy_request_form.to_notify_to_opponent_you_use_energy_card_request(
+                find_opponent_by_account_id_response.get_opponent_unique_id(), unit_card_index, usage_hand_card_id)).await;
+        if !notify_to_opponent_what_you_do_response.is_success() {
+            println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
+            return AttachSpecialEnergyCardResponseForm::new(false)
+        }
+
 
         AttachSpecialEnergyCardResponseForm::new(true)
     }
