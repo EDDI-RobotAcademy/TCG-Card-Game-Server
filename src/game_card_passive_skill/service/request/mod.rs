@@ -1,0 +1,1 @@
+pub mod summary_passive_skill_effect_request;
