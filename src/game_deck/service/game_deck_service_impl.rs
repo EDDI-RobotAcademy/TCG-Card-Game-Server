@@ -144,6 +144,7 @@ impl GameDeckService for GameDeckServiceImpl {
         GameDeckCardShuffleResponse::new(shuffle_result)
     }
 
+    // TODO: 여기서 핸드에 추가해버리는 문제가 있어 재사용성이 떨어짐
     async fn draw_deck(&self, game_deck_card_draw_request: GameDeckCardDrawRequest) -> GameDeckCardDrawListResponse {
         println!("GameDeckServiceImpl: draw_deck()");
 
@@ -155,6 +156,19 @@ impl GameDeckService for GameDeckServiceImpl {
         let draw_card_vector = self.draw_deck_cards(account_unique_id, draw_count).await;
 
         self.add_drawn_cards_to_hand(account_unique_id, draw_card_vector.clone()).await;
+
+        GameDeckCardDrawListResponse::new(draw_card_vector.clone())
+    }
+
+    // TODO: 핸드에 추가하지 않는 버전. 다른 서비스들과의 호환성 향상을 위함.
+    async fn draw_cards_from_deck(&self, game_deck_card_draw_request: GameDeckCardDrawRequest) -> GameDeckCardDrawListResponse {
+        println!("GameDeckServiceImpl: draw_cards_from_deck()");
+
+        let session_id = game_deck_card_draw_request.get_session_id();
+        let account_unique_id = self.parse_account_unique_id(session_id).await;
+
+        let draw_count: usize = game_deck_card_draw_request.get_draw_count() as usize;
+        let draw_card_vector = self.draw_deck_cards(account_unique_id, draw_count).await;
 
         GameDeckCardDrawListResponse::new(draw_card_vector.clone())
     }

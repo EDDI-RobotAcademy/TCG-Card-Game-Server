@@ -31,16 +31,6 @@ impl GameDeckCardList {
         self.card_list.shuffle(&mut rng);
     }
 
-    // pub fn shuffle(&mut self) {
-    //     let seed = SystemTime::now()
-    //         .duration_since(SystemTime::UNIX_EPOCH)
-    //         .expect("Time went backwards")
-    //         .as_nanos() as u64;
-    //
-    //     let mut rng: StdRng = SeedableRng::seed_from_u64(seed);
-    //     self.card_list.shuffle(&mut rng);
-    // }
-
     pub fn draw_deck_card_list(&mut self, draw_count: usize) -> Vec<i32> {
         let drawn_card_list: Vec<i32> = self.card_list.iter().take(draw_count).map(|card| card.get_card()).collect();
 
@@ -50,24 +40,6 @@ impl GameDeckCardList {
 
         drawn_card_list
     }
-
-    // pub fn find_by_card_id_with_count(&self, wanna_find_id: i32, count: usize) -> Vec<i32> {
-    //     let mut result = Vec::new();
-    //     let mut found_count = 0;
-    //
-    //     for card in &self.card_list {
-    //         if card.get_card() == wanna_find_id {
-    //             result.push(wanna_find_id);
-    //             found_count += 1;
-    //
-    //             if found_count == count {
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //
-    //     result
-    // }
 
     pub fn find_by_card_id_with_count(&mut self, wanna_find_id: i32, count: usize) -> Vec<i32> {
         let mut result = Vec::new();
