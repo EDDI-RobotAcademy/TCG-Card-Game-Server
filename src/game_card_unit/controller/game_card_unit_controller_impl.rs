@@ -3,8 +3,11 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::game_card_passive_skill::service::game_card_passive_skill_service::GameCardPassiveSkillService;
+use crate::game_card_passive_skill::service::game_card_passive_skill_service_impl::GameCardPassiveSkillServiceImpl;
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_card_unit::controller::game_card_unit_controller::GameCardUnitController;
 use crate::game_card_unit::controller::request_form::attack_unit_request_form::AttackUnitRequestForm;
@@ -33,6 +36,7 @@ pub struct GameCardUnitControllerImpl {
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
     notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
+    game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
 }
 
@@ -43,6 +47,7 @@ impl GameCardUnitControllerImpl {
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
+               game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>) -> Self {
 
         GameCardUnitControllerImpl {
@@ -52,6 +57,7 @@ impl GameCardUnitControllerImpl {
             game_field_unit_service,
             redis_in_memory_service,
             notify_player_action_service,
+            game_card_passive_skill_service,
             game_protocol_validation_service
         }
     }
@@ -67,6 +73,7 @@ impl GameCardUnitControllerImpl {
                             GameFieldUnitServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
                             NotifyPlayerActionServiceImpl::get_instance(),
+                            GameCardPassiveSkillServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance())));
         }
         INSTANCE.clone()
@@ -149,7 +156,10 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
             deploy_unit_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
-        // 7. 유닛이 출격하자마자 발동하는 스킬이 있다면 여기서 Passive Skill 을 사용
+        // 7. 유닛이 출격하자마자 발동하는 스킬이 있는지 확인
+        let game_card_passive_skill_service_guard = self.game_card_passive_skill_service.lock().await;
+        let passive_skill_response = game_card_passive_skill_service_guard.summary_passive_skill(
+            deploy_unit_request_form.to_summary_passive_skill_request(usage_hand_card_id)).await;
 
         // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
