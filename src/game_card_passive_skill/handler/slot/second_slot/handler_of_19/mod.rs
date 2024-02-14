@@ -1,0 +1,1 @@
+pub mod game_card_unit_19_passive_slot_2_handler_impl;
