@@ -223,6 +223,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         let indexed_unit_reference = self.find_indexed_unit(account_unique_id, attacker_unit_index).unwrap();
         return indexed_unit_reference.get_unit_attack_point();
     }
+
+    fn acquire_unit_extra_effect_by_index(
+        &mut self,
+        account_unique_id: i32,
+        attacker_unit_index: i32
+    ) -> &Vec<ExtraStatusEffect> {
+        let indexed_unit_reference = self.find_indexed_unit(account_unique_id, attacker_unit_index).unwrap();
+        return indexed_unit_reference.get_extra_status_effect_list();
+    }
 }
 
 #[cfg(test)]

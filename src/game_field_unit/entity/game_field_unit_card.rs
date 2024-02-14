@@ -74,6 +74,10 @@ impl GameFieldUnitCard {
         self.unit_attack_point
     }
 
+    pub fn get_extra_status_effect_list(&self) -> &Vec<ExtraStatusEffect> {
+        &self.extra_status_effect_list
+    }
+
     pub fn is_alive(&self) -> bool {
         self.is_alive
     }

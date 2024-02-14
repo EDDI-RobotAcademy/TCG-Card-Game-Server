@@ -9,3 +9,4 @@ pub mod attach_special_energy_to_unit_index_request;
 pub mod find_active_skill_usage_unit_id_by_index_request;
 pub mod apply_status_effect_damage_iteratively_request;
 pub mod acquire_unit_attack_point_request;
+pub mod acquire_unit_extra_effect_request;

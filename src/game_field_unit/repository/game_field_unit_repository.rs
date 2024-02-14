@@ -41,4 +41,9 @@ pub trait GameFieldUnitRepository {
         account_unique_id: i32,
         attacker_unit_index: i32
     ) -> i32;
+    fn acquire_unit_extra_effect_by_index(
+        &mut self,
+        account_unique_id: i32,
+        attacker_unit_index: i32
+    ) -> &Vec<ExtraStatusEffect>;
 }

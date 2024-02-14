@@ -9,6 +9,7 @@ use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFie
 
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::request::acquire_unit_attack_point_request::AcquireUnitAttackPointRequest;
+use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
 
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
@@ -21,6 +22,7 @@ use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
+use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
 
 use crate::game_field_unit::service::response::add_unit_to_game_field_response::AddUnitToGameFieldResponse;
 use crate::game_field_unit::service::response::apply_damage_to_target_unit_index_response::ApplyDamageToTargetUnitIndexResponse;
@@ -200,5 +202,16 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             acquire_unit_attack_point_request.get_attacker_unit_index());
 
         AcquireUnitAttackPointResponse::new(attack_point)
+    }
+
+    async fn acquire_unit_extra_effect(&mut self, acquire_unit_extra_effect_request: AcquireUnitExtraEffectRequest) -> AcquireUnitExtraEffectResponse {
+        println!("GameFieldUnitServiceImpl: acquire_unit_extra_effect()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let extra_effect_list = game_field_unit_repository_guard.acquire_unit_extra_effect_by_index(
+            acquire_unit_extra_effect_request.get_account_unique_id(),
+            acquire_unit_extra_effect_request.get_attacker_unit_index());
+
+        AcquireUnitExtraEffectResponse::new(extra_effect_list.clone())
     }
 }
