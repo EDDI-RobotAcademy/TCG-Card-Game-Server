@@ -73,6 +73,10 @@ impl AttachSpecialEnergyCardRequestForm {
         FindOpponentByAccountIdRequest::new(
             account_unique_id)
     }
+    pub fn to_notify_to_opponent_you_use_energy_card_request(&self, opponent_unique_id: i32, unit_card_index: i32, usage_hand_card_id: i32) -> NotifyToOpponentYouUseEnergyCardRequest {
+        NotifyToOpponentYouUseEnergyCardRequest::new(
+            opponent_unique_id, unit_card_index, usage_hand_card_id)
+    }
 
 
 }
