@@ -46,4 +46,11 @@ pub trait GameFieldUnitRepository {
         account_unique_id: i32,
         attacker_unit_index: i32
     ) -> &Vec<ExtraStatusEffect>;
+    fn attack_target_unit_with_extra_effect(
+        &mut self,
+        opponent_unique_id: i32,
+        opponent_unit_index: i32,
+        damage: i32,
+        extra_status_effect_list: Vec<ExtraStatusEffect>
+    ) -> bool;
 }

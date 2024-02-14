@@ -10,7 +10,7 @@ impl AcquireUnitExtraEffectResponse {
         Self { extra_status_effect_list }
     }
 
-    pub fn extra_status_effect_list(&self) -> &Vec<ExtraStatusEffect> {
+    pub fn get_extra_status_effect_list(&self) -> &Vec<ExtraStatusEffect> {
         &self.extra_status_effect_list
     }
 }

@@ -10,3 +10,4 @@ pub mod find_active_skill_usage_unit_id_by_index_request;
 pub mod apply_status_effect_damage_iteratively_request;
 pub mod acquire_unit_attack_point_request;
 pub mod acquire_unit_extra_effect_request;
+pub mod attack_target_unit_with_extra_effect_request;
