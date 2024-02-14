@@ -4,3 +4,4 @@ pub mod game_deck_card_draw_request;
 pub mod found_card_from_deck_request;
 pub mod game_deck_card_list_request;
 pub mod search_specific_deck_card_request;
+pub mod draw_cards_from_deck_request;
