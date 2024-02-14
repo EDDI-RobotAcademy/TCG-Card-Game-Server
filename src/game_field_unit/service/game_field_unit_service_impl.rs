@@ -245,7 +245,12 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             match passive_skill.get_passive_skill_type() {
                 PassiveSkillType::PhysicalImmunity => {
                     println!("물리 공격 면역 효과를 적용합니다");
-                    // game_field_unit_repository_guard.
+
+                    let apply_damage_to_nearly_unit_response = game_field_unit_repository_guard
+                        .impose_extra_effect_state_to_indexed_unit(
+                            apply_passive_skill_list_request.get_account_unique_id(),
+                            apply_passive_skill_list_request.get_unit_card_index(),
+                            passive_skill.clone());
                 },
                 PassiveSkillType::BroadArea => {
                     println!("광역기!");
@@ -258,10 +263,10 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
                             damage);
                 },
                 PassiveSkillType::SingleTarget => {
-                    // println!("단일기!");
-                    //
-                    // let damage = passive_skill.get_skill_damage();
-                    //
+                    println!("단일기!");
+
+                    let damage = passive_skill.get_skill_damage();
+
                     // let apply_damage_to_nearly_unit_response = game_field_unit_repository_guard
                     //     .apply_damage_to_nearly_unit(
                     //         apply_passive_skill_list_request.get_opponent_unique_id(),

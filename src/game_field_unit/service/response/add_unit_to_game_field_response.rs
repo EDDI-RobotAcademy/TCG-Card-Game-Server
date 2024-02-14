@@ -2,15 +2,15 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AddUnitToGameFieldResponse {
-    is_success: bool
+    placed_unit_index: i32
 }
 
 impl AddUnitToGameFieldResponse {
-    pub fn new(is_success: bool) -> Self {
-        AddUnitToGameFieldResponse { is_success }
+    pub fn new(placed_unit_index: i32) -> Self {
+        AddUnitToGameFieldResponse { placed_unit_index }
     }
 
-    pub fn is_success(&self) -> bool {
-        self.is_success
+    pub fn get_placed_unit_index(&self) -> i32 {
+        self.placed_unit_index
     }
 }

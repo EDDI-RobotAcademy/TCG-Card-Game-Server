@@ -1,4 +1,6 @@
 use crate::game_card_energy::entity::status_effect::StatusEffect;
+use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::game_field_unit_card_list::GameFieldUnitCardList;
@@ -14,8 +16,8 @@ impl GameFieldUnit {
         GameFieldUnit { game_field_unit: GameFieldUnitCardList::new() }
     }
 
-    pub fn add_unit_to_game_field(&mut self, field_unit: GameFieldUnitCard) {
-        self.game_field_unit.add_field_unit(field_unit);
+    pub fn add_unit_to_game_field(&mut self, field_unit: GameFieldUnitCard) -> i32 {
+        self.game_field_unit.add_field_unit(field_unit)
     }
 
     pub fn add_energy_to_unit(&mut self, unit_id: i32, race: RaceEnumValue, quantity: i32) {
@@ -70,7 +72,20 @@ impl GameFieldUnit {
         self.game_field_unit.apply_status_effect_damage_iteratively();
     }
 
+    pub fn impose_extra_effect_state_to_indexed_unit(&mut self, unit_card_index: usize, extra_effect_state: SummaryPassiveSkillEffect) {
 
+        let passive_skill_type = extra_effect_state.get_passive_skill_type();
+        let passive_skill_type_number = passive_skill_type.clone() as i32;
+
+        let effect = ExtraStatusEffect::new(
+            ExtraEffect::from(passive_skill_type_number),
+            -1,
+            -1,
+            -1
+        );
+
+        self.game_field_unit.impose_extra_effect_state_to_indexed_unit(unit_card_index, effect);
+    }
 }
 
 #[cfg(test)]

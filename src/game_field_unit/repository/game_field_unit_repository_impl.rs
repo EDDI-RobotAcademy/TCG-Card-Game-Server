@@ -7,6 +7,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
+use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
@@ -61,10 +62,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
                               unit_attack_required_energy: i32,
                               first_passive_skill: bool,
                               second_passive_skill: bool,
-                              third_passive_skill: bool) -> bool {
+                              third_passive_skill: bool) -> i32 {
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            game_field_unit.add_unit_to_game_field(
+            let unit_index = game_field_unit.add_unit_to_game_field(
                 GameFieldUnitCard::new(
                     unit_card_number,
                     unit_race,
@@ -76,9 +77,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
                     second_passive_skill,
                     third_passive_skill,
                     true));
-            true
+
+            unit_index
         } else {
-            false
+            -1
         }
     }
 
@@ -263,6 +265,20 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
                 unit.apply_damage(damage);
             }
 
+            true
+        } else {
+            false
+        }
+    }
+
+    fn impose_extra_effect_state_to_indexed_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_index: i32,
+        extra_effect_state: SummaryPassiveSkillEffect,
+    ) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            game_field_unit.impose_extra_effect_state_to_indexed_unit(unit_index as usize, extra_effect_state);
             true
         } else {
             false

@@ -1,6 +1,7 @@
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
+use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
@@ -17,7 +18,7 @@ pub trait GameFieldUnitRepository {
                               unit_attack_required_energy: i32,
                               first_passive_skill: bool,
                               second_passive_skill: bool,
-                              third_passive_skill: bool) -> bool;
+                              third_passive_skill: bool) -> i32;
     fn attach_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race_enum: RaceEnum, quantity: i32);
     fn attach_multiple_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race_number: i32, quantity: i32) -> bool;
     fn find_unit_by_id(&self, account_unique_id: i32, unit_card_number: i32) -> Option<&GameFieldUnitCard>;
@@ -57,5 +58,11 @@ pub trait GameFieldUnitRepository {
         &mut self,
         opponent_unique_id: i32,
         damage: i32,
+    ) -> bool;
+    fn impose_extra_effect_state_to_indexed_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_index: i32,
+        extra_effect_state: SummaryPassiveSkillEffect,
     ) -> bool;
 }
