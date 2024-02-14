@@ -5,3 +5,4 @@ pub mod notify_to_opponent_you_use_item_card_response;
 pub mod notify_to_opponent_you_use_draw_support_card_response;
 pub mod notify_to_opponent_you_use_support_card_response;
 pub mod notify_to_opponent_you_use_item_instant_death_alternatives_response;
+pub mod notify_to_opponent_you_use_tool_card_to_enhance_attack_point_response;

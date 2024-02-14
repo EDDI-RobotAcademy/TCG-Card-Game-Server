@@ -28,11 +28,13 @@ use crate::game_hand::service::request::put_cards_on_deck_request::{PutCardsOnDe
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
 use crate::game_hand::service::request::use_game_hand_item_card_request::UseGameHandItemCardRequest;
+use crate::game_hand::service::request::use_game_hand_tool_card_request::UseGameHandToolCardRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
 use crate::game_hand::service::response::put_cards_on_deck_response::PutCardsOnDeckResponse;
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
 use crate::game_hand::service::response::use_game_hand_item_card_response::UseGameHandItemCardResponse;
 use crate::game_hand::service::response::use_game_hand_support_card_response::UseGameHandSupportCardResponse;
+use crate::game_hand::service::response::use_game_hand_tool_card_response::UseGameHandToolCardResponse;
 use crate::game_hand::service::response::use_game_hand_unit_card_response::UseGameHandUnitCardResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 use crate::game_tomb::repository::game_tomb_repository::GameTombRepository;
@@ -249,5 +251,21 @@ impl GameHandService for GameHandServiceImpl {
         let item_card = maybe_item_card.unwrap();
 
         UseGameHandItemCardResponse::new(item_card.get_card())
+    }
+
+    async fn use_tool_card(&mut self, use_game_hand_tool_card_request: UseGameHandToolCardRequest) -> UseGameHandToolCardResponse {
+        println!("GameHandServiceImpl: use_tool_card()");
+
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        let specific_card_option = game_hand_repository_guard.use_specific_card(
+            use_game_hand_tool_card_request.get_account_unique_id(),
+            use_game_hand_tool_card_request.get_tool_card_id());
+
+        if specific_card_option.is_none() {
+            return UseGameHandToolCardResponse::new(-1)
+        }
+        let specific_card = specific_card_option.unwrap();
+
+        UseGameHandToolCardResponse::new(specific_card.get_card())
     }
 }

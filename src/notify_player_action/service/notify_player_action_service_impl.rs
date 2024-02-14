@@ -15,6 +15,7 @@ use crate::notify_player_action::service::request::notify_to_opponent_you_use_fi
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_field_energy_increase_request::NotifyOpponentYouUseItemFieldEnergyIncreaseRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_instant_death_request::NotifyToOpponentYouUseItemInstantDeathRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_instant_death_alternatives_request::NotifyToOpponentYouUseItemInstantDeathAlternativesRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_tool_card_to_enhance_attack_point_request::NotifyToOpponentYouUseToolCardToEnhanceAttackPointRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_search_support_card_request::NotifyOpponentYouUseSearchSupportRequest;
 use crate::notify_player_action::service::response::notify_to_opponent_you_deploy_unit_response::NotifyToOpponentYouDeployUnitResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_draw_support_card_response::NotifyToOpponentYouUseDrawSupportCardResponse;
@@ -23,6 +24,7 @@ use crate::notify_player_action::service::response::notify_to_opponent_you_use_e
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_card_response::NotifyToOpponentYouUseItemCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_instant_death_alternatives_response::NotifyToOpponentYouUseItemInstantDeathAlternativesResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_support_card_response::NotifyOpponentYouUseSupportCardResponse;
+use crate::notify_player_action::service::response::notify_to_opponent_you_use_tool_card_to_enhance_attack_point_response::NotifyToOpponentYouUseToolCardToEnhanceAttackPointResponse;
 
 pub struct NotifyPlayerActionServiceImpl {
     notify_player_action_repository: Arc<AsyncMutex<NotifyPlayerActionRepositoryImpl>>,
@@ -163,5 +165,17 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
             notify_opponent_you_use_item_field_energy_increase_request.get_increased_field_energy()).await;
 
         NotifyToOpponentYouUseItemCardResponse::new(notify_opponent_you_use_item_field_energy_increase_item_card_response)
+    }
+    async fn notify_to_opponent_you_use_tool_card_to_enhance_attack_point(&mut self, notify_to_opponent_you_use_tool_card_to_enhance_attack_point_request: NotifyToOpponentYouUseToolCardToEnhanceAttackPointRequest) -> NotifyToOpponentYouUseToolCardToEnhanceAttackPointResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_item_instant_death_alternatives()");
+
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        let notify_to_opponent_you_use_tool_card_to_enhance_attack_point_response = notify_player_action_repository_guard
+            .notify_to_opponent_you_use_tool_card_to_enhance_attack_point(
+                notify_to_opponent_you_use_tool_card_to_enhance_attack_point_request.get_opponent_unique_id(),
+                notify_to_opponent_you_use_tool_card_to_enhance_attack_point_request.get_unit_card_index(),
+                notify_to_opponent_you_use_tool_card_to_enhance_attack_point_request.get_usage_tool_card_id()).await;
+
+        NotifyToOpponentYouUseToolCardToEnhanceAttackPointResponse::new(notify_to_opponent_you_use_tool_card_to_enhance_attack_point_response)
     }
 }

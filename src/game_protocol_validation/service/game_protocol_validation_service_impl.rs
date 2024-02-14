@@ -19,6 +19,11 @@ use crate::game_protocol_validation::service::request::is_it_energy_card_request
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_protocol_validation::service::request::is_it_unit_card_request::IsItUnitCardRequest;
+
+use crate::game_protocol_validation::service::request::is_it_tool_card_request::IsItToolCardRequest;
+use crate::game_protocol_validation::service::request::support_card_protocol_validation_request::SupportCardProtocolValidationRequest;
+
+
 use crate::game_protocol_validation::service::response::can_use_card_response::CanUseCardResponse;
 use crate::game_protocol_validation::service::response::check_cards_from_hand_response::CheckCardsFromHandResponse;
 use crate::game_protocol_validation::service::response::check_protocol_hacking_response::CheckProtocolHackingResponse;
@@ -26,6 +31,7 @@ use crate::game_protocol_validation::service::response::is_it_energy_card_respon
 use crate::game_protocol_validation::service::response::is_it_item_card_response::IsItItemCardResponse;
 use crate::game_protocol_validation::service::response::is_it_support_card_response::IsItSupportCardResponse;
 use crate::game_protocol_validation::service::response::is_it_unit_card_response::IsItUnitCardResponse;
+use crate::game_protocol_validation::service::response::is_it_tool_card_response::IsItToolCardResponse;
 use crate::game_protocol_validation::service::response::support_card_protocol_validation_response::SupportCardProtocolValidationResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
@@ -218,5 +224,16 @@ impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
         }
 
         IsItItemCardResponse::new(false)
+    }
+
+    async fn is_it_tool_card(&self, is_it_tool_card_request: IsItToolCardRequest) -> IsItToolCardResponse {
+        let tool_card_number = is_it_tool_card_request.get_tool_card_number();
+
+        let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
+        if let maybe_tool_card = card_kinds_repository_guard.get_card_kind(&tool_card_number).await {
+            return IsItToolCardResponse::new(maybe_tool_card == KindsEnum::Tool)
+        }
+
+        IsItToolCardResponse::new(false)
     }
 }

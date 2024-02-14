@@ -32,6 +32,7 @@ use crate::game_deck::service::response::game_deck_start_card_list_response::{Ga
 use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
 use crate::game_turn::controller::response_form::first_turn_decision_response_form::FirstTurnDecisionResponseForm;
 use crate::notify_player_action::entity::notify_opponent_increase_field_energy_item_usage::NotifyOpponentIncreaseFieldEnergyItemUsage;
+use crate::notify_player_action::entity::notify_opponent_to_enhance_attack_point_tool_usage::NotifyOpponentToEnhanceAttackPointToolUsage;
 use crate::notify_player_action::entity::notify_opponent_remove_field_energy_support_usage::NotifyOpponentRemoveFieldEnergySupportUsage;
 use crate::notify_player_action::entity::notify_opponent_search_support_usage::NotifyOpponentSearchSupportUsage;
 use crate::notify_player_action::entity::notify_opponent_to_draw_support_usage::NotifyOpponentToDrawSupportUsage;
@@ -109,6 +110,7 @@ pub enum ResponseType {
     NOTIFY_OPPONENT_SEARCH_SUPPORT_USAGE(NotifyOpponentSearchSupportUsage),
     NOTIFY_OPPONENT_REMOVE_FIELD_ENERGY_SUPPORT_USAGE(NotifyOpponentRemoveFieldEnergySupportUsage),
     NOTIFY_OPPONENT_INCREASE_FIELD_ENERGY_ITEM_USAGE(NotifyOpponentIncreaseFieldEnergyItemUsage),
+    NOTIFY_OPPONENT_TO_ENHANCE_ATTACK_POINT_TOOL_USAGE(NotifyOpponentToEnhanceAttackPointToolUsage),
 
     // Mulligan
     CHANGE_FIRST_HAND(MulliganResponseForm),
