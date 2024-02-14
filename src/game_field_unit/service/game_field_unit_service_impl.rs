@@ -8,6 +8,8 @@ use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUni
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
 
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
+use crate::game_field_unit::service::request::acquire_unit_attack_point_request::AcquireUnitAttackPointRequest;
+use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
 
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
@@ -19,6 +21,8 @@ use crate::game_field_unit::service::request::attach_special_energy_to_unit_inde
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
+use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
+use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
 
 use crate::game_field_unit::service::response::add_unit_to_game_field_response::AddUnitToGameFieldResponse;
 use crate::game_field_unit::service::response::apply_damage_to_target_unit_index_response::ApplyDamageToTargetUnitIndexResponse;
@@ -182,10 +186,32 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         println!("GameFieldUnitServiceImpl: apply_status_effect_damage_iteratively()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        // TODO: 여기서 어떤 정보를 다룰 것인지에 대한 고찰이 필요함 (사망한 유닛들 ? 기타 등등)
+        // TODO: 여기서 어떤 정보를 다룰 것인지에 대한 고찰이 필요함 (사망한 유닛들 ? 기타 등등) <- 이거 여기서 하는 것은 안됨 (SRP 위배)
         game_field_unit_repository_guard.apply_harmful_status_effect_damage_iteratively(
             apply_status_effect_damage_iteratively_request.get_account_unique_id());
 
         ApplyStatusEffectDamageIterativelyResponse::new(true)
+    }
+
+    async fn acquire_unit_attack_point(&mut self, acquire_unit_attack_point_request: AcquireUnitAttackPointRequest) -> AcquireUnitAttackPointResponse {
+        println!("GameFieldUnitServiceImpl: apply_status_effect_damage_iteratively()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let attack_point = game_field_unit_repository_guard.acquire_unit_attack_point(
+            acquire_unit_attack_point_request.get_account_unique_id(),
+            acquire_unit_attack_point_request.get_attacker_unit_index());
+
+        AcquireUnitAttackPointResponse::new(attack_point)
+    }
+
+    async fn acquire_unit_extra_effect(&mut self, acquire_unit_extra_effect_request: AcquireUnitExtraEffectRequest) -> AcquireUnitExtraEffectResponse {
+        println!("GameFieldUnitServiceImpl: acquire_unit_extra_effect()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let extra_effect_list = game_field_unit_repository_guard.acquire_unit_extra_effect_by_index(
+            acquire_unit_extra_effect_request.get_account_unique_id(),
+            acquire_unit_extra_effect_request.get_attacker_unit_index());
+
+        AcquireUnitExtraEffectResponse::new(extra_effect_list.clone())
     }
 }

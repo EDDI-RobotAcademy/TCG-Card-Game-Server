@@ -1,6 +1,7 @@
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
+use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 
@@ -29,4 +30,20 @@ pub trait GameFieldUnitRepository {
     fn apply_instant_death_to_target_unit_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32) -> bool;
     fn attach_special_energy_to_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: i32, race_enum: RaceEnum, quantity: i32, status_effect_list: Vec<StatusEffect>) -> bool;
     fn apply_harmful_status_effect_damage_iteratively(&mut self, account_unique_id: i32) -> bool;
+    fn impose_harmful_state_to_indexed_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_card_index: i32,
+        harmful_state: ExtraStatusEffect,
+    ) -> bool;
+    fn acquire_unit_attack_point(
+        &mut self,
+        account_unique_id: i32,
+        attacker_unit_index: i32
+    ) -> i32;
+    fn acquire_unit_extra_effect_by_index(
+        &mut self,
+        account_unique_id: i32,
+        attacker_unit_index: i32
+    ) -> &Vec<ExtraStatusEffect>;
 }
