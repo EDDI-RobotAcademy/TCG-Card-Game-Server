@@ -1,6 +1,7 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_passive_skill::service::request::summary_passive_skill_effect_request::SummaryPassiveSkillEffectRequest;
 use crate::game_card_unit::service::request::summary_unit_card_info_request::SummaryUnitCardInfoRequest;
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
@@ -79,6 +80,10 @@ impl DeployUnitRequestForm {
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
         FindOpponentByAccountIdRequest::new(
             account_unique_id)
+    }
+
+    pub fn to_summary_passive_skill_request(&self, unit_card_id: i32) -> SummaryPassiveSkillEffectRequest {
+        SummaryPassiveSkillEffectRequest::new(unit_card_id)
     }
 
     pub fn to_notify_to_opponent_what_you_do_request(&self, opponent_unique_id: i32, usage_hand_card_id: i32) -> NotifyToOpponentYouDeployUnitRequest {
