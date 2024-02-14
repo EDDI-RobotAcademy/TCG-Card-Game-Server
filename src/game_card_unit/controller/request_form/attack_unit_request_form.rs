@@ -1,4 +1,5 @@
 use crate::game_field_unit::service::request::acquire_unit_attack_point_request::AcquireUnitAttackPointRequest;
+use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 pub struct AttackUnitRequestForm {
@@ -34,5 +35,9 @@ impl AttackUnitRequestForm {
 
     pub fn to_acquire_unit_attack_point_request(&self, account_unique_id: i32, attacker_unit_card_index: i32) -> AcquireUnitAttackPointRequest {
         AcquireUnitAttackPointRequest::new(account_unique_id, attacker_unit_card_index)
+    }
+
+    pub fn to_acquire_unit_extra_effect_request(&self, account_unique_id: i32, attacker_unit_card_index: i32) -> AcquireUnitExtraEffectRequest {
+        AcquireUnitExtraEffectRequest::new(account_unique_id, attacker_unit_card_index)
     }
 }

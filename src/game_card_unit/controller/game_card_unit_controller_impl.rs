@@ -187,12 +187,16 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         // 4. 유닛 인덱스에서 기본 공격력 정보 확보
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let find_unit_id_by_index_response = game_field_unit_service_guard
+        let find_unit_attack_point_response = game_field_unit_service_guard
             .acquire_unit_attack_point(
                 attack_unit_request_form.to_acquire_unit_attack_point_request(
                     account_unique_id, attacker_unit_card_index)).await;
 
-        // 5.
+        // 5. extra effect 가지고 있는지 여부
+        let find_unit_extra_effect_response = game_field_unit_service_guard
+            .acquire_unit_extra_effect(
+                attack_unit_request_form.to_acquire_unit_extra_effect_request(
+                    account_unique_id, attacker_unit_card_index)).await;
 
         AttackUnitResponseForm::new(true)
     }
