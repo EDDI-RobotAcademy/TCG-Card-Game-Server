@@ -250,6 +250,24 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         false
     }
+
+    fn apply_damage_to_every_unit(
+        &mut self,
+        opponent_unique_id: i32,
+        damage: i32,
+    ) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&opponent_unique_id) {
+            let all_units = game_field_unit.get_all_field_unit_list_mut();
+
+            for unit in all_units.iter_mut() {
+                unit.apply_damage(damage);
+            }
+
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[cfg(test)]
@@ -614,4 +632,46 @@ mod tests {
 
         println!("Final state: {:?}", game_field_unit_repository.get_game_field_unit_map());
     }
+
+    #[tokio::test]
+    async fn test_apply_damage_to_every_unit() {
+        let mut game_field_unit_repository = GameFieldUnitRepositoryImpl::new();
+        game_field_unit_repository.create_game_field_unit_object(1);
+
+        // Add multiple units to the game field
+        for _ in 0..5 {
+            game_field_unit_repository.add_unit_to_game_field(
+                1,
+                42,
+                RaceEnum::Chaos,
+                GradeEnum::Legend,
+                35,
+                30,
+                2,
+                false,
+                false,
+                false,
+            );
+        }
+
+        println!("Initial state: {:?}", game_field_unit_repository.get_game_field_unit_map());
+
+        let opponent_unique_id = 1;
+        let damage = 10;
+
+        // Act
+        let result = game_field_unit_repository.apply_damage_to_every_unit(opponent_unique_id, damage);
+
+        assert!(result);
+
+        let game_field_unit_map = game_field_unit_repository.get_game_field_unit_map();
+        for (_, game_field_unit) in game_field_unit_map.iter() {
+            for unit in game_field_unit.get_all_unit_list_in_game_field().iter() {
+                assert_eq!(unit.get_unit_health_point().get_current_health_point(), 20);
+            }
+        }
+
+        println!("Final state: {:?}", game_field_unit_repository.get_game_field_unit_map());
+    }
+
 }
