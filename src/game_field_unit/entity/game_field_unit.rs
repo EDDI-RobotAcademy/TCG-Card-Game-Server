@@ -30,6 +30,10 @@ impl GameFieldUnit {
         self.game_field_unit.get_all_field_unit_list()
     }
 
+    pub fn get_all_field_unit_list_mut(&mut self) -> &mut Vec<GameFieldUnitCard> {
+        self.game_field_unit.get_all_field_unit_list_mut()
+    }
+
     pub fn add_energy_to_indexed_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32) {
         self.game_field_unit.add_energy_to_indexed_unit(unit_card_index, race_enum, quantity);
     }

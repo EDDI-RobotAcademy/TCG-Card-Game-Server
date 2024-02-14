@@ -10,12 +10,14 @@ use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
 
 use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
 use crate::game_deck::service::game_deck_service::GameDeckService;
+use crate::game_deck::service::request::draw_cards_from_deck_request::DrawCardsFromDeckRequest;
 use crate::game_deck::service::request::found_card_from_deck_request::FoundCardFromDeckRequest;
 use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
 use crate::game_deck::service::request::game_deck_card_list_request::GameDeckCardListRequest;
 use crate::game_deck::service::request::game_deck_start_card_list_request::{GameDeckStartCardListRequest};
 use crate::game_deck::service::request::game_deck_card_shuffle_request::{GameDeckCardShuffleRequest};
 use crate::game_deck::service::request::search_specific_deck_card_request::SearchSpecificDeckCardRequest;
+use crate::game_deck::service::response::draw_cards_from_deck_response::DrawCardsFromDeckResponse;
 use crate::game_deck::service::response::found_card_from_deck_response::FoundCardFromDeckResponse;
 use crate::game_deck::service::response::game_deck_card_draw_list_response::GameDeckCardDrawListResponse;
 use crate::game_deck::service::response::game_deck_card_list_response::GameDeckCardListResponse;
@@ -161,16 +163,15 @@ impl GameDeckService for GameDeckServiceImpl {
     }
 
     // TODO: 핸드에 추가하지 않는 버전. 다른 서비스들과의 호환성 향상을 위함.
-    async fn draw_cards_from_deck(&self, game_deck_card_draw_request: GameDeckCardDrawRequest) -> GameDeckCardDrawListResponse {
+    async fn draw_cards_from_deck(&self, draw_cards_from_deck_request: DrawCardsFromDeckRequest) -> DrawCardsFromDeckResponse {
         println!("GameDeckServiceImpl: draw_cards_from_deck()");
 
-        let session_id = game_deck_card_draw_request.get_session_id();
-        let account_unique_id = self.parse_account_unique_id(session_id).await;
+        let account_unique_id = draw_cards_from_deck_request.get_account_unique_id();
+        let draw_count: usize = draw_cards_from_deck_request.get_draw_count() as usize;
 
-        let draw_count: usize = game_deck_card_draw_request.get_draw_count() as usize;
         let draw_card_vector = self.draw_deck_cards(account_unique_id, draw_count).await;
 
-        GameDeckCardDrawListResponse::new(draw_card_vector.clone())
+        DrawCardsFromDeckResponse::new(draw_card_vector)
     }
 
     async fn get_deck(&self, game_deck_card_list_request: GameDeckCardListRequest) -> GameDeckCardListResponse {

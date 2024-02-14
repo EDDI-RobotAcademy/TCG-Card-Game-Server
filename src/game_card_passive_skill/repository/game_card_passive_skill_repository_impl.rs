@@ -3,14 +3,13 @@ use std::sync::Arc;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
-use crate::game_card_active_skill::entity::skill_type::SkillType;
-use crate::game_card_active_skill::entity::summary_active_skill_effect::SummaryActiveSkillEffect;
 
-use crate::game_card_active_skill::handler::game_card_active_skill_handler::GameCardActiveSkillHandler;
-use crate::game_card_active_skill::repository::game_card_active_skill_repository::GameCardActiveSkillRepository;
 use crate::game_card_passive_skill::entity::passive_skill_type::PassiveSkillType;
 use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
 use crate::game_card_passive_skill::handler::game_card_passive_skill_handler::GameCardPassiveSkillHandler;
+use crate::game_card_passive_skill::handler::slot::first_slot::handler_of_19::game_card_unit_19_passive_slot_1_handler_impl::UnitCard_19_Passive_Slot_1_Function;
+use crate::game_card_passive_skill::handler::slot::first_slot::handler_of_26::game_card_unit_26_passive_slot_1_handler_impl::UnitCard_26_Passive_Slot_1_Function;
+use crate::game_card_passive_skill::handler::slot::second_slot::handler_of_19::game_card_unit_19_passive_slot_2_handler_impl::UnitCard_19_Passive_Slot_2_Function;
 use crate::game_card_passive_skill::repository::game_card_passive_skill_repository::GameCardPassiveSkillRepository;
 
 pub struct GameCardPassiveSkillRepositoryImpl {
@@ -49,10 +48,10 @@ impl GameCardPassiveSkillRepositoryImpl {
                 inner_map.insert(11, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(17, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(18, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
-                inner_map.insert(19, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
+                inner_map.insert(19, Box::new(UnitCard_19_Passive_Slot_1_Function) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(22, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(23, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
-                inner_map.insert(26, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
+                inner_map.insert(26, Box::new(UnitCard_26_Passive_Slot_1_Function) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(27, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(31, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(32, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
@@ -130,7 +129,7 @@ impl GameCardPassiveSkillRepositoryImpl {
                 inner_map.insert(11, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(17, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(18, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
-                inner_map.insert(19, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
+                inner_map.insert(19, Box::new(UnitCard_19_Passive_Slot_2_Function) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(22, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(23, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
                 inner_map.insert(26, Box::new(NonePassiveSkillFunction) as Box<dyn GameCardPassiveSkillHandler>);
