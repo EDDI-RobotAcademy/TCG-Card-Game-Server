@@ -592,6 +592,8 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         drop(game_field_unit_service_guard);
 
+        // TODO: Notify service 호출하여 공지
+
         let usage_hand_item_card = self.use_item_card(
             multiple_target_damage_by_field_unit_death_item_request_form
                 .to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
