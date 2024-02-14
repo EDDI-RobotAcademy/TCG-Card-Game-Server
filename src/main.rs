@@ -87,6 +87,7 @@ mod card_activation_energy;
 mod card_attack_point;
 mod card_health_point;
 mod game_card_active_skill;
+mod game_card_passive_skill;
 
 
 #[tokio::main]

@@ -149,7 +149,9 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
             deploy_unit_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
-        // 7. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
+        // 7. 유닛이 출격하자마자 발동하는 스킬이 있다면 여기서 Passive Skill 을 사용
+
+        // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_to_opponent_what_you_do_response = notify_player_action_service_guard.notify_to_opponent_what_you_do(
             deploy_unit_request_form.to_notify_to_opponent_what_you_do_request(
