@@ -1,0 +1,1 @@
+pub mod game_card_active_second_skill_27_handler_impl;

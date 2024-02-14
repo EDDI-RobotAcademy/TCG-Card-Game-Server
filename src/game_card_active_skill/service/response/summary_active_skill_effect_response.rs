@@ -1,19 +1,19 @@
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
-use crate::game_card_active_skill::entity::skill_type::SkillType;
+use crate::game_card_active_skill::entity::active_skill_type::ActiveSkillType;
 use crate::game_card_active_skill::entity::summary_active_skill_effect::SummaryActiveSkillEffect;
 use crate::game_card_energy::entity::summary_energy_card_effect::SummaryEnergyCardEffect;
 use crate::game_card_item::entity::field_energy_addition_calculator::FieldEnergyAdditionCalculator;
 use crate::game_card_item::entity::game_card_item_effect::GameCardItemEffect;
 
 pub struct SummaryActiveSkillEffectResponse {
-    skill_type: SkillType,
+    skill_type: ActiveSkillType,
     skill_damage: i32,
 }
 
 impl SummaryActiveSkillEffectResponse {
     pub fn new(
-        skill_type: SkillType,
+        skill_type: ActiveSkillType,
         skill_damage: i32,) -> Self {
 
         Self {
@@ -21,7 +21,7 @@ impl SummaryActiveSkillEffectResponse {
             skill_damage }
     }
 
-    pub fn get_skill_type(&self) -> &SkillType {
+    pub fn get_skill_type(&self) -> &ActiveSkillType {
         &self.skill_type
     }
 
