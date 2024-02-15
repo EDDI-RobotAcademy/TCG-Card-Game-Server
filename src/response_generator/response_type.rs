@@ -33,7 +33,7 @@ use crate::game_card_unit::controller::response_form::deploy_unit_response_form:
 use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
 use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
 use crate::game_turn::controller::response_form::first_turn_decision_response_form::FirstTurnDecisionResponseForm;
-use crate::game_turn::service::response::next_turn_response::NextTurnResponse;
+use crate::game_turn::controller::response_form::turn_end_response_form::TurnEndResponseForm;
 use crate::notify_player_action::entity::notify_opponent_increase_field_energy_item_usage::NotifyOpponentIncreaseFieldEnergyItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_enhance_attack_point_tool_usage::NotifyOpponentToEnhanceAttackPointToolUsage;
 use crate::notify_player_action::entity::notify_opponent_remove_field_energy_support_usage::NotifyOpponentRemoveFieldEnergySupportUsage;
@@ -120,7 +120,7 @@ pub enum ResponseType {
     NOTIFY_OPPONENT_TO_CATASTROPHIC_DAMAGE_ITEM_USAGE(NotifyOpponentToCatastrophicDamageItemUsage),
 
     // Game Next Turn
-    GAME_NEXT_TURN(NextTurnResponse),
+    GAME_NEXT_TURN(TurnEndResponseForm),
 
     // Mulligan
     CHANGE_FIRST_HAND(MulliganResponseForm),
