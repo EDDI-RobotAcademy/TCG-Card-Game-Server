@@ -20,6 +20,8 @@ use crate::client_program::service::client_program_service::ClientProgramService
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
 use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service::FirstTurnDecisionWaitQueueService;
 use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service_impl::FirstTurnDecisionWaitQueueServiceImpl;
+use crate::game_card_active_skill::controller::game_card_active_skill_controller::GameCardActiveSkillController;
+use crate::game_card_active_skill::controller::game_card_active_skill_controller_impl::GameCardActiveSkillControllerImpl;
 use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
 use crate::game_card_energy::controller::game_card_energy_controller_impl::GameCardEnergyControllerImpl;
 use crate::game_card_item::controller::game_card_item_controller::GameCardItemController;
@@ -57,6 +59,7 @@ use crate::request_generator::game_card_item_request_form_generator::{create_add
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
+use crate::request_generator::targeting_active_skill_request_form_generator::create_targeting_active_skill_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
 use crate::shop_gacha::service::shop_gacha_service::ShopGachaService;
@@ -427,6 +430,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = game_card_unit_controller.request_to_attack_unit(request_form).await;
                     let response_type = Some(ResponseType::ATTACK_UNIT(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1001 => {
+                // Unit use first active skill
+                if let Some(request_form) = create_targeting_active_skill_request_form(&data) {
+                    let game_card_active_skill_controller_mutex = GameCardActiveSkillControllerImpl::get_instance();
+                    let game_card_active_skill_controller = game_card_active_skill_controller_mutex.lock().await;
+
+                    let response_form = game_card_active_skill_controller.request_targeting_active_skill(request_form).await;
+                    let response_type = Some(ResponseType::TARGETING_ACTIVE_SKILL(response_form));
 
                     response_type
                 } else {

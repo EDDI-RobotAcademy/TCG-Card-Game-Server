@@ -20,6 +20,7 @@ use crate::battle_wait_queue::service::response::battle_wait_queue_response::Bat
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::game_turn::controller::response_form::first_turn_decision_wait_queue_response_form::FirstTurnDecisionWaitQueueResponseForm;
 
+use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_card_item::controller::response_form::add_field_energy_with_field_unit_health_point_item_response_form::AddFieldEnergyWithFieldUnitHealthPointResponseForm;
 use crate::game_card_item::controller::response_form::catastrophic_damage_item_response_form::CatastrophicDamageItemResponseForm;
@@ -103,6 +104,8 @@ pub enum ResponseType {
     CATASTROPHIC_DAMAGE_ITEM_USAGE(CatastrophicDamageItemResponseForm),
     MULTIPLE_TARGET_DAMAGE_BY_FIELD_UNIT_SACRIFICE_ITEM_USAGE(MultipleTargetDamageByFieldUnitDeathItemResponseForm),
     ATTACK_UNIT(AttackUnitResponseForm),
+    TARGETING_ACTIVE_SKILL(TargetingActiveSkillResponseForm),
+
 
     // Notification to players
     NOTIFY_OPPONENT_TO_UNIT_DEPLOY(NotifyOpponentToUnitDeploy),
