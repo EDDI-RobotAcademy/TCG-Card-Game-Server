@@ -12,6 +12,7 @@ use crate::game_card_item::handler::handler_of_25::game_card_item_25_handler_imp
 use crate::game_card_item::handler::handler_of_33::game_card_item_33_handler_impl::ItemCard_33_Function;
 use crate::game_card_item::handler::handler_of_35::game_card_item_35_handler_impl::ItemCard_35_Function;
 use crate::game_card_item::handler::handler_of_8::game_card_item_8_handler_impl::ItemCard_8_Function;
+use crate::game_card_item::handler::handler_of_9::game_card_item_9_handler_impl::ItemCard_9_Function;
 use crate::game_card_item::repository::game_card_item_repository::GameCardItemRepository;
 
 pub struct GameCardItemRepositoryImpl {
@@ -36,7 +37,7 @@ impl GameCardItemRepositoryImpl {
     fn new() -> Self {
         let mut item_card_functions = HashMap::new();
         item_card_functions.insert(8, Box::new(ItemCard_8_Function) as Box<dyn GameCardItemHandler>);
-        item_card_functions.insert(9, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);
+        item_card_functions.insert(9, Box::new(ItemCard_9_Function) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(13, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(25, Box::new(ItemCard_25_Function) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(30, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);

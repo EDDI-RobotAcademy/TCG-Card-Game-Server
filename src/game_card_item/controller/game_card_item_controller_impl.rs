@@ -8,6 +8,8 @@ use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl
 
 use crate::card_grade::service::card_grade_service::CardGradeService;
 use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
+use crate::card_race::service::card_race_service::CardRaceService;
+use crate::card_race::service::card_race_service_impl::CardRaceServiceImpl;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
 
@@ -15,10 +17,12 @@ use crate::game_card_item::controller::game_card_item_controller::GameCardItemCo
 use crate::game_card_item::controller::request_form::add_field_energy_with_field_unit_health_point_item_request_form::AddFieldEnergyWithFieldUnitHealthPointRequestForm;
 use crate::game_card_item::controller::request_form::multiple_target_damage_by_field_unit_death_item_request_form::MultipleTargetDamageByFieldUnitDeathItemRequestForm;
 use crate::game_card_item::controller::request_form::catastrophic_damage_item_request_form::CatastrophicDamageItemRequestForm;
+use crate::game_card_item::controller::request_form::remove_opponent_field_unit_energy_item_request_form::RemoveOpponentFieldUnitEnergyItemRequestForm;
 use crate::game_card_item::controller::request_form::target_death_item_request_form::TargetDeathItemRequestForm;
 use crate::game_card_item::controller::response_form::add_field_energy_with_field_unit_health_point_item_response_form::AddFieldEnergyWithFieldUnitHealthPointResponseForm;
 use crate::game_card_item::controller::response_form::multiple_target_damage_by_field_unit_death_item_response_form::MultipleTargetDamageByFieldUnitDeathItemResponseForm;
 use crate::game_card_item::controller::response_form::catastrophic_damage_item_response_form::CatastrophicDamageItemResponseForm;
+use crate::game_card_item::controller::response_form::remove_opponent_field_unit_energy_item_response_form::RemoveOpponentFieldUnitEnergyItemResponseForm;
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_card_item::service::game_card_item_service::GameCardItemService;
 
@@ -69,6 +73,7 @@ pub struct GameCardItemControllerImpl {
     game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
     game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
     game_lost_zone_service: Arc<AsyncMutex<GameLostZoneServiceImpl>>,
+    card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>,
 }
 
 impl GameCardItemControllerImpl {
@@ -84,7 +89,8 @@ impl GameCardItemControllerImpl {
                game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
                game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
                game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
-               game_lost_zone_service: Arc<AsyncMutex<GameLostZoneServiceImpl>>,) -> Self {
+               game_lost_zone_service: Arc<AsyncMutex<GameLostZoneServiceImpl>>,
+               card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>,) -> Self {
 
         GameCardItemControllerImpl {
             game_hand_service,
@@ -100,6 +106,7 @@ impl GameCardItemControllerImpl {
             game_main_character_service,
             game_deck_service,
             game_lost_zone_service,
+            card_race_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardItemControllerImpl>> {
@@ -120,7 +127,8 @@ impl GameCardItemControllerImpl {
                             GameFieldEnergyServiceImpl::get_instance(),
                             GameMainCharacterServiceImpl::get_instance(),
                             GameDeckServiceImpl::get_instance(),
-                            GameLostZoneServiceImpl::get_instance())));
+                            GameLostZoneServiceImpl::get_instance(),
+                            CardRaceServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -610,5 +618,92 @@ impl GameCardItemController for GameCardItemControllerImpl {
                 .to_place_to_tomb_request(account_unique_id, fount_unit_card_id)).await;
 
         MultipleTargetDamageByFieldUnitDeathItemResponseForm::new(true)
+    }
+
+    async fn request_to_use_opponent_field_unit_energy_removal_item(
+        &self, remove_opponent_field_unit_energy_item_request_form: RemoveOpponentFieldUnitEnergyItemRequestForm) -> RemoveOpponentFieldUnitEnergyItemResponseForm {
+
+        println!("GameCardItemControllerImpl: request_to_use_opponent_field_unit_energy_removal_item()");
+
+        let account_unique_id = self.is_valid_session(remove_opponent_field_unit_energy_item_request_form.to_session_validation_request()).await;
+        if account_unique_id == -1 {
+            println!("유효하지 않은 세션입니다.");
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
+        }
+
+        // TODO: 프로토콜 검증은 추후 추가
+
+        // 사용할 변수들 사전 parsing
+        let item_card_id_string = remove_opponent_field_unit_energy_item_request_form.get_item_card_id();
+        let item_card_id = item_card_id_string.parse::<i32>().unwrap();
+
+        let opponent_field_unit_index_string = remove_opponent_field_unit_energy_item_request_form.get_opponent_target_unit_index();
+        let opponent_field_unit_index = opponent_field_unit_index_string.parse::<i32>().unwrap();
+
+        // 사용할 아이템 카드 요약 정보
+        let mut summarized_item_effect_response = self.get_summary_of_item_card(
+            remove_opponent_field_unit_energy_item_request_form
+                .to_summary_item_effect_request(item_card_id)).await;
+
+        let energy_quantity = summarized_item_effect_response.get_will_be_removed_energy_count();
+        let alternative_damage = summarized_item_effect_response.get_alternatives_damage();
+
+        let mut battle_room_service_guard = self.battle_room_service.lock().await;
+        let opponent_unique_id = battle_room_service_guard
+            .find_opponent_by_account_unique_id(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_find_opponent_by_account_id_request(account_unique_id)).await.get_opponent_unique_id();
+
+        drop(battle_room_service_guard);
+
+        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+
+        let found_opponent_unit_id = game_field_unit_service_guard
+            .find_target_unit_id_by_index(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_find_target_unit_id_by_index_request(opponent_unique_id, opponent_field_unit_index)).await.get_found_opponent_unit_id();
+
+        let mut card_race_service_guard = self.card_race_service.lock().await;
+        let found_opponent_unit_race = card_race_service_guard.get_card_race(&found_opponent_unit_id).await;
+
+        drop(card_race_service_guard);
+
+        let current_attached_race_energy_of_opponent_unit = game_field_unit_service_guard
+            .get_current_attached_energy_of_field_unit_by_index(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_get_current_attached_energy_of_unit_by_index(opponent_unique_id,
+                                                                     opponent_field_unit_index,
+                                                                     found_opponent_unit_race)).await.get_current_attached_energy();
+
+        if current_attached_race_energy_of_opponent_unit == -1 {
+            println!("붙은 에너지가 존재하지 않아 변환 데미지를 입힙니다.");
+            let apply_alternative_damage_response = game_field_unit_service_guard
+                .apply_damage_to_target_unit_index(
+                    remove_opponent_field_unit_energy_item_request_form
+                        .to_apply_damage_to_target_unit_request(opponent_unique_id,
+                                                                opponent_field_unit_index,
+                                                                alternative_damage)).await;
+            if !apply_alternative_damage_response.is_success() {
+                println!("변환 데미지를 주는 데에 실패했습니다!");
+                return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
+            }
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(true)
+        }
+
+        let detach_multiple_energy_form_field_unit_response = game_field_unit_service_guard
+            .detach_multiple_energy_from_field_unit(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_detach_energy_from_field_unit_request(opponent_unique_id,
+                                                              opponent_field_unit_index,
+                                                              found_opponent_unit_race,
+                                                              energy_quantity)).await;
+        if !detach_multiple_energy_form_field_unit_response.is_success() {
+            println!("유닛 에너지 제거에 실패했습니다!");
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
+        }
+
+        // TODO: Notify Service 추가 필요
+
+        RemoveOpponentFieldUnitEnergyItemResponseForm::new(true)
     }
 }
