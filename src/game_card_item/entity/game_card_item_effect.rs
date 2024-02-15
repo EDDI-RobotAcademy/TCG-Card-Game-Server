@@ -15,6 +15,7 @@ pub struct GameCardItemEffect {
     will_be_lost_deck_card_count: i32,
     target_count_that_can_be_damaged: i32,
     unit_list_that_can_be_sacrificed: Vec<i32>,
+    will_be_removed_energy_count: i32,
 }
 
 impl GameCardItemEffect {
@@ -33,6 +34,7 @@ impl GameCardItemEffect {
             will_be_lost_deck_card_count: -1,
             target_count_that_can_be_damaged: -1,
             unit_list_that_can_be_sacrificed: Vec::new(),
+            will_be_removed_energy_count: -1,
         }
     }
 
@@ -98,6 +100,14 @@ impl GameCardItemEffect {
 
     pub fn get_unit_list_that_can_be_sacrificed(&self) -> Vec<i32> {
         self.unit_list_that_can_be_sacrificed.clone()
+    }
+
+    pub fn set_will_be_removed_energy_count(&mut self, will_be_removed_energy_count: i32) {
+        self.will_be_removed_energy_count = will_be_removed_energy_count;
+    }
+
+    pub fn get_will_be_removed_energy_count(&self) -> i32 {
+        self.will_be_removed_energy_count
     }
 }
 
