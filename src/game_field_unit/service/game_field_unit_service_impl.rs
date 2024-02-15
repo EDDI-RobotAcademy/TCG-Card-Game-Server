@@ -328,7 +328,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
                     .get_attached_energy()
                         .get_energy_quantity(
                             &RaceEnumValue::from(
-                                *get_current_attached_energy_of_field_unit_by_index_request.get_energy_race() as i32)).unwrap().clone())
+                                *get_current_attached_energy_of_field_unit_by_index_request.get_energy_race() as i32)).unwrap_or(&-1).clone())
         } else {
             GetCurrentAttachedEnergyOfFieldUnitByIndexResponse::new(-1)
         }
