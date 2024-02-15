@@ -51,6 +51,7 @@ use crate::request_generator::deploy_unit_request_form_generator::create_deploy_
 use crate::request_generator::energy_boost_support_request_form_generator::create_energy_boost_support_request_form;
 use crate::request_generator::first_turn_decision_wait_queue_request_form_generator::create_first_turn_decision_wait_queue_request_form;
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
+use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
 use crate::request_generator::first_turn_decision_request_generator::create_first_turn_decision_request_form;
 use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item, create_target_death_item_request_form};
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
@@ -418,6 +419,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             // TODO: 1000, 1001, 1002, 1003 프로토콜 얼른 추가하자
+            1000 => {
+                // Unit attack
+                if let Some(request_form) = create_attack_unit_request_form(&data) {
+                    let game_card_unit_controller_mutex = GameCardUnitControllerImpl::get_instance();
+                    let game_card_unit_controller = game_card_unit_controller_mutex.lock().await;
+
+                    let response_form = game_card_unit_controller.request_to_attack_unit(request_form).await;
+                    let response_type = Some(ResponseType::ATTACK_UNIT(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             1004 => {
                 // Unit Card Usage
                 if let Some(request_form) = create_deploy_unit_request_form(&data) {
