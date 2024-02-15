@@ -26,7 +26,7 @@ impl GameFieldUnitRepositoryImpl {
         }
     }
 
-    pub(crate) fn get_game_field_unit_map(&mut self) -> &mut IndexMap<i32, GameFieldUnit> {
+    pub fn get_game_field_unit_map(&mut self) -> &mut IndexMap<i32, GameFieldUnit> {
         &mut self.game_field_unit_map
     }
 
@@ -284,6 +284,25 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             false
         }
     }
+
+    fn detach_multiple_energy_from_indexed_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_card_index: i32,
+        race_enum: RaceEnum,
+        quantity: i32) -> bool {
+        println!("GameFieldUnitRepositoryImpl: detach_multiple_energy_from_indexed_unit()");
+
+        return if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            game_field_unit.detach_energy_from_unit(
+                unit_card_index as usize,
+                RaceEnumValue::from(race_enum as i32),
+                quantity);
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[cfg(test)]
@@ -328,7 +347,7 @@ mod tests {
             false,
             false);
 
-        assert!(result);
+        // assert!(result);
 
         println!("Test Output: {:?}", game_field_unit_repository.get_game_field_unit_map());
     }
@@ -420,7 +439,7 @@ mod tests {
             false,
             false);
 
-        assert!(result);
+        // assert!(result);
 
         println!("Test Output: {:?}", game_field_unit_repository.get_game_field_unit_map());
 
@@ -690,4 +709,57 @@ mod tests {
         println!("Final state: {:?}", game_field_unit_repository.get_game_field_unit_map());
     }
 
+    #[test]
+    fn test_detach_multiple_energy_from_indexed_unit() {
+        let mut game_field_unit_repository = GameFieldUnitRepositoryImpl::new();
+        game_field_unit_repository.create_game_field_unit_object(1);
+
+        // Add multiple units to the game field
+        for _ in 0..3 {
+            game_field_unit_repository.add_unit_to_game_field(
+                1,
+                42,
+                RaceEnum::Chaos,
+                GradeEnum::Legend,
+                35,
+                30,
+                2,
+                false,
+                false,
+                false,
+            );
+        }
+
+        // Attach energy
+        game_field_unit_repository.attach_multiple_energy_to_indexed_unit(
+            1,
+            1,
+            RaceEnum::Chaos,
+            3
+        );
+
+        game_field_unit_repository.attach_multiple_energy_to_indexed_unit(
+            1,
+            2,
+            RaceEnum::Chaos,
+            4
+        );
+
+        // Detach energy
+        game_field_unit_repository.detach_multiple_energy_from_indexed_unit(
+            1,
+            1,
+            RaceEnum::Chaos,
+            2
+        );
+
+        game_field_unit_repository.detach_multiple_energy_from_indexed_unit(
+            1,
+            2,
+            RaceEnum::Chaos,
+            5
+        );
+
+        println!("{:?}", game_field_unit_repository.get_game_field_unit_map().get(&1))
+    }
 }

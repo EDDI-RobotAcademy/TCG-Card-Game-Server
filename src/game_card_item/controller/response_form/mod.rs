@@ -1,3 +1,4 @@
 pub mod target_death_item_response_form;
 pub mod add_field_energy_with_field_unit_health_point_item_response_form;
 pub mod catastrophic_damage_item_response_form;
+pub mod multiple_target_damage_by_field_unit_death_item_response_form;

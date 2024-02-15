@@ -65,4 +65,10 @@ pub trait GameFieldUnitRepository {
         unit_index: i32,
         extra_effect_state: SummaryPassiveSkillEffect,
     ) -> bool;
+    fn detach_multiple_energy_from_indexed_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_card_index: i32,
+        race_enum: RaceEnum,
+        quantity: i32) -> bool;
 }

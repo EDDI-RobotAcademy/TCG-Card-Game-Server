@@ -13,6 +13,8 @@ pub struct GameCardItemEffect {
     catastrophic_damage_for_field_unit: i32,
     catastrophic_damage_for_main_character: i32,
     will_be_lost_deck_card_count: i32,
+    target_count_that_can_be_damaged: i32,
+    unit_list_that_can_be_sacrificed: Vec<i32>,
 }
 
 impl GameCardItemEffect {
@@ -29,6 +31,8 @@ impl GameCardItemEffect {
             catastrophic_damage_for_field_unit: -1,
             catastrophic_damage_for_main_character: -1,
             will_be_lost_deck_card_count: -1,
+            target_count_that_can_be_damaged: -1,
+            unit_list_that_can_be_sacrificed: Vec::new(),
         }
     }
 
@@ -78,6 +82,22 @@ impl GameCardItemEffect {
 
     pub fn get_will_be_lost_deck_card_count(&self) -> i32 {
         self.will_be_lost_deck_card_count
+    }
+
+    pub fn set_target_count_that_can_be_damaged(&mut self, target_count: i32) {
+        self.target_count_that_can_be_damaged = target_count;
+    }
+
+    pub fn set_unit_list_that_can_be_sacrificed(&mut self, will_be_sacrificed_unit_list: Vec<i32>) {
+        self.unit_list_that_can_be_sacrificed = will_be_sacrificed_unit_list;
+    }
+
+    pub fn get_target_count_that_can_be_damaged(&self) -> i32 {
+        self.target_count_that_can_be_damaged
+    }
+
+    pub fn get_unit_list_that_can_be_sacrificed(&self) -> Vec<i32> {
+        self.unit_list_that_can_be_sacrificed.clone()
     }
 }
 

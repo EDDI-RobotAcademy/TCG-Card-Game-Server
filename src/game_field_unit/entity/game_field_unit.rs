@@ -86,6 +86,10 @@ impl GameFieldUnit {
 
         self.game_field_unit.impose_extra_effect_state_to_indexed_unit(unit_card_index, effect);
     }
+
+    pub fn detach_energy_from_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32) {
+        self.game_field_unit.remove_energy_from_indexed_unit(unit_card_index, race_enum, quantity);
+    }
 }
 
 #[cfg(test)]
