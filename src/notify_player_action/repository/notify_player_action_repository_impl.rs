@@ -16,6 +16,8 @@ use crate::notify_player_action::entity::notify_opponent_to_instant_death_item_a
 use crate::notify_player_action::entity::notify_opponent_to_instant_death_item_usage::NotifyOpponentToInstantDeathItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_unit_deploy::NotifyOpponentToUnitDeploy;
 use crate::notify_player_action::entity::notify_opponent_to_catastrophic_damage_item_usage::NotifyOpponentToCatastrophicDamageItemUsage;
+use crate::notify_player_action::entity::notify_opponent_to_damage_main_character_item_usage::NotifyOpponentToDamageMainCharacterItemUsage;
+use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
 use crate::notify_player_action::repository::notify_player_action_repository::NotifyPlayerActionRepository;
 use crate::response_generator::response_type::ResponseType;
 
@@ -293,6 +295,48 @@ async fn notify_to_opponent_you_use_tool_card_to_enhance_attack_point(&mut self,
                 AsyncMutex::new(
                     ResponseType::NOTIFY_OPPONENT_TO_CATASTROPHIC_DAMAGE_ITEM_USAGE(
                         NotifyOpponentToCatastrophicDamageItemUsage::new(usage_item_card_id, damage_for_field_unit))))).await;
+        true
+    }
+    async fn notify_to_opponent_you_use_damage_main_character_item_card(&mut self,opponent_unique_id: i32, usage_item_card_id: i32, damage_for_main_character: i32) -> bool {
+        println!("NotifyPlayerActionRepositoryImpl: notify_to_opponent_you_use_damage_main_character_item_card()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    ResponseType::NOTIFY_OPPONENT_TO_DAMAGE_MAIN_CHARACTER_ITEM_USAGE(
+                        NotifyOpponentToDamageMainCharacterItemUsage::new(usage_item_card_id, damage_for_main_character))))).await;
+        true
+    }
+    async fn notify_to_opponent_you_use_destroy_deck_item_card(&mut self,opponent_unique_id: i32, usage_item_card_id: i32, will_be_lost_card: i32) -> bool {
+        println!("NotifyPlayerActionRepositoryImpl: notify_to_opponent_you_use_destroy_deck_card_item_card()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    ResponseType::NOTIFY_OPPONENT_TO_DESTORY_DECK_ITEM_USAGE(
+                        NotifyOpponentToDestroyDeckItemUsage::new(usage_item_card_id, will_be_lost_card))))).await;
         true
     }
 
