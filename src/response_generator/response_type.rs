@@ -21,6 +21,7 @@ use crate::client_program::service::response::client_program_exit_response::Clie
 use crate::game_turn::controller::response_form::first_turn_decision_wait_queue_response_form::FirstTurnDecisionWaitQueueResponseForm;
 
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
+use crate::game_card_energy::controller::response_form::attach_special_energy_card_response_form::AttachSpecialEnergyCardResponseForm;
 use crate::game_card_item::controller::response_form::add_field_energy_with_field_unit_health_point_item_response_form::AddFieldEnergyWithFieldUnitHealthPointResponseForm;
 use crate::game_card_item::controller::response_form::catastrophic_damage_item_response_form::CatastrophicDamageItemResponseForm;
 use crate::game_card_item::controller::response_form::multiple_target_damage_by_field_unit_death_item_response_form::MultipleTargetDamageByFieldUnitDeathItemResponseForm;
@@ -98,6 +99,7 @@ pub enum ResponseType {
     DEPLOY_UNIT_USAGE(DeployUnitResponseForm),
     ENERGY_BOOST_SUPPORT_USAGE(EnergyBoostSupportResponseForm),
     ATTACH_GENERAL_ENERGY(AttachGeneralEnergyCardResponseForm),
+    ATTACH_SPECIAL_ENERGY(AttachSpecialEnergyCardResponseForm),
     GENERAL_DRAW_SUPPORT_USAGE(DrawSupportResponseForm),
     SEARCH_UNIT_SUPPORT_USAGE(SearchUnitSupportResponseForm),
     REMOVE_OPPONENT_FIELD_ENERGY_SUPPORT_USAGE(RemoveOpponentFieldEnergySupportResponseForm),
