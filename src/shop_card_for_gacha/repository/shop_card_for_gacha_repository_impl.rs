@@ -7,6 +7,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::shop_card_for_gacha::repository::shop_card_for_gacha_repository::ShopCardForGachaRepository;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum::Chaos;
 use crate::common::csv::csv_reader::{build_card_race_dictionary, build_shop_card_dictionary, csv_read};
 use crate::common::path::root_path::RootPath;
 
@@ -57,6 +58,10 @@ impl ShopCardForGachaRepository for ShopCardForGachaRepositoryImpl {
 
         for card in card_race_map_guard.clone() {
             if(card.1.0 == race_value) {
+                specific_race_card_list.insert(card.0, card.1.1);
+            }
+            // 임시
+            if(race_value == Chaos) {
                 specific_race_card_list.insert(card.0, card.1.1);
             }
         }
