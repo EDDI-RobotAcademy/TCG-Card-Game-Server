@@ -17,6 +17,7 @@ use crate::notify_player_action::service::request::notify_to_opponent_you_use_it
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_instant_death_alternatives_request::NotifyToOpponentYouUseItemInstantDeathAlternativesRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_tool_card_to_enhance_attack_point_request::NotifyToOpponentYouUseToolCardToEnhanceAttackPointRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_search_support_card_request::NotifyOpponentYouUseSearchSupportRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_catastrophic_damage_item_card_request::NotifyToOpponentYouUseCatastrophicDamageItemCardRequest;
 use crate::notify_player_action::service::response::notify_to_opponent_you_deploy_unit_response::NotifyToOpponentYouDeployUnitResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_draw_support_card_response::NotifyToOpponentYouUseDrawSupportCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_energy_boost_card_response::NotifyToOpponentYouUseEnergyBoostCardResponse;
@@ -25,6 +26,7 @@ use crate::notify_player_action::service::response::notify_to_opponent_you_use_i
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_instant_death_alternatives_response::NotifyToOpponentYouUseItemInstantDeathAlternativesResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_support_card_response::NotifyOpponentYouUseSupportCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_tool_card_to_enhance_attack_point_response::NotifyToOpponentYouUseToolCardToEnhanceAttackPointResponse;
+use crate::notify_player_action::service::response::notify_to_opponent_you_use_catastrophic_damage_item_card_response::NotifyToOpponentYouUseCatastrophicDamageItemCardResponse;
 
 pub struct NotifyPlayerActionServiceImpl {
     notify_player_action_repository: Arc<AsyncMutex<NotifyPlayerActionRepositoryImpl>>,
@@ -177,5 +179,19 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
                 notify_to_opponent_you_use_tool_card_to_enhance_attack_point_request.get_usage_tool_card_id()).await;
 
         NotifyToOpponentYouUseToolCardToEnhanceAttackPointResponse::new(notify_to_opponent_you_use_tool_card_to_enhance_attack_point_response)
+    }
+    async fn notify_to_opponent_you_use_catastrophic_damage_item_card(&mut self, notify_to_opponent_you_use_catastrophic_damage_item_card_request: NotifyToOpponentYouUseCatastrophicDamageItemCardRequest)
+                                                                                                                                                -> NotifyToOpponentYouUseCatastrophicDamageItemCardResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_catastrophic_damage_item_card()");
+
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        let notify_to_opponent_you_use_catastrophic_damage_item_card_response = notify_player_action_repository_guard
+            .notify_to_opponent_you_use_catastrophic_damage_item_card(
+                notify_to_opponent_you_use_catastrophic_damage_item_card_request.get_opponent_unique_id(),
+                notify_to_opponent_you_use_catastrophic_damage_item_card_request.get_damage_for_field_unit(),
+                notify_to_opponent_you_use_catastrophic_damage_item_card_request.get_usage_hand_card_id()).await;
+
+        NotifyToOpponentYouUseCatastrophicDamageItemCardResponse::new(notify_to_opponent_you_use_catastrophic_damage_item_card_response)
+
     }
 }

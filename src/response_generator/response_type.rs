@@ -46,6 +46,7 @@ use crate::notify_player_action::entity::notify_opponent_to_energy_usage::Notify
 use crate::notify_player_action::entity::notify_opponent_to_instant_death_item_alternatives_usage::NotifyOpponentToInstantDeathItemAlternativesUsage;
 use crate::notify_player_action::entity::notify_opponent_to_instant_death_item_usage::NotifyOpponentToInstantDeathItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_unit_deploy::NotifyOpponentToUnitDeploy;
+use crate::notify_player_action::entity::notify_opponent_to_catastrophic_damage_item_usage::NotifyOpponentToCatastrophicDamageItemUsage;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_card_response::NotifyToOpponentYouUseItemCardResponse;
 
 use crate::shop_gacha::service::response::get_specific_race_card_response::GetSpecificRaceCardResponse;
@@ -120,6 +121,7 @@ pub enum ResponseType {
     NOTIFY_OPPONENT_REMOVE_FIELD_ENERGY_SUPPORT_USAGE(NotifyOpponentRemoveFieldEnergySupportUsage),
     NOTIFY_OPPONENT_INCREASE_FIELD_ENERGY_ITEM_USAGE(NotifyOpponentIncreaseFieldEnergyItemUsage),
     NOTIFY_OPPONENT_TO_ENHANCE_ATTACK_POINT_TOOL_USAGE(NotifyOpponentToEnhanceAttackPointToolUsage),
+    NOTIFY_OPPONENT_TO_CATASTROPHIC_DAMAGE_ITEM_USAGE(NotifyOpponentToCatastrophicDamageItemUsage),
 
     // Mulligan
     CHANGE_FIRST_HAND(MulliganResponseForm),
