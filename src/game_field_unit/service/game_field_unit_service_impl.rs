@@ -4,6 +4,7 @@ use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
 use crate::game_card_passive_skill::entity::passive_skill_type::PassiveSkillType;
+use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
@@ -25,6 +26,7 @@ use crate::game_field_unit::service::request::attack_target_unit_with_extra_effe
 use crate::game_field_unit::service::request::detach_multiple_energy_from_field_unit_request::DetachMultipleEnergyFromFieldUnitRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
+use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
@@ -42,6 +44,7 @@ use crate::game_field_unit::service::response::attack_target_unit_with_extra_eff
 use crate::game_field_unit::service::response::detach_multiple_energy_from_field_unit_response::DetachMultipleEnergyFromFieldUnitResponse;
 use crate::game_field_unit::service::response::find_active_skill_usage_unit_id_by_index_response::FindActiveSkillUsageUnitIdByIndexResponse;
 use crate::game_field_unit::service::response::find_target_unit_id_by_index_response::FindTargetUnitIdByIndexResponse;
+use crate::game_field_unit::service::response::get_current_attached_energy_of_field_unit_by_index_response::GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
 
 
@@ -309,5 +312,25 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
                 detach_multiple_energy_from_field_unit_request.get_quantity());
 
         DetachMultipleEnergyFromFieldUnitResponse::new(detach_multiple_energy_from_field_unit_result)
+    }
+
+    async fn get_current_attached_energy_of_field_unit_by_index(&mut self, get_current_attached_energy_of_field_unit_by_index_request: GetCurrentAttachedEnergyOfFieldUnitByIndexRequest) -> GetCurrentAttachedEnergyOfFieldUnitByIndexResponse {
+        println!("GameFieldUnitServiceImpl: detach_multiple_energy_from_field_unit()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let found_field_unit_response = game_field_unit_repository_guard.find_indexed_unit(
+            get_current_attached_energy_of_field_unit_by_index_request.get_account_unique_id(),
+            get_current_attached_energy_of_field_unit_by_index_request.get_field_unit_index());
+
+        return if let Some(found_field_unit) = found_field_unit_response {
+            GetCurrentAttachedEnergyOfFieldUnitByIndexResponse::new(
+                found_field_unit
+                    .get_attached_energy()
+                        .get_energy_quantity(
+                            &RaceEnumValue::from(
+                                *get_current_attached_energy_of_field_unit_by_index_request.get_energy_race() as i32)).unwrap_or(&-1).clone())
+        } else {
+            GetCurrentAttachedEnergyOfFieldUnitByIndexResponse::new(-1)
+        }
     }
 }
