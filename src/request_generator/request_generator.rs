@@ -46,7 +46,7 @@ use crate::request_generator::attach_general_energy_card_request_form_generator:
 use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
 use crate::request_generator::mulligan_request_generator::create_mulligan_request_form;
 use crate::request_generator::session_request_generator::create_session_login_request;
-use crate::request_generator::shop_request_generator::create_get_card_default_request;
+use crate::request_generator::shop_request_generator::create_get_specific_race_card_default_request;
 use crate::request_generator::deploy_unit_request_form_generator::create_deploy_unit_request_form;
 use crate::request_generator::energy_boost_support_request_form_generator::create_energy_boost_support_request_form;
 use crate::request_generator::first_turn_decision_wait_queue_request_form_generator::create_first_turn_decision_wait_queue_request_form;
@@ -58,8 +58,8 @@ use crate::request_generator::opponent_field_energy_remove_support_request_form_
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
-use crate::shop::service::shop_service::ShopService;
-use crate::shop::service::shop_service_impl::ShopServiceImpl;
+use crate::shop_gacha::service::shop_gacha_service::ShopGachaService;
+use crate::shop_gacha::service::shop_gacha_service_impl::ShopGachaServiceImpl;
 
 
 // TODO: 이 부분도 같이 ugly 해졌는데 추후 고칠 필요 있음
@@ -376,13 +376,13 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             71 => {
-                // Shop Get Card Default
-                if let Some(request) = create_get_card_default_request(&data) {
-                    let shop_service_mutex = ShopServiceImpl::get_instance();
-                    let mut shop_service = shop_service_mutex.lock().await;
+                // Shop Get Specific Race Card Default
+                if let Some(request) = create_get_specific_race_card_default_request(&data) {
+                    let shop_gacha_service_mutex = ShopGachaServiceImpl::get_instance();
+                    let mut shop_gacha_service = shop_gacha_service_mutex.lock().await;
 
-                    let response = shop_service.get_specific_race_card_default(request).await;
-                    let response_type = Some(ResponseType::SHOP_GET_CARD_DEFAULT(response));
+                    let response = shop_gacha_service.get_specific_race_card_default(request).await;
+                    let response_type = Some(ResponseType::SHOP_GET_SPECIFIC_RACE_CARD_DEFAULT(response));
 
                     response_type
                 } else {

@@ -45,8 +45,7 @@ use crate::notify_player_action::entity::notify_opponent_to_instant_death_item_u
 use crate::notify_player_action::entity::notify_opponent_to_unit_deploy::NotifyOpponentToUnitDeploy;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_card_response::NotifyToOpponentYouUseItemCardResponse;
 
-use crate::shop::service::response::free_card_response::FreeCardResponse;
-use crate::shop::service::response::get_card_default_response::GetCardDefaultResponse;
+use crate::shop_gacha::service::response::get_specific_race_card_response::GetSpecificRaceCardResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ResponseType {
@@ -85,8 +84,7 @@ pub enum ResponseType {
     DECK_CARD_LIST(AccountDeckCardListResponseForm),
 
     // Shop
-    SHOP_FREE_CARD(FreeCardResponse),
-    SHOP_GET_CARD_DEFAULT(GetCardDefaultResponse),
+    SHOP_GET_SPECIFIC_RACE_CARD_DEFAULT(GetSpecificRaceCardResponse),
 
     // Account Point
     GAIN_GOLD(GainGoldResponse),
