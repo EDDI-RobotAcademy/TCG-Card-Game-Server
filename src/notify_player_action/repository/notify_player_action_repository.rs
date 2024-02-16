@@ -17,4 +17,5 @@ pub trait NotifyPlayerActionRepository {
     async fn notify_to_opponent_you_use_catastrophic_damage_item_card(&mut self,opponent_unique_id: i32, usage_item_card_id: i32, damage_for_field_unit: i32) -> bool;
     async fn notify_to_opponent_you_use_damage_main_character_item_card(&mut self,opponent_unique_id: i32, usage_item_card_id: i32, damage_for_main_character: i32) -> bool;
     async fn notify_to_opponent_you_use_destroy_deck_item_card(&mut self,opponent_unique_id: i32, usage_item_card_id: i32, will_be_lost_card: i32) -> bool;
+    async fn notify_to_opponent_you_use_field_unit_energy_removal_item_card(&mut self,opponent_unique_id: i32, usage_item_card_id: i32, energy_quantity: i32) -> bool;
 }
