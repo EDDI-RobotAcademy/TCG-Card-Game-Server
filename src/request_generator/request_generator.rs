@@ -20,6 +20,8 @@ use crate::client_program::service::client_program_service::ClientProgramService
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
 use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service::FirstTurnDecisionWaitQueueService;
 use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service_impl::FirstTurnDecisionWaitQueueServiceImpl;
+use crate::game_card_active_skill::controller::game_card_active_skill_controller::GameCardActiveSkillController;
+use crate::game_card_active_skill::controller::game_card_active_skill_controller_impl::GameCardActiveSkillControllerImpl;
 use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
 use crate::game_card_energy::controller::game_card_energy_controller_impl::GameCardEnergyControllerImpl;
 use crate::game_card_item::controller::game_card_item_controller::GameCardItemController;
@@ -46,20 +48,23 @@ use crate::request_generator::attach_general_energy_card_request_form_generator:
 use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
 use crate::request_generator::mulligan_request_generator::create_mulligan_request_form;
 use crate::request_generator::session_request_generator::create_session_login_request;
-use crate::request_generator::shop_request_generator::create_get_card_default_request;
+use crate::request_generator::shop_request_generator::create_get_specific_race_card_default_request;
 use crate::request_generator::deploy_unit_request_form_generator::create_deploy_unit_request_form;
 use crate::request_generator::energy_boost_support_request_form_generator::create_energy_boost_support_request_form;
 use crate::request_generator::first_turn_decision_wait_queue_request_form_generator::create_first_turn_decision_wait_queue_request_form;
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
+use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
+use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
 use crate::request_generator::first_turn_decision_request_generator::create_first_turn_decision_request_form;
 use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item, create_target_death_item_request_form};
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
+use crate::request_generator::targeting_active_skill_request_form_generator::create_targeting_active_skill_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
-use crate::shop::service::shop_service::ShopService;
-use crate::shop::service::shop_service_impl::ShopServiceImpl;
+use crate::shop_gacha::service::shop_gacha_service::ShopGachaService;
+use crate::shop_gacha::service::shop_gacha_service_impl::ShopGachaServiceImpl;
 
 
 // TODO: 이 부분도 같이 ugly 해졌는데 추후 고칠 필요 있음
@@ -376,13 +381,13 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             71 => {
-                // Shop Get Card Default
-                if let Some(request) = create_get_card_default_request(&data) {
-                    let shop_service_mutex = ShopServiceImpl::get_instance();
-                    let mut shop_service = shop_service_mutex.lock().await;
+                // Shop Get Specific Race Card Default
+                if let Some(request) = create_get_specific_race_card_default_request(&data) {
+                    let shop_gacha_service_mutex = ShopGachaServiceImpl::get_instance();
+                    let mut shop_gacha_service = shop_gacha_service_mutex.lock().await;
 
-                    let response = shop_service.get_specific_race_card_default(request).await;
-                    let response_type = Some(ResponseType::SHOP_GET_CARD_DEFAULT(response));
+                    let response = shop_gacha_service.get_specific_race_card_default(request).await;
+                    let response_type = Some(ResponseType::SHOP_GET_SPECIFIC_RACE_CARD_DEFAULT(response));
 
                     response_type
                 } else {
@@ -418,6 +423,34 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             // TODO: 1000, 1001, 1002, 1003 프로토콜 얼른 추가하자
+            1000 => {
+                // Unit attack
+                if let Some(request_form) = create_attack_unit_request_form(&data) {
+                    let game_card_unit_controller_mutex = GameCardUnitControllerImpl::get_instance();
+                    let game_card_unit_controller = game_card_unit_controller_mutex.lock().await;
+
+                    let response_form = game_card_unit_controller.request_to_attack_unit(request_form).await;
+                    let response_type = Some(ResponseType::ATTACK_UNIT(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1001 => {
+                // Unit use first active skill
+                if let Some(request_form) = create_targeting_active_skill_request_form(&data) {
+                    let game_card_active_skill_controller_mutex = GameCardActiveSkillControllerImpl::get_instance();
+                    let game_card_active_skill_controller = game_card_active_skill_controller_mutex.lock().await;
+
+                    let response_form = game_card_active_skill_controller.request_targeting_active_skill(request_form).await;
+                    let response_type = Some(ResponseType::TARGETING_ACTIVE_SKILL(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             1004 => {
                 // Unit Card Usage
                 if let Some(request_form) = create_deploy_unit_request_form(&data) {
@@ -524,6 +557,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = game_card_support_controller.request_to_use_search_unit_support(request_form).await;
                     let response_type = Some(ResponseType::SEARCH_UNIT_SUPPORT_USAGE(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1012 => {
+                // Special Energy Card Usage
+                if let Some(request_form) = create_attach_special_energy_card_request_form(&data) {
+                    let game_card_energy_controller_mutex = GameCardEnergyControllerImpl::get_instance();
+                    let game_card_energy_controller = game_card_energy_controller_mutex.lock().await;
+
+                    let response_form = game_card_energy_controller.request_to_attach_special_energy(request_form).await;
+                    let response_type = Some(ResponseType::ATTACH_SPECIAL_ENERGY(response_form));
 
                     response_type
                 } else {

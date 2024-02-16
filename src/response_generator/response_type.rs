@@ -20,7 +20,9 @@ use crate::battle_wait_queue::service::response::battle_wait_queue_response::Bat
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::game_turn::controller::response_form::first_turn_decision_wait_queue_response_form::FirstTurnDecisionWaitQueueResponseForm;
 
+use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
+use crate::game_card_energy::controller::response_form::attach_special_energy_card_response_form::AttachSpecialEnergyCardResponseForm;
 use crate::game_card_item::controller::response_form::add_field_energy_with_field_unit_health_point_item_response_form::AddFieldEnergyWithFieldUnitHealthPointResponseForm;
 use crate::game_card_item::controller::response_form::catastrophic_damage_item_response_form::CatastrophicDamageItemResponseForm;
 use crate::game_card_item::controller::response_form::multiple_target_damage_by_field_unit_death_item_response_form::MultipleTargetDamageByFieldUnitDeathItemResponseForm;
@@ -30,6 +32,7 @@ use crate::game_card_support::controller::response_form::energy_boost_support_re
 use crate::game_card_support::controller::response_form::remove_opponent_field_energy_support_response_form::RemoveOpponentFieldEnergySupportResponseForm;
 use crate::game_card_support::controller::response_form::search_unit_support_response_form::SearchUnitSupportResponseForm;
 use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
+use crate::game_card_unit::controller::response_form::attack_unit_response_form::AttackUnitResponseForm;
 use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
 use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
 use crate::game_turn::controller::response_form::first_turn_decision_response_form::FirstTurnDecisionResponseForm;
@@ -48,8 +51,7 @@ use crate::notify_player_action::entity::notify_opponent_to_damage_main_characte
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_card_response::NotifyToOpponentYouUseItemCardResponse;
 
-use crate::shop::service::response::free_card_response::FreeCardResponse;
-use crate::shop::service::response::get_card_default_response::GetCardDefaultResponse;
+use crate::shop_gacha::service::response::get_specific_race_card_response::GetSpecificRaceCardResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ResponseType {
@@ -88,8 +90,7 @@ pub enum ResponseType {
     DECK_CARD_LIST(AccountDeckCardListResponseForm),
 
     // Shop
-    SHOP_FREE_CARD(FreeCardResponse),
-    SHOP_GET_CARD_DEFAULT(GetCardDefaultResponse),
+    SHOP_GET_SPECIFIC_RACE_CARD_DEFAULT(GetSpecificRaceCardResponse),
 
     // Account Point
     GAIN_GOLD(GainGoldResponse),
@@ -99,6 +100,7 @@ pub enum ResponseType {
     DEPLOY_UNIT_USAGE(DeployUnitResponseForm),
     ENERGY_BOOST_SUPPORT_USAGE(EnergyBoostSupportResponseForm),
     ATTACH_GENERAL_ENERGY(AttachGeneralEnergyCardResponseForm),
+    ATTACH_SPECIAL_ENERGY(AttachSpecialEnergyCardResponseForm),
     GENERAL_DRAW_SUPPORT_USAGE(DrawSupportResponseForm),
     SEARCH_UNIT_SUPPORT_USAGE(SearchUnitSupportResponseForm),
     REMOVE_OPPONENT_FIELD_ENERGY_SUPPORT_USAGE(RemoveOpponentFieldEnergySupportResponseForm),
@@ -106,6 +108,9 @@ pub enum ResponseType {
     TARGET_DEATH_ITEM_USAGE(TargetDeathItemResponseForm),
     CATASTROPHIC_DAMAGE_ITEM_USAGE(CatastrophicDamageItemResponseForm),
     MULTIPLE_TARGET_DAMAGE_BY_FIELD_UNIT_SACRIFICE_ITEM_USAGE(MultipleTargetDamageByFieldUnitDeathItemResponseForm),
+    ATTACK_UNIT(AttackUnitResponseForm),
+    TARGETING_ACTIVE_SKILL(TargetingActiveSkillResponseForm),
+
 
     // Notification to players
     NOTIFY_OPPONENT_TO_UNIT_DEPLOY(NotifyOpponentToUnitDeploy),
