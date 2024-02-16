@@ -129,9 +129,13 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         // 6. Battle Field 유닛에 에너지 붙이기
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let attach_energy_to_field_unit_response = game_field_unit_service_guard.attach_energy_to_field_unit_index(
-            attach_energy_request_form.to_attach_single_energy_to_field_unit_request(
-                account_unique_id, unit_card_index, energy_card_effect_response.get_race())).await;
+        let attach_energy_to_field_unit_response = game_field_unit_service_guard
+            .attach_energy_to_field_unit_index(
+                attach_energy_request_form
+                    .to_attach_single_energy_to_field_unit_request(account_unique_id,
+                                                                   unit_card_index,
+                                                                   energy_card_effect_response.get_race())).await;
+
         if !attach_energy_to_field_unit_response.is_success() {
             println!("필드에 유닛에게 에너지를 부착하는 과정에서 문제가 발생하였습니다.");
             return AttachGeneralEnergyCardResponseForm::new(false)
@@ -144,10 +148,16 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_to_opponent_what_you_do_response = notify_player_action_service_guard.notify_to_opponent_you_use_energy_card(
-            attach_energy_request_form.to_notify_to_opponent_you_use_energy_card_request(
-                find_opponent_by_account_id_response.get_opponent_unique_id(), unit_card_index, usage_hand_card_id)).await;
-        if !notify_to_opponent_what_you_do_response.is_success() {
+        let notify_to_opponent_you_attached_energy_to_field_unit_response = notify_player_action_service_guard
+            .notify_to_opponent_you_attached_energy_to_field_unit(
+                attach_energy_request_form
+                    .to_notify_to_opponent_you_attached_energy_to_field_unit_request(
+                        find_opponent_by_account_id_response.get_opponent_unique_id(),
+                        unit_card_index,
+                        energy_card_effect_response.get_race() as i32,
+                        energy_card_effect_response.get_quantity())).await;
+
+        if !notify_to_opponent_you_attached_energy_to_field_unit_response.is_success() {
             println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
             return AttachGeneralEnergyCardResponseForm::new(false)
         }
@@ -220,14 +230,19 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_to_opponent_what_you_do_response = notify_player_action_service_guard.notify_to_opponent_you_use_energy_card(
-            attach_special_energy_request_form.to_notify_to_opponent_you_use_energy_card_request(
-                find_opponent_by_account_id_response.get_opponent_unique_id(), unit_card_index, usage_hand_card_id)).await;
-        if !notify_to_opponent_what_you_do_response.is_success() {
+        let notify_to_opponent_you_attached_energy_to_field_unit_response = notify_player_action_service_guard
+            .notify_to_opponent_you_attached_energy_to_field_unit(
+                attach_special_energy_request_form
+                    .to_notify_to_opponent_you_attached_energy_to_field_unit_request(
+                        find_opponent_by_account_id_response.get_opponent_unique_id(),
+                        unit_card_index,
+                        special_energy_card_effect_response.get_race() as i32,
+                        special_energy_card_effect_response.get_quantity())).await;
+
+        if !notify_to_opponent_you_attached_energy_to_field_unit_response.is_success() {
             println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
             return AttachSpecialEnergyCardResponseForm::new(false)
         }
-
 
         AttachSpecialEnergyCardResponseForm::new(true)
     }
