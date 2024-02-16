@@ -463,6 +463,19 @@ impl GameCardItemController for GameCardItemControllerImpl {
                 println!("상대 본체에 피해를 주는 데에 실패하였습니다.");
                 return CatastrophicDamageItemResponseForm::new(false)
             }
+            let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
+            let notify_item_card_response = notify_player_action_service_guard
+                .notify_to_opponent_you_use_damage_main_character_item_card(
+                    catastrophic_damage_item_request_form
+                        .to_notify_opponent_you_use_damage_main_character_item_card_request(
+                            opponent_unique_id,
+                            item_card_id,
+                            damage_for_main_character)).await;
+
+            if !notify_item_card_response.is_success() {
+                println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
+                return CatastrophicDamageItemResponseForm::new(false)
+            }
 
             drop(game_main_character_service_guard);
         }
@@ -490,11 +503,37 @@ impl GameCardItemController for GameCardItemControllerImpl {
                     println!("상대 카드를 로스트 존으로 이동하는데에 실패했습니다.");
                     return CatastrophicDamageItemResponseForm::new(false)
                 }
+                let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
+                let notify_item_card_response = notify_player_action_service_guard
+                    .notify_to_opponent_you_use_destroy_deck_item_card(
+                        catastrophic_damage_item_request_form
+                            .to_notify_opponent_you_use_destroy_deck_item_card_request(
+                                opponent_unique_id,
+                                item_card_id,
+                                will_be_lost_card)).await;
+
+                if !notify_item_card_response.is_success() {
+                    println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
+                    return CatastrophicDamageItemResponseForm::new(false)
+                }
             }
 
             drop(game_lost_zone_service_guard);
         }
 
+        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
+        let notify_item_card_response = notify_player_action_service_guard
+            .notify_to_opponent_you_use_catastrophic_damage_item_card(
+                catastrophic_damage_item_request_form
+                    .to_notify_opponent_you_use_catastrophic_damage_item_card_request(
+                        opponent_unique_id,
+                        item_card_id,
+                        damage_for_field_unit)).await;
+
+        if !notify_item_card_response.is_success() {
+            println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
+            return CatastrophicDamageItemResponseForm::new(false)
+        }
         // TODO: 결과가 무엇인지 정리하여 상대에게 전달
         // let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         // 여기서 알려줘야 하는 것
