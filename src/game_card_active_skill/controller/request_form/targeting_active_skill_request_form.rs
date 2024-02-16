@@ -1,7 +1,9 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_active_skill::service::request::summary_active_skill_effect_request::SummaryActiveSkillEffectRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
+use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 pub struct TargetingActiveSkillRequestForm {
@@ -53,6 +55,16 @@ impl TargetingActiveSkillRequestForm {
     pub fn to_summary_active_skill_effect_response(&self, unit_card_index: i32, usage_skill_index: i32) -> SummaryActiveSkillEffectRequest {
         SummaryActiveSkillEffectRequest::new(
             unit_card_index, usage_skill_index)
+    }
+
+    pub fn to_get_current_attached_energy_of_field_unit_by_index_request(&self,
+                                                                         account_unique_id: i32,
+                                                                         unit_card_index: i32,
+                                                                         race_enum: RaceEnum) -> GetCurrentAttachedEnergyOfFieldUnitByIndexRequest {
+        GetCurrentAttachedEnergyOfFieldUnitByIndexRequest::new(
+            account_unique_id,
+            unit_card_index,
+            race_enum)
     }
 
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
