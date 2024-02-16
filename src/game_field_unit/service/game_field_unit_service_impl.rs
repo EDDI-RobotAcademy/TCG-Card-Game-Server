@@ -23,7 +23,7 @@ use crate::game_field_unit::service::request::attach_single_energy_to_unit_index
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_special_energy_to_unit_index_request::AttachSpecialEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attack_target_unit_with_extra_effect_request::AttackTargetUnitWithExtraEffectRequest;
-use crate::game_field_unit::service::request::check_is_unit_alive_request::CheckIsUnitAliveRequest;
+use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
 use crate::game_field_unit::service::request::detach_multiple_energy_from_field_unit_request::DetachMultipleEnergyFromFieldUnitRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
@@ -42,7 +42,7 @@ use crate::game_field_unit::service::response::attach_single_energy_to_unit_inde
 use crate::game_field_unit::service::response::attach_multiple_energy_to_unit_index_response::AttachMultipleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attach_special_energy_to_unit_index_response::AttachSpecialEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attack_target_unit_with_extra_effect_response::AttackTargetUnitWithExtraEffectResponse;
-use crate::game_field_unit::service::response::check_is_unit_alive_response::CheckIsUnitAliveResponse;
+use crate::game_field_unit::service::response::judge_death_of_unit_response::JudgeDeathOfUnitResponse;
 use crate::game_field_unit::service::response::detach_multiple_energy_from_field_unit_response::DetachMultipleEnergyFromFieldUnitResponse;
 use crate::game_field_unit::service::response::find_active_skill_usage_unit_id_by_index_response::FindActiveSkillUsageUnitIdByIndexResponse;
 use crate::game_field_unit::service::response::find_target_unit_id_by_index_response::FindTargetUnitIdByIndexResponse;
@@ -156,15 +156,15 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         ApplyInstantDeathToTargetUnitIndexResponse::new(response)
     }
 
-    async fn check_is_unit_alive(&mut self, check_is_unit_alive_request: CheckIsUnitAliveRequest) -> CheckIsUnitAliveResponse {
+    async fn judge_death_of_unit(&mut self, judge_death_of_unit_request: JudgeDeathOfUnitRequest) -> JudgeDeathOfUnitResponse {
         println!("GameFieldUnitServiceImpl: check_is_unit_alive()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        let response = game_field_unit_repository_guard.check_is_unit_alive(
-            check_is_unit_alive_request.get_account_unique_id(),
-            check_is_unit_alive_request.get_unit_card_index());
+        let response = game_field_unit_repository_guard.judge_death_of_unit(
+            judge_death_of_unit_request.get_account_unique_id(),
+            judge_death_of_unit_request.get_unit_card_index());
 
-        CheckIsUnitAliveResponse::new(response)
+        JudgeDeathOfUnitResponse::new(response)
     }
 
     async fn get_current_health_point_of_field_unit_by_index(&self, get_current_health_point_of_field_unit_by_index_request: GetCurrentHealthPointOfFieldUnitByIndexRequest) -> GetCurrentHealthPointOfFieldUnitByIndexResponse {

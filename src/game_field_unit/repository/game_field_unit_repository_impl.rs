@@ -177,12 +177,12 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         false
     }
 
-    fn check_is_unit_alive(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
+    fn judge_death_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             let unit_card_index = unit_card_index as usize;
 
             if unit_card_index < game_field_unit.get_all_unit_list_in_game_field().len() {
-                game_field_unit.is_unit_alive(unit_card_index);
+                game_field_unit.judge_death_of_unit(unit_card_index);
                 if (game_field_unit.check_unit_alive(unit_card_index)== true) {
                     return true;
                 }
@@ -714,7 +714,7 @@ mod tests {
         assert!(result);
 
 
-        let is_alive = game_field_unit_repository.check_is_unit_alive(opponent_unique_id, 1);
+        let is_alive = game_field_unit_repository.judge_death_of_unit(opponent_unique_id, 1);
 
         println!("{}", is_alive);
 

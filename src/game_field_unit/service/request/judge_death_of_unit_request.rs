@@ -1,12 +1,12 @@
 #[derive(Debug)]
-pub struct CheckIsUnitAliveRequest {
+pub struct JudgeDeathOfUnitRequest {
     account_unique_id: i32,
     unit_card_index: i32,
 }
 
-impl CheckIsUnitAliveRequest {
+impl JudgeDeathOfUnitRequest {
     pub fn new(account_unique_id: i32, unit_card_index: i32) -> Self {
-        CheckIsUnitAliveRequest {
+        JudgeDeathOfUnitRequest {
             account_unique_id,
             unit_card_index,
         }

@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CheckIsUnitAliveResponse {
+pub struct JudgeDeathOfUnitResponse {
     is_alive: bool
 }
 
-impl CheckIsUnitAliveResponse {
+impl JudgeDeathOfUnitResponse {
     pub fn new(is_alive: bool) -> Self {
-        CheckIsUnitAliveResponse { is_alive }
+        JudgeDeathOfUnitResponse { is_alive }
     }
 
     pub fn is_alive(&self) -> bool {
