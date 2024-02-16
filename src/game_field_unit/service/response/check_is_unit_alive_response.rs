@@ -6,7 +6,7 @@ pub struct CheckIsUnitAliveResponse {
 }
 
 impl CheckIsUnitAliveResponse {
-    pub fn new(is_success: bool) -> Self {
+    pub fn new(is_alive: bool) -> Self {
         CheckIsUnitAliveResponse { is_alive }
     }
 
