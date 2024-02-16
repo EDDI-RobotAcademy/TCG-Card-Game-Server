@@ -26,6 +26,7 @@ use crate::game_card_energy::controller::response_form::attach_special_energy_ca
 use crate::game_card_item::controller::response_form::add_field_energy_with_field_unit_health_point_item_response_form::AddFieldEnergyWithFieldUnitHealthPointResponseForm;
 use crate::game_card_item::controller::response_form::catastrophic_damage_item_response_form::CatastrophicDamageItemResponseForm;
 use crate::game_card_item::controller::response_form::multiple_target_damage_by_field_unit_death_item_response_form::MultipleTargetDamageByFieldUnitDeathItemResponseForm;
+use crate::game_card_item::controller::response_form::remove_opponent_field_unit_energy_item_response_form::RemoveOpponentFieldUnitEnergyItemResponseForm;
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_card_support::controller::response_form::draw_support_response_form::DrawSupportResponseForm;
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
@@ -109,6 +110,7 @@ pub enum ResponseType {
     TARGET_DEATH_ITEM_USAGE(TargetDeathItemResponseForm),
     CATASTROPHIC_DAMAGE_ITEM_USAGE(CatastrophicDamageItemResponseForm),
     MULTIPLE_TARGET_DAMAGE_BY_FIELD_UNIT_SACRIFICE_ITEM_USAGE(MultipleTargetDamageByFieldUnitDeathItemResponseForm),
+    OPPONENT_FIElD_UNIT_ENERGY_REMOVAL_ITEM_USAGE(RemoveOpponentFieldUnitEnergyItemResponseForm),
     ATTACK_UNIT(AttackUnitResponseForm),
     TARGETING_ACTIVE_SKILL(TargetingActiveSkillResponseForm),
 
