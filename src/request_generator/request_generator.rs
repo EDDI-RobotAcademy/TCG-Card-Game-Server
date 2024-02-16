@@ -18,8 +18,6 @@ use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueu
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
-use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service::FirstTurnDecisionWaitQueueService;
-use crate::first_turn_decision_wait_queue::service::first_turn_decision_wait_queue_service_impl::FirstTurnDecisionWaitQueueServiceImpl;
 use crate::game_card_active_skill::controller::game_card_active_skill_controller::GameCardActiveSkillController;
 use crate::game_card_active_skill::controller::game_card_active_skill_controller_impl::GameCardActiveSkillControllerImpl;
 use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
@@ -61,7 +59,7 @@ use crate::request_generator::attach_special_energy_card_request_form_generator:
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
 
 use crate::request_generator::first_turn_decision_request_generator::create_first_turn_decision_request_form;
-use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item, create_target_death_item_request_form};
+use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item_request_form, create_opponent_field_unit_energy_removal_item_request_form, create_target_death_item_request_form};
 use crate::request_generator::game_next_turn_request_generator::create_game_turn_request_form;
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
@@ -599,11 +597,25 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             },
             1014 => {
                 // Multiple Target Damage by Field Unit Sacrifice Item Card Usage
-                if let Some(request_form) = create_multiple_target_damage_by_field_unit_sacrifice_item(&data) {
+                if let Some(request_form) = create_multiple_target_damage_by_field_unit_sacrifice_item_request_form(&data) {
                     let game_card_item_controller_mutex = GameCardItemControllerImpl::get_instance();
                     let game_card_item_controller = game_card_item_controller_mutex.lock().await;
 
                     let response_form = game_card_item_controller.request_to_use_applying_multiple_target_damage_by_field_unit_death_item(request_form).await;
+                    let response_type = Some(ResponseType::MULTIPLE_TARGET_DAMAGE_BY_FIELD_UNIT_SACRIFICE_ITEM_USAGE(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1015 => {
+                // Multiple Target Damage by Field Unit Sacrifice Item Card Usage
+                if let Some(request_form) = create_opponent_field_unit_energy_removal_item_request_form(&data) {
+                    let game_card_item_controller_mutex = GameCardItemControllerImpl::get_instance();
+                    let game_card_item_controller = game_card_item_controller_mutex.lock().await;
+
+                    let response_form = game_card_item_controller.request_to_use_opponent_field_unit_energy_removal_item(request_form).await;
                     let response_type = Some(ResponseType::MULTIPLE_TARGET_DAMAGE_BY_FIELD_UNIT_SACRIFICE_ITEM_USAGE(response_form));
 
                     response_type
