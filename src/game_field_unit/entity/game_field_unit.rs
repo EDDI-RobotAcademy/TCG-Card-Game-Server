@@ -56,6 +56,13 @@ impl GameFieldUnit {
         self.game_field_unit.apply_death_to_indexed_unit(unit_card_index);
     }
 
+    pub fn is_unit_alive(&mut self, unit_card_index: usize) {
+        self.game_field_unit.is_unit_alive(unit_card_index);
+    }
+    pub fn check_unit_alive(&mut self, unit_card_index: usize) -> bool {
+        return self.game_field_unit.check_unit_alive(unit_card_index)
+    }
+
     pub fn add_special_energy_to_indexed_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32, status_effect_list: Vec<StatusEffect>) {
         self.game_field_unit.add_special_energy_to_indexed_unit(
             unit_card_index,
