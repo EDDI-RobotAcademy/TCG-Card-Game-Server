@@ -3,7 +3,9 @@ use std::sync::Arc;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_active_skill::entity::active_skill_type::ActiveSkillType;
+use crate::game_card_active_skill::entity::required_energy::RequiredEnergy;
 use crate::game_card_active_skill::entity::summary_active_skill_effect::SummaryActiveSkillEffect;
 
 use crate::game_card_active_skill::handler::game_card_active_skill_handler::GameCardActiveSkillHandler;
@@ -24,7 +26,7 @@ impl GameCardActiveSkillHandler for NoneActiveSkillFunction {
         println!("아직 구현되지 않은 기능입니다.");
 
         SummaryActiveSkillEffect::new(
-            ActiveSkillType::Dummy, -1)
+            RaceEnum::Dummy, -1, ActiveSkillType::Dummy, -1)
     }
 }
 
@@ -314,6 +316,7 @@ impl GameCardActiveSkillRepository for GameCardActiveSkillRepositoryImpl {
             }
         }
 
-        SummaryActiveSkillEffect::new(ActiveSkillType::Dummy, -1)
+        SummaryActiveSkillEffect::new(
+            RaceEnum::Dummy, -1, ActiveSkillType::Dummy, -1)
     }
 }

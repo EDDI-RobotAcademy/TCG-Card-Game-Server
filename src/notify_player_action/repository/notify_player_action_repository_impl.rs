@@ -18,6 +18,7 @@ use crate::notify_player_action::entity::notify_opponent_to_unit_deploy::NotifyO
 use crate::notify_player_action::entity::notify_opponent_to_catastrophic_damage_item_usage::NotifyOpponentToCatastrophicDamageItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_damage_main_character_item_usage::NotifyOpponentToDamageMainCharacterItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
+use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
 use crate::notify_player_action::repository::notify_player_action_repository::NotifyPlayerActionRepository;
 use crate::response_generator::response_type::ResponseType;
 
@@ -337,6 +338,25 @@ async fn notify_to_opponent_you_use_tool_card_to_enhance_attack_point(&mut self,
                 AsyncMutex::new(
                     ResponseType::NOTIFY_OPPONENT_TO_DESTORY_DECK_ITEM_USAGE(
                         NotifyOpponentToDestroyDeckItemUsage::new(usage_item_card_id, will_be_lost_card))))).await;
+        true
+    }
+    async fn notify_to_opponent_you_use_field_unit_energy_removal_item_card(&mut self,opponent_unique_id: i32, usage_item_card_id: i32, energy_quantity: i32) -> bool {
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    ResponseType::NOTIFY_OPPONENT_TO_FIELD_UNIT_ENERGY_REMOVAL_ITEM_USAGE(
+                        NotifyOpponentToFieldUnitEnergyRemovalItemUsage::new(usage_item_card_id, energy_quantity))))).await;
         true
     }
 

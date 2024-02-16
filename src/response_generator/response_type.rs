@@ -51,6 +51,7 @@ use crate::notify_player_action::entity::notify_opponent_to_unit_deploy::NotifyO
 use crate::notify_player_action::entity::notify_opponent_to_catastrophic_damage_item_usage::NotifyOpponentToCatastrophicDamageItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_damage_main_character_item_usage::NotifyOpponentToDamageMainCharacterItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
+use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_card_response::NotifyToOpponentYouUseItemCardResponse;
 
 use crate::shop_gacha::service::response::get_specific_race_card_response::GetSpecificRaceCardResponse;
@@ -129,6 +130,7 @@ pub enum ResponseType {
     NOTIFY_OPPONENT_TO_CATASTROPHIC_DAMAGE_ITEM_USAGE(NotifyOpponentToCatastrophicDamageItemUsage),
     NOTIFY_OPPONENT_TO_DAMAGE_MAIN_CHARACTER_ITEM_USAGE(NotifyOpponentToDamageMainCharacterItemUsage),
     NOTIFY_OPPONENT_TO_DESTORY_DECK_ITEM_USAGE(NotifyOpponentToDestroyDeckItemUsage),
+    NOTIFY_OPPONENT_TO_FIELD_UNIT_ENERGY_REMOVAL_ITEM_USAGE(NotifyOpponentToFieldUnitEnergyRemovalItemUsage),
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),

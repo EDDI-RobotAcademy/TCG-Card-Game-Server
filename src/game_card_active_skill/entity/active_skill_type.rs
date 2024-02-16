@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum ActiveSkillType {
     Dummy = 0,
     BroadArea = 1,

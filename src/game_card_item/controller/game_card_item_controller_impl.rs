@@ -534,14 +534,8 @@ impl GameCardItemController for GameCardItemControllerImpl {
             println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
             return CatastrophicDamageItemResponseForm::new(false)
         }
-        // TODO: 결과가 무엇인지 정리하여 상대에게 전달
-        // let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        // 여기서 알려줘야 하는 것
-        // 1. 사용한 아이템 카드 아이디
-        // 2. 사용한 카드로 인해 유닛이 입은 광역 데미지
-        // 3. 사용한 카드로 인해 유닛이 입은 광역 데미지
-        // TODO: 남은 체력, 생사 여부까지 같이 판정해서 보내줘야 함
-        // drop(notify_player_action_service_guard);
+        drop(notify_player_action_service_guard);
+
 
         let usage_hand_card = self.use_item_card(
             catastrophic_damage_item_request_form.to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
@@ -742,6 +736,22 @@ impl GameCardItemController for GameCardItemControllerImpl {
         }
 
         // TODO: Notify Service 추가 필요
+        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
+        let notify_item_card_response = notify_player_action_service_guard
+            .notify_to_opponent_you_use_field_unit_energy_removal_item_card(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_notify_opponent_you_use_field_unit_energy_removal_item_card_request(
+                        opponent_unique_id,
+                        item_card_id,
+                        energy_quantity)).await;
+
+        if !notify_item_card_response.is_success() {
+            println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
+        }
+        drop(notify_player_action_service_guard);
+
+
 
         RemoveOpponentFieldUnitEnergyItemResponseForm::new(true)
     }
