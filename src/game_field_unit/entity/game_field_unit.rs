@@ -56,8 +56,8 @@ impl GameFieldUnit {
         self.game_field_unit.apply_death_to_indexed_unit(unit_card_index);
     }
 
-    pub fn judge_death_of_unit(&mut self, unit_card_index: usize) {
-        self.game_field_unit.judge_death_of_unit(unit_card_index);
+    pub fn is_unit_alive(&mut self, unit_card_index: usize) {
+        self.game_field_unit.is_unit_alive(unit_card_index);
     }
     pub fn check_unit_alive(&mut self, unit_card_index: usize) -> bool {
         return self.game_field_unit.check_unit_alive(unit_card_index)
