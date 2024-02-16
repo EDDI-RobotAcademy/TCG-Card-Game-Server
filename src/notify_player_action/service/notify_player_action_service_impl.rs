@@ -21,6 +21,7 @@ use crate::notify_player_action::service::request::notify_to_opponent_you_use_ca
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_damage_main_character_item_card_request::NotifyToOpponentYouUseDamageMainCharacterItemCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_destroy_deck_item_card_request::NotifyToOpponentYouUseDestroyDeckItemCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_field_unit_energy_removal_item_card_request::NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_hand_card_request::NotifyOpponentYouUseHandCardRequest;
 use crate::notify_player_action::service::response::notify_to_opponent_you_deploy_unit_response::NotifyToOpponentYouDeployUnitResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_draw_support_card_response::NotifyToOpponentYouUseDrawSupportCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_energy_boost_card_response::NotifyToOpponentYouUseEnergyBoostCardResponse;
@@ -33,6 +34,7 @@ use crate::notify_player_action::service::response::notify_to_opponent_you_use_c
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_damage_main_character_item_card_response::NotifyToOpponentYouUseDamageMainCharacterItemCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_destroy_deck_item_card_response::NotifyToOpponentYouUseDestroyDeckItemCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_field_unit_energy_removal_item_card_response::NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardResponse;
+use crate::notify_player_action::service::response::notify_to_opponent_you_use_hand_card_response::NotifyOpponentYouUseHandCardResponse;
 
 pub struct NotifyPlayerActionServiceImpl {
     notify_player_action_repository: Arc<AsyncMutex<NotifyPlayerActionRepositoryImpl>>,
@@ -63,7 +65,7 @@ impl NotifyPlayerActionServiceImpl {
 #[async_trait]
 impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
     async fn notify_to_opponent_you_deploy_unit(&mut self, notify_to_opponent_what_you_do_request: NotifyToOpponentYouDeployUnitRequest) -> NotifyToOpponentYouDeployUnitResponse {
-        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_what_you_do()");
+        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_deploy_unit()");
 
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
         let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard.notify_to_opponent_what_you_do(
@@ -71,6 +73,17 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
             notify_to_opponent_what_you_do_request.get_usage_hand_card_id()).await;
 
         NotifyToOpponentYouDeployUnitResponse::new(notify_to_opponent_what_you_do_response)
+    }
+
+    async fn notify_opponent_you_use_hand_card(&mut self, notify_opponent_you_use_hand_card_request: NotifyOpponentYouUseHandCardRequest) -> NotifyOpponentYouUseHandCardResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_opponent_you_use_hand_card()");
+
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard.notify_to_opponent_what_you_do(
+            notify_opponent_you_use_hand_card_request.get_opponent_unique_id(),
+            notify_opponent_you_use_hand_card_request.get_usage_hand_card_id()).await;
+
+        NotifyOpponentYouUseHandCardResponse::new(notify_to_opponent_what_you_do_response)
     }
 
     async fn notify_to_opponent_you_attached_energy_to_field_unit(&mut self, notify_to_opponent_you_use_energy_card_request: NotifyToOpponentYouAttachedEnergyToFieldUnitRequest) -> NotifyToOpponentYouUseEnergyCardResponse {
