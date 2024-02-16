@@ -1,6 +1,5 @@
 use std::sync::Arc;
 use async_trait::async_trait;
-use futures::future::try_join_all;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
@@ -84,48 +83,6 @@ impl BattlePrepareTaskServiceImpl {
         }
         INSTANCE.clone()
     }
-
-    // pub async fn spawn_async_task_for_prepare_battle(&self, user_id: i32) {
-    //     println!("Spawning async task for User {}", user_id);
-    //
-    //     let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
-    //     game_deck_repository_guard.create_game_deck_object(user_id);
-    //     drop(game_deck_repository_guard);
-    //
-    //     let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
-    //     game_hand_repository_guard.create_game_hand_object(user_id);
-    //     drop(game_hand_repository_guard);
-    //
-    //     let mut game_field_energy_repository_guard = self.game_field_energy_repository.lock().await;
-    //     game_field_energy_repository_guard.create_field_energy_object(user_id);
-    //     drop(game_field_energy_repository_guard);
-    //
-    //     let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-    //     game_field_unit_repository_guard.create_game_field_unit_object(user_id);
-    //     drop(game_field_unit_repository_guard);
-    //
-    //     let mut game_lost_zone_repository_guard = self.game_lost_zone_repository.lock().await;
-    //     game_lost_zone_repository_guard.create_game_lost_zone_object(user_id);
-    //     drop(game_lost_zone_repository_guard);
-    //
-    //     let mut game_main_character_repository_guard = self.game_main_character_repository.lock().await;
-    //     game_main_character_repository_guard.create_game_main_character_object(user_id);
-    //     drop(game_main_character_repository_guard);
-    //
-    //     let mut game_tomb_repository_guard = self.game_tomb_repository.lock().await;
-    //     game_tomb_repository_guard.create_game_tomb_object(user_id);
-    //     drop(game_tomb_repository_guard);
-    //
-    //     let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
-    //     game_turn_repository_guard.create_game_turn_object(user_id);
-    //     drop(game_turn_repository_guard);
-    //
-    //     let mut battle_ready_account_hash_repository_guard = self.battle_ready_account_hash_repository.lock().await;
-    //     battle_ready_account_hash_repository_guard.save_battle_ready_account_hash(user_id, BattleReadyAccountHashStatus::SUCCESS).await;
-    //     drop(battle_ready_account_hash_repository_guard);
-    //
-    //     println!("Thread for User {} completed.", user_id);
-    // }
 }
 
 pub async fn player_deck_init_thread(user_id: i32) {
@@ -253,59 +210,6 @@ pub async fn spawn_async_task_for_prepare_battle(user_id: i32) {
 
 #[async_trait]
 impl BattlePrepareTaskService for BattlePrepareTaskServiceImpl {
-    // async fn prepare_for_player_battle(&self) {
-    //     loop {
-    //         let mut battle_ready_account_hash_repository_guard = self.battle_ready_account_hash_repository.lock().await;
-    //         let battle_ready_account_hash = battle_ready_account_hash_repository_guard.get_battle_ready_account_hash();
-    //
-    //
-    //         // println!("Preparing for battle. Hash: {:?}", battle_ready_account_hash);
-    //
-    //         for (user_id, status) in battle_ready_account_hash.get_status_map().iter() {
-    //             if status == &BattleReadyAccountHashStatus::PREPARE {
-    //                 let mut battle_ready_account_hash_repository_guard = self.battle_ready_account_hash_repository.lock().await;
-    //                 battle_ready_account_hash_repository_guard.save_battle_ready_account_hash(*user_id, BattleReadyAccountHashStatus::PREPARE_PROCESS).await;
-    //                 drop(battle_ready_account_hash_repository_guard);
-    //
-    //                 self.spawn_async_task_for_prepare_battle(*user_id).await;
-    //             }
-    //         }
-    //
-    //         drop(battle_ready_account_hash_repository_guard);
-    //
-    //         tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
-    //     }
-    // }
-
-    // async fn prepare_for_player_battle(&self) {
-    //     loop {
-    //         let battle_ready_account_hash_repository_guard = self.battle_ready_account_hash_repository.lock().await;
-    //         let battle_ready_account_hash = battle_ready_account_hash_repository_guard.get_battle_ready_account_hash();
-    //
-    //         // Clone the user IDs that need further processing
-    //         let users_to_process: Vec<i32> = battle_ready_account_hash
-    //             .get_status_map()
-    //             .iter()
-    //             .filter(|(_, status)| *status == &BattleReadyAccountHashStatus::PREPARE)
-    //             .map(|(&user_id, _)| user_id)
-    //             .collect();
-    //
-    //         // Drop the lock guard before further processing
-    //         drop(battle_ready_account_hash_repository_guard);
-    //
-    //         for user_id in users_to_process {
-    //             let handle = tokio::spawn(async move {
-    //                 spawn_async_task_for_prepare_battle(user_id).await;
-    //             });
-    //
-    //             tokio::spawn(async move {
-    //                 handle.await.expect("Failed to await spawned task");
-    //             });
-    //         }
-    //
-    //         tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
-    //     }
-    // }
 
     async fn prepare_for_player_battle(&self) {
         loop {
