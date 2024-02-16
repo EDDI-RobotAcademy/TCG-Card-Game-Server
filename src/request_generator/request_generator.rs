@@ -616,7 +616,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     let game_card_item_controller = game_card_item_controller_mutex.lock().await;
 
                     let response_form = game_card_item_controller.request_to_use_opponent_field_unit_energy_removal_item(request_form).await;
-                    let response_type = Some(ResponseType::MULTIPLE_TARGET_DAMAGE_BY_FIELD_UNIT_SACRIFICE_ITEM_USAGE(response_form));
+                    let response_type = Some(ResponseType::OPPONENT_FIElD_UNIT_ENERGY_REMOVAL_ITEM_USAGE(response_form));
 
                     response_type
                 } else {
