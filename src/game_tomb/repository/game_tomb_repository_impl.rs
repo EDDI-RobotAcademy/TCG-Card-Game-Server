@@ -51,6 +51,17 @@ impl GameTombRepository for GameTombRepositoryImpl {
 
         true
     }
+
+    fn add_dead_unit_to_tomb(&mut self, account_unique_id: i32, dead_unit_card_id: i32) -> bool {
+        println!("GameTombRepositoryImpl: add_dead_unit_to_tomb()");
+
+        if let Some(user_game_tomb) = self.get_game_tomb_map().get_mut(&account_unique_id) {
+            user_game_tomb.add_tomb_card(dead_unit_card_id)
+        }
+
+        true
+    }
+
 }
 
 #[cfg(test)]
