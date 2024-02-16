@@ -25,11 +25,6 @@ impl BattleRoomRepositoryImpl {
         }
     }
 
-    // pub fn add_battle_room(&self, battle_room: BattleRoom) {
-    //     let mut list = self.battle_room_list.lock().await;
-    //     list.push(battle_room);
-    // }
-
     pub fn get_battle_room_account_hash(&self) -> &Arc<AsyncMutex<HashMap<i32, i32>>> {
         &self.battle_room_account_hash
     }
