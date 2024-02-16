@@ -23,6 +23,8 @@ use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
+use crate::game_tomb::service::game_tomb_service::GameTombService;
+use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
@@ -38,6 +40,7 @@ pub struct GameCardUnitControllerImpl {
     notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
     game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
+    game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
 }
 
 impl GameCardUnitControllerImpl {
@@ -48,7 +51,8 @@ impl GameCardUnitControllerImpl {
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
                game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
-               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>) -> Self {
+               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
+               game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>) -> Self {
 
         GameCardUnitControllerImpl {
             game_hand_service,
@@ -58,7 +62,8 @@ impl GameCardUnitControllerImpl {
             redis_in_memory_service,
             notify_player_action_service,
             game_card_passive_skill_service,
-            game_protocol_validation_service
+            game_protocol_validation_service,
+            game_tomb_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardUnitControllerImpl>> {
@@ -74,7 +79,8 @@ impl GameCardUnitControllerImpl {
                             RedisInMemoryServiceImpl::get_instance(),
                             NotifyPlayerActionServiceImpl::get_instance(),
                             GameCardPassiveSkillServiceImpl::get_instance(),
-                            GameProtocolValidationServiceImpl::get_instance())));
+                            GameProtocolValidationServiceImpl::get_instance(),
+                            GameTombServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -246,9 +252,26 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     find_unit_extra_effect_response.get_extra_status_effect_list(),
                     target_unit_card_index)).await;
 
-        // 8. 공격한 유닛이 죽었는지 판정
 
+        // 8. 공격한 유닛이 죽었는지 판정
+        let judge_death_of_unit_response = game_field_unit_service_guard
+            .judge_death_of_unit(
+                attack_unit_request_form.to_judge_death_of_unit_request(
+                    find_opponent_by_account_id_response.get_opponent_unique_id(),
+                    target_unit_card_index)).await;
+        // 유닛이 공격할 수 있는 상태인지 알 수 있는 부분이 필요함 (빙결)
+        // 무덤에 넣으려면 유닛 카드 id 가 필요함
         // 9. 죽었다면 무덤 배치
+        if (!judge_death_of_unit_response.is_alive()) {
+            let mut game_tomb_service_guard = self.game_tomb_service.lock().await;
+            let check = game_tomb_service_guard
+                .add_dead_unit_to_tomb(
+                    attack_unit_request_form.to_add_dead_unit_to_tomb_request(
+                        find_opponent_by_account_id_response.get_opponent_unique_id(),
+                        0 )).await; // 상대 유닛의 카드id 값
+        }
+
+        //    죽은 유닛에 붙어있던 카드들 무덤 배치
 
         // 9. 상대방 알림
 

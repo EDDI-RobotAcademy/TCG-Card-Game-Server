@@ -3,6 +3,8 @@ use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::service::request::acquire_unit_attack_point_request::AcquireUnitAttackPointRequest;
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
 use crate::game_field_unit::service::request::attack_target_unit_with_extra_effect_request::AttackTargetUnitWithExtraEffectRequest;
+use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
+use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 pub struct AttackUnitRequestForm {
@@ -56,6 +58,19 @@ impl AttackUnitRequestForm {
                                                            target_unit_index: i32) -> AttackTargetUnitWithExtraEffectRequest {
         AttackTargetUnitWithExtraEffectRequest::new(
             opponent_unique_id, damage, extra_status_effect_list.clone(), target_unit_index)
+    }
+
+    pub fn to_judge_death_of_unit_request(&self, account_unique_id: i32, unit_card_index: i32) -> JudgeDeathOfUnitRequest {
+        JudgeDeathOfUnitRequest::new(
+            account_unique_id,
+            unit_card_index
+        )
+    }
+    pub fn to_add_dead_unit_to_tomb_request(&self, account_unique_id: i32, unit_card_id: i32) -> PlaceToTombRequest {
+        PlaceToTombRequest::new(
+            account_unique_id,
+            unit_card_id
+        )
     }
 
 }
