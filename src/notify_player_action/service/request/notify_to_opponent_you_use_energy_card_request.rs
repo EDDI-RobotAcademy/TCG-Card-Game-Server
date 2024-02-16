@@ -1,16 +1,20 @@
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+
 #[derive(Debug)]
-pub struct NotifyToOpponentYouUseEnergyCardRequest {
+pub struct NotifyToOpponentYouAttachedEnergyToFieldUnitRequest {
     opponent_unique_id: i32,
     unit_card_index: i32,
-    usage_hand_card_id: i32,
+    energy_race: i32,
+    energy_count: i32,
 }
 
-impl NotifyToOpponentYouUseEnergyCardRequest {
-    pub fn new(opponent_unique_id: i32, unit_card_index: i32, usage_hand_card_id: i32) -> Self {
-        NotifyToOpponentYouUseEnergyCardRequest {
+impl NotifyToOpponentYouAttachedEnergyToFieldUnitRequest {
+    pub fn new(opponent_unique_id: i32, unit_card_index: i32, energy_race: i32, energy_count: i32) -> Self {
+        NotifyToOpponentYouAttachedEnergyToFieldUnitRequest {
             opponent_unique_id,
             unit_card_index,
-            usage_hand_card_id,
+            energy_race,
+            energy_count,
         }
     }
 
@@ -22,7 +26,7 @@ impl NotifyToOpponentYouUseEnergyCardRequest {
         self.unit_card_index
     }
 
-    pub fn get_usage_hand_card_id(&self) -> i32 {
-        self.usage_hand_card_id
-    }
+    pub fn get_energy_race(&self) -> i32 { self.energy_race }
+
+    pub fn get_energy_count(&self) -> i32 { self.energy_count }
 }

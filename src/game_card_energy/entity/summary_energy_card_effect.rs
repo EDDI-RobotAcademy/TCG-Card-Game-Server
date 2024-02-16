@@ -1,5 +1,4 @@
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
-use crate::game_card_energy::entity::effect::Effect;
 use crate::game_card_energy::entity::energy_card::EnergyCard;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
 

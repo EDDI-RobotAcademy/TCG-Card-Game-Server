@@ -182,10 +182,10 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         // 9. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_to_opponent_what_you_do_response = notify_player_action_service_guard.notify_to_opponent_what_you_do(
+        let notify_to_opponent_you_deploy_unit_response = notify_player_action_service_guard.notify_to_opponent_you_deploy_unit(
             deploy_unit_request_form.to_notify_to_opponent_what_you_do_request(
                 find_opponent_by_account_id_response.get_opponent_unique_id(), usage_hand_card_id)).await;
-        if !notify_to_opponent_what_you_do_response.is_success() {
+        if !notify_to_opponent_you_deploy_unit_response.is_success() {
             println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
             return DeployUnitResponseForm::new(false)
         }
@@ -202,19 +202,11 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             return AttackUnitResponseForm::new(false)
         }
 
-        // TODO: 프로토콜 검증 (지금 이거 신경 쓸 때가 아님)
-        // 2. 프로토콜 검증
+        // 2. TODO: 프로토콜 검증 (지금 이거 신경 쓸 때가 아님)
 
         // 3. Battle Field에서 공격하는 유닛의 index를 토대로 id 값 확보 (이거 필요한가 ???)
         let attacker_unit_card_index_string = attack_unit_request_form.get_attacker_unit_index();
         let attacker_unit_card_index = attacker_unit_card_index_string.parse::<i32>().unwrap();
-
-        // let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        // let find_unit_id_by_index_response = game_field_unit_service_guard
-        //     .find_target_unit_id_by_index(
-        //         attack_unit_request_form.to_find_target_unit_id_by_index_request(
-        //             account_unique_id,
-        //             attacker_unit_card_index)).await;
 
         // 4. 유닛 인덱스에서 기본 공격력 정보 확보
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
