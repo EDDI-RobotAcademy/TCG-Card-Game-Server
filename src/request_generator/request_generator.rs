@@ -53,10 +53,16 @@ use crate::request_generator::deploy_unit_request_form_generator::create_deploy_
 use crate::request_generator::energy_boost_support_request_form_generator::create_energy_boost_support_request_form;
 use crate::request_generator::first_turn_decision_wait_queue_request_form_generator::create_first_turn_decision_wait_queue_request_form;
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
+
+use crate::game_turn::service::game_turn_service::GameTurnService;
+use crate::game_turn::service::game_turn_service_impl::GameTurnServiceImpl;
+
 use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
+
 use crate::request_generator::first_turn_decision_request_generator::create_first_turn_decision_request_form;
 use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item, create_target_death_item_request_form};
+use crate::request_generator::game_next_turn_request_generator::create_game_turn_request_form;
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
@@ -599,6 +605,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = game_card_item_controller.request_to_use_applying_multiple_target_damage_by_field_unit_death_item(request_form).await;
                     let response_type = Some(ResponseType::MULTIPLE_TARGET_DAMAGE_BY_FIELD_UNIT_SACRIFICE_ITEM_USAGE(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            3333 => {
+                // Game Next Turn
+                if let Some(request) = create_game_turn_request_form(&data) {
+                    let game_turn_controller_impl_mutex = GameTurnControllerImpl::get_instance();
+                    let mut game_trun_controller = game_turn_controller_impl_mutex.lock().await;
+
+                    let response = game_trun_controller.request_turn_end(request).await;
+                    let response_type = Some(ResponseType::GAME_NEXT_TURN(response));
 
                     response_type
                 } else {
