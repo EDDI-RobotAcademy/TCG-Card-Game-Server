@@ -29,7 +29,7 @@ pub trait GameFieldUnitRepository {
     fn find_target_unit_id_by_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32) -> i32;
     fn apply_damage_to_target_unit_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32, damage: i32) -> bool;
     fn apply_instant_death_to_target_unit_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32) -> bool;
-    fn check_is_unit_alive(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool;
+    fn judge_death_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool;
     fn attach_special_energy_to_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: i32, race_enum: RaceEnum, quantity: i32, status_effect_list: Vec<StatusEffect>) -> bool;
     fn apply_harmful_status_effect_damage_iteratively(&mut self, account_unique_id: i32) -> bool;
     fn impose_harmful_state_to_indexed_unit(
