@@ -58,6 +58,18 @@ impl GameTurnRepository for GameTurnRepositoryImpl {
         -1
     }
 
+    fn get_game_turn(&mut self, account_unique_id: i32) -> i32 {
+        println!("GameTurnRepositoryImpl: get_game_turn()");
+
+        if let Some(index) = self.game_turn_map.get_index_of(&account_unique_id) {
+            if let Some((_key, game_turn)) = self.game_turn_map.get_index_mut(index) {
+                return game_turn.get_turn();
+            }
+        }
+
+        -1
+    }
+
     fn decide_first_turn(&mut self, account_id: i32, player1_account_id:i32,player1_choice:String,
                                                      player2_account_id:i32,player2_choice:String,) -> (i32,bool,bool) {
         println!("GameTurnRepositoryImpl: decide_first_turn()");
@@ -243,6 +255,12 @@ mod cfg_test {
     }
 
 
+    #[test]
+    async fn test_get_game_turn() {
+        let mut repository = GameTurnRepositoryImpl::new();
+        let account_unique_id = 123;
 
-
+        repository.create_game_turn_object(account_unique_id);
+        println!("{:?}", repository.get_game_turn(account_unique_id));
+    }
 }
