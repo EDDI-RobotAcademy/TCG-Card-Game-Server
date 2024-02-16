@@ -246,14 +246,14 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         // 11. Notify Service를 호출하여 Opponent에게 무엇을 할 것인지 알려줌
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_to_opponent_what_you_do_response = notify_player_action_service_guard.notify_to_opponent_you_use_energy_boost(
+        let notify_to_opponent_you_use_energy_boost_support_card_response = notify_player_action_service_guard.notify_to_opponent_you_use_energy_boost_support_card(
             energy_boost_support_request_form.to_notify_to_opponent_you_use_energy_card_request(
                 opponent_unique_id,
                 unit_card_index,
                 usage_hand_card,
                 calculated_effect_response.get_energy_from_deck().get_energy_count(),
                 calculated_effect_response.get_need_to_find_card_id())).await;
-        if !notify_to_opponent_what_you_do_response.is_success() {
+        if !notify_to_opponent_you_use_energy_boost_support_card_response.is_success() {
             println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
             return EnergyBoostSupportResponseForm::new(false)
         }
