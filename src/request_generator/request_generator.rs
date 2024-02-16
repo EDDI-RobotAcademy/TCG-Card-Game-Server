@@ -256,6 +256,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            18 => {
+                // Mulligan
+                if let Some(request_form) = create_mulligan_request_form(&data) {
+                    let game_hand_controller_mutex = GameHandControllerImpl::get_instance();
+                    let game_hand_controller = game_hand_controller_mutex.lock().await;
+
+                    let response_form = game_hand_controller.execute_mulligan_procedure(request_form).await;
+                    let response_type = Some(ResponseType::CHANGE_FIRST_HAND(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             19 => {
                 // First Turn Decision Wait Queue
                 if let Some(request_form) = create_first_turn_decision_wait_queue_request_form(&data) {
@@ -270,7 +284,6 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-
             20 => {
                 // First Turn Decision
                 if let Some(request_form) = create_first_turn_decision_request_form(&data) {
@@ -645,20 +658,6 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = client_program_service.client_exit_program(request).await;
                     let response_type = Some(ResponseType::PROGRAM_EXIT(response));
-
-                    response_type
-                } else {
-                    None
-                }
-            },
-            7777 => {
-                // Mulligan
-                if let Some(request_form) = create_mulligan_request_form(&data) {
-                    let game_hand_controller_mutex = GameHandControllerImpl::get_instance();
-                    let game_hand_controller = game_hand_controller_mutex.lock().await;
-
-                    let response_form = game_hand_controller.execute_mulligan_procedure(request_form).await;
-                    let response_type = Some(ResponseType::CHANGE_FIRST_HAND(response_form));
 
                     response_type
                 } else {
