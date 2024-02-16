@@ -9,3 +9,5 @@ pub mod notify_opponent_remove_field_energy_support_usage;
 pub mod notify_opponent_increase_field_energy_item_usage;
 pub mod notify_opponent_to_enhance_attack_point_tool_usage;
 pub(crate) mod notify_opponent_to_catastrophic_damage_item_usage;
+pub(crate) mod notify_opponent_to_damage_main_character_item_usage;
+pub(crate) mod notify_opponent_to_destroy_deck_item_usage;

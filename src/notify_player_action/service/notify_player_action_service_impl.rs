@@ -18,6 +18,8 @@ use crate::notify_player_action::service::request::notify_to_opponent_you_use_it
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_tool_card_to_enhance_attack_point_request::NotifyToOpponentYouUseToolCardToEnhanceAttackPointRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_search_support_card_request::NotifyOpponentYouUseSearchSupportRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_catastrophic_damage_item_card_request::NotifyToOpponentYouUseCatastrophicDamageItemCardRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_damage_main_character_item_card_request::NotifyToOpponentYouUseDamageMainCharacterItemCardRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_destroy_deck_item_card_request::NotifyToOpponentYouUseDestroyDeckItemCardRequest;
 use crate::notify_player_action::service::response::notify_to_opponent_you_deploy_unit_response::NotifyToOpponentYouDeployUnitResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_draw_support_card_response::NotifyToOpponentYouUseDrawSupportCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_energy_boost_card_response::NotifyToOpponentYouUseEnergyBoostCardResponse;
@@ -27,6 +29,8 @@ use crate::notify_player_action::service::response::notify_to_opponent_you_use_i
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_support_card_response::NotifyOpponentYouUseSupportCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_tool_card_to_enhance_attack_point_response::NotifyToOpponentYouUseToolCardToEnhanceAttackPointResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_catastrophic_damage_item_card_response::NotifyToOpponentYouUseCatastrophicDamageItemCardResponse;
+use crate::notify_player_action::service::response::notify_to_opponent_you_use_damage_main_character_item_card_response::NotifyToOpponentYouUseDamageMainCharacterItemCardResponse;
+use crate::notify_player_action::service::response::notify_to_opponent_you_use_destroy_deck_item_card_response::NotifyToOpponentYouUseDestroyDeckItemCardResponse;
 
 pub struct NotifyPlayerActionServiceImpl {
     notify_player_action_repository: Arc<AsyncMutex<NotifyPlayerActionRepositoryImpl>>,
@@ -188,10 +192,36 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
         let notify_to_opponent_you_use_catastrophic_damage_item_card_response = notify_player_action_repository_guard
             .notify_to_opponent_you_use_catastrophic_damage_item_card(
                 notify_to_opponent_you_use_catastrophic_damage_item_card_request.get_opponent_unique_id(),
-                notify_to_opponent_you_use_catastrophic_damage_item_card_request.get_damage_for_field_unit(),
-                notify_to_opponent_you_use_catastrophic_damage_item_card_request.get_usage_hand_card_id()).await;
+                notify_to_opponent_you_use_catastrophic_damage_item_card_request.get_usage_hand_card_id(),
+                notify_to_opponent_you_use_catastrophic_damage_item_card_request.get_damage_for_field_unit()).await;
 
         NotifyToOpponentYouUseCatastrophicDamageItemCardResponse::new(notify_to_opponent_you_use_catastrophic_damage_item_card_response)
 
+    }
+    async fn notify_to_opponent_you_use_damage_main_character_item_card(&mut self, notify_to_opponent_you_use_damage_main_character_item_card_request: NotifyToOpponentYouUseDamageMainCharacterItemCardRequest)
+                                                                                                                                                  -> NotifyToOpponentYouUseDamageMainCharacterItemCardResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_damage_main_character_item_card()");
+
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        let notify_to_opponent_you_use_damage_main_character_item_card_response = notify_player_action_repository_guard
+            .notify_to_opponent_you_use_damage_main_character_item_card(
+                notify_to_opponent_you_use_damage_main_character_item_card_request.get_opponent_unique_id(),
+                notify_to_opponent_you_use_damage_main_character_item_card_request.get_usage_hand_card_id(),
+                notify_to_opponent_you_use_damage_main_character_item_card_request.get_damage_for_main_character()).await;
+
+        NotifyToOpponentYouUseDamageMainCharacterItemCardResponse::new(notify_to_opponent_you_use_damage_main_character_item_card_response)
+    }
+    async fn notify_to_opponent_you_use_destroy_deck_item_card(&mut self, notify_to_opponent_you_use_destroy_deck_item_card_request: NotifyToOpponentYouUseDestroyDeckItemCardRequest)
+                                                                        -> NotifyToOpponentYouUseDestroyDeckItemCardResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_destroy_deck_card_item_card()");
+
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        let notify_to_opponent_you_use_destroy_deck_card_item_card_response = notify_player_action_repository_guard
+            .notify_to_opponent_you_use_damage_main_character_item_card(
+                notify_to_opponent_you_use_destroy_deck_item_card_request.get_opponent_unique_id(),
+                notify_to_opponent_you_use_destroy_deck_item_card_request.get_usage_hand_card_id(),
+                notify_to_opponent_you_use_destroy_deck_item_card_request.get_will_be_lost_card()).await;
+
+        NotifyToOpponentYouUseDestroyDeckItemCardResponse::new(notify_to_opponent_you_use_destroy_deck_card_item_card_response)
     }
 }

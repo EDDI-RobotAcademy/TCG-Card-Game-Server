@@ -12,6 +12,9 @@ use crate::game_protocol_validation::service::request::can_use_card_request::Can
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_catastrophic_damage_item_card_request::NotifyToOpponentYouUseCatastrophicDamageItemCardRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_damage_main_character_item_card_request::NotifyToOpponentYouUseDamageMainCharacterItemCardRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_destroy_deck_item_card_request::NotifyToOpponentYouUseDestroyDeckItemCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -96,4 +99,13 @@ impl CatastrophicDamageItemRequestForm {
         PlaceCardToLostZoneRequest::new(opponent_unique_id, will_be_lost_card)
     }
 
+    pub fn to_notify_opponent_you_use_catastrophic_damage_item_card_request(&self, opponent_unique_id: i32, item_card_id: i32, damage_for_field_unit: i32) -> NotifyToOpponentYouUseCatastrophicDamageItemCardRequest {
+        NotifyToOpponentYouUseCatastrophicDamageItemCardRequest::new(opponent_unique_id, item_card_id, damage_for_field_unit)
+    }
+    pub fn to_notify_opponent_you_use_damage_main_character_item_card_request(&self, opponent_unique_id: i32, item_card_id: i32, damage_for_main_character: i32) -> NotifyToOpponentYouUseDamageMainCharacterItemCardRequest {
+        NotifyToOpponentYouUseDamageMainCharacterItemCardRequest::new(opponent_unique_id, item_card_id, damage_for_main_character)
+    }
+    pub fn to_notify_opponent_you_use_destroy_deck_item_card_request(&self, opponent_unique_id: i32, item_card_id: i32, will_be_lost_card: i32) -> NotifyToOpponentYouUseDestroyDeckItemCardRequest {
+        NotifyToOpponentYouUseDestroyDeckItemCardRequest::new(opponent_unique_id, item_card_id, will_be_lost_card)
+    }
 }

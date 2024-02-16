@@ -96,7 +96,7 @@ impl ShopGachaService for ShopGachaServiceImpl {
 
         let shop_card_for_gacha_repository = self.shop_card_for_gacha_repository.lock().await;
 
-        let account_unique_id = self.get_account_unique_id(get_specific_race_card_request.account_id()).await;
+        let account_unique_id = self.get_account_unique_id(get_specific_race_card_request.account_session_id()).await;
         // 뽑을 카드 리스트
         let specific_race_card_list = shop_card_for_gacha_repository.get_specific_race_card_list(get_specific_race_card_request.get_race_enum()).await;
         // 카드 10개 뽑기
