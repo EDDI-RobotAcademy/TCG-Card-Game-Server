@@ -11,6 +11,7 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_field_unit_energy_removal_item_card_request::NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardRequest;
 
 #[derive(Debug)]
 pub struct RemoveOpponentFieldUnitEnergyItemRequestForm {
@@ -119,5 +120,13 @@ impl RemoveOpponentFieldUnitEnergyItemRequestForm {
                                                       opponent_target_unit_index,
                                                       race_enum,
                                                       quantity)
+    }
+    pub fn to_notify_opponent_you_use_field_unit_energy_removal_item_card_request(&self,
+                                                                                  opponent_unique_id: i32,
+                                                                                  item_card_id: i32,
+                                                                                  energy_quantity: i32) -> NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardRequest {
+        NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardRequest::new(opponent_unique_id,
+                                                                       item_card_id,
+                                                                       energy_quantity)
     }
 }
