@@ -1,26 +1,26 @@
-use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
-use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_active_skill::entity::active_skill_type::ActiveSkillType;
+use crate::game_card_active_skill::entity::required_energy::RequiredEnergy;
 use crate::game_card_active_skill::entity::summary_active_skill_effect::SummaryActiveSkillEffect;
-use crate::game_card_energy::entity::summary_energy_card_effect::SummaryEnergyCardEffect;
-use crate::game_card_item::entity::field_energy_addition_calculator::FieldEnergyAdditionCalculator;
-use crate::game_card_item::entity::game_card_item_effect::GameCardItemEffect;
 
 pub struct SummaryActiveSkillEffectResponse {
+    required_energy: RequiredEnergy,
     skill_type: ActiveSkillType,
     skill_damage: i32,
 }
 
 impl SummaryActiveSkillEffectResponse {
     pub fn new(
+        required_energy: RequiredEnergy,
         skill_type: ActiveSkillType,
         skill_damage: i32,) -> Self {
 
         Self {
+            required_energy,
             skill_type,
             skill_damage }
     }
 
+    pub fn get_required_energy(&self) -> &RequiredEnergy { &self.required_energy }
     pub fn get_skill_type(&self) -> &ActiveSkillType {
         &self.skill_type
     }
@@ -31,7 +31,11 @@ impl SummaryActiveSkillEffectResponse {
 
     pub fn from_summary_active_skill_effect(summary_active_skill_effect: SummaryActiveSkillEffect) -> SummaryActiveSkillEffectResponse {
 
+        let required_energy_count = summary_active_skill_effect.get_required_energy_for_active_skill().get_required_energy_count();
+        let required_energy_race = *summary_active_skill_effect.get_required_energy_for_active_skill().get_required_energy_race();
+
         SummaryActiveSkillEffectResponse::new(
+            RequiredEnergy::new(required_energy_race, required_energy_count),
             summary_active_skill_effect.get_skill_type().clone(),
             summary_active_skill_effect.get_skill_damage())
     }
