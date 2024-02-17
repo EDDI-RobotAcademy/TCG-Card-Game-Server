@@ -159,8 +159,11 @@ mod cfg_test {
             let mut repository = GameTurnRepositoryImpl::get_instance();
             let mut repository_guard = repository.lock().await;
             let account_unique_id = 1;
+            let opponent_unique_id = 2;
 
+            // 동일한 조건에서 카운트가 되도록 플레이어 2 명의 game_turn 객체를 동시에 생성함
             let result = repository_guard.create_game_turn_object(account_unique_id);
+            let result = repository_guard.create_game_turn_object(opponent_unique_id);
 
             drop(repository_guard);
 
@@ -169,6 +172,7 @@ mod cfg_test {
 
                 let mut repository_guard = repository.lock().await;
                 let account_unique_id = 1;
+                let opponent_unique_id = 2;
 
                 let game_turn_map = repository_guard.get_game_turn_map();
 
@@ -191,8 +195,9 @@ mod cfg_test {
             let mut repository = GameTurnRepositoryImpl::get_instance();
             let mut repository_guard = repository.lock().await;
             let account_unique_id = 2;
+            let opponent_unique_id = 1;
 
-            let result = repository_guard.create_game_turn_object(account_unique_id);
+            // let result = repository_guard.create_game_turn_object(account_unique_id);
 
             drop(repository_guard);
 
@@ -201,6 +206,7 @@ mod cfg_test {
 
                 let mut repository_guard = repository.lock().await;
                 let account_unique_id = 2;
+                let opponent_unique_id = 1;
 
                 let game_turn_map = repository_guard.get_game_turn_map();
 
