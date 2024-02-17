@@ -296,7 +296,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
         // 즉사기가 적용되어 실제 사망 처리 되었음을 알림
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_to_opponent_you_use_item_card_response = notify_player_action_service_guard
-            .notify_to_opponent_you_use_item_instant_death(
+            .notify_opponent_you_execute_instant_death_of_field_unit(
                 target_death_item_request_form.to_notify_to_opponent_you_use_item_instant_death_request(
                     find_opponent_by_account_id_response.get_opponent_unique_id(),
                     opponent_target_unit_index,

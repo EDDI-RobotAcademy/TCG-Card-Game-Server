@@ -149,10 +149,11 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
         // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_to_opponent_you_attached_energy_to_field_unit_response = notify_player_action_service_guard
-            .notify_to_opponent_you_attached_energy_to_field_unit(
+            .notify_opponent_you_use_energy_card(
                 attach_energy_request_form
-                    .to_notify_to_opponent_you_attached_energy_to_field_unit_request(
+                    .to_notify_opponent_you_use_general_energy_card(
                         find_opponent_by_account_id_response.get_opponent_unique_id(),
+                        usage_hand_card_id,
                         unit_card_index,
                         energy_card_effect_response.get_race() as i32,
                         energy_card_effect_response.get_quantity())).await;
@@ -231,10 +232,11 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
         // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_to_opponent_you_attached_energy_to_field_unit_response = notify_player_action_service_guard
-            .notify_to_opponent_you_attached_energy_to_field_unit(
+            .notify_opponent_you_use_energy_card(
                 attach_special_energy_request_form
-                    .to_notify_to_opponent_you_attached_energy_to_field_unit_request(
+                    .to_notify_opponent_you_use_special_energy_card(
                         find_opponent_by_account_id_response.get_opponent_unique_id(),
+                        usage_hand_card_id,
                         unit_card_index,
                         special_energy_card_effect_response.get_race() as i32,
                         special_energy_card_effect_response.get_quantity())).await;

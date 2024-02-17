@@ -182,7 +182,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         // 9. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_to_opponent_you_deploy_unit_response = notify_player_action_service_guard.notify_to_opponent_you_deploy_unit(
+        let notify_to_opponent_you_deploy_unit_response = notify_player_action_service_guard.notify_opponent_you_deploy_unit(
             deploy_unit_request_form.to_notify_to_opponent_what_you_do_request(
                 find_opponent_by_account_id_response.get_opponent_unique_id(), usage_hand_card_id)).await;
         if !notify_to_opponent_you_deploy_unit_response.is_success() {

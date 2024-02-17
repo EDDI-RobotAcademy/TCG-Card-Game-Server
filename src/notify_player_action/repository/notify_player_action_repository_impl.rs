@@ -22,7 +22,7 @@ use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_re
 use crate::notify_player_action::repository::notify_player_action_repository::NotifyPlayerActionRepository;
 use crate::response_generator::response_type::ResponseType;
 
-// TODO: 추후 HashMap을 구성하여 한 번 등록된 사용자에 대한 처리는 즉시 진행되도록 구성해
+// TODO: 추후 HashMap 을 구성하여 한 번 등록된 사용자에 대한 처리는 즉시 진행되도록 구성해
 pub struct NotifyPlayerActionRepositoryImpl;
 
 impl NotifyPlayerActionRepositoryImpl {
@@ -66,8 +66,8 @@ impl NotifyPlayerActionRepository for NotifyPlayerActionRepositoryImpl {
         true
     }
 
-    async fn notify_to_opponent_you_use_energy_card(&mut self, opponent_unique_id: i32, unit_card_index: i32, usage_energy_card_id: i32) -> bool {
-        println!("NotifyPlayerActionRepositoryImpl: notify_to_opponent_what_you_do()");
+    async fn notify_to_opponent_you_use_energy_card(&mut self, opponent_unique_id: i32, usage_energy_card_id: i32, unit_card_index: i32, energy_race: i32, energy_count: i32) -> bool {
+        println!("NotifyPlayerActionRepositoryImpl: notify_to_opponent_you_use_energy_card()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -84,7 +84,7 @@ impl NotifyPlayerActionRepository for NotifyPlayerActionRepositoryImpl {
             Arc::new(
                 AsyncMutex::new(
                     ResponseType::NOTIFY_OPPONENT_TO_ENERGY_USAGE(
-                        NotifyOpponentToEnergyUsage::new(unit_card_index, usage_energy_card_id))))).await;
+                        NotifyOpponentToEnergyUsage::new(usage_energy_card_id, unit_card_index, energy_race, energy_count))))).await;
 
         true
     }
