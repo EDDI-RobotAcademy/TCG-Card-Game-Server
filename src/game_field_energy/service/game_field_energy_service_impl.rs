@@ -6,8 +6,10 @@ use crate::game_field_energy::repository::game_field_energy_repository::GameFiel
 use crate::game_field_energy::repository::game_field_energy_repository_impl::GameFieldEnergyRepositoryImpl;
 use crate::game_field_energy::service::game_field_energy_service::GameFieldEnergyService;
 use crate::game_field_energy::service::request::add_field_energy_with_amount_request::AddFieldEnergyWithAmountRequest;
+use crate::game_field_energy::service::request::check_field_energy_enough_to_use_request::CheckFieldEnergyEnoughToUseRequest;
 use crate::game_field_energy::service::request::remove_field_energy_with_amount_request::RemoveFieldEnergyWithAmountRequest;
 use crate::game_field_energy::service::response::add_field_energy_with_amount_response::AddFieldEnergyWithAmountResponse;
+use crate::game_field_energy::service::response::check_field_energy_enough_to_use_response::CheckFieldEnergyEnoughToUseResponse;
 use crate::game_field_energy::service::response::remove_field_energy_with_amount_response::RemoveFieldEnergyWithAmountResponse;
 
 pub struct GameFieldEnergyServiceImpl {
@@ -58,5 +60,18 @@ impl GameFieldEnergyService for GameFieldEnergyServiceImpl {
         let removal_of_field_energy_result = game_field_energy_repository_guard.remove_field_energy_with_amount(account_unique_id, amount);
 
         RemoveFieldEnergyWithAmountResponse::new(removal_of_field_energy_result)
+    }
+
+    async fn check_field_energy_enough_to_use(&self, check_field_energy_enough_to_use_request: CheckFieldEnergyEnoughToUseRequest) -> CheckFieldEnergyEnoughToUseResponse {
+        println!("GameFieldEnergyServiceImpl: remove_field_energy_with_amount()");
+
+        let mut game_field_energy_repository_guard = self.game_field_energy_repository.lock().await;
+
+        let account_unique_id = check_field_energy_enough_to_use_request.get_account_unique_id();
+        let amount = check_field_energy_enough_to_use_request.get_will_be_used_amount();
+
+        let is_field_energy_enough_result = game_field_energy_repository_guard.check_field_energy_enough_to_use(account_unique_id, amount);
+
+        CheckFieldEnergyEnoughToUseResponse::new(is_field_energy_enough_result)
     }
 }

@@ -272,7 +272,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
             // 즉사기에 면역되어 alternatives로 작용하였음을 알림
             let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
             let notify_to_opponent_you_use_item_card_response = notify_player_action_service_guard
-                .notify_to_opponent_you_use_item_instant_death_alternatives(
+                .notify_to_opponent_you_use_instant_death_alternatives_item_card(
                     target_death_item_request_form.to_notify_to_opponent_you_use_item_instant_death_alternatives_request(
                         find_opponent_by_account_id_response.get_opponent_unique_id(),
                         opponent_target_unit_index,
@@ -296,7 +296,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
         // 즉사기가 적용되어 실제 사망 처리 되었음을 알림
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_to_opponent_you_use_item_card_response = notify_player_action_service_guard
-            .notify_opponent_you_execute_instant_death_of_field_unit(
+            .notify_to_opponent_you_use_instant_death_item_card(
                 target_death_item_request_form.to_notify_to_opponent_you_use_item_instant_death_request(
                     find_opponent_by_account_id_response.get_opponent_unique_id(),
                     opponent_target_unit_index,
@@ -730,12 +730,12 @@ impl GameCardItemController for GameCardItemControllerImpl {
                                                               opponent_field_unit_index,
                                                               found_opponent_unit_race,
                                                               energy_quantity)).await;
+
         if !detach_multiple_energy_form_field_unit_response.is_success() {
             println!("유닛 에너지 제거에 실패했습니다!");
             return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
         }
 
-        // TODO: Notify Service 추가 필요
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_item_card_response = notify_player_action_service_guard
             .notify_to_opponent_you_use_field_unit_energy_removal_item_card(
