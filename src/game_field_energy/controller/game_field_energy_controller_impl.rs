@@ -102,8 +102,6 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
             return AttachFieldEnergyToFieldUnitResponseForm::new(false)
         }
 
-        drop(game_field_energy_service_guard);
-
         // 4. 필드 에너지를 수량에 따라 부착합니다.
         let unit_card_index_string = attach_field_energy_to_field_unit_request_form.get_unit_index().to_string();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
@@ -140,7 +138,14 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
 
         drop(game_field_unit_service_guard);
 
-        // 5. TODO: 필드 에너지 사용에 따른 변화를 상대방에게 알립니다.
+        // 5. 사용된 필드 에너지를 제거합니다.
+        game_field_energy_service_guard
+            .remove_field_energy_with_amount(
+                attach_field_energy_to_field_unit_request_form
+                    .to_remove_field_energy_with_amount_request(account_unique_id,
+                                                                will_be_used_field_energy_quantity)).await;
+
+        // 6. TODO: 필드 에너지 사용에 따른 변화를 상대방에게 알립니다.
 
         AttachFieldEnergyToFieldUnitResponseForm::new(true)
     }

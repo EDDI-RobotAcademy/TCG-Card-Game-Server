@@ -1,5 +1,6 @@
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_field_energy::service::request::check_field_energy_enough_to_use_request::CheckFieldEnergyEnoughToUseRequest;
+use crate::game_field_energy::service::request::remove_field_energy_with_amount_request::RemoveFieldEnergyWithAmountRequest;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_attached_field_energy_to_field_unit_request::NotifyOpponentYouAttachedFieldEnergyRequest;
@@ -63,6 +64,13 @@ impl AttachFieldEnergyToFieldUnitRequestForm {
                                                     unit_card_index,
                                                     race_enum,
                                                     quantity)
+    }
+
+    pub fn to_remove_field_energy_with_amount_request(&self,
+                                                      account_unique_id: i32,
+                                                      amount: i32) -> RemoveFieldEnergyWithAmountRequest {
+        RemoveFieldEnergyWithAmountRequest::new(account_unique_id,
+                                                amount)
     }
 
     pub fn to_notify_you_attach_field_energy_to_field_unit_request(&self,
