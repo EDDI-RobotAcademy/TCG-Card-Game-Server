@@ -7,6 +7,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::notify_player_action::repository::notify_player_action_repository::NotifyPlayerActionRepository;
 use crate::notify_player_action::repository::notify_player_action_repository_impl::NotifyPlayerActionRepositoryImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
+use crate::notify_player_action::service::request::notify_to_opponent_you_attached_field_energy_to_field_unit_request::NotifyOpponentYouAttachedFieldEnergyRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_deploy_unit_request::NotifyToOpponentYouDeployUnitRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_draw_support_card_request::NotifyToOpponentYouUseDrawSupportCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_boost_card_request::NotifyToOpponentYouUseEnergyBoostCardRequest;
@@ -22,6 +23,7 @@ use crate::notify_player_action::service::request::notify_to_opponent_you_use_da
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_destroy_deck_item_card_request::NotifyToOpponentYouUseDestroyDeckItemCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_field_unit_energy_removal_item_card_request::NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_hand_card_request::NotifyOpponentYouUseHandCardRequest;
+use crate::notify_player_action::service::response::notify_to_opponent_you_attached_field_energy_to_field_unit_response::NotifyOpponentYouAttachedFieldEnergyResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_deploy_unit_response::NotifyToOpponentYouDeployUnitResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_draw_support_card_response::NotifyToOpponentYouUseDrawSupportCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_energy_boost_card_response::NotifyToOpponentYouUseEnergyBoostCardResponse;
@@ -85,6 +87,21 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
             notify_opponent_you_use_hand_card_request.get_usage_hand_card_id()).await;
 
         NotifyOpponentYouUseHandCardResponse::new(notify_to_opponent_what_you_do_response)
+    }
+
+    async fn notify_opponent_you_attach_field_energy_to_field_unit(&mut self, notify_opponent_you_attached_field_energy_request: NotifyOpponentYouAttachedFieldEnergyRequest) -> NotifyOpponentYouAttachedFieldEnergyResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_opponent_you_attach_field_energy_to_field_unit()");
+
+        let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
+        let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard.notify_to_opponent_you_attached_field_energy_to_field_unit(
+            notify_opponent_you_attached_field_energy_request.get_opponent_unique_id(),
+            notify_opponent_you_attached_field_energy_request.get_unit_card_index(),
+            notify_opponent_you_attached_field_energy_request.get_energy_race(),
+            notify_opponent_you_attached_field_energy_request.get_energy_count(),
+            notify_opponent_you_attached_field_energy_request.get_current_unit_energy_count(),
+            notify_opponent_you_attached_field_energy_request.get_remaining_field_energy()).await;
+
+        NotifyOpponentYouAttachedFieldEnergyResponse::new(notify_to_opponent_what_you_do_response)
     }
 
     async fn notify_opponent_you_use_energy_card(&mut self, notify_to_opponent_you_use_energy_card_request: NotifyOpponentYouUseEnergyCardRequest) -> NotifyToOpponentYouUseEnergyCardResponse {

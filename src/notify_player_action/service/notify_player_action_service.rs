@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use crate::notify_player_action::service::request::notify_to_opponent_you_attached_field_energy_to_field_unit_request::NotifyOpponentYouAttachedFieldEnergyRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_deploy_unit_request::NotifyToOpponentYouDeployUnitRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_draw_support_card_request::NotifyToOpponentYouUseDrawSupportCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_boost_card_request::NotifyToOpponentYouUseEnergyBoostCardRequest;
@@ -14,6 +15,7 @@ use crate::notify_player_action::service::request::notify_to_opponent_you_use_ca
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_damage_main_character_item_card_request::NotifyToOpponentYouUseDamageMainCharacterItemCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_destroy_deck_item_card_request::NotifyToOpponentYouUseDestroyDeckItemCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_hand_card_request::NotifyOpponentYouUseHandCardRequest;
+use crate::notify_player_action::service::response::notify_to_opponent_you_attached_field_energy_to_field_unit_response::NotifyOpponentYouAttachedFieldEnergyResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_deploy_unit_response::NotifyToOpponentYouDeployUnitResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_draw_support_card_response::NotifyToOpponentYouUseDrawSupportCardResponse;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_energy_boost_card_response::NotifyToOpponentYouUseEnergyBoostCardResponse;
@@ -32,6 +34,7 @@ use crate::notify_player_action::service::response::notify_to_opponent_you_use_h
 pub trait NotifyPlayerActionService {
     async fn notify_opponent_you_deploy_unit(&mut self, notify_to_opponent_what_you_do_request: NotifyToOpponentYouDeployUnitRequest) -> NotifyToOpponentYouDeployUnitResponse;
     async fn notify_opponent_you_use_hand_card(&mut self, notify_opponent_you_use_hand_card_request: NotifyOpponentYouUseHandCardRequest) -> NotifyOpponentYouUseHandCardResponse;
+    async fn notify_opponent_you_attach_field_energy_to_field_unit(&mut self, notify_opponent_you_attached_field_energy_request: NotifyOpponentYouAttachedFieldEnergyRequest) -> NotifyOpponentYouAttachedFieldEnergyResponse;
     async fn notify_opponent_you_use_energy_card(&mut self, notify_to_opponent_you_use_energy_card_request: NotifyOpponentYouUseEnergyCardRequest) -> NotifyToOpponentYouUseEnergyCardResponse;
     async fn notify_to_opponent_you_use_energy_boost_support_card(&mut self, notify_to_opponent_you_use_energy_boost_card_request: NotifyToOpponentYouUseEnergyBoostCardRequest) -> NotifyToOpponentYouUseEnergyBoostCardResponse;
     async fn notify_to_opponent_you_use_instant_death_item_card(&mut self, notify_to_opponent_you_use_item_card_request: NotifyToOpponentYouUseItemInstantDeathRequest) -> NotifyToOpponentYouUseItemCardResponse;

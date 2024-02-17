@@ -51,6 +51,7 @@ use crate::notify_player_action::entity::notify_opponent_to_unit_deploy::NotifyO
 use crate::notify_player_action::entity::notify_opponent_to_catastrophic_damage_item_usage::NotifyOpponentToCatastrophicDamageItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_damage_main_character_item_usage::NotifyOpponentToDamageMainCharacterItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
+use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
 use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_card_response::NotifyToOpponentYouUseItemCardResponse;
 
@@ -118,6 +119,7 @@ pub enum ResponseType {
 
     // Notification to players
     NOTIFY_OPPONENT_TO_UNIT_DEPLOY(NotifyOpponentToUnitDeploy),
+    NOTIFY_OPPONENT_TO_FIELD_ENERGY_USAGE(NotifyOpponentToFieldEnergyUsage),
     NOTIFY_OPPONENT_TO_ENERGY_USAGE(NotifyOpponentToEnergyUsage),
     NOTIFY_OPPONENT_TO_ENERGY_BOOST(NotifyOpponentToEnergyBoost),
     NOTIFY_OPPONENT_TO_INSTANT_DEATH_ITEM_USAGE(NotifyOpponentToInstantDeathItemUsage),
