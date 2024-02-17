@@ -88,7 +88,7 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
     }
 
     async fn notify_opponent_you_use_energy_card(&mut self, notify_to_opponent_you_use_energy_card_request: NotifyOpponentYouUseEnergyCardRequest) -> NotifyToOpponentYouUseEnergyCardResponse {
-        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_attached_energy_to_field_unit()");
+        println!("NotifyPlayerActionServiceImpl: notify_opponent_you_use_energy_card()");
 
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
         let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard.notify_to_opponent_you_use_energy_card(
@@ -102,10 +102,10 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
     }
 
     async fn notify_to_opponent_you_use_energy_boost_support_card(&mut self, notify_to_opponent_you_use_energy_boost_card_request: NotifyToOpponentYouUseEnergyBoostCardRequest) -> NotifyToOpponentYouUseEnergyBoostCardResponse {
-        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_energy_boost()");
+        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_energy_boost_support_card()");
 
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
-        let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard.notify_to_opponent_you_use_energy_boost_card(
+        let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard.notify_to_opponent_you_use_energy_boost_support_card(
             notify_to_opponent_you_use_energy_boost_card_request.get_opponent_unique_id(),
             notify_to_opponent_you_use_energy_boost_card_request.get_unit_card_index(),
             notify_to_opponent_you_use_energy_boost_card_request.get_usage_hand_card_id(),
@@ -115,12 +115,12 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
         NotifyToOpponentYouUseEnergyBoostCardResponse::new(notify_to_opponent_what_you_do_response)
     }
 
-    async fn notify_opponent_you_execute_instant_death_of_field_unit(&mut self, notify_to_opponent_you_use_item_instant_death_request: NotifyToOpponentYouUseItemInstantDeathRequest) -> NotifyToOpponentYouUseItemCardResponse {
-        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_item_card()");
+    async fn notify_to_opponent_you_use_instant_death_item_card(&mut self, notify_to_opponent_you_use_item_instant_death_request: NotifyToOpponentYouUseItemInstantDeathRequest) -> NotifyToOpponentYouUseItemCardResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_instant_death_item_card()");
 
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
         let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard
-            .notify_to_opponent_you_use_item_instant_death_card(
+            .notify_to_opponent_you_use_instant_death_item_card(
                 notify_to_opponent_you_use_item_instant_death_request.get_opponent_unique_id(),
                 notify_to_opponent_you_use_item_instant_death_request.get_opponent_target_unit_index(),
                 notify_to_opponent_you_use_item_instant_death_request.get_usage_item_card_id()).await;
@@ -128,12 +128,12 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
         NotifyToOpponentYouUseItemCardResponse::new(notify_to_opponent_what_you_do_response)
     }
 
-    async fn notify_to_opponent_you_use_item_instant_death_alternatives(&mut self, notify_to_opponent_you_use_item_instant_death_alternatives_request: NotifyToOpponentYouUseItemInstantDeathAlternativesRequest) -> NotifyToOpponentYouUseItemInstantDeathAlternativesResponse {
-        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_item_instant_death_alternatives()");
+    async fn notify_to_opponent_you_use_instant_death_alternatives_item_card(&mut self, notify_to_opponent_you_use_item_instant_death_alternatives_request: NotifyToOpponentYouUseItemInstantDeathAlternativesRequest) -> NotifyToOpponentYouUseItemInstantDeathAlternativesResponse {
+        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_instant_death_alternatives_item_card()");
 
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
         let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard
-            .notify_to_opponent_you_use_item_instant_death_card_alternatives(
+            .notify_to_opponent_you_use_instant_death_item_card_alternatives(
                 notify_to_opponent_you_use_item_instant_death_alternatives_request.get_opponent_unique_id(),
                 notify_to_opponent_you_use_item_instant_death_alternatives_request.get_opponent_target_unit_index(),
                 notify_to_opponent_you_use_item_instant_death_alternatives_request.get_usage_item_card_id(),
@@ -167,7 +167,7 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
     }
 
     async fn notify_opponent_you_use_field_energy_remove_support_card(&mut self, notify_to_opponent_you_use_field_energy_remove_support_card_request: NotifyToOpponentYouUseFieldEnergyRemoveSupportCardRequest) -> NotifyOpponentYouUseSupportCardResponse {
-        println!("NotifyPlayerActionServiceImpl: notify_opponent_you_use_search_support_card()");
+        println!("NotifyPlayerActionServiceImpl: notify_opponent_you_use_field_energy_remove_support_card()");
 
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
         let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard.notify_opponent_you_use_remove_field_energy_support_card(
@@ -180,10 +180,10 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
 
     // TODO: 갱신된 필드 에너지 정보를 추가해야 함
     async fn notify_opponent_you_use_item_field_energy_increase_item_card(&mut self, notify_opponent_you_use_item_field_energy_increase_request: NotifyOpponentYouUseItemFieldEnergyIncreaseRequest) -> NotifyToOpponentYouUseItemCardResponse {
-        println!("NotifyPlayerActionServiceImpl: notify_opponent_you_use_search_support_card()");
+        println!("NotifyPlayerActionServiceImpl: notify_opponent_you_use_item_field_energy_increase_item_card()");
 
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
-        let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard.notify_opponent_you_use_item_field_energy_increase_card(
+        let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard.notify_opponent_you_use_field_energy_increase_item_card(
             notify_opponent_you_use_item_field_energy_increase_request.get_opponent_unique_id(),
             notify_opponent_you_use_item_field_energy_increase_request.get_usage_item_card_id(),
             notify_opponent_you_use_item_field_energy_increase_request.get_increased_field_energy()).await;
@@ -191,7 +191,7 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
         NotifyToOpponentYouUseItemCardResponse::new(notify_to_opponent_what_you_do_response)
     }
     async fn notify_to_opponent_you_use_tool_card_to_enhance_attack_point(&mut self, notify_to_opponent_you_use_tool_card_to_enhance_attack_point_request: NotifyToOpponentYouUseToolCardToEnhanceAttackPointRequest) -> NotifyToOpponentYouUseToolCardToEnhanceAttackPointResponse {
-        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_item_instant_death_alternatives()");
+        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_tool_card_to_enhance_attack_point()");
 
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
         let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard
@@ -244,7 +244,7 @@ impl NotifyPlayerActionService for NotifyPlayerActionServiceImpl {
     }
     async fn notify_to_opponent_you_use_field_unit_energy_removal_item_card(&mut self,notify_to_opponent_you_use_field_unit_energy_removal_item_card:NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardRequest)
                                                                                                                                                  ->NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardResponse {
-        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_destroy_deck_card_item_card()");
+        println!("NotifyPlayerActionServiceImpl: notify_to_opponent_you_use_field_unit_energy_removal_item_card()");
 
         let mut notify_player_action_repository_guard = self.notify_player_action_repository.lock().await;
         let notify_to_opponent_what_you_do_response = notify_player_action_repository_guard

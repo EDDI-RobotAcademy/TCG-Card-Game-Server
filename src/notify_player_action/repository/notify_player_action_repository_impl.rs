@@ -89,7 +89,7 @@ impl NotifyPlayerActionRepository for NotifyPlayerActionRepositoryImpl {
         true
     }
 
-    async fn notify_to_opponent_you_use_energy_boost_card(&mut self, opponent_unique_id: i32, unit_card_index: i32, usage_support_card_id: i32, boosting_energy_count: i32, boosting_energy_card_id: i32) -> bool {
+    async fn notify_to_opponent_you_use_energy_boost_support_card(&mut self, opponent_unique_id: i32, unit_card_index: i32, usage_support_card_id: i32, boosting_energy_count: i32, boosting_energy_card_id: i32) -> bool {
         println!("NotifyPlayerActionRepositoryImpl: notify_to_opponent_you_use_energy_boost_card()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
@@ -119,8 +119,8 @@ impl NotifyPlayerActionRepository for NotifyPlayerActionRepositoryImpl {
     }
 
     // TODO: 에너지 사용 여부도 필요함 (필드, 핸드)
-    async fn notify_to_opponent_you_use_item_instant_death_card(&mut self, opponent_unique_id: i32, unit_card_index: i32, usage_item_card_id: i32) -> bool {
-        println!("NotifyPlayerActionRepositoryImpl: notify_to_opponent_you_use_item_instant_death_card()");
+    async fn notify_to_opponent_you_use_instant_death_item_card(&mut self, opponent_unique_id: i32, unit_card_index: i32, usage_item_card_id: i32) -> bool {
+        println!("NotifyPlayerActionRepositoryImpl: notify_to_opponent_you_use_instant_death_item_card()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -142,8 +142,8 @@ impl NotifyPlayerActionRepository for NotifyPlayerActionRepositoryImpl {
         true
     }
 
-    async fn notify_to_opponent_you_use_item_instant_death_card_alternatives(&mut self, opponent_unique_id: i32, unit_card_index: i32, usage_item_card_id: i32, alternatives_damage: i32) -> bool {
-        println!("NotifyPlayerActionRepositoryImpl: notify_to_opponent_you_use_item_instant_death_card()");
+    async fn notify_to_opponent_you_use_instant_death_item_card_alternatives(&mut self, opponent_unique_id: i32, unit_card_index: i32, usage_item_card_id: i32, alternatives_damage: i32) -> bool {
+        println!("NotifyPlayerActionRepositoryImpl: notify_to_opponent_you_use_instant_death_item_card_alternatives()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -234,7 +234,7 @@ impl NotifyPlayerActionRepository for NotifyPlayerActionRepositoryImpl {
         true
     }
 
-    async fn notify_opponent_you_use_item_field_energy_increase_card(&mut self, opponent_unique_id: i32, usage_item_card_id: i32, increased_field_energy: i32) -> bool {
+    async fn notify_opponent_you_use_field_energy_increase_item_card(&mut self, opponent_unique_id: i32, usage_item_card_id: i32, increased_field_energy: i32) -> bool {
         println!("NotifyPlayerActionRepositoryImpl: notify_opponent_you_use_item_field_energy_increase_card()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
