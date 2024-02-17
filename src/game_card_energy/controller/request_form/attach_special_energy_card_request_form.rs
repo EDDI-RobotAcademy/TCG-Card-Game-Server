@@ -8,7 +8,7 @@ use crate::game_field_unit::service::request::attach_special_energy_to_unit_inde
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_energy_card_request::IsItEnergyCardRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyToOpponentYouAttachedEnergyToFieldUnitRequest;
+use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::{NotifyOpponentYouUseEnergyCardRequest};
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 pub struct AttachSpecialEnergyCardRequestForm {
@@ -73,10 +73,8 @@ impl AttachSpecialEnergyCardRequestForm {
         FindOpponentByAccountIdRequest::new(
             account_unique_id)
     }
-    pub fn to_notify_to_opponent_you_attached_energy_to_field_unit_request(&self, opponent_unique_id: i32, unit_card_index: i32, energy_race: i32, energy_count: i32) -> NotifyToOpponentYouAttachedEnergyToFieldUnitRequest {
-        NotifyToOpponentYouAttachedEnergyToFieldUnitRequest::new(
-            opponent_unique_id, unit_card_index, energy_race, energy_count)
+    pub fn to_notify_opponent_you_use_special_energy_card(&self, opponent_unique_id: i32, usage_energy_card_id: i32, unit_card_index: i32, energy_race: i32, energy_count: i32) -> NotifyOpponentYouUseEnergyCardRequest {
+        NotifyOpponentYouUseEnergyCardRequest::new(
+            opponent_unique_id, usage_energy_card_id, unit_card_index, energy_race, energy_count)
     }
-
-
 }
