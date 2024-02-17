@@ -68,6 +68,19 @@ impl GameFieldEnergyRepository for GameFieldEnergyRepositoryImpl {
 
         false
     }
+
+    fn check_field_energy_enough_to_use(&mut self, account_unique_id: i32, will_be_used_field_energy_count: i32) -> bool {
+        println!("FieldEnergyRepositoryImpl: check_field_energy_enough_to_use()");
+
+        if let Some(game_field_energy) = self.game_field_energy_map.get_mut(&account_unique_id) {
+            let current_field_energy_count = game_field_energy.get_energy_count();
+            if current_field_energy_count >= will_be_used_field_energy_count {
+                return true
+            }
+        }
+
+        false
+    }
 }
 
 #[cfg(test)]
@@ -127,6 +140,10 @@ mod tests {
             guard.get_game_field_energy_map().get(&account_unique_id),
             Some(&GameFieldEnergy::new(2))
         );
+
+        let result = guard.check_field_energy_enough_to_use(account_unique_id, 3);
+
+        assert_eq!(result, false);
     }
 
     #[tokio::test]
