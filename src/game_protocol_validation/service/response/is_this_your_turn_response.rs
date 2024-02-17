@@ -13,4 +13,6 @@ impl IsThisYourTurnResponse {
     pub fn is_success(&self) -> bool {
         self.is_success
     }
+
+    pub fn get_is_success(&self) -> bool { self.is_success }
 }
