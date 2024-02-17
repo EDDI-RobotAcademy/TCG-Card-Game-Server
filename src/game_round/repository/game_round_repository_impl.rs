@@ -55,6 +55,18 @@ impl GameRoundRepository for GameRoundRepositoryImpl {
 
         -1
     }
+
+    fn get_round_turn(&mut self, account_unique_id: i32) -> i32 {
+        println!("GameTurnRepositoryImpl: get_round_turn()");
+
+        if let Some(index) = self.game_round_map.get_index_of(&account_unique_id) {
+            if let Some((_key, game_round)) = self.game_round_map.get_index_mut(index) {
+                return game_round.get_round();
+            }
+        }
+
+        -1
+    }
 }
 
 #[cfg(test)]
