@@ -7,3 +7,4 @@ pub mod check_cards_from_hand_response;
 pub mod is_it_energy_card_response;
 pub mod is_it_item_card_response;
 pub mod is_it_tool_card_response;
+pub mod is_this_your_turn_response;
