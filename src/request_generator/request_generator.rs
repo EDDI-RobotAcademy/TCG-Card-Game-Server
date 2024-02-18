@@ -62,6 +62,7 @@ use crate::request_generator::first_turn_decision_request_generator::create_firs
 use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item_request_form, create_opponent_field_unit_energy_removal_item_request_form, create_target_death_item_request_form};
 use crate::request_generator::game_next_turn_request_generator::create_game_turn_request_form;
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
+use crate::request_generator::non_targeting_active_skill_request_form_generator::create_non_targeting_active_skill_request_form;
 use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
 use crate::request_generator::targeting_active_skill_request_form_generator::create_targeting_active_skill_request_form;
@@ -455,13 +456,27 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             1001 => {
-                // Unit use first active skill
+                // Unit use targeting active skill
                 if let Some(request_form) = create_targeting_active_skill_request_form(&data) {
                     let game_card_active_skill_controller_mutex = GameCardActiveSkillControllerImpl::get_instance();
                     let game_card_active_skill_controller = game_card_active_skill_controller_mutex.lock().await;
 
                     let response_form = game_card_active_skill_controller.request_targeting_active_skill(request_form).await;
                     let response_type = Some(ResponseType::TARGETING_ACTIVE_SKILL(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1002 => {
+                // Unit use non-targeting active skill
+                if let Some(request_form) = create_non_targeting_active_skill_request_form(&data) {
+                    let game_card_active_skill_controller_mutex = GameCardActiveSkillControllerImpl::get_instance();
+                    let game_card_active_skill_controller = game_card_active_skill_controller_mutex.lock().await;
+
+                    let response_form = game_card_active_skill_controller.request_non_targeting_active_skill(request_form).await;
+                    let response_type = Some(ResponseType::NON_TARGETING_ACTIVE_SKILL(response_form));
 
                     response_type
                 } else {
