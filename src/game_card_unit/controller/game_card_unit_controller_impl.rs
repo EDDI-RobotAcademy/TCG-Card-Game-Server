@@ -238,6 +238,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     find_unit_extra_effect_response.get_extra_status_effect_list(),
                     target_unit_card_index)).await;
 
+        // TODO: 반격 적용
+
         // 8. 공격한 유닛이 죽었는지 판정
 
         // 9. 죽었다면 무덤 배치
