@@ -10,7 +10,7 @@ impl CheckMainCharacterOfAccountUniqueIdResponse {
         CheckMainCharacterOfAccountUniqueIdResponse { status_main_character }
     }
 
-    pub fn status_main_character(&self) -> StatusMainCharacterEnum {
+    pub fn get_status_main_character(&self) -> StatusMainCharacterEnum {
         self.status_main_character
     }
 }

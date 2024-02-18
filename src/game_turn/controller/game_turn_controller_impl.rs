@@ -13,6 +13,8 @@ use crate::game_card_item::controller::response_form::target_death_item_response
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
+use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum::{Death, Survival};
+use crate::game_main_character::service::game_main_character_service::GameMainCharacterService;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
@@ -32,6 +34,8 @@ use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyR
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+use crate::game_main_character::service::game_main_character_service_impl::GameMainCharacterServiceImpl;
+use crate::game_main_character::service::request::check_main_character_of_account_unique_id_request::CheckMainCharacterOfAccountUniqueIdRequest;
 
 pub struct GameTurnControllerImpl {
     game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
@@ -39,6 +43,7 @@ pub struct GameTurnControllerImpl {
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
+    game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
     // TODO: Need Refactor
     first_turn_decision_wait_queue_service: Arc<AsyncMutex<FirstTurnDecisionWaitQueueServiceImpl>>,
 
@@ -50,6 +55,7 @@ impl GameTurnControllerImpl {
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
+               game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
                // TODO: Need Refactor
                first_turn_decision_wait_queue_service: Arc<AsyncMutex<FirstTurnDecisionWaitQueueServiceImpl>>) -> Self {
 
@@ -59,6 +65,7 @@ impl GameTurnControllerImpl {
             game_field_unit_service,
             redis_in_memory_service,
             game_protocol_validation_service,
+            game_main_character_service,
             // TODO: Need Refactor
             first_turn_decision_wait_queue_service
         }
@@ -74,6 +81,7 @@ impl GameTurnControllerImpl {
                             GameFieldUnitServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance(),
+                            GameMainCharacterServiceImpl::get_instance(),
                             // TODO: Need Refactor
                             FirstTurnDecisionWaitQueueServiceImpl::get_instance())));
         }
@@ -171,7 +179,25 @@ impl GameTurnController for GameTurnControllerImpl {
             turn_end_request_form.to_apply_status_effect_damage_iteratively_request(
                 account_unique_id)).await;
 
-        // TODO: 4. 본체 사망 여부 확인
+        // 4. 본체 사망 여부 정보를 가져옵니다.
+        let mut game_main_character_service_guard = self.game_main_character_service.lock().await;
+        let check_main_character_request_by_account_unique_id = CheckMainCharacterOfAccountUniqueIdRequest::new(account_unique_id);
+        let status_account_unique_id = game_main_character_service_guard
+            .check_main_character_of_account_unique_id(check_main_character_request_by_account_unique_id).await.get_status_main_character();
+
+        let mut game_main_character_service_guard = self.game_main_character_service.lock().await;
+        let check_main_character_request_by_opponent_account_unique_id = CheckMainCharacterOfAccountUniqueIdRequest::new(opponent_account_unique_id);
+        let status_opponent_account_unique_id = game_main_character_service_guard
+            .check_main_character_of_account_unique_id(check_main_character_request_by_opponent_account_unique_id).await.get_status_main_character();
+
+
+        // TODO: 본체 상태 조건에 따라 승패 판정 요청할 것
+        if status_account_unique_id == Death && status_opponent_account_unique_id == Death {
+        }
+        if status_account_unique_id == Survival && status_opponent_account_unique_id == Death {
+        }
+        if status_account_unique_id == Death && status_opponent_account_unique_id == Survival {
+        }
 
         // 5. 죽은 유닛들이 있는지 전체 순회하며 확인하여 죽은 유닛은 무덤으로 배치
         self.check_current_health_field_unit_card(account_unique_id).await;
