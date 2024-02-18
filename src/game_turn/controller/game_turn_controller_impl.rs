@@ -12,6 +12,7 @@ use crate::first_turn_decision_wait_queue::service::response::first_turn_decisio
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
+use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
@@ -30,6 +31,7 @@ use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImp
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
+use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 
 pub struct GameTurnControllerImpl {
     game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
@@ -85,6 +87,28 @@ impl GameTurnControllerImpl {
         let value_string = session_validation_response.get_value();
         value_string.parse::<i32>().unwrap_or_else(|_| { -1 })
     }
+
+    async fn check_current_health_field_unit_card(&self, account_id: i32) {
+        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+        let account_unique_id_game_filed_unit_request = GetGameFieldUnitCardOfAccountUniqueIdRequest::new(account_id);
+        let game_field_unit_list_of_account_unique_id_response = game_field_unit_service_guard.get_game_field_unit_card_of_account_unique_id(account_unique_id_game_filed_unit_request);
+        let game_field_unit_list_of_account_unique_id = game_field_unit_list_of_account_unique_id_response.await.get_game_field_unit_card().clone();
+        let game_field_unit_list_of_account_unique_id_option = game_field_unit_list_of_account_unique_id.get(1);
+
+        if let Some(_) = game_field_unit_list_of_account_unique_id_option {
+
+            for unit in game_field_unit_list_of_account_unique_id {
+
+                let mut curren_health_of_unit = unit.get_unit_health_point().get_current_health_point();
+
+                if curren_health_of_unit <= 0 {
+                    let died_card_id = unit.get_card();
+                    println!("Place to TOMB : account_unique_id: {:?}, card_id: {:?}", account_id, died_card_id);
+                    PlaceToTombRequest::new(account_id,died_card_id);
+                }
+            }
+        }
+    }
 }
 
 #[async_trait]
@@ -127,7 +151,13 @@ impl GameTurnController for GameTurnControllerImpl {
             return TurnEndResponseForm::new(false)
         }
 
-        // 2. 현재 요청한 사람이 이번 턴의 주도권을 가지고 있더너 사람인지 검증
+        // 6. opponent id도 찾아야함
+        let battle_room_service_guard = self.battle_room_service.lock().await;
+        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
+            turn_end_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+        let opponent_account_unique_id = find_opponent_by_account_id_response.get_opponent_unique_id();
+
+        // 2. 현재 요청한 사람이 이번 턴의 주도권을 가지고 있던 사람인지 검증
         let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
         let account_request = IsThisYourTurnRequest::new(account_unique_id);
         let is_this_your_turn_response = game_protocol_validation_service_guard.is_this_your_turn(account_request);
@@ -141,14 +171,11 @@ impl GameTurnController for GameTurnControllerImpl {
             turn_end_request_form.to_apply_status_effect_damage_iteratively_request(
                 account_unique_id)).await;
 
-        // 4. 죽은 유닛들이 있는지 전체 순회하며 확인
+        // TODO: 4. 본체 사망 여부 확인
 
-        // 5. 죽은 유닛들 무덤으로 배치
-
-        // 6. 양측 턴을 증가시키기 위해 opponent id도 찾아야함
-        let battle_room_service_guard = self.battle_room_service.lock().await;
-        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
-            turn_end_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+        // 5. 죽은 유닛들이 있는지 전체 순회하며 확인하여 죽은 유닛은 무덤으로 배치
+        self.check_current_health_field_unit_card(account_unique_id).await;
+        self.check_current_health_field_unit_card(opponent_account_unique_id).await;
 
         // 7. 당신의 턴 증가
         let mut game_turn_service_guard = self.game_turn_service.lock().await;
@@ -157,7 +184,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
         // 8. 상대방의 턴 증가
         let next_turn_response = game_turn_service_guard
-            .next_turn(turn_end_request_form.to_next_turn_request(find_opponent_by_account_id_response.get_opponent_unique_id())).await;
+            .next_turn(turn_end_request_form.to_next_turn_request(opponent_account_unique_id)).await;
 
         // 9. 턴 종료 상황에서 상태 이상으로 죽은 유닛들, 데미지 등등을 알려줘야함
 
