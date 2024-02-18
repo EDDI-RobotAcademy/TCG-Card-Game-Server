@@ -30,6 +30,8 @@ use crate::game_card_unit::controller::game_card_unit_controller::GameCardUnitCo
 use crate::game_card_unit::controller::game_card_unit_controller_impl::GameCardUnitControllerImpl;
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
+use crate::game_field_energy::controller::game_field_energy_controller::GameFieldEnergyController;
+use crate::game_field_energy::controller::game_field_energy_controller_impl::GameFieldEnergyControllerImpl;
 use crate::game_hand::controller::game_hand_controller::GameHandController;
 use crate::game_hand::controller::game_hand_controller_impl::GameHandControllerImpl;
 use crate::game_turn::controller::game_turn_controller_impl::GameTurnControllerImpl;
@@ -54,6 +56,7 @@ use crate::game_turn::controller::game_turn_controller::GameTurnController;
 
 use crate::game_turn::service::game_turn_service::GameTurnService;
 use crate::game_turn::service::game_turn_service_impl::GameTurnServiceImpl;
+use crate::request_generator::attach_field_energy_to_field_unit_request_form_generator::create_attach_field_energy_to_field_unit_request_form;
 
 use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
@@ -477,6 +480,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = game_card_active_skill_controller.request_non_targeting_active_skill(request_form).await;
                     let response_type = Some(ResponseType::NON_TARGETING_ACTIVE_SKILL(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1003 => {
+                // Attach field energy to field unit
+                if let Some(request_form) = create_attach_field_energy_to_field_unit_request_form(&data) {
+                    let game_field_energy_controller_mutex = GameFieldEnergyControllerImpl::get_instance();
+                    let game_field_energy_controller = game_field_energy_controller_mutex.lock().await;
+
+                    let response_form = game_field_energy_controller.request_to_attach_field_energy_to_field_unit(request_form).await;
+                    let response_type = Some(ResponseType::ATTACH_FIELD_ENERGY_TO_UNIT(response_form));
 
                     response_type
                 } else {
