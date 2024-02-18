@@ -7,6 +7,7 @@ use crate::game_protocol_validation::service::request::is_it_item_card_request::
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_protocol_validation::service::request::is_it_unit_card_request::IsItUnitCardRequest;
 use crate::game_protocol_validation::service::request::is_it_tool_card_request::IsItToolCardRequest;
+use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_protocol_validation::service::request::support_card_protocol_validation_request::SupportCardProtocolValidationRequest;
 
 use crate::game_protocol_validation::service::response::can_use_card_response::CanUseCardResponse;
@@ -17,6 +18,7 @@ use crate::game_protocol_validation::service::response::is_it_item_card_response
 use crate::game_protocol_validation::service::response::is_it_support_card_response::IsItSupportCardResponse;
 use crate::game_protocol_validation::service::response::is_it_unit_card_response::IsItUnitCardResponse;
 use crate::game_protocol_validation::service::response::is_it_tool_card_response::IsItToolCardResponse;
+use crate::game_protocol_validation::service::response::is_this_your_turn_response::IsThisYourTurnResponse;
 use crate::game_protocol_validation::service::response::support_card_protocol_validation_response::SupportCardProtocolValidationResponse;
 
 #[async_trait]
@@ -29,4 +31,5 @@ pub trait GameProtocolValidationService {
     async fn is_it_energy_card(&self, is_it_energy_card_request: IsItEnergyCardRequest) -> IsItEnergyCardResponse;
     async fn is_it_item_card(&self, is_it_item_card_request: IsItItemCardRequest) -> IsItItemCardResponse;
     async fn is_it_tool_card(&self, is_it_tool_card_request: IsItToolCardRequest) -> IsItToolCardResponse;
+    async fn is_this_your_turn(&self, is_it_tool_card_request: IsThisYourTurnRequest) -> IsThisYourTurnResponse;
 }
