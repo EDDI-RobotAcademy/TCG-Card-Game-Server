@@ -53,6 +53,14 @@ impl GameMainCharacterRepository for GameMainCharacterRepositoryImpl {
 
         true
     }
+
+    fn get_health_point_of_main_character_by_account_unique_id(&mut self, account_unique_id: i32) -> i32 {
+        println!("GameMainCharacterRepositoryImpl: get_health_point_of_main_character_by_account_unique_id()");
+
+        let main_character_of_account_unique_id = self.game_main_character_map.get_mut(&account_unique_id).unwrap();
+        let health_point_main_character = main_character_of_account_unique_id.get_health_point();
+        return health_point_main_character;
+    }
 }
 
 #[cfg(test)]
