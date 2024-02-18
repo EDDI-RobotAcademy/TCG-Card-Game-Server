@@ -18,6 +18,7 @@ use crate::battle_ready_account_hash::service::response::check_battle_prepare_re
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
+use crate::game_card_active_skill::controller::response_form::non_targeting_active_skill_response_form::NonTargetingActiveSkillResponseForm;
 use crate::game_turn::controller::response_form::first_turn_decision_wait_queue_response_form::FirstTurnDecisionWaitQueueResponseForm;
 
 use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
@@ -53,8 +54,6 @@ use crate::notify_player_action::entity::notify_opponent_to_damage_main_characte
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
-use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_card_response::NotifyToOpponentYouUseItemCardResponse;
-
 use crate::shop_gacha::service::response::get_specific_race_card_response::GetSpecificRaceCardResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -115,6 +114,7 @@ pub enum ResponseType {
     OPPONENT_FIElD_UNIT_ENERGY_REMOVAL_ITEM_USAGE(RemoveOpponentFieldUnitEnergyItemResponseForm),
     ATTACK_UNIT(AttackUnitResponseForm),
     TARGETING_ACTIVE_SKILL(TargetingActiveSkillResponseForm),
+    NON_TARGETING_ACTIVE_SKILL(NonTargetingActiveSkillResponseForm),
 
 
     // Notification to players
