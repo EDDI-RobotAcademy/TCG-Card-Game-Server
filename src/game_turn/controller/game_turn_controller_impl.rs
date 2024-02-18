@@ -12,6 +12,7 @@ use crate::first_turn_decision_wait_queue::service::response::first_turn_decisio
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
+use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
 use crate::game_turn::controller::request_form::first_turn_decision_request_form::FirstTurnDecisionRequestForm;
@@ -27,12 +28,15 @@ use crate::game_turn::service::request::first_turn_decision_request::FirstTurnDe
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
+use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 
 pub struct GameTurnControllerImpl {
     game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
     battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
+    game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
     // TODO: Need Refactor
     first_turn_decision_wait_queue_service: Arc<AsyncMutex<FirstTurnDecisionWaitQueueServiceImpl>>,
 
@@ -43,6 +47,7 @@ impl GameTurnControllerImpl {
                battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
+               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
                // TODO: Need Refactor
                first_turn_decision_wait_queue_service: Arc<AsyncMutex<FirstTurnDecisionWaitQueueServiceImpl>>) -> Self {
 
@@ -51,6 +56,7 @@ impl GameTurnControllerImpl {
             battle_room_service,
             game_field_unit_service,
             redis_in_memory_service,
+            game_protocol_validation_service,
             // TODO: Need Refactor
             first_turn_decision_wait_queue_service
         }
@@ -65,6 +71,7 @@ impl GameTurnControllerImpl {
                             BattleRoomServiceImpl::get_instance(),
                             GameFieldUnitServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
+                            GameProtocolValidationServiceImpl::get_instance(),
                             // TODO: Need Refactor
                             FirstTurnDecisionWaitQueueServiceImpl::get_instance())));
         }
@@ -120,7 +127,13 @@ impl GameTurnController for GameTurnControllerImpl {
             return TurnEndResponseForm::new(false)
         }
 
-        // TODO: 2. 현재 요청한 사람이 이번 턴의 주도권을 가지고 있던 사람인지 검증
+        // 2. 현재 요청한 사람이 이번 턴의 주도권을 가지고 있더너 사람인지 검증
+        let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
+        let account_request = IsThisYourTurnRequest::new(account_unique_id);
+        let is_this_your_turn_response = game_protocol_validation_service_guard.is_this_your_turn(account_request);
+        if !is_this_your_turn_response.await.get_is_success() {
+            return TurnEndResponseForm::new(false)
+        }
 
         // 3. 자신의 필드 유닛들 중 턴 종료 시 데미지를 받는 케이스를 적용 (현재 상황에서 화상 데미지)
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;

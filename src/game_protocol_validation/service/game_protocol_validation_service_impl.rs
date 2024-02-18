@@ -12,6 +12,7 @@ use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryImpl;
 use crate::game_protocol_validation::repository::game_protocol_validation_repository_impl::GameProtocolValidationRepositoryImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
+
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_cards_from_hand_request::CheckCardsFromHandRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
@@ -19,10 +20,9 @@ use crate::game_protocol_validation::service::request::is_it_energy_card_request
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_protocol_validation::service::request::is_it_unit_card_request::IsItUnitCardRequest;
-
 use crate::game_protocol_validation::service::request::is_it_tool_card_request::IsItToolCardRequest;
+use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_protocol_validation::service::request::support_card_protocol_validation_request::SupportCardProtocolValidationRequest;
-
 
 use crate::game_protocol_validation::service::response::can_use_card_response::CanUseCardResponse;
 use crate::game_protocol_validation::service::response::check_cards_from_hand_response::CheckCardsFromHandResponse;
@@ -32,7 +32,10 @@ use crate::game_protocol_validation::service::response::is_it_item_card_response
 use crate::game_protocol_validation::service::response::is_it_support_card_response::IsItSupportCardResponse;
 use crate::game_protocol_validation::service::response::is_it_unit_card_response::IsItUnitCardResponse;
 use crate::game_protocol_validation::service::response::is_it_tool_card_response::IsItToolCardResponse;
+use crate::game_protocol_validation::service::response::is_this_your_turn_response::IsThisYourTurnResponse;
 use crate::game_protocol_validation::service::response::support_card_protocol_validation_response::SupportCardProtocolValidationResponse;
+
+use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
@@ -41,6 +44,7 @@ pub struct GameProtocolValidationServiceImpl {
     game_protocol_validation_repository: Arc<AsyncMutex<GameProtocolValidationRepositoryImpl>>,
     game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
     // account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>,
+    game_turn_repository: Arc<AsyncMutex<GameTurnRepositoryImpl>>,
     game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
     card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
@@ -51,6 +55,7 @@ impl GameProtocolValidationServiceImpl {
     pub fn new(game_protocol_validation_repository: Arc<AsyncMutex<GameProtocolValidationRepositoryImpl>>,
                game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
                // account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>,
+               game_turn_repository: Arc<AsyncMutex<GameTurnRepositoryImpl>>,
                game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
                card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
@@ -60,6 +65,7 @@ impl GameProtocolValidationServiceImpl {
             game_protocol_validation_repository,
             game_hand_repository,
             // account_deck_card_repository,
+            game_turn_repository,
             game_round_repository,
             card_kinds_repository,
             card_grade_repository,
@@ -76,6 +82,7 @@ impl GameProtocolValidationServiceImpl {
                             GameProtocolValidationRepositoryImpl::get_instance(),
                             GameHandRepositoryImpl::get_instance(),
                             // AccountDeckCardRepositoryImpl::get_instance(),
+                            GameTurnRepositoryImpl::get_instance(),
                             GameRoundRepositoryImpl::get_instance(),
                             CardKindsRepositoryImpl::get_instance(),
                             CardGradeRepositoryImpl::get_instance(),
@@ -227,6 +234,8 @@ impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
     }
 
     async fn is_it_tool_card(&self, is_it_tool_card_request: IsItToolCardRequest) -> IsItToolCardResponse {
+        println!("GameProtocolValidationServiceImpl: is_it_tool_card_request()");
+
         let tool_card_number = is_it_tool_card_request.get_tool_card_number();
 
         let card_kinds_repository_guard = self.card_kinds_repository.lock().await;
@@ -235,5 +244,33 @@ impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
         }
 
         IsItToolCardResponse::new(false)
+    }
+
+    async fn is_this_your_turn(&self, is_it_tool_card_request: IsThisYourTurnRequest) -> IsThisYourTurnResponse {
+        println!("GameProtocolValidationServiceImpl: is_this_your_turn_request()");
+
+        let account_index_number = is_it_tool_card_request.get_account_unique_id_for_validation();
+
+        let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
+        let account_unique_game_turn = game_turn_repository_guard
+            .get_game_turn_map()
+            .get(&account_index_number)
+            .map(|user_turn| user_turn.get_turn()).unwrap();
+        drop(game_turn_repository_guard);
+
+        let mut game_round_repository_guard = self.game_round_repository.lock().await;
+        let account_unique_game_round = game_round_repository_guard
+            .get_game_round_map()
+            .get(&account_index_number)
+            .map(|user_round| user_round.get_round()).unwrap();
+        drop(game_round_repository_guard);
+
+        // 검증을 요청한 account 의 turn 값과 현재 round 값이 일치하면 true
+        if account_unique_game_turn == account_unique_game_round {
+            return IsThisYourTurnResponse::new(true)
+        }
+
+        println!("This is NOT your turn.");
+        IsThisYourTurnResponse::new(false)
     }
 }
