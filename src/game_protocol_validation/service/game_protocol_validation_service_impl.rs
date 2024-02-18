@@ -159,15 +159,21 @@ impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
         }
 
         let mut result = true;
-        let target_card_number_list = check_cards_from_hand_request.get_hand_card_list();
 
-        for &target_card in game_hand.unwrap().get_all_card_list_in_game_hand().iter() {
-            for target_card_number in target_card_number_list {
-                if target_card.get_card() == *target_card_number {
-                    result = false;
-                    println!("check_cards_from_hand: hand card protocol hacking detected.");
-                    break;
-                }
+        let target_card_number_list = check_cards_from_hand_request.get_hand_card_list().clone();
+        let game_hand_card_list = game_hand.unwrap().get_all_card_list_in_game_hand().clone();
+        let mut test_list = Vec::new();
+
+        for game_hand_card in game_hand_card_list {
+            let hand_card_id = game_hand_card.get_card();
+            test_list.push(hand_card_id);
+        }
+
+        for target_card_number in target_card_number_list {
+            if !test_list.contains(&target_card_number) {
+                result = false;
+                println!("check_cards_from_hand: hand card protocol hacking detected.");
+                break;
             }
         }
 
