@@ -672,9 +672,9 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 // Game Next Turn
                 if let Some(request) = create_game_turn_request_form(&data) {
                     let game_turn_controller_impl_mutex = GameTurnControllerImpl::get_instance();
-                    let mut game_trun_controller = game_turn_controller_impl_mutex.lock().await;
+                    let mut game_turn_controller = game_turn_controller_impl_mutex.lock().await;
 
-                    let response = game_trun_controller.request_turn_end(request).await;
+                    let response = game_turn_controller.request_turn_end(request).await;
                     let response_type = Some(ResponseType::GAME_NEXT_TURN(response));
 
                     response_type
