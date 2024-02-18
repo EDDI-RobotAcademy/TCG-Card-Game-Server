@@ -7,9 +7,11 @@ use crate::game_field_energy::repository::game_field_energy_repository_impl::Gam
 use crate::game_field_energy::service::game_field_energy_service::GameFieldEnergyService;
 use crate::game_field_energy::service::request::add_field_energy_with_amount_request::AddFieldEnergyWithAmountRequest;
 use crate::game_field_energy::service::request::check_field_energy_enough_to_use_request::CheckFieldEnergyEnoughToUseRequest;
+use crate::game_field_energy::service::request::get_current_field_energy_request::GetCurrentFieldEnergyRequest;
 use crate::game_field_energy::service::request::remove_field_energy_with_amount_request::RemoveFieldEnergyWithAmountRequest;
 use crate::game_field_energy::service::response::add_field_energy_with_amount_response::AddFieldEnergyWithAmountResponse;
 use crate::game_field_energy::service::response::check_field_energy_enough_to_use_response::CheckFieldEnergyEnoughToUseResponse;
+use crate::game_field_energy::service::response::get_current_field_energy_response::GetCurrentFieldEnergyResponse;
 use crate::game_field_energy::service::response::remove_field_energy_with_amount_response::RemoveFieldEnergyWithAmountResponse;
 
 pub struct GameFieldEnergyServiceImpl {
@@ -73,5 +75,18 @@ impl GameFieldEnergyService for GameFieldEnergyServiceImpl {
         let is_field_energy_enough_result = game_field_energy_repository_guard.check_field_energy_enough_to_use(account_unique_id, amount);
 
         CheckFieldEnergyEnoughToUseResponse::new(is_field_energy_enough_result)
+    }
+
+    async fn get_current_field_energy(&self, get_current_field_energy_request: GetCurrentFieldEnergyRequest) -> GetCurrentFieldEnergyResponse {
+        println!("GameFieldEnergyServiceImpl: get_current_field_energy()");
+
+        let mut game_field_energy_repository_guard = self.game_field_energy_repository.lock().await;
+        let account_unique_id = get_current_field_energy_request.get_account_unique_id();
+
+        if let Some(game_field_energy) = game_field_energy_repository_guard.get_game_field_energy_map().get_mut(&account_unique_id) {
+            return GetCurrentFieldEnergyResponse::new(game_field_energy.get_energy_count())
+        }
+
+        GetCurrentFieldEnergyResponse::new(-1)
     }
 }
