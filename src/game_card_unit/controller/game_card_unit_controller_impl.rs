@@ -259,7 +259,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         opponent_unique_id,
                         opponent_target_unit_card_index)).await;
 
-        // 8. 피격 유닛이 extra effect 를 가지고 있는지 여부
+        // 9. 피격 유닛이 extra effect 를 가지고 있는지 여부
         let opponent_target_unit_extra_effect_list =
             game_field_unit_service_guard.acquire_unit_extra_effect(
                 attack_unit_request_form
@@ -282,11 +282,32 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             return AttackUnitResponseForm::new(false)
         }
 
-        // 8. 공격한 유닛이 죽었는지 판정
+        // 11. 유닛들이 죽었는지 판정
+        let opponent_unit_death_response =
+            game_field_unit_service_guard.judge_death_of_unit(
+                attack_unit_request_form
+                    .to_judge_death_of_unit_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await;
 
-        // 9. 죽었다면 무덤 배치
+        if opponent_unit_death_response.is_dead() {
+            println!("공격 당한 유닛이 사망했으므로 묘지로 이동합니다.");
+            todo!()
+        }
 
-        // 9. 상대방 알림
+        let attacker_unit_death_response =
+            game_field_unit_service_guard.judge_death_of_unit(
+                attack_unit_request_form
+                    .to_judge_death_of_unit_request(
+                        account_unique_id,
+                        attacker_unit_card_index)).await;
+
+        if attacker_unit_death_response.is_dead() {
+            println!("반격으로 인해 공격한 유닛이 사망했으므로 묘지로 이동합니다.");
+            todo!()
+        }
+
+        // 12. 상대방 알림
 
         AttackUnitResponseForm::new(true)
     }
