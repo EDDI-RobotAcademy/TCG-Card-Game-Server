@@ -78,7 +78,7 @@ impl GameFieldUnitServiceImpl {
 impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
     async fn add_unit_to_game_field(&mut self, add_unit_to_game_field_request: AddUnitToGameFieldRequest) -> AddUnitToGameFieldResponse {
-        println!("GameFieldUnitServiceImpl: attach_multiple_energy_to_game_field_unit()");
+        println!("GameFieldUnitServiceImpl: add_unit_to_game_field()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let response = game_field_unit_repository_guard.add_unit_to_game_field(
@@ -110,7 +110,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
     }
 
     async fn attach_multiple_energy_to_field_unit_index(&mut self, attach_multiple_energy_to_unit_index_request: AttachMultipleEnergyToUnitIndexRequest) -> AttachMultipleEnergyToUnitIndexResponse {
-        println!("GameFieldUnitServiceImpl: attach_energy_to_field_unit_index()");
+        println!("GameFieldUnitServiceImpl: attach_multiple_energy_to_field_unit_index()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let response = game_field_unit_repository_guard.attach_multiple_energy_to_indexed_unit(
@@ -157,7 +157,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
     }
 
     async fn judge_death_of_unit(&mut self, judge_death_of_unit_request: JudgeDeathOfUnitRequest) -> JudgeDeathOfUnitResponse {
-        println!("GameFieldUnitServiceImpl: check_is_unit_alive()");
+        println!("GameFieldUnitServiceImpl: judge_death_of_unit()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let response = game_field_unit_repository_guard.judge_death_of_unit(
@@ -219,7 +219,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
     }
 
     async fn acquire_unit_attack_point(&mut self, acquire_unit_attack_point_request: AcquireUnitAttackPointRequest) -> AcquireUnitAttackPointResponse {
-        println!("GameFieldUnitServiceImpl: apply_status_effect_damage_iteratively()");
+        println!("GameFieldUnitServiceImpl: acquire_unit_attack_point()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let attack_point = game_field_unit_repository_guard.acquire_unit_attack_point(
@@ -302,7 +302,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
     }
 
     async fn apply_catastrophic_damage_to_field_unit(&mut self, apply_catastrophic_damage_to_field_unit_request: ApplyCatastrophicDamageToFieldUnitRequest) -> ApplyCatastrophicDamageToFieldUnitResponse {
-        println!("GameFieldUnitServiceImpl: apply_passive_skill_list()");
+        println!("GameFieldUnitServiceImpl: apply_catastrophic_damage_to_field_unit()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let apply_catastrophic_damage_result = game_field_unit_repository_guard
