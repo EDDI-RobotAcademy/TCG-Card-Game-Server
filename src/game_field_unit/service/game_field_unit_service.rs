@@ -19,6 +19,7 @@ use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
+use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
 
@@ -38,6 +39,7 @@ use crate::game_field_unit::service::response::find_active_skill_usage_unit_id_b
 use crate::game_field_unit::service::response::find_target_unit_id_by_index_response::FindTargetUnitIdByIndexResponse;
 use crate::game_field_unit::service::response::get_current_attached_energy_of_field_unit_by_index_response::GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
+use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_uique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
 
 #[async_trait]
 pub trait GameFieldUnitService {
@@ -60,4 +62,5 @@ pub trait GameFieldUnitService {
     async fn apply_catastrophic_damage_to_field_unit(&mut self, apply_catastrophic_damage_to_field_unit: ApplyCatastrophicDamageToFieldUnitRequest) -> ApplyCatastrophicDamageToFieldUnitResponse;
     async fn detach_multiple_energy_from_field_unit(&mut self, detach_multiple_energy_from_field_unit_request: DetachMultipleEnergyFromFieldUnitRequest) -> DetachMultipleEnergyFromFieldUnitResponse;
     async fn get_current_attached_energy_of_field_unit_by_index(&mut self, get_current_attached_energy_of_field_unit_by_index_request: GetCurrentAttachedEnergyOfFieldUnitByIndexRequest) -> GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
+    async fn get_game_field_unit_card_of_account_unique_id(&mut self, get_game_field_unit_map_to_service_request: GetGameFieldUnitCardOfAccountUniqueIdRequest) -> GetGameFieldUnitCardOfAccountUniqueIdResponse;
 }
