@@ -204,41 +204,83 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         // 2. TODO: 프로토콜 검증 (지금 이거 신경 쓸 때가 아님)
 
-        // 3. Battle Field에서 공격하는 유닛의 index를 토대로 id 값 확보 (이거 필요한가 ???)
+        // 3. Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
         let attacker_unit_card_index_string = attack_unit_request_form.get_attacker_unit_index();
         let attacker_unit_card_index = attacker_unit_card_index_string.parse::<i32>().unwrap();
 
         // 4. 유닛 인덱스에서 기본 공격력 정보 확보
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let find_unit_attack_point_response = game_field_unit_service_guard
-            .acquire_unit_attack_point(
-                attack_unit_request_form.to_acquire_unit_attack_point_request(
-                    account_unique_id, attacker_unit_card_index)).await;
+        let find_attacker_unit_attack_point_response =
+            game_field_unit_service_guard.acquire_unit_attack_point(
+                attack_unit_request_form
+                    .to_acquire_unit_attack_point_request(
+                        account_unique_id,
+                        attacker_unit_card_index)).await;
 
         // 5. extra effect 가지고 있는지 여부
-        let find_unit_extra_effect_response = game_field_unit_service_guard
-            .acquire_unit_extra_effect(
-                attack_unit_request_form.to_acquire_unit_extra_effect_request(
-                    account_unique_id, attacker_unit_card_index)).await;
+        let attacker_unit_extra_effect_list =
+            game_field_unit_service_guard.acquire_unit_extra_effect(
+                attack_unit_request_form
+                    .to_acquire_unit_extra_effect_request(
+                        account_unique_id,
+                        attacker_unit_card_index)).await.get_extra_status_effect_list().clone();
 
         // 6. 공격을 위해 상대방 고유값 획득
         let battle_room_service_guard = self.battle_room_service.lock().await;
-        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
-            attack_unit_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+        let opponent_unique_id =
+            battle_room_service_guard.find_opponent_by_account_unique_id(
+                attack_unit_request_form
+                    .to_find_opponent_by_account_id_request(
+                        account_unique_id)).await.get_opponent_unique_id();
 
-        // 7. 효과를 가지고 공격
-        let target_unit_card_index_string = attack_unit_request_form.get_target_unit_index();
-        let target_unit_card_index = target_unit_card_index_string.parse::<i32>().unwrap();
+        // 7. 적 타겟 유닛을 효과를 가지고 공격
+        let opponent_target_unit_card_index_string = attack_unit_request_form.get_target_unit_index();
+        let opponent_target_unit_card_index = opponent_target_unit_card_index_string.parse::<i32>().unwrap();
 
-        let attack_target_unit_response = game_field_unit_service_guard
-            .attack_target_unit_with_extra_effect(
-                attack_unit_request_form.to_attack_target_unit_with_extra_effect_request(
-                    find_opponent_by_account_id_response.get_opponent_unique_id(),
-                    find_unit_attack_point_response.get_attack_point(),
-                    find_unit_extra_effect_response.get_extra_status_effect_list(),
-                    target_unit_card_index)).await;
+        let attack_opponent_target_unit_with_extra_effect_response =
+            game_field_unit_service_guard.attack_target_unit_with_extra_effect(
+                attack_unit_request_form
+                    .to_attack_target_unit_with_extra_effect_request(
+                        opponent_unique_id,
+                        find_attacker_unit_attack_point_response.get_attack_point(),
+                        &attacker_unit_extra_effect_list,
+                        opponent_target_unit_card_index)).await;
 
-        // TODO: 반격 적용
+        if !attack_opponent_target_unit_with_extra_effect_response.is_success() {
+            println!("적 유닛 공격에 실패했습니다.");
+            return AttackUnitResponseForm::new(false)
+        }
+
+        // 8. 반격을 위해 피격 유닛의 공격력 확보
+        let find_opponent_target_unit_attack_point_response =
+            game_field_unit_service_guard.acquire_unit_attack_point(
+                attack_unit_request_form
+                    .to_acquire_unit_attack_point_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await;
+
+        // 8. 피격 유닛이 extra effect 를 가지고 있는지 여부
+        let opponent_target_unit_extra_effect_list =
+            game_field_unit_service_guard.acquire_unit_extra_effect(
+                attack_unit_request_form
+                    .to_acquire_unit_extra_effect_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await.get_extra_status_effect_list().clone();
+
+        // 10. 공격한 유닛에게 피격 유닛의 효과와 함께 반격 적용
+        let counter_attack_from_opponent_target_unit_with_extra_effect_response =
+            game_field_unit_service_guard.attack_target_unit_with_extra_effect(
+                attack_unit_request_form
+                    .to_attack_target_unit_with_extra_effect_request(
+                        account_unique_id,
+                        find_opponent_target_unit_attack_point_response.get_attack_point(),
+                        &opponent_target_unit_extra_effect_list,
+                        attacker_unit_card_index)).await;
+
+        if !counter_attack_from_opponent_target_unit_with_extra_effect_response.is_success() {
+            println!("반격 적용에 실패했습니다.");
+            return AttackUnitResponseForm::new(false)
+        }
 
         // 8. 공격한 유닛이 죽었는지 판정
 
