@@ -55,6 +55,9 @@ use crate::notify_player_action::entity::notify_opponent_to_damage_main_characte
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
+use crate::rockpaperscissors::controller::response_form::check_winner_response_form::CheckWinnerResponseForm;
+use crate::rockpaperscissors::controller::response_form::rockpaperscissors_response_form::RockpaperscissorsResponseForm;
+
 use crate::shop_gacha::service::response::get_specific_race_card_response::GetSpecificRaceCardResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -79,6 +82,8 @@ pub enum ResponseType {
     FIRST_TURN_DECISION_WAIT_QUEUE(FirstTurnDecisionWaitQueueResponseForm),
     // First TUrn Decision
     FIRST_TURN_DECISION(FirstTurnDecisionResponseForm),
+    ROCKPAPERSCISSORS(RockpaperscissorsResponseForm),
+    CHECK_WINNER(CheckWinnerResponseForm),
 
     // Account Card
     ACCOUNT_CARD_LIST(AccountCardListResponse),

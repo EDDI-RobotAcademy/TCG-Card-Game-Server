@@ -89,6 +89,7 @@ mod card_health_point;
 mod game_card_active_skill;
 mod game_card_passive_skill;
 mod game_card_tool;
+mod rockpaperscissors;
 
 #[tokio::main]
 async fn main() {
