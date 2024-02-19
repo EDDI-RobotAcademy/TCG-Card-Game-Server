@@ -168,16 +168,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
         JudgeDeathOfUnitResponse::new(response)
     }
-    // async fn check_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse {
-    //     println!("GameFieldUnitServiceImpl: check_turn_action()");
-    //
-    //     let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-    //     let response = game_field_unit_repository_guard.check_turn_action_of_unit(
-    //         check_turn_action_request.get_account_unique_id(),
-    //         check_turn_action_request.get_unit_card_index());
-    //
-    //     CheckTurnActionResponse::new(response)
-    // }
+
     async fn check_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse {
         println!("GameFieldUnitServiceImpl: check_turn_action()");
 
@@ -187,6 +178,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             check_turn_action_request.get_unit_card_index());
         CheckTurnActionResponse::new(response)
     }
+
     async fn execute_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse {
         println!("GameFieldUnitServiceImpl: execute_turn_action_of_unit()");
 
@@ -196,6 +188,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             check_turn_action_request.get_unit_card_index());
         CheckTurnActionResponse::new(response)
     }
+
     async fn reset_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse {
         println!("GameFieldUnitServiceImpl: reset_turn_action_of_unit()");
 

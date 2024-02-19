@@ -177,22 +177,21 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         false
     }
 
-    fn judge_death_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
+    fn judge_death_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> i32 {
         println!("GameFieldUnitRepositoryImpl: judge_death_of_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             let unit_card_index = unit_card_index as usize;
 
             if unit_card_index < game_field_unit.get_all_unit_list_in_game_field().len() {
-                game_field_unit.judge_death_of_unit(unit_card_index);
-                // 죽어 있으면 is alive = false 이므로 그 때 true 를 반환해야 함
+                let maybe_dead_unit_id = game_field_unit.judge_death_of_unit(unit_card_index);
                 if game_field_unit.check_unit_alive(unit_card_index) == false {
-                    return true;
+                    return maybe_dead_unit_id;
                 }
             }
         }
 
-        false
+        -1
     }
     fn check_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
