@@ -68,13 +68,10 @@ impl FirstTurnDecisionWaitQueueService for FirstTurnDecisionWaitQueueServiceImpl
         let choice=first_turn_decision_wait_queue_request.get_choice().to_string();
         let mut player_tuple: (i32, String)=(account_unique_id,choice);
 
-
-
         let first_turn_decision_wait_queue_repository = self.first_turn_decision_wait_queue_repository.lock().await;
 
         let mut match_waiting_timer_repository = self.match_waiting_timer_repository.lock().await;
         match_waiting_timer_repository.set_match_waiting_timer(account_unique_id).await;
-
 
         let response = first_turn_decision_wait_queue_repository.enqueue_player_tuple_for_wait(player_tuple).await;
 

@@ -60,6 +60,7 @@ use crate::request_generator::attach_field_energy_to_field_unit_request_form_gen
 
 use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
+use crate::request_generator::check_winner_request_generator::create_check_winner_request_form;
 
 use crate::request_generator::first_turn_decision_request_generator::create_first_turn_decision_request_form;
 use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item_request_form, create_opponent_field_unit_energy_removal_item_request_form, create_target_death_item_request_form};
@@ -67,10 +68,13 @@ use crate::request_generator::game_next_turn_request_generator::create_game_turn
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::non_targeting_active_skill_request_form_generator::create_non_targeting_active_skill_request_form;
 use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
+use crate::request_generator::rockpaperscissors_request_generator::create_rockpaperscissors_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
 use crate::request_generator::targeting_active_skill_request_form_generator::create_targeting_active_skill_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
+use crate::rockpaperscissors::controller::rockpaperscissors_controller::RockpaperscissorsController;
+use crate::rockpaperscissors::controller::rockpaperscissors_controller_impl::RockpaperscissorsControllerImpl;
 use crate::shop_gacha::service::shop_gacha_service::ShopGachaService;
 use crate::shop_gacha::service::shop_gacha_service_impl::ShopGachaServiceImpl;
 
@@ -296,6 +300,34 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = game_turn_controller_mutex_guard.execute_first_turn_decision_procedure(request_form).await;
                     let response_type = Some(ResponseType::FIRST_TURN_DECISION(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            21 => {
+                // First Turn wait queue 최신 버전
+                if let Some(request_form) = create_rockpaperscissors_request_form(&data) {
+                    let rockpaperscissors_controller_mutex = RockpaperscissorsControllerImpl::get_instance();
+                    let mut rockpaperscissors_controller_mutex_guard = rockpaperscissors_controller_mutex.lock().await;
+
+                    let response_form = rockpaperscissors_controller_mutex_guard.execute_rockpaperscissors_procedure(request_form).await;
+                    let response_type = Some(ResponseType::ROCKPAPERSCISSORS(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            22 => {
+                // First Turn Decision 최신 버전
+                if let Some(request_form) = create_check_winner_request_form(&data) {
+                    let rockpaperscissors_controller_mutex = RockpaperscissorsControllerImpl::get_instance();
+                    let mut rockpaperscissors_controller_mutex_guard = rockpaperscissors_controller_mutex.lock().await;
+
+                    let response_form = rockpaperscissors_controller_mutex_guard.execute_check_winner_procedure(request_form).await;
+                    let response_type = Some(ResponseType::CHECK_WINNER(response_form));
 
                     response_type
                 } else {

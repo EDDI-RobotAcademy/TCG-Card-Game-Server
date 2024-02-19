@@ -30,6 +30,8 @@ pub mod targeting_active_skill_request_form_generator;
 pub mod attach_special_energy_card_request_form_generator;
 pub mod non_targeting_active_skill_request_form_generator;
 pub mod attach_field_energy_to_field_unit_request_form_generator;
+mod rockpaperscissors_request_generator;
+mod check_winner_request_generator;
 
 
 
