@@ -16,3 +16,4 @@ pub mod apply_catastrophic_damage_to_field_unit_response;
 pub mod detach_multiple_energy_from_field_unit_response;
 pub mod get_current_attached_energy_of_field_unit_by_index_response;
 pub mod judge_death_of_unit_response;
+pub mod check_turn_action_response;
