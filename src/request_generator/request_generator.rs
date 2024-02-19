@@ -475,7 +475,6 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            // TODO: 1000, 1001, 1002, 1003 프로토콜 얼른 추가하자
             1000 => {
                 // Unit attack
                 if let Some(request_form) = create_attack_unit_request_form(&data) {
