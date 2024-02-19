@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use async_trait::async_trait;
+use diesel::IntoSql;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
@@ -23,6 +24,8 @@ use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
+use crate::game_tomb::service::game_tomb_service::GameTombService;
+use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
@@ -35,6 +38,7 @@ pub struct GameCardUnitControllerImpl {
     game_card_unit_service: Arc<AsyncMutex<GameCardUnitServiceImpl>>,
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
+    game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
     notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
     game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
@@ -46,6 +50,7 @@ impl GameCardUnitControllerImpl {
                game_card_unit_service: Arc<AsyncMutex<GameCardUnitServiceImpl>>,
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
+               game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
                game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>) -> Self {
@@ -56,6 +61,7 @@ impl GameCardUnitControllerImpl {
             game_card_unit_service,
             game_field_unit_service,
             redis_in_memory_service,
+            game_tomb_service,
             notify_player_action_service,
             game_card_passive_skill_service,
             game_protocol_validation_service
@@ -72,6 +78,7 @@ impl GameCardUnitControllerImpl {
                             GameCardUnitServiceImpl::get_instance(),
                             GameFieldUnitServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
+                            GameTombServiceImpl::get_instance(),
                             NotifyPlayerActionServiceImpl::get_instance(),
                             GameCardPassiveSkillServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance())));
@@ -196,19 +203,21 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
     async fn request_to_attack_unit(&self, attack_unit_request_form: AttackUnitRequestForm) -> AttackUnitResponseForm {
         println!("GameCardUnitControllerImpl: request_to_attack_unit()");
 
-        // 1. 세션 아이디를 검증합니다.
+        // 세션 아이디를 검증합니다.
         let account_unique_id = self.is_valid_session(attack_unit_request_form.to_session_validation_request()).await;
         if account_unique_id == -1 {
             return AttackUnitResponseForm::new(false)
         }
 
-        // 2. TODO: 프로토콜 검증 (지금 이거 신경 쓸 때가 아님)
+        // TODO: 프로토콜 검증 (지금 이거 신경 쓸 때가 아님)
 
-        // 3. Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
+        // TODO: 액션 가능한 턴인지 검증
+
+        // Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
         let attacker_unit_card_index_string = attack_unit_request_form.get_attacker_unit_index();
         let attacker_unit_card_index = attacker_unit_card_index_string.parse::<i32>().unwrap();
 
-        // 4. 유닛 인덱스에서 기본 공격력 정보 확보
+        // 유닛 인덱스에서 기본 공격력 정보 확보
         let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
         let find_attacker_unit_attack_point_response =
             game_field_unit_service_guard.acquire_unit_attack_point(
@@ -217,7 +226,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         account_unique_id,
                         attacker_unit_card_index)).await;
 
-        // 5. extra effect 가지고 있는지 여부
+        // extra effect 가지고 있는지 여부
         let attacker_unit_extra_effect_list =
             game_field_unit_service_guard.acquire_unit_extra_effect(
                 attack_unit_request_form
@@ -225,7 +234,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         account_unique_id,
                         attacker_unit_card_index)).await.get_extra_status_effect_list().clone();
 
-        // 6. 공격을 위해 상대방 고유값 획득
+        // 공격을 위해 상대방 고유값 획득
         let battle_room_service_guard = self.battle_room_service.lock().await;
         let opponent_unique_id =
             battle_room_service_guard.find_opponent_by_account_unique_id(
@@ -233,7 +242,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     .to_find_opponent_by_account_id_request(
                         account_unique_id)).await.get_opponent_unique_id();
 
-        // 7. 적 타겟 유닛을 효과를 가지고 공격
+        // 적 타겟 유닛을 효과를 가지고 공격
         let opponent_target_unit_card_index_string = attack_unit_request_form.get_target_unit_index();
         let opponent_target_unit_card_index = opponent_target_unit_card_index_string.parse::<i32>().unwrap();
 
@@ -251,7 +260,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             return AttackUnitResponseForm::new(false)
         }
 
-        // 8. 반격을 위해 피격 유닛의 공격력 확보
+        // 반격을 위해 피격 유닛의 공격력 확보
         let find_opponent_target_unit_attack_point_response =
             game_field_unit_service_guard.acquire_unit_attack_point(
                 attack_unit_request_form
@@ -259,7 +268,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         opponent_unique_id,
                         opponent_target_unit_card_index)).await;
 
-        // 9. 피격 유닛이 extra effect 를 가지고 있는지 여부
+        // 피격 유닛이 extra effect 를 가지고 있는지 여부
         let opponent_target_unit_extra_effect_list =
             game_field_unit_service_guard.acquire_unit_extra_effect(
                 attack_unit_request_form
@@ -267,7 +276,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         opponent_unique_id,
                         opponent_target_unit_card_index)).await.get_extra_status_effect_list().clone();
 
-        // 10. 공격한 유닛에게 피격 유닛의 효과와 함께 반격 적용
+        // 공격한 유닛에게 피격 유닛의 효과와 함께 반격 적용
         let counter_attack_from_opponent_target_unit_with_extra_effect_response =
             game_field_unit_service_guard.attack_target_unit_with_extra_effect(
                 attack_unit_request_form
@@ -282,32 +291,48 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             return AttackUnitResponseForm::new(false)
         }
 
-        // 11. 유닛들이 죽었는지 판정
-        let opponent_unit_death_response =
+        // 유닛들이 죽었는지 판정
+        let maybe_dead_opponent_unit_id =
             game_field_unit_service_guard.judge_death_of_unit(
                 attack_unit_request_form
                     .to_judge_death_of_unit_request(
                         opponent_unique_id,
-                        opponent_target_unit_card_index)).await;
+                        opponent_target_unit_card_index)).await.get_dead_unit_id();
 
-        if opponent_unit_death_response.is_dead() {
+        if maybe_dead_opponent_unit_id != -1 {
             println!("공격 당한 유닛이 사망했으므로 묘지로 이동합니다.");
-            todo!()
+
+            let mut game_tomb_service_guard =
+                self.game_tomb_service.lock().await;
+
+            game_tomb_service_guard.add_used_card_to_tomb(
+                attack_unit_request_form
+                    .to_place_dead_unit_to_tomb_request(
+                        opponent_unique_id,
+                        maybe_dead_opponent_unit_id)).await;
         }
 
-        let attacker_unit_death_response =
+        let maybe_dead_attacker_unit_id =
             game_field_unit_service_guard.judge_death_of_unit(
                 attack_unit_request_form
                     .to_judge_death_of_unit_request(
                         account_unique_id,
-                        attacker_unit_card_index)).await;
+                        attacker_unit_card_index)).await.get_dead_unit_id();
 
-        if attacker_unit_death_response.is_dead() {
-            println!("반격으로 인해 공격한 유닛이 사망했으므로 묘지로 이동합니다.");
-            todo!()
+        if maybe_dead_attacker_unit_id != -1 {
+            println!("반격 당한 유닛이 사망했으므로 묘지로 이동합니다.");
+
+            let mut game_tomb_service_guard =
+                self.game_tomb_service.lock().await;
+
+            game_tomb_service_guard.add_used_card_to_tomb(
+                attack_unit_request_form
+                    .to_place_dead_unit_to_tomb_request(
+                        account_unique_id,
+                        maybe_dead_attacker_unit_id)).await;
         }
 
-        // 12. 상대방 알림
+        // 상대방 알림
 
         AttackUnitResponseForm::new(true)
     }

@@ -56,11 +56,20 @@ impl GameFieldUnit {
         self.game_field_unit.apply_death_to_indexed_unit(unit_card_index);
     }
 
-    pub fn judge_death_of_unit(&mut self, unit_card_index: usize) {
-        self.game_field_unit.judge_death_of_unit(unit_card_index);
+    pub fn judge_death_of_unit(&mut self, unit_card_index: usize) -> i32 {
+        return self.game_field_unit.judge_death_of_unit(unit_card_index)
+    }
+    pub fn execute_turn_action_of_unit(&mut self, unit_card_index: usize) {
+        self.game_field_unit.execute_turn_action(unit_card_index)
+    }
+    pub fn reset_turn_action_of_unit(&mut self, unit_card_index: usize) {
+        self.game_field_unit.reset_turn_action(unit_card_index)
     }
     pub fn check_unit_alive(&mut self, unit_card_index: usize) -> bool {
         return self.game_field_unit.check_unit_alive(unit_card_index)
+    }
+    pub fn check_turn_action_of_unit(&mut self, unit_card_index: usize) -> bool {
+        return self.game_field_unit.check_turn_action(unit_card_index)
     }
 
     pub fn add_special_energy_to_indexed_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32, status_effect_list: Vec<StatusEffect>) {

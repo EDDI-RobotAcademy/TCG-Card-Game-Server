@@ -2,15 +2,15 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JudgeDeathOfUnitResponse {
-    is_dead: bool
+    dead_unit_id: i32
 }
 
 impl JudgeDeathOfUnitResponse {
-    pub fn new(is_dead: bool) -> Self {
-        JudgeDeathOfUnitResponse { is_dead }
+    pub fn new(dead_unit_id: i32) -> Self {
+        JudgeDeathOfUnitResponse { dead_unit_id }
     }
 
-    pub fn is_dead(&self) -> bool {
-        self.is_dead
+    pub fn get_dead_unit_id(&self) -> i32 {
+        self.dead_unit_id
     }
 }

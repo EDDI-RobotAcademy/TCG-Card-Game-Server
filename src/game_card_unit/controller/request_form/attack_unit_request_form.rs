@@ -4,6 +4,7 @@ use crate::game_field_unit::service::request::acquire_unit_attack_point_request:
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
 use crate::game_field_unit::service::request::attack_target_unit_with_extra_effect_request::AttackTargetUnitWithExtraEffectRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
+use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 pub struct AttackUnitRequestForm {
@@ -64,5 +65,12 @@ impl AttackUnitRequestForm {
                                           unit_index: i32) -> JudgeDeathOfUnitRequest {
         JudgeDeathOfUnitRequest::new(
             account_unique_id, unit_index)
+    }
+
+    pub fn to_place_dead_unit_to_tomb_request(&self,
+                                    account_unique_id: i32,
+                                    dead_unit_card_id: i32) -> PlaceToTombRequest {
+        PlaceToTombRequest::new(
+            account_unique_id, dead_unit_card_id)
     }
 }
