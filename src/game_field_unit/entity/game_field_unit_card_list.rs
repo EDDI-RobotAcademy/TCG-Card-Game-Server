@@ -74,6 +74,7 @@ impl GameFieldUnitCardList {
             }
         }
     }
+
     pub fn check_unit_alive(&mut self, unit_card_index: usize) -> bool {
         if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
             let is_alive = unit.is_alive();
@@ -84,6 +85,15 @@ impl GameFieldUnitCardList {
         }
 
         true
+    }
+    pub fn check_turn_action(&mut self, unit_card_index: usize) -> bool {
+        self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().get_turn_action()
+    }
+    pub fn execute_turn_action(&mut self, unit_card_index: usize) {
+        self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_turn_action(true);
+    }
+    pub fn reset_turn_action(&mut self, unit_card_index: usize) {
+        self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_turn_action(false);
     }
 
     pub fn add_special_energy_to_indexed_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32, status_effect_list: Vec<StatusEffect>) {

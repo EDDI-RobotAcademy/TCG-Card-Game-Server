@@ -24,6 +24,7 @@ use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_ind
 use crate::game_field_unit::service::request::attach_special_energy_to_unit_index_request::AttachSpecialEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attack_target_unit_with_extra_effect_request::AttackTargetUnitWithExtraEffectRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
+use crate::game_field_unit::service::request::check_turn_action_request::CheckTurnActionRequest;
 use crate::game_field_unit::service::request::detach_multiple_energy_from_field_unit_request::DetachMultipleEnergyFromFieldUnitRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
@@ -43,6 +44,7 @@ use crate::game_field_unit::service::response::attach_multiple_energy_to_unit_in
 use crate::game_field_unit::service::response::attach_special_energy_to_unit_index_response::AttachSpecialEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attack_target_unit_with_extra_effect_response::AttackTargetUnitWithExtraEffectResponse;
 use crate::game_field_unit::service::response::judge_death_of_unit_response::JudgeDeathOfUnitResponse;
+use crate::game_field_unit::service::response::check_turn_action_response::CheckTurnActionResponse;
 use crate::game_field_unit::service::response::detach_multiple_energy_from_field_unit_response::DetachMultipleEnergyFromFieldUnitResponse;
 use crate::game_field_unit::service::response::find_active_skill_usage_unit_id_by_index_response::FindActiveSkillUsageUnitIdByIndexResponse;
 use crate::game_field_unit::service::response::find_target_unit_id_by_index_response::FindTargetUnitIdByIndexResponse;
@@ -166,6 +168,44 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
         JudgeDeathOfUnitResponse::new(response)
     }
+    // async fn check_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse {
+    //     println!("GameFieldUnitServiceImpl: check_turn_action()");
+    //
+    //     let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+    //     let response = game_field_unit_repository_guard.check_turn_action_of_unit(
+    //         check_turn_action_request.get_account_unique_id(),
+    //         check_turn_action_request.get_unit_card_index());
+    //
+    //     CheckTurnActionResponse::new(response)
+    // }
+    async fn check_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse {
+        println!("GameFieldUnitServiceImpl: check_turn_action()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let response = game_field_unit_repository_guard.check_turn_action_of_unit(
+            check_turn_action_request.get_account_unique_id(),
+            check_turn_action_request.get_unit_card_index());
+        CheckTurnActionResponse::new(response)
+    }
+    async fn execute_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse {
+        println!("GameFieldUnitServiceImpl: execute_turn_action_of_unit()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let response = game_field_unit_repository_guard.check_turn_action_of_unit(
+            check_turn_action_request.get_account_unique_id(),
+            check_turn_action_request.get_unit_card_index());
+        CheckTurnActionResponse::new(response)
+    }
+    async fn reset_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse {
+        println!("GameFieldUnitServiceImpl: reset_turn_action_of_unit()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let response = game_field_unit_repository_guard.check_turn_action_of_unit(
+            check_turn_action_request.get_account_unique_id(),
+            check_turn_action_request.get_unit_card_index());
+        CheckTurnActionResponse::new(response)
+    }
+
 
     async fn get_current_health_point_of_field_unit_by_index(&self, get_current_health_point_of_field_unit_by_index_request: GetCurrentHealthPointOfFieldUnitByIndexRequest) -> GetCurrentHealthPointOfFieldUnitByIndexResponse {
         println!("GameFieldUnitServiceImpl: get_current_health_point_of_field_unit_by_index()");

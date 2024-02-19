@@ -194,6 +194,29 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         false
     }
+    fn check_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let unit_card_index = unit_card_index as usize;
+                 game_field_unit.check_turn_action_of_unit(unit_card_index);
+        }
+        false
+    }
+
+    fn execute_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let unit_card_index = unit_card_index as usize;
+                game_field_unit.execute_turn_action_of_unit(unit_card_index);
+        }
+        false
+    }
+    fn reset_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let unit_card_index = unit_card_index as usize;
+                game_field_unit.reset_turn_action_of_unit(unit_card_index);
+        }
+        false
+    }
+
 
     fn attach_special_energy_to_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: i32, race_enum: RaceEnum, quantity: i32, status_effect_list: Vec<StatusEffect>) -> bool {
         println!("GameFieldUnitRepositoryImpl: attach_special_energy_to_indexed_unit()");

@@ -22,6 +22,7 @@ pub struct GameFieldUnitCard {
     has_third_passive_skill: bool,
     extra_status_effect_list: Vec<ExtraStatusEffect>,
     harmful_status_effect_list: Vec<HarmfulStatusEffect>,
+    turn_action: bool,
     is_alive: bool,
 }
 
@@ -37,6 +38,7 @@ impl GameFieldUnitCard {
                has_third_passive_skill: bool,
                is_alive: bool) -> GameFieldUnitCard {
 
+
         GameFieldUnitCard {
             field_unit_card,
             attached_energy_map: AttachedEnergyMap::new(),
@@ -50,7 +52,8 @@ impl GameFieldUnitCard {
             has_third_passive_skill,
             extra_status_effect_list: Vec::new(),
             harmful_status_effect_list: Vec::new(),
-            is_alive
+            is_alive,
+            turn_action: false,
         }
     }
 
@@ -77,15 +80,19 @@ impl GameFieldUnitCard {
     pub fn get_extra_status_effect_list(&self) -> &Vec<ExtraStatusEffect> {
         &self.extra_status_effect_list
     }
-
+    // get
     pub fn is_alive(&self) -> bool {
         self.is_alive
     }
-
+    pub fn get_turn_action(&self) -> bool {
+        self.turn_action
+    }
     pub fn set_is_alive(&mut self, is_alive: bool) {
         self.is_alive = is_alive;
     }
-
+    pub fn set_turn_action(&mut self, turn_action: bool) {
+        self.turn_action = turn_action;
+    }
     pub fn attach_energy(&mut self, race: RaceEnumValue, quantity: i32) {
         self.attached_energy_map.add_energy(race, quantity);
     }
