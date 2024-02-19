@@ -87,8 +87,10 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         println!("GameCardActiveSkillControllerImpl: request_targeting_active_skill()");
 
-        // 1. 세션 아이디를 검증합니다.
-        let account_unique_id = self.is_valid_session(targeting_active_skill_request_form.to_session_validation_request()).await;
+        // 세션 아이디를 검증합니다.
+        let account_unique_id =
+            self.is_valid_session(targeting_active_skill_request_form.to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             return TargetingActiveSkillResponseForm::new(false)
         }
@@ -96,29 +98,46 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
         let unit_card_index_string = targeting_active_skill_request_form.get_unit_card_index();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
 
-        // 2. TODO: 프로토콜 검증 할 때가 아니라 패스
+        // TODO: 프로토콜 검증 할 때가 아니라 패스
 
-        // 3. TODO: Action 가능한 턴인지 판별 추가 필요 - 성용
+        // Action 가능한 턴인지 판별
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
 
-        // 4. Active Skill Summary 획득
+        let check_turn_action_response =
+            game_field_unit_service_guard.check_turn_action(
+                targeting_active_skill_request_form
+                    .to_check_turn_action_request(
+                        account_unique_id,
+                        unit_card_index)).await;
+
+        if check_turn_action_response.has_already_taken_action() {
+            println!("해당 유닛은 이미 액션을 취했습니다.");
+            return TargetingActiveSkillResponseForm::new(false)
+        }
+
+        // Active Skill Summary 획득
         let usage_skill_index_string = targeting_active_skill_request_form.get_usage_skill_index();
         let usage_skill_index = usage_skill_index_string.parse::<i32>().unwrap();
 
-        let mut game_card_active_skill_service_guard = self.game_card_active_skill_service.lock().await;
-        let summary_active_skill_effect_response = game_card_active_skill_service_guard
-            .summary_active_skill(
-                targeting_active_skill_request_form.to_summary_active_skill_effect_response(
-                    unit_card_index, usage_skill_index)).await;
+        let mut game_card_active_skill_service_guard =
+            self.game_card_active_skill_service.lock().await;
+
+        let summary_active_skill_effect_response =
+            game_card_active_skill_service_guard.summary_active_skill(
+                targeting_active_skill_request_form
+                    .to_summary_active_skill_effect_response(
+                        unit_card_index,
+                        usage_skill_index)).await;
 
         drop(game_card_active_skill_service_guard);
 
-        // 5. 스킬 사용에 필요한 에너지만큼 가지고 있는지 판정
+        // 스킬 사용에 필요한 에너지만큼 가지고 있는지 판정
         let required_energy_race_to_use_skill =
             *summary_active_skill_effect_response.get_required_energy().get_required_energy_race();
         let required_energy_count_to_use_skill =
             summary_active_skill_effect_response.get_required_energy().get_required_energy_count();
 
-        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
         let current_attached_energy_count_of_field_unit_index = game_field_unit_service_guard
             .get_current_attached_energy_of_field_unit_by_index(
                 targeting_active_skill_request_form
@@ -132,18 +151,17 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
             return TargetingActiveSkillResponseForm::new(false)
         }
 
-        // 6. TODO: 유닛이 Action 이전에 했는지 판정 - 형준
-
-        // 7. 상대 고유값 찾기
+        // 상대 고유값 찾기
         let mut battle_room_service_guard = self.battle_room_service.lock().await;
-        let opponent_unique_id = battle_room_service_guard
-            .find_opponent_by_account_unique_id(
+        let opponent_unique_id =
+            battle_room_service_guard.find_opponent_by_account_unique_id(
                 targeting_active_skill_request_form
-                    .to_find_opponent_by_account_id_request(account_unique_id)).await.get_opponent_unique_id();
+                    .to_find_opponent_by_account_id_request(
+                        account_unique_id)).await.get_opponent_unique_id();
 
         drop(battle_room_service_guard);
 
-        // 8. 타게팅 데미지 적용
+        // 타게팅 데미지 적용
         // TODO: 현재에는 단일 타겟팅밖에 없으나 다중 타겟팅이 존재하는 경우 추가 처리 필요
         // TODO: 특수 에너지 효과 적용까지 추가 필요
         let target_card_index_string = targeting_active_skill_request_form.get_opponent_target_card_index();
@@ -166,15 +184,19 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                 return TargetingActiveSkillResponseForm::new(false)
             }
 
-            // 9. TODO: 공격 당한 유닛 사망 판정 - 영찬
+            // TODO: 공격 당한 유닛 사망 판정 - 영찬
 
-            // 10. TODO: 사망 판정 값이 참이라면 무덤으로 보내기 - 영찬
+            // TODO: 사망 판정 값이 참이라면 무덤으로 보내기 - 영찬
 
-            // 11. TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로 - 상근
-            // let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
+            // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로 - 상근
         }
 
-        // 12. TODO: 유닛의 이번 턴 Action 을 true 로 세팅 - 형준
+        // 12. 유닛의 이번 턴 Action 을 true 로 세팅
+        game_field_unit_service_guard.execute_turn_action(
+            targeting_active_skill_request_form
+                .to_execute_turn_action_request(
+                    account_unique_id,
+                    unit_card_index)).await;
 
         TargetingActiveSkillResponseForm::new(true)
     }
@@ -184,40 +206,59 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         println!("GameCardActiveSkillControllerImpl: request_non_targeting_active_skill()");
 
-        // 1. 세션 아이디를 검증합니다.
-        let account_unique_id = self.is_valid_session(non_targeting_active_skill_request_form.to_session_validation_request()).await;
+        // 세션 아이디를 검증합니다.
+        let account_unique_id =
+            self.is_valid_session(non_targeting_active_skill_request_form.to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             return NonTargetingActiveSkillResponseForm::new(false)
         }
 
+        // TODO: 프로토콜 검증 할 때가 아니라 패스
+
+        // Action 가능한 턴인지 판별
         let unit_card_index_string = non_targeting_active_skill_request_form.get_unit_card_index();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
 
-        // 2. TODO: 프로토콜 검증 할 때가 아니라 패스
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
 
-        // 3. TODO: Action 가능한 턴인지 판별 추가 필요 - 성용
+        let check_turn_action_response =
+            game_field_unit_service_guard.check_turn_action(
+                non_targeting_active_skill_request_form
+                    .to_check_turn_action_request(
+                        account_unique_id,
+                        unit_card_index)).await;
 
-        // 4. Active Skill Summary 획득
+        if check_turn_action_response.has_already_taken_action() {
+            println!("해당 유닛은 이미 액션을 취했습니다.");
+            return NonTargetingActiveSkillResponseForm::new(false)
+        }
+
+        // Active Skill Summary 획득
         let usage_skill_index_string = non_targeting_active_skill_request_form.get_usage_skill_index();
         let usage_skill_index = usage_skill_index_string.parse::<i32>().unwrap();
 
-        let mut game_card_active_skill_service_guard = self.game_card_active_skill_service.lock().await;
-        let summary_active_skill_effect_response = game_card_active_skill_service_guard
-            .summary_active_skill(
-                non_targeting_active_skill_request_form.to_summary_active_skill_effect_request(
-                    unit_card_index, usage_skill_index)).await;
+        let mut game_card_active_skill_service_guard =
+            self.game_card_active_skill_service.lock().await;
+
+        let summary_active_skill_effect_response =
+            game_card_active_skill_service_guard.summary_active_skill(
+                non_targeting_active_skill_request_form
+                    .to_summary_active_skill_effect_request(
+                        unit_card_index,
+                        usage_skill_index)).await;
 
         drop(game_card_active_skill_service_guard);
 
-        // 5. 스킬 사용에 필요한 에너지만큼 가지고 있는지 판정
+        // 스킬 사용에 필요한 에너지만큼 가지고 있는지 판정
         let required_energy_race_to_use_skill =
             *summary_active_skill_effect_response.get_required_energy().get_required_energy_race();
         let required_energy_count_to_use_skill =
             summary_active_skill_effect_response.get_required_energy().get_required_energy_count();
 
-        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let current_attached_energy_count_of_field_unit_index = game_field_unit_service_guard
-            .get_current_attached_energy_of_field_unit_by_index(
+        let current_attached_energy_count_of_field_unit_index =
+            game_field_unit_service_guard.get_current_attached_energy_of_field_unit_by_index(
                 non_targeting_active_skill_request_form
                     .to_get_current_attached_energy_of_field_unit_by_index_request(
                         account_unique_id,
@@ -229,25 +270,25 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
             return NonTargetingActiveSkillResponseForm::new(false)
         }
 
-        // 6. TODO: 유닛이 Action 이전에 했는지 판정 - 형준
-
-        // 7. 상대 고유값 찾기
+        // 상대 고유값 찾기
         let mut battle_room_service_guard = self.battle_room_service.lock().await;
-        let opponent_unique_id = battle_room_service_guard.find_opponent_by_account_unique_id(
-            non_targeting_active_skill_request_form
-                .to_find_opponent_by_account_id_request(account_unique_id)).await.get_opponent_unique_id();
+        let opponent_unique_id =
+            battle_room_service_guard.find_opponent_by_account_unique_id(
+                non_targeting_active_skill_request_form
+                    .to_find_opponent_by_account_id_request(
+                        account_unique_id)).await.get_opponent_unique_id();
 
         drop(battle_room_service_guard);
 
-        // 8. 논타겟 데미지 효과 적용
+        // 논타겟 데미지 효과 적용
         // TODO: 현재에는 전 유닛 데미지밖에 없으나 다중 랜덤 논타겟이 추가된다면 처리 필요함
         // TODO: 특수 에너지 효과 적용까지 추가 필요
         let non_target_skill_type = summary_active_skill_effect_response.get_skill_type();
         let non_target_skill_damage = summary_active_skill_effect_response.get_skill_damage();
 
         if non_target_skill_type == &ActiveSkillType::BroadArea {
-            let apply_catastrophic_damage_to_opponent_field_unit_response = game_field_unit_service_guard
-                .apply_catastrophic_damage_to_field_unit(
+            let apply_catastrophic_damage_to_opponent_field_unit_response =
+                game_field_unit_service_guard.apply_catastrophic_damage_to_field_unit(
                     non_targeting_active_skill_request_form
                         .to_apply_catastrophic_damage_to_field_unit_request(
                             opponent_unique_id,
@@ -258,14 +299,19 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                 return NonTargetingActiveSkillResponseForm::new(false)
             }
 
-            // 9. TODO: 공격 당한 유닛 사망 판정 - 영찬
+            // TODO: 공격 당한 유닛 사망 판정 - 영찬
 
-            // 10. TODO: 사망 판정 값이 참이라면 무덤으로 보내기 - 영찬
+            // TODO: 사망 판정 값이 참이라면 무덤으로 보내기 - 영찬
 
-            // 11. TODO: 스킬 사용으로 인한 광역 논타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로 - 상근
+            // TODO: 스킬 사용으로 인한 광역 논타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
         }
 
-        // 12. TODO: 유닛의 이번 턴 Action 을 true 로 세팅 - 형준
+        // 유닛의 이번 턴 Action 을 true 로 세팅
+        game_field_unit_service_guard.execute_turn_action(
+            non_targeting_active_skill_request_form
+                .to_execute_turn_action_request(
+                    account_unique_id,
+                    unit_card_index)).await;
 
         NonTargetingActiveSkillResponseForm::new(true)
     }

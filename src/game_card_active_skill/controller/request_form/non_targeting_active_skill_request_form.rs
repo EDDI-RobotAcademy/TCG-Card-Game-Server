@@ -4,6 +4,8 @@ use crate::game_card_active_skill::service::request::summary_active_skill_effect
 use crate::game_card_unit::service::request::summary_unit_card_info_request::SummaryUnitCardInfoRequest;
 use crate::game_field_unit::service::request::apply_catastrophic_damage_to_field_unit_request::ApplyCatastrophicDamageToFieldUnitRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
+use crate::game_field_unit::service::request::check_turn_action_request::CheckTurnActionRequest;
+use crate::game_field_unit::service::request::execute_turn_action_request::ExecuteTurnActionRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
@@ -42,6 +44,20 @@ impl NonTargetingActiveSkillRequestForm {
     pub fn to_session_validation_request(&self) -> GetValueWithKeyRequest {
         GetValueWithKeyRequest::new(
             self.session_id.clone().as_str())
+    }
+
+    pub fn to_check_turn_action_request(&self,
+                                        account_unique_id: i32,
+                                        attacker_unit_card_index: i32) -> CheckTurnActionRequest {
+        CheckTurnActionRequest::new(
+            account_unique_id, attacker_unit_card_index)
+    }
+
+    pub fn to_execute_turn_action_request(&self,
+                                          account_unique_id: i32,
+                                          attacker_unit_card_index: i32) -> ExecuteTurnActionRequest {
+        ExecuteTurnActionRequest::new(
+            account_unique_id, attacker_unit_card_index)
     }
 
     pub fn to_find_active_skill_usage_unit_id_by_index_request(&self,
