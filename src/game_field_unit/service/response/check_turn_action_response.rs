@@ -2,15 +2,15 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CheckTurnActionResponse {
-    turn_action: bool
+    has_already_taken_action: bool
 }
 
 impl CheckTurnActionResponse {
-    pub fn new(turn_action: bool) -> Self {
-        CheckTurnActionResponse { turn_action }
+    pub fn new(has_already_taken_action: bool) -> Self {
+        CheckTurnActionResponse { has_already_taken_action }
     }
 
-    pub fn turn_action(&self) -> bool {
-        self.turn_action
+    pub fn has_already_taken_action(&self) -> bool {
+        self.has_already_taken_action
     }
 }
