@@ -1,6 +1,6 @@
 use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct SummaryPassiveSkillEffectResponse {
     passive_skill_effect_list: Vec<SummaryPassiveSkillEffect>
 }

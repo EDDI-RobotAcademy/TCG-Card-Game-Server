@@ -23,6 +23,8 @@ use crate::game_card_support::service::game_card_support_service::GameCardSuppor
 
 use crate::game_card_support::service::game_card_support_service_impl::GameCardSupportServiceImpl;
 use crate::game_card_support::service::request::summarize_support_card_effect_request::SummarizeSupportCardEffectRequest;
+use crate::game_card_support_usage_counter::service::game_card_support_usage_counter_service::GameCardSupportUsageCounterService;
+use crate::game_card_support_usage_counter::service::game_card_support_usage_counter_service_impl::GameCardSupportUsageCounterServiceImpl;
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
 use crate::game_field_energy::service::game_field_energy_service::GameFieldEnergyService;
@@ -58,6 +60,7 @@ pub struct GameCardSupportControllerImpl {
     game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
     card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
+    game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>
 }
 
 impl GameCardSupportControllerImpl {
@@ -71,7 +74,8 @@ impl GameCardSupportControllerImpl {
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
-               card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>) -> Self {
+               card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
+               game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>) -> Self {
 
         GameCardSupportControllerImpl {
             battle_room_service,
@@ -85,6 +89,7 @@ impl GameCardSupportControllerImpl {
             game_field_energy_service,
             redis_in_memory_service,
             card_grade_service,
+            game_card_support_usage_counter_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardSupportControllerImpl>> {
@@ -103,7 +108,8 @@ impl GameCardSupportControllerImpl {
                             GameFieldUnitServiceImpl::get_instance(),
                             GameFieldEnergyServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
-                            CardGradeServiceImpl::get_instance())));
+                            CardGradeServiceImpl::get_instance(),
+                            GameCardSupportUsageCounterServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -204,6 +210,16 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return EnergyBoostSupportResponseForm::new(false)
         }
 
+        let mut game_card_support_usage_counter_service = self.game_card_support_usage_counter_service.lock().await;
+        let check_support_card_usage_count_response =
+            game_card_support_usage_counter_service.check_support_card_usage_count(
+                energy_boost_support_request_form.to_check_support_card_usage_count_request(account_unique_id)).await;
+
+        if check_support_card_usage_count_response.get_used_count() > 0 {
+            println!("Support card usage limit over");
+            return EnergyBoostSupportResponseForm::new(false)
+        }
+
         // 5. Hand Service 호출하여 카드 사용
         let usage_hand_card = self.use_support_card(
             energy_boost_support_request_form.to_use_game_hand_support_card_request(account_unique_id, support_card_number)).await;
@@ -239,6 +255,9 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
                 unit_card_index,
                 *boost_race_reference,
                 energy_from_deck_info.get_energy_count())).await;
+
+        game_card_support_usage_counter_service.update_support_card_usage_count(
+            energy_boost_support_request_form.to_update_support_card_usage_count_request(account_unique_id)).await;
 
         // 10. 상대방의 고유 id 값을 확보
         let opponent_unique_id = self.get_opponent_unique_id(
@@ -295,6 +314,16 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return DrawSupportResponseForm::new(Vec::new())
         }
 
+        let mut game_card_support_usage_counter_service = self.game_card_support_usage_counter_service.lock().await;
+        let check_support_card_usage_count_response =
+            game_card_support_usage_counter_service.check_support_card_usage_count(
+                draw_support_request_form.to_check_support_card_usage_count_request(account_unique_id)).await;
+
+        if check_support_card_usage_count_response.get_used_count() > 0 {
+            println!("Support card usage limit over");
+            return DrawSupportResponseForm::new(Vec::new())
+        }
+
         let card_effect_summary = self.get_summary_of_support_card(
             draw_support_request_form.to_summarize_support_card_effect_request(support_card_number)).await;
 
@@ -308,6 +337,9 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         self.place_used_card_to_tomb(
             draw_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+
+        game_card_support_usage_counter_service.update_support_card_usage_count(
+            draw_support_request_form.to_update_support_card_usage_count_request(account_unique_id)).await;
 
         let opponent_unique_id = self.get_opponent_unique_id(
             draw_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
@@ -329,7 +361,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
     // 여러 장의 유닛 카드 동시에 검색해서 핸드에 추가하는 형태
     async fn request_to_use_search_unit_support(&self, search_unit_support_request_form: SearchUnitSupportRequestForm) -> SearchUnitSupportResponseForm {
-        println!("GameCardSupportControllerImpl: request_to_use_draw_support()");
+        println!("GameCardSupportControllerImpl: request_to_use_search_unit_support()");
 
         let account_unique_id = self.is_valid_session(
             search_unit_support_request_form.to_session_validation_request()).await;
@@ -359,6 +391,16 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             search_unit_support_request_form.to_can_use_card_request(account_unique_id, support_card_number)).await;
         if !can_use_card_response {
             println!("A mythical grade card can be used after round 4.");
+            return SearchUnitSupportResponseForm::new(false)
+        }
+
+        let mut game_card_support_usage_counter_service = self.game_card_support_usage_counter_service.lock().await;
+        let check_support_card_usage_count_response =
+            game_card_support_usage_counter_service.check_support_card_usage_count(
+                search_unit_support_request_form.to_check_support_card_usage_count_request(account_unique_id)).await;
+
+        if check_support_card_usage_count_response.get_used_count() > 0 {
+            println!("Support card usage limit over");
             return SearchUnitSupportResponseForm::new(false)
         }
 
@@ -421,6 +463,9 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         self.place_used_card_to_tomb(
             search_unit_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
 
+        game_card_support_usage_counter_service.update_support_card_usage_count(
+            search_unit_support_request_form.to_update_support_card_usage_count_request(account_unique_id)).await;
+
         let opponent_unique_id = self.get_opponent_unique_id(
             search_unit_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
@@ -473,6 +518,16 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return RemoveOpponentFieldEnergySupportResponseForm::new(false)
         }
 
+        let mut game_card_support_usage_counter_service = self.game_card_support_usage_counter_service.lock().await;
+        let check_support_card_usage_count_response =
+            game_card_support_usage_counter_service.check_support_card_usage_count(
+                remove_opponent_field_energy_support_request_form.to_check_support_card_usage_count_request(account_unique_id)).await;
+
+        if check_support_card_usage_count_response.get_used_count() > 0 {
+            println!("Support card usage limit over");
+            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+        }
+
         let card_effect_summary = self.get_summary_of_support_card(
             remove_opponent_field_energy_support_request_form.to_summarize_support_card_effect_request(support_card_number)).await;
 
@@ -496,6 +551,9 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         self.place_used_card_to_tomb(
             remove_opponent_field_energy_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+
+        game_card_support_usage_counter_service.update_support_card_usage_count(
+            remove_opponent_field_energy_support_request_form.to_update_support_card_usage_count_request(account_unique_id)).await;
 
         let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
         let notify_opponent_you_use_support_card_response = notify_player_action_service_guard.notify_opponent_you_use_field_energy_remove_support_card(

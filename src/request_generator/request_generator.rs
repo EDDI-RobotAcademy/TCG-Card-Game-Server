@@ -30,6 +30,8 @@ use crate::game_card_unit::controller::game_card_unit_controller::GameCardUnitCo
 use crate::game_card_unit::controller::game_card_unit_controller_impl::GameCardUnitControllerImpl;
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
+use crate::game_field_energy::controller::game_field_energy_controller::GameFieldEnergyController;
+use crate::game_field_energy::controller::game_field_energy_controller_impl::GameFieldEnergyControllerImpl;
 use crate::game_hand::controller::game_hand_controller::GameHandController;
 use crate::game_hand::controller::game_hand_controller_impl::GameHandControllerImpl;
 use crate::game_turn::controller::game_turn_controller_impl::GameTurnControllerImpl;
@@ -54,19 +56,25 @@ use crate::game_turn::controller::game_turn_controller::GameTurnController;
 
 use crate::game_turn::service::game_turn_service::GameTurnService;
 use crate::game_turn::service::game_turn_service_impl::GameTurnServiceImpl;
+use crate::request_generator::attach_field_energy_to_field_unit_request_form_generator::create_attach_field_energy_to_field_unit_request_form;
 
 use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
+use crate::request_generator::check_winner_request_generator::create_check_winner_request_form;
 
 use crate::request_generator::first_turn_decision_request_generator::create_first_turn_decision_request_form;
 use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item_request_form, create_opponent_field_unit_energy_removal_item_request_form, create_target_death_item_request_form};
 use crate::request_generator::game_next_turn_request_generator::create_game_turn_request_form;
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
+use crate::request_generator::non_targeting_active_skill_request_form_generator::create_non_targeting_active_skill_request_form;
 use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
+use crate::request_generator::rockpaperscissors_request_generator::create_rockpaperscissors_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
 use crate::request_generator::targeting_active_skill_request_form_generator::create_targeting_active_skill_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::response_generator::response_type::ResponseType;
+use crate::rockpaperscissors::controller::rockpaperscissors_controller::RockpaperscissorsController;
+use crate::rockpaperscissors::controller::rockpaperscissors_controller_impl::RockpaperscissorsControllerImpl;
 use crate::shop_gacha::service::shop_gacha_service::ShopGachaService;
 use crate::shop_gacha::service::shop_gacha_service_impl::ShopGachaServiceImpl;
 
@@ -298,6 +306,34 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            21 => {
+                // First Turn wait queue 최신 버전
+                if let Some(request_form) = create_rockpaperscissors_request_form(&data) {
+                    let rockpaperscissors_controller_mutex = RockpaperscissorsControllerImpl::get_instance();
+                    let mut rockpaperscissors_controller_mutex_guard = rockpaperscissors_controller_mutex.lock().await;
+
+                    let response_form = rockpaperscissors_controller_mutex_guard.execute_rockpaperscissors_procedure(request_form).await;
+                    let response_type = Some(ResponseType::ROCKPAPERSCISSORS(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            22 => {
+                // First Turn Decision 최신 버전
+                if let Some(request_form) = create_check_winner_request_form(&data) {
+                    let rockpaperscissors_controller_mutex = RockpaperscissorsControllerImpl::get_instance();
+                    let mut rockpaperscissors_controller_mutex_guard = rockpaperscissors_controller_mutex.lock().await;
+
+                    let response_form = rockpaperscissors_controller_mutex_guard.execute_check_winner_procedure(request_form).await;
+                    let response_type = Some(ResponseType::CHECK_WINNER(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
 
             31 => {
                 // Account Card List
@@ -439,7 +475,6 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            // TODO: 1000, 1001, 1002, 1003 프로토콜 얼른 추가하자
             1000 => {
                 // Unit attack
                 if let Some(request_form) = create_attack_unit_request_form(&data) {
@@ -455,13 +490,41 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             1001 => {
-                // Unit use first active skill
+                // Unit use targeting active skill
                 if let Some(request_form) = create_targeting_active_skill_request_form(&data) {
                     let game_card_active_skill_controller_mutex = GameCardActiveSkillControllerImpl::get_instance();
                     let game_card_active_skill_controller = game_card_active_skill_controller_mutex.lock().await;
 
                     let response_form = game_card_active_skill_controller.request_targeting_active_skill(request_form).await;
                     let response_type = Some(ResponseType::TARGETING_ACTIVE_SKILL(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1002 => {
+                // Unit use non-targeting active skill
+                if let Some(request_form) = create_non_targeting_active_skill_request_form(&data) {
+                    let game_card_active_skill_controller_mutex = GameCardActiveSkillControllerImpl::get_instance();
+                    let game_card_active_skill_controller = game_card_active_skill_controller_mutex.lock().await;
+
+                    let response_form = game_card_active_skill_controller.request_non_targeting_active_skill(request_form).await;
+                    let response_type = Some(ResponseType::NON_TARGETING_ACTIVE_SKILL(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1003 => {
+                // Attach field energy to field unit
+                if let Some(request_form) = create_attach_field_energy_to_field_unit_request_form(&data) {
+                    let game_field_energy_controller_mutex = GameFieldEnergyControllerImpl::get_instance();
+                    let game_field_energy_controller = game_field_energy_controller_mutex.lock().await;
+
+                    let response_form = game_field_energy_controller.request_to_attach_field_energy_to_field_unit(request_form).await;
+                    let response_type = Some(ResponseType::ATTACH_FIELD_ENERGY_TO_UNIT(response_form));
 
                     response_type
                 } else {
@@ -640,9 +703,9 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 // Game Next Turn
                 if let Some(request) = create_game_turn_request_form(&data) {
                     let game_turn_controller_impl_mutex = GameTurnControllerImpl::get_instance();
-                    let mut game_trun_controller = game_turn_controller_impl_mutex.lock().await;
+                    let mut game_turn_controller = game_turn_controller_impl_mutex.lock().await;
 
-                    let response = game_trun_controller.request_turn_end(request).await;
+                    let response = game_turn_controller.request_turn_end(request).await;
                     let response_type = Some(ResponseType::GAME_NEXT_TURN(response));
 
                     response_type

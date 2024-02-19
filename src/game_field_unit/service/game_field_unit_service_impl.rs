@@ -24,11 +24,14 @@ use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_ind
 use crate::game_field_unit::service::request::attach_special_energy_to_unit_index_request::AttachSpecialEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attack_target_unit_with_extra_effect_request::AttackTargetUnitWithExtraEffectRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
+use crate::game_field_unit::service::request::check_turn_action_request::CheckTurnActionRequest;
 use crate::game_field_unit::service::request::detach_multiple_energy_from_field_unit_request::DetachMultipleEnergyFromFieldUnitRequest;
+use crate::game_field_unit::service::request::execute_turn_action_request::ExecuteTurnActionRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
+use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
 
@@ -43,11 +46,14 @@ use crate::game_field_unit::service::response::attach_multiple_energy_to_unit_in
 use crate::game_field_unit::service::response::attach_special_energy_to_unit_index_response::AttachSpecialEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attack_target_unit_with_extra_effect_response::AttackTargetUnitWithExtraEffectResponse;
 use crate::game_field_unit::service::response::judge_death_of_unit_response::JudgeDeathOfUnitResponse;
+use crate::game_field_unit::service::response::check_turn_action_response::CheckTurnActionResponse;
 use crate::game_field_unit::service::response::detach_multiple_energy_from_field_unit_response::DetachMultipleEnergyFromFieldUnitResponse;
+use crate::game_field_unit::service::response::execute_turn_action_response::ExecuteTurnActionResponse;
 use crate::game_field_unit::service::response::find_active_skill_usage_unit_id_by_index_response::FindActiveSkillUsageUnitIdByIndexResponse;
 use crate::game_field_unit::service::response::find_target_unit_id_by_index_response::FindTargetUnitIdByIndexResponse;
 use crate::game_field_unit::service::response::get_current_attached_energy_of_field_unit_by_index_response::GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
+use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_uique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
 
 
 pub struct GameFieldUnitServiceImpl {
@@ -78,7 +84,7 @@ impl GameFieldUnitServiceImpl {
 impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
     async fn add_unit_to_game_field(&mut self, add_unit_to_game_field_request: AddUnitToGameFieldRequest) -> AddUnitToGameFieldResponse {
-        println!("GameFieldUnitServiceImpl: attach_multiple_energy_to_game_field_unit()");
+        println!("GameFieldUnitServiceImpl: add_unit_to_game_field()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let response = game_field_unit_repository_guard.add_unit_to_game_field(
@@ -110,7 +116,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
     }
 
     async fn attach_multiple_energy_to_field_unit_index(&mut self, attach_multiple_energy_to_unit_index_request: AttachMultipleEnergyToUnitIndexRequest) -> AttachMultipleEnergyToUnitIndexResponse {
-        println!("GameFieldUnitServiceImpl: attach_energy_to_field_unit_index()");
+        println!("GameFieldUnitServiceImpl: attach_multiple_energy_to_field_unit_index()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let response = game_field_unit_repository_guard.attach_multiple_energy_to_indexed_unit(
@@ -157,7 +163,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
     }
 
     async fn judge_death_of_unit(&mut self, judge_death_of_unit_request: JudgeDeathOfUnitRequest) -> JudgeDeathOfUnitResponse {
-        println!("GameFieldUnitServiceImpl: check_is_unit_alive()");
+        println!("GameFieldUnitServiceImpl: judge_death_of_unit()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let response = game_field_unit_repository_guard.judge_death_of_unit(
@@ -166,6 +172,40 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
         JudgeDeathOfUnitResponse::new(response)
     }
+
+    async fn check_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse {
+        println!("GameFieldUnitServiceImpl: check_turn_action()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let response = game_field_unit_repository_guard.check_turn_action_of_unit(
+            check_turn_action_request.get_account_unique_id(),
+            check_turn_action_request.get_unit_card_index());
+
+        CheckTurnActionResponse::new(response)
+    }
+
+    async fn execute_turn_action(&mut self, execute_turn_action_request: ExecuteTurnActionRequest) -> ExecuteTurnActionResponse {
+        println!("GameFieldUnitServiceImpl: execute_turn_action_of_unit()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let response = game_field_unit_repository_guard.execute_turn_action_of_unit(
+            execute_turn_action_request.get_account_unique_id(),
+            execute_turn_action_request.get_unit_card_index());
+
+        ExecuteTurnActionResponse::new(response)
+    }
+
+    async fn reset_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse {
+        println!("GameFieldUnitServiceImpl: reset_turn_action_of_unit()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let response = game_field_unit_repository_guard.check_turn_action_of_unit(
+            check_turn_action_request.get_account_unique_id(),
+            check_turn_action_request.get_unit_card_index());
+
+        CheckTurnActionResponse::new(response)
+    }
+
 
     async fn get_current_health_point_of_field_unit_by_index(&self, get_current_health_point_of_field_unit_by_index_request: GetCurrentHealthPointOfFieldUnitByIndexRequest) -> GetCurrentHealthPointOfFieldUnitByIndexResponse {
         println!("GameFieldUnitServiceImpl: get_current_health_point_of_field_unit_by_index()");
@@ -219,7 +259,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
     }
 
     async fn acquire_unit_attack_point(&mut self, acquire_unit_attack_point_request: AcquireUnitAttackPointRequest) -> AcquireUnitAttackPointResponse {
-        println!("GameFieldUnitServiceImpl: apply_status_effect_damage_iteratively()");
+        println!("GameFieldUnitServiceImpl: acquire_unit_attack_point()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let attack_point = game_field_unit_repository_guard.acquire_unit_attack_point(
@@ -302,7 +342,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
     }
 
     async fn apply_catastrophic_damage_to_field_unit(&mut self, apply_catastrophic_damage_to_field_unit_request: ApplyCatastrophicDamageToFieldUnitRequest) -> ApplyCatastrophicDamageToFieldUnitResponse {
-        println!("GameFieldUnitServiceImpl: apply_passive_skill_list()");
+        println!("GameFieldUnitServiceImpl: apply_catastrophic_damage_to_field_unit()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let apply_catastrophic_damage_result = game_field_unit_repository_guard
@@ -345,5 +385,18 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         } else {
             GetCurrentAttachedEnergyOfFieldUnitByIndexResponse::new(-1)
         }
+    }
+
+    async fn get_game_field_unit_card_of_account_unique_id(&mut self, get_game_field_unit_card_to_service_request: GetGameFieldUnitCardOfAccountUniqueIdRequest) -> GetGameFieldUnitCardOfAccountUniqueIdResponse {
+        println!("GameFieldUnitServiceImpl: get_game_field_unit_card_of_account_unique_id()");
+
+        let account_unique_id = get_game_field_unit_card_to_service_request.get_account_unique_id();
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let mut game_field_unit_account_unique_id_index = game_field_unit_repository_guard.get_game_field_unit_map().clone();
+        let game_field_unit_account_unique_id = game_field_unit_account_unique_id_index.get_mut(&account_unique_id).unwrap();
+        let game_field_unit_list_of_account_unique_id =game_field_unit_account_unique_id.get_all_unit_list_in_game_field().clone();
+
+        return GetGameFieldUnitCardOfAccountUniqueIdResponse::new(game_field_unit_list_of_account_unique_id)
     }
 }

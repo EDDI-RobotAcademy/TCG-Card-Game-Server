@@ -18,6 +18,7 @@ use crate::battle_ready_account_hash::service::response::check_battle_prepare_re
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
+use crate::game_card_active_skill::controller::response_form::non_targeting_active_skill_response_form::NonTargetingActiveSkillResponseForm;
 use crate::game_turn::controller::response_form::first_turn_decision_wait_queue_response_form::FirstTurnDecisionWaitQueueResponseForm;
 
 use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
@@ -35,6 +36,7 @@ use crate::game_card_support::controller::response_form::search_unit_support_res
 use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
 use crate::game_card_unit::controller::response_form::attack_unit_response_form::AttackUnitResponseForm;
 use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
+use crate::game_field_energy::controller::response_form::attach_field_energy_to_field_unit_response_form::AttachFieldEnergyToFieldUnitResponseForm;
 use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
 use crate::game_turn::controller::response_form::first_turn_decision_response_form::FirstTurnDecisionResponseForm;
 use crate::game_turn::controller::response_form::turn_end_response_form::TurnEndResponseForm;
@@ -51,8 +53,10 @@ use crate::notify_player_action::entity::notify_opponent_to_unit_deploy::NotifyO
 use crate::notify_player_action::entity::notify_opponent_to_catastrophic_damage_item_usage::NotifyOpponentToCatastrophicDamageItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_damage_main_character_item_usage::NotifyOpponentToDamageMainCharacterItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
+use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
-use crate::notify_player_action::service::response::notify_to_opponent_you_use_item_card_response::NotifyToOpponentYouUseItemCardResponse;
+use crate::rockpaperscissors::controller::response_form::check_winner_response_form::CheckWinnerResponseForm;
+use crate::rockpaperscissors::controller::response_form::rockpaperscissors_response_form::RockpaperscissorsResponseForm;
 
 use crate::shop_gacha::service::response::get_specific_race_card_response::GetSpecificRaceCardResponse;
 
@@ -78,6 +82,8 @@ pub enum ResponseType {
     FIRST_TURN_DECISION_WAIT_QUEUE(FirstTurnDecisionWaitQueueResponseForm),
     // First TUrn Decision
     FIRST_TURN_DECISION(FirstTurnDecisionResponseForm),
+    ROCKPAPERSCISSORS(RockpaperscissorsResponseForm),
+    CHECK_WINNER(CheckWinnerResponseForm),
 
     // Account Card
     ACCOUNT_CARD_LIST(AccountCardListResponse),
@@ -114,10 +120,13 @@ pub enum ResponseType {
     OPPONENT_FIElD_UNIT_ENERGY_REMOVAL_ITEM_USAGE(RemoveOpponentFieldUnitEnergyItemResponseForm),
     ATTACK_UNIT(AttackUnitResponseForm),
     TARGETING_ACTIVE_SKILL(TargetingActiveSkillResponseForm),
+    NON_TARGETING_ACTIVE_SKILL(NonTargetingActiveSkillResponseForm),
+    ATTACH_FIELD_ENERGY_TO_UNIT(AttachFieldEnergyToFieldUnitResponseForm),
 
 
     // Notification to players
     NOTIFY_OPPONENT_TO_UNIT_DEPLOY(NotifyOpponentToUnitDeploy),
+    NOTIFY_OPPONENT_TO_FIELD_ENERGY_USAGE(NotifyOpponentToFieldEnergyUsage),
     NOTIFY_OPPONENT_TO_ENERGY_USAGE(NotifyOpponentToEnergyUsage),
     NOTIFY_OPPONENT_TO_ENERGY_BOOST(NotifyOpponentToEnergyBoost),
     NOTIFY_OPPONENT_TO_INSTANT_DEATH_ITEM_USAGE(NotifyOpponentToInstantDeathItemUsage),
