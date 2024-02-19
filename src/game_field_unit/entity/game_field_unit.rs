@@ -6,7 +6,7 @@ use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::game_field_unit_card_list::GameFieldUnitCardList;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GameFieldUnit {
     game_field_unit: GameFieldUnitCardList,
 }
