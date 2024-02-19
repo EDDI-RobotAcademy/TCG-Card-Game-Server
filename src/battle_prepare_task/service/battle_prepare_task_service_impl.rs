@@ -10,6 +10,8 @@ use crate::battle_prepare_task::service::battle_prepare_task_service::BattlePrep
 use crate::battle_ready_account_hash::entity::battle_ready_account_hash_status::BattleReadyAccountHashStatus;
 use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repository::BattleReadyAccountHashRepository;
 use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repository_impl::BattleReadyAccountHashRepositoryImpl;
+use crate::game_card_support_usage_counter::repository::game_card_support_usage_counter_repository::GameCardSupportUsageCounterRepository;
+use crate::game_card_support_usage_counter::repository::game_card_support_usage_counter_repository_impl::GameCardSupportUsageCounterRepositoryImpl;
 use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
 use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
 use crate::game_field_energy::repository::game_field_energy_repository::GameFieldEnergyRepository;
@@ -40,6 +42,7 @@ pub struct BattlePrepareTaskServiceImpl {
     game_main_character_repository: Arc<AsyncMutex<GameMainCharacterRepositoryImpl>>,
     game_tomb_repository: Arc<AsyncMutex<GameTombRepositoryImpl>>,
     game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
+    game_card_support_usage_counter_repository: Arc<AsyncMutex<GameCardSupportUsageCounterRepositoryImpl>>,
 }
 
 impl BattlePrepareTaskServiceImpl {
@@ -51,7 +54,8 @@ impl BattlePrepareTaskServiceImpl {
                game_lost_zone_repository: Arc<AsyncMutex<GameLostZoneRepositoryImpl>>,
                game_main_character_repository: Arc<AsyncMutex<GameMainCharacterRepositoryImpl>>,
                game_tomb_repository: Arc<AsyncMutex<GameTombRepositoryImpl>>,
-               game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,) -> Self {
+               game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
+               game_card_support_usage_counter_repository: Arc<AsyncMutex<GameCardSupportUsageCounterRepositoryImpl>>) -> Self {
         BattlePrepareTaskServiceImpl {
             battle_ready_account_hash_repository,
             game_deck_repository,
@@ -62,6 +66,7 @@ impl BattlePrepareTaskServiceImpl {
             game_main_character_repository,
             game_tomb_repository,
             game_round_repository,
+            game_card_support_usage_counter_repository
         }
     }
 
@@ -79,7 +84,8 @@ impl BattlePrepareTaskServiceImpl {
                             GameLostZoneRepositoryImpl::get_instance(),
                             GameMainCharacterRepositoryImpl::get_instance(),
                             GameTombRepositoryImpl::get_instance(),
-                            GameRoundRepositoryImpl::get_instance())));
+                            GameRoundRepositoryImpl::get_instance(),
+                            GameCardSupportUsageCounterRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -175,6 +181,15 @@ pub async fn player_turn_init_thread(user_id: i32) {
     sleep(time::Duration::from_millis(300)).await;
 }
 
+pub async fn player_support_card_usage_counter_init_thread(user_id: i32) {
+    let game_card_support_usage_counter_repository_mutex = GameCardSupportUsageCounterRepositoryImpl::get_instance();
+    let mut game_card_support_usage_counter_repository_guard = game_card_support_usage_counter_repository_mutex.lock().await;
+    game_card_support_usage_counter_repository_guard.create_support_card_usage_counter_object(user_id);
+    drop(game_card_support_usage_counter_repository_guard);
+
+    sleep(time::Duration::from_millis(300)).await;
+}
+
 pub async fn spawn_async_task_for_prepare_battle(user_id: i32) {
     let task_deck_init = tokio::spawn(player_deck_init_thread(user_id));
     let task_hand_init = tokio::spawn(player_hand_init_thread(user_id));
@@ -185,6 +200,7 @@ pub async fn spawn_async_task_for_prepare_battle(user_id: i32) {
     let task_tomb_init = tokio::spawn(player_tomb_init_thread(user_id));
     let task_round_init = tokio::spawn(player_round_init_thread(user_id));
     let task_turn_init = tokio::spawn(player_turn_init_thread(user_id));
+    let task_support_usage_counter_init = tokio::spawn(player_support_card_usage_counter_init_thread(user_id));
 
     let _ = tokio::try_join!(
         task_deck_init,
@@ -196,6 +212,7 @@ pub async fn spawn_async_task_for_prepare_battle(user_id: i32) {
         task_tomb_init,
         task_round_init,
         task_turn_init,
+        task_support_usage_counter_init,
     );
 
     let task_battle_ready_account_hash_config =
@@ -233,7 +250,7 @@ impl BattlePrepareTaskService for BattlePrepareTaskServiceImpl {
                 handle.await.expect("Failed to await spawned task");
             }
 
-            tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
+            tokio::time::sleep(time::Duration::from_millis(1000)).await;
         }
     }
 }
@@ -272,7 +289,7 @@ async fn test_prepare_for_player_battle() {
             .await;
     });
 
-    tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    tokio::time::sleep(time::Duration::from_secs(5)).await;
 
     task.abort();
 }
