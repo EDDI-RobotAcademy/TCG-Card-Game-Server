@@ -1,6 +1,6 @@
 use crate::game_card_passive_skill::entity::passive_skill_type::PassiveSkillType;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SummaryPassiveSkillEffect {
     passive_skill_type: PassiveSkillType,
     skill_damage: i32,
