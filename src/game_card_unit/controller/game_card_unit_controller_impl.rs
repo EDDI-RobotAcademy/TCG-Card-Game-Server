@@ -377,6 +377,13 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             return AttackUnitResponseForm::new(false)
         }
 
+        // 액션 완료 설정
+        game_field_unit_service_guard.execute_turn_action(
+            attack_unit_request_form
+                .to_execute_turn_action_request(
+                    account_unique_id,
+                    attacker_unit_card_index)).await;
+
         // 유닛들이 죽었는지 판정
         let maybe_dead_opponent_unit_id =
             game_field_unit_service_guard.judge_death_of_unit(
