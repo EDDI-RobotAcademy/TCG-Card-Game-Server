@@ -212,14 +212,21 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         // TODO: 프로토콜 검증 (지금 이거 신경 쓸 때가 아님)
 
-        // TODO: 액션 가능한 턴인지 검증
-        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        // let response =
-        //     game_field_unit_service_guard.check_turn_action()
-
         // Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
         let attacker_unit_card_index_string = attack_unit_request_form.get_attacker_unit_index();
         let attacker_unit_card_index = attacker_unit_card_index_string.parse::<i32>().unwrap();
+
+        // 액션 가능한 턴인지 검증
+        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+        let check_turn_action_response =
+            game_field_unit_service_guard.check_turn_action(
+                attack_unit_request_form
+                    .to_check_turn_action_request(account_unique_id, attacker_unit_card_index)).await;
+
+        if check_turn_action_response.has_already_taken_action() {
+            println!("해당 유닛은 이미 액션을 취했습니다.");
+            return AttackUnitResponseForm::new(false)
+        }
 
         // 유닛 인덱스에서 기본 공격력 정보 확보
         let find_attacker_unit_attack_point_response =
@@ -336,6 +343,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                 return AttackUnitResponseForm::new(true)
             }
         }
+
+        drop(game_card_passive_skill_service_guard);
 
         // 반격을 위해 피격 유닛의 공격력 확보
         let find_opponent_target_unit_attack_point_response =

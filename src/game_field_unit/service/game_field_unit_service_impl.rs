@@ -178,6 +178,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         let response = game_field_unit_repository_guard.check_turn_action_of_unit(
             check_turn_action_request.get_account_unique_id(),
             check_turn_action_request.get_unit_card_index());
+
         CheckTurnActionResponse::new(response)
     }
 
@@ -188,6 +189,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         let response = game_field_unit_repository_guard.check_turn_action_of_unit(
             check_turn_action_request.get_account_unique_id(),
             check_turn_action_request.get_unit_card_index());
+
         CheckTurnActionResponse::new(response)
     }
 
@@ -198,6 +200,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         let response = game_field_unit_repository_guard.check_turn_action_of_unit(
             check_turn_action_request.get_account_unique_id(),
             check_turn_action_request.get_unit_card_index());
+
         CheckTurnActionResponse::new(response)
     }
 
