@@ -1,5 +1,7 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::game_card_support::service::request::summarize_support_card_effect_request::{SummarizeSupportCardEffectRequest};
+use crate::game_card_support_usage_counter::service::request::check_support_card_usage_count_request::CheckSupportCardUsageCountRequest;
+use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
 use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
 use crate::game_deck::service::request::search_specific_deck_card_request::SearchSpecificDeckCardRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
@@ -40,6 +42,12 @@ impl SearchUnitSupportRequestForm {
     }
     pub fn to_is_it_support_card_request(&self, support_card_number: i32) -> IsItSupportCardRequest {
         IsItSupportCardRequest::new(support_card_number)
+    }
+    pub fn to_check_support_card_usage_count_request(&self, account_unique_id: i32) -> CheckSupportCardUsageCountRequest {
+        CheckSupportCardUsageCountRequest::new(account_unique_id)
+    }
+    pub fn to_update_support_card_usage_count_request(&self, account_unique_id: i32) -> UpdateSupportCardUsageCountRequest {
+        UpdateSupportCardUsageCountRequest::new(account_unique_id)
     }
     pub fn to_use_game_hand_support_card_request(&self, account_unique_id: i32, support_card_number: i32) -> UseGameHandSupportCardRequest {
         UseGameHandSupportCardRequest::new(account_unique_id, support_card_number)

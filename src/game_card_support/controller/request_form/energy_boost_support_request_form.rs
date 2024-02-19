@@ -1,6 +1,8 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_support::service::request::summarize_support_card_effect_request::SummarizeSupportCardEffectRequest;
+use crate::game_card_support_usage_counter::service::request::check_support_card_usage_count_request::CheckSupportCardUsageCountRequest;
+use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_deck::service::request::found_card_from_deck_request::FoundCardFromDeckRequest;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
@@ -51,6 +53,13 @@ impl EnergyBoostSupportRequestForm {
 
     pub fn to_is_it_support_card_request(&self, support_card_number: i32) -> IsItSupportCardRequest {
         IsItSupportCardRequest::new(support_card_number)
+    }
+
+    pub fn to_check_support_card_usage_count_request(&self, account_unique_id: i32) -> CheckSupportCardUsageCountRequest {
+        CheckSupportCardUsageCountRequest::new(account_unique_id)
+    }
+    pub fn to_update_support_card_usage_count_request(&self, account_unique_id: i32) -> UpdateSupportCardUsageCountRequest {
+        UpdateSupportCardUsageCountRequest::new(account_unique_id)
     }
 
     pub fn to_use_game_hand_support_card_request(&self, account_unique_id: i32, support_card_number: i32) -> UseGameHandSupportCardRequest {
