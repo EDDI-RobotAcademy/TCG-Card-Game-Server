@@ -56,8 +56,8 @@ impl GameFieldUnit {
         self.game_field_unit.apply_death_to_indexed_unit(unit_card_index);
     }
 
-    pub fn judge_death_of_unit(&mut self, unit_card_index: usize) {
-        self.game_field_unit.judge_death_of_unit(unit_card_index);
+    pub fn judge_death_of_unit(&mut self, unit_card_index: usize) -> i32 {
+        return self.game_field_unit.judge_death_of_unit(unit_card_index)
     }
     pub fn execute_turn_action_of_unit(&mut self, unit_card_index: usize) {
         self.game_field_unit.execute_turn_action(unit_card_index)

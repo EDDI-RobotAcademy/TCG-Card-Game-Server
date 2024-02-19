@@ -66,13 +66,16 @@ impl GameFieldUnitCardList {
         }
     }
 
-    pub fn judge_death_of_unit(&mut self, unit_card_index: usize) {
+    pub fn judge_death_of_unit(&mut self, unit_card_index: usize) -> i32 {
         if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
             let unit_health_point = unit.get_unit_health_point().get_current_health_point();
             if unit_health_point <= 0 {
                 unit.set_is_alive(false);
+                return unit.get_card()
             }
         }
+
+        -1
     }
 
     pub fn check_unit_alive(&mut self, unit_card_index: usize) -> bool {
