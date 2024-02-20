@@ -278,35 +278,35 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            // 19 => {
+            //     // First Turn Decision Wait Queue
+            //     if let Some(request_form) = create_first_turn_decision_wait_queue_request_form(&data) {
+            //         let game_turn_controller_mutex = GameTurnControllerImpl::get_instance();
+            //         let mut game_turn_controller_mutex_guard = game_turn_controller_mutex.lock().await;
+            //
+            //         let response_form = game_turn_controller_mutex_guard.execute_first_turn_decision_wait_queue_procedure(request_form).await;
+            //         let response_type = Some(ResponseType::FIRST_TURN_DECISION_WAIT_QUEUE(response_form));
+            //
+            //         response_type
+            //     } else {
+            //         None
+            //     }
+            // },
+            // 20 => {
+            //     // First Turn Decision
+            //     if let Some(request_form) = create_first_turn_decision_request_form(&data) {
+            //         let game_turn_controller_mutex = GameTurnControllerImpl::get_instance();
+            //         let mut game_turn_controller_mutex_guard = game_turn_controller_mutex.lock().await;
+            //
+            //         let response_form = game_turn_controller_mutex_guard.execute_first_turn_decision_procedure(request_form).await;
+            //         let response_type = Some(ResponseType::FIRST_TURN_DECISION(response_form));
+            //
+            //         response_type
+            //     } else {
+            //         None
+            //     }
+            // },
             19 => {
-                // First Turn Decision Wait Queue
-                if let Some(request_form) = create_first_turn_decision_wait_queue_request_form(&data) {
-                    let game_turn_controller_mutex = GameTurnControllerImpl::get_instance();
-                    let mut game_turn_controller_mutex_guard = game_turn_controller_mutex.lock().await;
-
-                    let response_form = game_turn_controller_mutex_guard.execute_first_turn_decision_wait_queue_procedure(request_form).await;
-                    let response_type = Some(ResponseType::FIRST_TURN_DECISION_WAIT_QUEUE(response_form));
-
-                    response_type
-                } else {
-                    None
-                }
-            },
-            20 => {
-                // First Turn Decision
-                if let Some(request_form) = create_first_turn_decision_request_form(&data) {
-                    let game_turn_controller_mutex = GameTurnControllerImpl::get_instance();
-                    let mut game_turn_controller_mutex_guard = game_turn_controller_mutex.lock().await;
-
-                    let response_form = game_turn_controller_mutex_guard.execute_first_turn_decision_procedure(request_form).await;
-                    let response_type = Some(ResponseType::FIRST_TURN_DECISION(response_form));
-
-                    response_type
-                } else {
-                    None
-                }
-            },
-            21 => {
                 // First Turn wait queue 최신 버전
                 if let Some(request_form) = create_rockpaperscissors_request_form(&data) {
                     let rockpaperscissors_controller_mutex = RockpaperscissorsControllerImpl::get_instance();
@@ -320,21 +320,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            22 => {
+            20 => {
                 // First Turn Decision 최신 버전
                 if let Some(request_form) = create_check_winner_request_form(&data) {
                     let rockpaperscissors_controller_mutex = RockpaperscissorsControllerImpl::get_instance();
                     let mut rockpaperscissors_controller_mutex_guard = rockpaperscissors_controller_mutex.lock().await;
 
                     let response_form = rockpaperscissors_controller_mutex_guard.execute_check_winner_procedure(request_form).await;
-                    let response_type = Some(ResponseType::CHECK_WINNER(response_form));
+                    let response_type = Some(ResponseType::CHECK_ROCKPAPERSCISSORS_WINNER(response_form));
 
                     response_type
                 } else {
                     None
                 }
             },
-
             31 => {
                 // Account Card List
                 if let Some(request) = create_account_card_list_request(&data) {

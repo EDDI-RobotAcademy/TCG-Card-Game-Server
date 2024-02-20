@@ -25,6 +25,7 @@ use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
+use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
@@ -93,6 +94,13 @@ impl GameCardUnitControllerImpl {
 
         let value_string = session_validation_response.get_value();
         value_string.parse::<i32>().unwrap_or_else(|_| { -1 })
+    }
+
+    async fn is_able_to_use(&self, can_use_card_request: CanUseCardRequest) -> bool {
+        let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
+        let can_use_card_response = game_protocol_validation_service_guard.can_use_card(can_use_card_request).await;
+        drop(game_protocol_validation_service_guard);
+        can_use_card_response.is_success()
     }
 }
 
