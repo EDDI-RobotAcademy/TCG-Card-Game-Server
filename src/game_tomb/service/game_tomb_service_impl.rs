@@ -46,4 +46,14 @@ impl GameTombService for GameTombServiceImpl {
 
         PlaceToTombResponse::new(place_to_tomb_response)
     }
+    async fn add_dead_unit_to_tomb(&mut self, place_to_tomb_request: PlaceToTombRequest) -> PlaceToTombResponse {
+        println!("GameTombServiceImpl: add_dead_unit_to_tomb()");
+
+        let mut game_tomb_repository_guard = self.game_tomb_repository.lock().await;
+        let place_to_tomb_response = game_tomb_repository_guard.add_dead_unit_to_tomb(
+            place_to_tomb_request.get_account_unique_id(), place_to_tomb_request.get_used_card_id());
+
+        PlaceToTombResponse::new(place_to_tomb_response)
+    }
+
 }

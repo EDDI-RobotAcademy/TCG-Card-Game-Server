@@ -7,4 +7,6 @@ pub struct SaveDailyKeyAndValueResponse {
 
 impl SaveDailyKeyAndValueResponse {
     pub fn new(is_success: bool) -> Self { SaveDailyKeyAndValueResponse { is_success } }
+    pub fn is_success(&self) -> bool { self.is_success }
+
 }

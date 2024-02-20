@@ -1,0 +1,2 @@
+pub mod is_unit_basic_attack_possible_request;
+pub mod is_using_active_skill_possible_request;

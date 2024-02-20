@@ -54,8 +54,9 @@ use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
 use crate::rockpaperscissors::controller::response_form::check_winner_response_form::CheckWinnerResponseForm;
 use crate::rockpaperscissors::controller::response_form::rockpaperscissors_response_form::RockpaperscissorsResponseForm;
-
-use crate::shop_gacha::service::response::get_specific_race_card_response::GetSpecificRaceCardResponse;
+use crate::shop::controller::response_form::execute_free_gacha_response_form::ExecuteFreeGachaResponseForm;
+use crate::shop::controller::response_form::execute_shop_gacha_response_form::ExecuteShopGachaResponseForm;
+use crate::shop::service::response::data_to_display_in_shop_response::DataToDisplayInShopResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ResponseType {
@@ -94,7 +95,9 @@ pub enum ResponseType {
     DECK_CARD_LIST(AccountDeckCardListResponseForm),
 
     // Shop
-    SHOP_GET_SPECIFIC_RACE_CARD_DEFAULT(GetSpecificRaceCardResponse),
+    DATA_TO_DISPLAY_IN_SHOP_RESPONSE(DataToDisplayInShopResponse),
+    EXECUTE_SHOP_GACHA_RESPONSE_FORM(ExecuteShopGachaResponseForm),
+    EXECUTE_FREE_GACHA_RESPONSE_FORM(ExecuteFreeGachaResponseForm),
 
     // Account Point
     GAIN_GOLD(GainGoldResponse),
