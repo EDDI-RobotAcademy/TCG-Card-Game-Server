@@ -10,9 +10,12 @@ use diesel::row::NamedRow;
 
 
 use rand::Rng;
+use rand::rngs::OsRng;
 
 
 use crate::account_card::entity::account_card::account_cards::account_id;
+use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
+use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
 use crate::match_waiting_timer::entity::match_waiting_timer::MatchWaitingTimer;
 
 use crate::rockpaperscissors::service::rockpaperscissors_service::RockpaperscissorsService;
@@ -31,19 +34,22 @@ pub struct RockpaperscissorsServiceImpl {
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     rockpaperscissors_repository: Arc<AsyncMutex<RockpaperscissorsRepositoryImpl>>,
     match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
+    game_turn_repository:Arc<AsyncMutex<GameTurnRepositoryImpl>>,
 }
 
 impl RockpaperscissorsServiceImpl {
     pub fn new(redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
                rockpaperscissors_repository: Arc<AsyncMutex<RockpaperscissorsRepositoryImpl>>,
                match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
+               game_turn_repository:Arc<AsyncMutex<GameTurnRepositoryImpl>>,
 
     ) -> Self {
 
         RockpaperscissorsServiceImpl {
             redis_in_memory_repository,
             rockpaperscissors_repository,
-            match_waiting_timer_repository
+            match_waiting_timer_repository,
+            game_turn_repository
         }
     }
 
@@ -55,7 +61,8 @@ impl RockpaperscissorsServiceImpl {
                         RockpaperscissorsServiceImpl::new(
                             RedisInMemoryRepositoryImpl::get_instance(),
                             RockpaperscissorsRepositoryImpl::get_instance(),
-                            MatchWaitingTimerRepositoryImpl::get_instance())));
+                            MatchWaitingTimerRepositoryImpl::get_instance(),
+                            GameTurnRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -101,7 +108,7 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
 
     }
 
-    async fn check_winner(&self, check_winner_request: CheckWinnerRequest) -> CheckWinnerResponse {
+    async fn check_rockpaperscissors_winner(&self, check_winner_request: CheckWinnerRequest) -> CheckWinnerResponse {
         println!("RockpaperscissorsServiceImpl: check_winner()");
         let account_unique_id=check_winner_request.get_account_unique_id();
         let opponent_id=check_winner_request.get_opponent_id();
@@ -112,26 +119,22 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
 
         let mut my_choice=wait_hashmap_clone_guard.get_player_hashmap(account_unique_id.to_string()).await.unwrap();
         let mut opponent_choice=wait_hashmap_clone_guard.get_player_hashmap(opponent_id.to_string()).await.unwrap();
-        // if let Some(value) = wait_hashmap_clone_guard.get(&(account_unique_id.to_string())).await {
-        //      my_choice = value.clone();
-        // }
-        // if let Some(value) = wait_hashmap_clone_guard.get(&(opponent_id.to_string())).await {
-        //      opponent_choice = value.clone();
-        // }
 
-        let mut rng = rand::thread_rng();
-        rng.gen::<bool>();
+        let mut rng = OsRng::default();
+        let random_bool: bool = rng.gen();
         let am_i_win = match (my_choice.as_str(), opponent_choice.as_str()) {
             ("Rock", "Scissors") | ("Paper", "Rock") | ("Scissors", "Paper") => true,
             ("Scissors", "Rock") | ("Rock", "Paper") | ("Paper", "Scissors") => false,
-            _ => rng.gen::<bool>(),// 기본값을 설정하거나 아무 작업을 하지 않음
+            _ => random_bool,// 기본값을 설정하거나 아무 작업을 하지 않음
         };
-
-
-
-
-
         drop(rockpaperscissors_repository_guard);
+        let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
+
+        if am_i_win==true
+        {
+            game_turn_repository_guard.next_game_turn(account_unique_id);
+        }
+        drop(game_turn_repository_guard);
 
         CheckWinnerResponse::new(am_i_win)
     }

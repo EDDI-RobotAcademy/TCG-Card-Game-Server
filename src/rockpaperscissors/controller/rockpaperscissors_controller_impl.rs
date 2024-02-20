@@ -111,7 +111,7 @@ impl RockpaperscissorsController for RockpaperscissorsControllerImpl {
             check_winner_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
         let mut rockpaperscissors_service_guard = self.rockpaperscissors_service.lock().await;
-        let winner_response=rockpaperscissors_service_guard.check_winner(CheckWinnerRequest::new(account_unique_id,opponent_unique_id)).await;
+        let winner_response=rockpaperscissors_service_guard.check_rockpaperscissors_winner(CheckWinnerRequest::new(account_unique_id,opponent_unique_id)).await;
 
         return CheckWinnerResponseForm::new( winner_response.get_am_i_winner());
     }

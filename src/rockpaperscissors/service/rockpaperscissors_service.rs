@@ -8,5 +8,5 @@ use crate::rockpaperscissors::service::response::wait_hashmap_response::WaitHash
 #[async_trait]
 pub trait RockpaperscissorsService {
     async fn insert_player_data_to_hashmap(&self, wait_queue_request: WaitHashmapRequest) -> WaitHashmapResponse;
-    async fn check_winner(&self, check_winner_request: CheckWinnerRequest) -> CheckWinnerResponse;
+    async fn check_rockpaperscissors_winner(&self, check_winner_request: CheckWinnerRequest) -> CheckWinnerResponse;
 }

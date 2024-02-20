@@ -57,7 +57,7 @@ use crate::game_turn::service::game_turn_service_impl::GameTurnServiceImpl;
 use crate::request_generator::attach_field_energy_to_field_unit_request_form_generator::create_attach_field_energy_to_field_unit_request_form;
 use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
-use crate::request_generator::check_winner_request_generator::create_check_winner_request_form;
+use crate::request_generator::check_rockpaperscissors_winner_request_generator::create_check_rockpaperscissors_winner_request_form;
 use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item_request_form, create_opponent_field_unit_energy_removal_item_request_form, create_target_death_item_request_form};
 use crate::request_generator::game_next_turn_request_generator::create_game_turn_request_form;
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
@@ -294,7 +294,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             },
             20 => {
                 // First Turn Decision 최신 버전
-                if let Some(request_form) = create_check_winner_request_form(&data) {
+                if let Some(request_form) = create_check_rockpaperscissors_winner_request_form(&data) {
                     let rockpaperscissors_controller_mutex = RockpaperscissorsControllerImpl::get_instance();
                     let mut rockpaperscissors_controller_mutex_guard = rockpaperscissors_controller_mutex.lock().await;
 
