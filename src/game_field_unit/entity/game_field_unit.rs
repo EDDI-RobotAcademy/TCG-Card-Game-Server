@@ -1,3 +1,4 @@
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
@@ -18,6 +19,14 @@ impl GameFieldUnit {
 
     pub fn add_unit_to_game_field(&mut self, field_unit: GameFieldUnitCard) -> i32 {
         self.game_field_unit.add_field_unit(field_unit)
+    }
+
+    pub fn get_get_attached_energy_count_of_field_unit_with_race(&mut self, unit_card_index: usize, race_enum: RaceEnum) -> i32 {
+        self.game_field_unit.get_attached_race_energy_count_of_field_unit(unit_card_index, race_enum)
+    }
+
+    pub fn get_total_energy_count_of_unit(&mut self, unit_card_index: usize) -> i32 {
+        self.game_field_unit.get_total_count_of_field_unit_energy(unit_card_index)
     }
 
     pub fn add_energy_to_unit(&mut self, unit_id: i32, race: RaceEnumValue, quantity: i32) {
