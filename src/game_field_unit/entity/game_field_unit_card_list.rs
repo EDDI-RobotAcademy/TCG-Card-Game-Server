@@ -1,3 +1,5 @@
+use std::ops::Deref;
+use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
@@ -16,6 +18,23 @@ impl GameFieldUnitCardList {
     pub fn add_field_unit(&mut self, card: GameFieldUnitCard) -> i32 {
         self.game_field_unit_card_list.push(card);
         (self.game_field_unit_card_list.len() - 1) as i32
+    }
+
+    pub fn get_attached_race_energy_count_of_field_unit(&mut self, unit_card_index: usize, race_enum: RaceEnum) -> i32 {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            return *unit.get_attached_energy().get_energy_quantity(&RaceEnumValue::from(race_enum as i32)).unwrap_or(&-1)
+        }
+
+        -1
+    }
+
+    pub fn get_total_count_of_field_unit_energy(&mut self, unit_card_index: usize) -> i32 {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            let mut attached_energy_map = unit.get_attached_energy().clone();
+            return attached_energy_map.get_all_energy_count()
+        }
+
+        -1
     }
 
     pub fn get_all_field_unit_list(&self) -> &Vec<GameFieldUnitCard> {
