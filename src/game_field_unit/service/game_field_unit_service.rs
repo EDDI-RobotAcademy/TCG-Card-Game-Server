@@ -20,6 +20,7 @@ use crate::game_field_unit::service::request::find_target_unit_id_by_index_reque
 use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
+use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
 
@@ -41,6 +42,7 @@ use crate::game_field_unit::service::response::find_target_unit_id_by_index_resp
 use crate::game_field_unit::service::response::get_current_attached_energy_of_field_unit_by_index_response::GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_uique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
+use crate::game_field_unit::service::response::reset_turn_action_of_all_field_unit_response::ResetTurnActionOfAllFieldUnitResponse;
 
 #[async_trait]
 pub trait GameFieldUnitService {
@@ -52,7 +54,7 @@ pub trait GameFieldUnitService {
     async fn apply_instant_death_to_target_unit_index(&mut self, apply_instant_death_to_target_unit_index_request: ApplyInstantDeathToTargetUnitIndexRequest) -> ApplyInstantDeathToTargetUnitIndexResponse;
     async fn judge_death_of_unit(&mut self, check_is_unit_alive_request: JudgeDeathOfUnitRequest) -> JudgeDeathOfUnitResponse;
     async fn execute_turn_action(&mut self, execute_turn_action_request: ExecuteTurnActionRequest) -> ExecuteTurnActionResponse;
-    // TODO: reset 은 전체로 다시 만든다
+    async fn reset_turn_action_of_all_field_unit(&mut self, reset_turn_action_of_all_field_unit_request: ResetTurnActionOfAllFieldUnitRequest) -> ResetTurnActionOfAllFieldUnitResponse;
     async fn get_current_health_point_of_field_unit_by_index(&self, get_current_health_point_of_field_unit_by_index_request: GetCurrentHealthPointOfFieldUnitByIndexRequest) -> GetCurrentHealthPointOfFieldUnitByIndexResponse;
 
     async fn attach_special_energy_to_field_unit_index(&mut self, attach_special_energy_to_unit_index_request: AttachSpecialEnergyToUnitIndexRequest) -> AttachSpecialEnergyToUnitIndexResponse;

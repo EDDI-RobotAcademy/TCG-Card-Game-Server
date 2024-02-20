@@ -131,7 +131,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
         drop(battle_room_service_guard);
 
-        // 현재 요청한 사람이 이번 턴의 주도권을 가지고 있던 사람인지 검증
+        // 3. 현재 요청한 사람이 이번 턴의 주도권을 가지고 있던 사람인지 검증
         // TODO: 다음 과정은 모든 액션에 추가되어야 함
         let mut game_protocol_validation_service_guard =
             self.game_protocol_validation_service.lock().await;
@@ -146,7 +146,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
         drop(game_protocol_validation_service_guard);
 
-        // 자신의 필드 유닛들 중 턴 종료 시 데미지를 받는 케이스를 적용 (예: 화상 데미지)
+        // 4. 자신의 필드 유닛들 중 턴 종료 시 데미지를 받는 케이스를 적용 (예: 화상 데미지)
         let mut game_field_unit_service_guard =
             self.game_field_unit_service.lock().await;
 
@@ -158,9 +158,14 @@ impl GameTurnController for GameTurnControllerImpl {
 
         // TODO: 필드 유닛 Domain 에서 자신 필드 유닛을 순회하며 사망 판정 하는 feature 필요 (턴 종료 데미지와 연결)
 
+        // 5. 자신 필드 유닛 Turn Action Value 초기화
+        game_field_unit_service_guard.reset_turn_action_of_all_field_unit(
+            turn_end_request_form
+                .to_reset_turn_action_of_all_field_unit_request(account_unique_id)).await;
+
         drop(game_field_unit_service_guard);
 
-        // 7. 당신의 라운드 증가
+        // 6. 당신의 라운드 증가
         let mut game_round_service_guard =
             self.game_round_service.lock().await;
 
@@ -169,7 +174,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
         drop(game_round_service_guard);
 
-        // 8. 상대방의 턴 증가
+        // 7. 상대방의 턴 증가
         let mut game_turn_service_guard =
             self.game_turn_service.lock().await;
 
@@ -178,7 +183,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
         drop(game_turn_service_guard);
 
-        // 9. 상대방이 덱에서 카드를 드로우
+        // 8. 상대방이 덱에서 카드를 드로우
         let mut game_deck_service_guard =
             self.game_deck_service.lock().await;
 
@@ -187,7 +192,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
         drop(game_deck_service_guard);
 
-        // 10. 상대방이 필드에너지 획득
+        // 9. 상대방이 필드에너지 획득
         let game_field_energy_service_guard =
             self.game_field_energy_service.lock().await;
 
@@ -196,7 +201,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
         drop(game_field_energy_service_guard);
 
-        // 9. TODO: 턴 종료 상황에서 상태 이상으로 죽은 유닛들, 데미지 등등을 알려줘야함 (Notify)
+        // 10. TODO: 턴 종료 상황에서 상태 이상으로 죽은 유닛들, 데미지 및 상대 턴 시작 등등을 알려줘야함 (Notify)
 
         TurnEndResponseForm::new(true)
     }

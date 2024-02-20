@@ -31,6 +31,7 @@ use crate::game_field_unit::service::request::find_target_unit_id_by_index_reque
 use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
+use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
 
@@ -52,6 +53,7 @@ use crate::game_field_unit::service::response::find_target_unit_id_by_index_resp
 use crate::game_field_unit::service::response::get_current_attached_energy_of_field_unit_by_index_response::GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_uique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
+use crate::game_field_unit::service::response::reset_turn_action_of_all_field_unit_response::ResetTurnActionOfAllFieldUnitResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 
 
@@ -207,6 +209,16 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             execute_turn_action_request.get_unit_card_index());
 
         ExecuteTurnActionResponse::new(response)
+    }
+
+    async fn reset_turn_action_of_all_field_unit(&mut self, reset_turn_action_of_all_field_unit_request: ResetTurnActionOfAllFieldUnitRequest) -> ResetTurnActionOfAllFieldUnitResponse {
+        println!("GameFieldUnitServiceImpl: reset_turn_action_of_all_field_unit()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let response = game_field_unit_repository_guard.reset_turn_action_of_all_unit(
+            reset_turn_action_of_all_field_unit_request.get_account_unique_id());
+
+        ResetTurnActionOfAllFieldUnitResponse::new(response)
     }
 
     async fn get_current_health_point_of_field_unit_by_index(&self, get_current_health_point_of_field_unit_by_index_request: GetCurrentHealthPointOfFieldUnitByIndexRequest) -> GetCurrentHealthPointOfFieldUnitByIndexResponse {

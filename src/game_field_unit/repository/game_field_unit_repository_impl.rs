@@ -203,10 +203,11 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         false
     }
-    fn reset_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
+    fn reset_turn_action_of_all_unit(&mut self, account_unique_id: i32) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            let unit_card_index = unit_card_index as usize;
-            game_field_unit.reset_turn_action_of_unit(unit_card_index);
+            for unit_card in game_field_unit.get_all_field_unit_list_mut() {
+                unit_card.set_turn_action(false)
+            }
             return true
         }
 
