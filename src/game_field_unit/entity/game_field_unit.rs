@@ -106,6 +106,14 @@ impl GameFieldUnit {
     pub fn detach_energy_from_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32) {
         self.game_field_unit.remove_energy_from_indexed_unit(unit_card_index, race_enum, quantity);
     }
+
+    pub fn set_unit_deployed_round(&mut self, unit_card_index: usize, current_round: i32) {
+        self.game_field_unit.set_unit_deployed_round(unit_card_index, current_round);
+    }
+
+    pub fn get_unit_deployed_round(&mut self, unit_card_index: usize) -> i32 {
+        return self.game_field_unit.get_unit_deployed_round(unit_card_index)
+    }
 }
 
 #[cfg(test)]
