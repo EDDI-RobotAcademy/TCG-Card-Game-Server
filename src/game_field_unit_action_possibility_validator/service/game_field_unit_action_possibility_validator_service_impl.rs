@@ -6,32 +6,34 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
-use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionValidatorService;
+use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionPossibilityValidatorService;
 use crate::game_field_unit_action_possibility_validator::service::request::is_unit_basic_attack_possible_request::{IsUnitBasicAttackPossibleRequest};
+use crate::game_field_unit_action_possibility_validator::service::request::is_using_active_skill_possible_request::IsUsingActiveSkillPossibleRequest;
 use crate::game_field_unit_action_possibility_validator::service::response::is_unit_basic_attack_possible_response::{IsUnitBasicAttackPossibleResponse};
+use crate::game_field_unit_action_possibility_validator::service::response::is_using_active_skill_possible_response::IsUsingActiveSkillPossibleResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 
-pub struct GameFieldUnitActionValidatorServiceImpl {
+pub struct GameFieldUnitActionPossibilityValidatorServiceImpl {
     game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
     game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
 }
 
-impl GameFieldUnitActionValidatorServiceImpl {
+impl GameFieldUnitActionPossibilityValidatorServiceImpl {
     pub fn new(game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
                game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>) -> Self {
 
-        GameFieldUnitActionValidatorServiceImpl {
+        GameFieldUnitActionPossibilityValidatorServiceImpl {
             game_round_repository,
             game_field_unit_repository,
         }
     }
 
-    pub fn get_instance() -> Arc<AsyncMutex<GameFieldUnitActionValidatorServiceImpl>> {
+    pub fn get_instance() -> Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>> {
         lazy_static! {
-            static ref INSTANCE: Arc<AsyncMutex<GameFieldUnitActionValidatorServiceImpl>> =
+            static ref INSTANCE: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>> =
                 Arc::new(
                     AsyncMutex::new(
-                        GameFieldUnitActionValidatorServiceImpl::new(
+                        GameFieldUnitActionPossibilityValidatorServiceImpl::new(
                             GameRoundRepositoryImpl::get_instance(),
                             GameFieldUnitRepositoryImpl::get_instance())));
         }
@@ -105,7 +107,7 @@ impl GameFieldUnitActionValidatorServiceImpl {
 }
 
 #[async_trait]
-impl GameFieldUnitActionValidatorService for GameFieldUnitActionValidatorServiceImpl {
+impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossibilityValidatorServiceImpl {
     async fn is_unit_basic_attack_possible(
         &self, is_unit_basic_attack_possible_request: IsUnitBasicAttackPossibleRequest)
         -> IsUnitBasicAttackPossibleResponse {
@@ -147,5 +149,53 @@ impl GameFieldUnitActionValidatorService for GameFieldUnitActionValidatorService
         }
 
         IsUnitBasicAttackPossibleResponse::new(true)
+    }
+
+    async fn is_using_active_skill_possible(
+        &self, is_using_active_skill_possible_request: IsUsingActiveSkillPossibleRequest)
+        -> IsUsingActiveSkillPossibleResponse {
+
+        println!("GameFieldUnitActionValidatorServiceImpl: is_using_active_skill_possible()");
+
+        // 1. check unit turn action
+        let turn_action = self.get_field_unit_turn_action(
+            is_using_active_skill_possible_request.get_account_unique_id(),
+            is_using_active_skill_possible_request.get_field_unit_index()).await.unwrap_or(true);
+
+        if turn_action == true {
+            println!("이번 턴에 더 이상 액션이 불가능합니다.");
+            return IsUsingActiveSkillPossibleResponse::new(false)
+        }
+
+        // 2. check round
+        let field_unit_deployed_round = self.get_field_unit_deployed_round(
+            is_using_active_skill_possible_request.get_account_unique_id(),
+            is_using_active_skill_possible_request.get_field_unit_index()).await.unwrap_or(-1);
+
+        let player_current_round = self.get_player_round(
+            is_using_active_skill_possible_request.get_account_unique_id()).await.unwrap_or(-1);
+
+        if player_current_round == field_unit_deployed_round {
+            println!("소환된 턴에는 액션이 불가합니다.");
+            return IsUsingActiveSkillPossibleResponse::new(false)
+        }
+
+        // 3. energy enough
+        let required_energy_map_to_use_active_skill =
+            is_using_active_skill_possible_request.get_skill_required_energy_map().clone();
+
+        for (race, required_energy_count) in required_energy_map_to_use_active_skill {
+            let attached_race_energy_count = self.get_field_unit_race_energy(
+                is_using_active_skill_possible_request.get_account_unique_id(),
+                is_using_active_skill_possible_request.get_field_unit_index(),
+                race).await.unwrap_or(-1);
+
+            if required_energy_count > attached_race_energy_count {
+                println!("액티브 스킬 사용에 필요한 에너지가 충분하지 않습니다.");
+                return IsUsingActiveSkillPossibleResponse::new(false)
+            }
+        }
+
+        IsUsingActiveSkillPossibleResponse::new(true)
     }
 }
