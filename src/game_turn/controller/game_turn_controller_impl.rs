@@ -31,9 +31,12 @@ use crate::game_protocol_validation::service::request::is_this_your_turn_request
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::game_main_character::service::game_main_character_service_impl::GameMainCharacterServiceImpl;
 use crate::game_main_character::service::request::check_main_character_of_account_unique_id_request::CheckMainCharacterOfAccountUniqueIdRequest;
+use crate::game_round::service::game_round_service::GameRoundService;
+use crate::game_round::service::game_round_service_impl::GameRoundServiceImpl;
 
 pub struct GameTurnControllerImpl {
     game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
+    game_round_service: Arc<AsyncMutex<GameRoundServiceImpl>>,
     battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
@@ -45,6 +48,7 @@ pub struct GameTurnControllerImpl {
 
 impl GameTurnControllerImpl {
     pub fn new(game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
+               game_round_service: Arc<AsyncMutex<GameRoundServiceImpl>>,
                battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
@@ -54,6 +58,7 @@ impl GameTurnControllerImpl {
 
         GameTurnControllerImpl {
             game_turn_service,
+            game_round_service,
             battle_room_service,
             game_field_unit_service,
             redis_in_memory_service,
@@ -69,6 +74,7 @@ impl GameTurnControllerImpl {
                     AsyncMutex::new(
                         GameTurnControllerImpl::new(
                             GameTurnServiceImpl::get_instance(),
+                            GameRoundServiceImpl::get_instance(),
                             BattleRoomServiceImpl::get_instance(),
                             GameFieldUnitServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
@@ -164,14 +170,17 @@ impl GameTurnController for GameTurnControllerImpl {
         self.check_current_health_field_unit_card(account_unique_id).await;
         self.check_current_health_field_unit_card(opponent_account_unique_id).await;
 
-        // 7. 당신의 턴 증가
-        let mut game_turn_service_guard = self.game_turn_service.lock().await;
-        let next_turn_response = game_turn_service_guard
-            .next_turn(turn_end_request_form.to_next_turn_request(account_unique_id)).await;
+        // 7. 당신의 라운드 증가
+        let mut game_round_service_guard = self.game_round_service.lock().await;
+        let next_round_response = game_round_service_guard
+            .next_game_round_object(turn_end_request_form.to_next_round_request()).await;
+        drop(game_round_service_guard);
 
         // 8. 상대방의 턴 증가
+        let mut game_turn_service_guard = self.game_turn_service.lock().await;
         let next_turn_response = game_turn_service_guard
             .next_turn(turn_end_request_form.to_next_turn_request(opponent_account_unique_id)).await;
+        drop(game_turn_service_guard);
 
         // 9. 턴 종료 상황에서 상태 이상으로 죽은 유닛들, 데미지 등등을 알려줘야함
 
