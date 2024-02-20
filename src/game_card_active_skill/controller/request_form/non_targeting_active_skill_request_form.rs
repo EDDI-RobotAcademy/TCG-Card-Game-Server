@@ -48,13 +48,6 @@ impl NonTargetingActiveSkillRequestForm {
             self.session_id.clone().as_str())
     }
 
-    pub fn to_check_turn_action_request(&self,
-                                        account_unique_id: i32,
-                                        attacker_unit_card_index: i32) -> CheckTurnActionRequest {
-        CheckTurnActionRequest::new(
-            account_unique_id, attacker_unit_card_index)
-    }
-
     pub fn to_execute_turn_action_request(&self,
                                           account_unique_id: i32,
                                           attacker_unit_card_index: i32) -> ExecuteTurnActionRequest {
@@ -94,16 +87,6 @@ impl NonTargetingActiveSkillRequestForm {
             account_unique_id,
             field_unit_index,
             skill_required_energy_map)
-    }
-
-    pub fn to_get_current_attached_energy_of_field_unit_by_index_request(&self,
-                                                                         account_unique_id: i32,
-                                                                         unit_card_index: i32,
-                                                                         race_enum: RaceEnum) -> GetCurrentAttachedEnergyOfFieldUnitByIndexRequest {
-        GetCurrentAttachedEnergyOfFieldUnitByIndexRequest::new(
-            account_unique_id,
-            unit_card_index,
-            race_enum)
     }
 
     pub fn to_find_opponent_by_account_id_request(&self,
