@@ -36,6 +36,16 @@ impl AttachedEnergyMap {
     pub fn get_all_energy(&self) -> &HashMap<RaceEnumValue, i32> {
         &self.energy_map
     }
+
+    pub fn get_all_energy_count(&mut self) -> i32 {
+        let mut count = 0;
+
+        for (_, value) in &self.energy_map {
+            count += value;
+        }
+
+        count
+    }
 }
 
 #[cfg(test)]
