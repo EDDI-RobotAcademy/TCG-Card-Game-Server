@@ -48,6 +48,14 @@ impl RockpaperscissorsRepository for RockpaperscissorsRepositoryImpl {
 
     }
 
+    async fn  change_draw_choice_repo(&self, account_unique_id: String, opponent_id: String, random_choice:Vec<&str>) -> Result<bool, Box<dyn Error>> {
+        println!("RockpaperscissorsRepositoryImpl: change_draw_choice()");
+        let waiting_hashmap_guard = self.wait_hashmap.lock().await;
+        waiting_hashmap_guard.change_draw_choice_hashmap(account_unique_id,opponent_id,random_choice);
+        Ok(true)
+    }
+
+
     // async fn get_wait_queue_player_tuple_length(&self) -> i32 {
     //     println!("RockpaperscissorsRepositoryImpl: get_wait_queue_player_tuple_length()");
     //     let waiting_queue_guard = self.wait_queue.lock().await;

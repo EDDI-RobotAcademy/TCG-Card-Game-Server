@@ -39,6 +39,33 @@ impl WaitHashMap {
         // 찾지 못했을 때는 None을 반환
         None
     }
+    pub async fn change_draw_choice_hashmap(&self, account_unique_id: String,opponent_id: String,random_choice:Vec<&str>) -> Option<String> {
+        let mut guard = self.player_hashmap_list.lock().await;
+        let mut my_choice=None;
+        let mut opponent_choice=None;
+        for (key, value) in guard.iter() {
+            if key == &account_unique_id {
+                // 특정 키에 대한 값을 찾았을 때, 해당 값을 반환
+                my_choice=Some(value.clone());
+            }
+            if key == &opponent_id {
+                // 특정 키에 대한 값을 찾았을 때, 해당 값을 반환
+                opponent_choice=Some(value.clone());
+            }
+        }
+        if  (Some(my_choice.clone()), Some(opponent_choice.clone())) != (None, None)
+        {
+            if my_choice==opponent_choice
+            {
+
+                guard.insert(account_unique_id,random_choice[0].to_string());
+                guard.insert(opponent_id,random_choice[1].to_string());
+            }
+        }
+
+        // 찾지 못했을 때는 None을 반환
+        None
+    }
 
 
     // pub async fn dequeue_player_tuple(&self) -> Option<(i32,String)> {

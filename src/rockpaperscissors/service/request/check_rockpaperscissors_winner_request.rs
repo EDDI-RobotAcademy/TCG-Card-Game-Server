@@ -1,13 +1,13 @@
 #[derive(Debug)]
-pub struct CheckWinnerRequest {
+pub struct CheckRockpaperscissorsWinnerRequest {
     account_unique_id:i32,
     opponent_id:i32,
 
 }
 
-impl CheckWinnerRequest {
+impl CheckRockpaperscissorsWinnerRequest {
     pub fn new(account_unique_id:i32,opponent_id:i32) -> Self {
-        CheckWinnerRequest {
+        CheckRockpaperscissorsWinnerRequest {
             account_unique_id,
             opponent_id,
 

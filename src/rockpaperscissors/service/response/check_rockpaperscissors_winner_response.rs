@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CheckWinnerResponse{
+pub struct CheckRockpaperscissorsWinnerResponse{
     am_i_winner: bool,
 
 }
 
-impl CheckWinnerResponse {
+impl CheckRockpaperscissorsWinnerResponse {
     pub fn new(am_i_winner: bool) -> Self {
-        CheckWinnerResponse
+        CheckRockpaperscissorsWinnerResponse
         { am_i_winner }
     }
     pub fn get_am_i_winner(&self) -> bool { self.am_i_winner }
