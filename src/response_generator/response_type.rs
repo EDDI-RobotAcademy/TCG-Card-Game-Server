@@ -19,8 +19,6 @@ use crate::battle_room::service::response::what_is_the_room_number_response::Wha
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::game_card_active_skill::controller::response_form::non_targeting_active_skill_response_form::NonTargetingActiveSkillResponseForm;
-use crate::game_turn::controller::response_form::first_turn_decision_wait_queue_response_form::FirstTurnDecisionWaitQueueResponseForm;
-
 use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_card_energy::controller::response_form::attach_special_energy_card_response_form::AttachSpecialEnergyCardResponseForm;
@@ -38,7 +36,6 @@ use crate::game_card_unit::controller::response_form::attack_unit_response_form:
 use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
 use crate::game_field_energy::controller::response_form::attach_field_energy_to_field_unit_response_form::AttachFieldEnergyToFieldUnitResponseForm;
 use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
-use crate::game_turn::controller::response_form::first_turn_decision_response_form::FirstTurnDecisionResponseForm;
 use crate::game_turn::controller::response_form::turn_end_response_form::TurnEndResponseForm;
 use crate::notify_player_action::entity::notify_opponent_increase_field_energy_item_usage::NotifyOpponentIncreaseFieldEnergyItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_enhance_attack_point_tool_usage::NotifyOpponentToEnhanceAttackPointToolUsage;
@@ -78,11 +75,8 @@ pub enum ResponseType {
     BATTLE_DECK_LIST(AccountDeckListResponse),
     BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(GameDeckStartCardListResponse),
 
-    // First Turn Decision For Wait
-    FIRST_TURN_DECISION_WAIT_QUEUE(FirstTurnDecisionWaitQueueResponseForm), // Legacy
 
     // First Turn Decision
-    FIRST_TURN_DECISION(FirstTurnDecisionResponseForm),
     ROCKPAPERSCISSORS(RockpaperscissorsResponseForm),
     CHECK_ROCKPAPERSCISSORS_WINNER(CheckWinnerResponseForm),
 

@@ -80,7 +80,6 @@ mod notify_player_action;
 mod game_protocol_validation;
 mod game_card_unit;
 mod game_card_energy;
-mod first_turn_decision_wait_queue;
 mod shop_gacha;
 mod shop_card_for_gacha;
 mod card_activation_energy;
