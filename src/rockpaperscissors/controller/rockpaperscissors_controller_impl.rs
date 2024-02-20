@@ -2,8 +2,11 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
+use crate::battle_room::service::battle_room_service::BattleRoomService;
 
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
+use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
@@ -16,7 +19,7 @@ use crate::rockpaperscissors::controller::response_form::check_winner_response_f
 use crate::rockpaperscissors::controller::response_form::rockpaperscissors_response_form::RockpaperscissorsResponseForm;
 use crate::rockpaperscissors::controller::rockpaperscissors_controller::RockpaperscissorsController;
 use crate::rockpaperscissors::service::request::check_winner_request::CheckWinnerRequest;
-use crate::rockpaperscissors::service::request::wait_queue_request::WaitQueueRequest;
+use crate::rockpaperscissors::service::request::wait_hashmap_request::WaitHashmapRequest;
 use crate::rockpaperscissors::service::rockpaperscissors_service::RockpaperscissorsService;
 use crate::rockpaperscissors::service::rockpaperscissors_service_impl::RockpaperscissorsServiceImpl;
 
@@ -64,6 +67,12 @@ impl RockpaperscissorsControllerImpl {
         let value_string = session_validation_response.get_value();
         value_string.parse::<i32>().unwrap_or_else(|_| { -1 })
     }
+    async fn get_opponent_unique_id(&self, find_opponent_by_account_id_request: FindOpponentByAccountIdRequest) -> i32 {
+        let battle_room_service_guard = self.battle_room_service.lock().await;
+        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(find_opponent_by_account_id_request).await;
+        drop(battle_room_service_guard);
+        find_opponent_by_account_id_response.get_opponent_unique_id()
+    }
 
 }
 
@@ -71,10 +80,16 @@ impl RockpaperscissorsControllerImpl {
 impl RockpaperscissorsController for RockpaperscissorsControllerImpl {
     async fn execute_rockpaperscissors_procedure(&self, rockpaperscissors_request_form: RockpaperscissorsRequestForm) -> RockpaperscissorsResponseForm {
         println!("RockpaperscissorsControllerImpl: execute_rockpaperscissors_procedure()");
-
+        let account_unique_id = self.is_valid_session(rockpaperscissors_request_form.to_session_validation_request()).await;
+        if account_unique_id == -1 {
+            println!("Invalid session");
+            return RockpaperscissorsResponseForm::new(false)
+        }
+        // let opponent_unique_id = self.get_opponent_unique_id(
+        //     rockpaperscissors_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
         let mut rockpaperscissors_service_guard = self.rockpaperscissors_service.lock().await;
-        let wait_queue_response=rockpaperscissors_service_guard.enqueue_player_tuple_to_wait_queue(
-                                                WaitQueueRequest::new(rockpaperscissors_request_form.get_session_id().to_string(),
+        let wait_queue_response=rockpaperscissors_service_guard.insert_player_data_to_hashmap(
+                                                WaitHashmapRequest::new(account_unique_id,
                                                                       rockpaperscissors_request_form.get_choice().to_string())).await;
         if wait_queue_response.get_is_success() == false {
             return RockpaperscissorsResponseForm::new(false)
@@ -89,13 +104,16 @@ impl RockpaperscissorsController for RockpaperscissorsControllerImpl {
         let account_unique_id = self.is_valid_session(check_winner_request_form.to_session_validation_request()).await;
         if account_unique_id == -1 {
             println!("Invalid session");
-            return CheckWinnerResponseForm::new( true,true)
+            return CheckWinnerResponseForm::new( false)
         }
 
-        let mut rockpaperscissors_service_guard = self.rockpaperscissors_service.lock().await;
-        let winner_response=rockpaperscissors_service_guard.check_winner(CheckWinnerRequest::new(account_unique_id)).await;
+        let opponent_unique_id = self.get_opponent_unique_id(
+            check_winner_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
-        return CheckWinnerResponseForm::new( winner_response.get_am_i_winner(),winner_response.get_check_draw_result());
+        let mut rockpaperscissors_service_guard = self.rockpaperscissors_service.lock().await;
+        let winner_response=rockpaperscissors_service_guard.check_winner(CheckWinnerRequest::new(account_unique_id,opponent_unique_id)).await;
+
+        return CheckWinnerResponseForm::new( winner_response.get_am_i_winner());
     }
 }
 

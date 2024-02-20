@@ -8,20 +8,20 @@ use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyR
 #[derive(Debug,Clone,Serialize,Deserialize)]
 pub struct CheckWinnerResponseForm {
     am_i_winner:bool,
-    check_draw:bool,
+
 }
 
 impl CheckWinnerResponseForm {
     pub fn new(am_i_winner:bool,
-               check_draw:bool, ) -> Self {
+                ) -> Self {
         CheckWinnerResponseForm {
             am_i_winner,
-            check_draw
+
 
         }
     }
     pub fn get_am_i_winner(&self) -> bool { self.am_i_winner }
-    pub fn get_check_draw(&self) -> bool { self.check_draw }
+    
 
 
     pub fn to_check_protocol_hacking_request(&self, account_unique_id: i32, support_card_number: i32) -> CheckProtocolHackingRequest {

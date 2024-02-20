@@ -1,1 +1,1 @@
-pub(crate) mod wait_queue;
+pub(crate) mod wait_hashmap;

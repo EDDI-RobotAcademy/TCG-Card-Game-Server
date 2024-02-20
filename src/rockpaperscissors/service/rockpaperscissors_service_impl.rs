@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
@@ -5,11 +6,18 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use tokio::time::sleep;
 use std::time::{Duration, Instant};
+use diesel::row::NamedRow;
+
+
+use rand::Rng;
+
+
+use crate::account_card::entity::account_card::account_cards::account_id;
 use crate::match_waiting_timer::entity::match_waiting_timer::MatchWaitingTimer;
 
 use crate::rockpaperscissors::service::rockpaperscissors_service::RockpaperscissorsService;
-use crate::rockpaperscissors::service::request::wait_queue_request::WaitQueueRequest;
-use crate::rockpaperscissors::service::response::wait_queue_response::WaitQueueResponse;
+use crate::rockpaperscissors::service::request::wait_hashmap_request::WaitHashmapRequest;
+use crate::rockpaperscissors::service::response::wait_hashmap_response::WaitHashmapResponse;
 use crate::rockpaperscissors::repository::rockpaperscissors_repository::RockpaperscissorsRepository;
 use crate::rockpaperscissors::repository::rockpaperscissors_repository_impl::RockpaperscissorsRepositoryImpl;
 use crate::match_waiting_timer::repository::match_waiting_timer_repository::MatchWaitingTimerRepository;
@@ -63,79 +71,70 @@ impl RockpaperscissorsServiceImpl {
         match_waiting_timer_repository_mutex.check_match_waiting_timer_expired(account_unique_id, Duration::from_secs(60)).await
     }
 
+
+
 }
 
 #[async_trait]
 impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
 
 
-    async fn enqueue_player_tuple_to_wait_queue(&self, wait_queue_request: WaitQueueRequest) -> WaitQueueResponse {
-        println!("RockpaperscissorsServiceImpl: enqueue_player_tuple_to_wait_queue()");
-
-        let account_unique_id = self.parse_account_unique_id(wait_queue_request.get_session_id()).await;
+    async fn insert_player_data_to_hashmap(&self, wait_queue_request: WaitHashmapRequest) -> WaitHashmapResponse {
+        println!("RockpaperscissorsServiceImpl: push_player_data_to_hashmap()");
+        let account_unique_id = wait_queue_request.get_account_unique_id();
         let choice=wait_queue_request.get_choice().to_string();
-        let mut player_tuple: (i32, String)=(account_unique_id,choice);
+        let mut player_map: HashMap<String, String> = Default::default();
+        player_map.insert(account_unique_id.to_string(), choice);
 
         let rockpaperscissors_repository = self.rockpaperscissors_repository.lock().await;
 
         let mut match_waiting_timer_repository = self.match_waiting_timer_repository.lock().await;
         match_waiting_timer_repository.set_match_waiting_timer(account_unique_id).await;
 
-        let response = rockpaperscissors_repository.enqueue_player_tuple_for_wait(player_tuple).await;
+        let response = rockpaperscissors_repository.insert_player_hashmap_for_wait(player_map).await;
 
         if response.is_ok() {
-            return WaitQueueResponse::new(true)
+            return WaitHashmapResponse::new(true)
         }
 
-        return WaitQueueResponse::new(false)
+        return WaitHashmapResponse::new(false)
 
     }
 
     async fn check_winner(&self, check_winner_request: CheckWinnerRequest) -> CheckWinnerResponse {
         println!("RockpaperscissorsServiceImpl: check_winner()");
-        let account_id=check_winner_request.get_account_id();
+        let account_unique_id=check_winner_request.get_account_unique_id();
+        let opponent_id=check_winner_request.get_opponent_id();
         let rockpaperscissors_repository_guard = self.rockpaperscissors_repository.lock().await;
-        let wait_queue_clone_mutex = rockpaperscissors_repository_guard.get_wait_queue();
-        let wait_queue_clone_guard = wait_queue_clone_mutex.lock().await;
-
-        let mut players_data = wait_queue_clone_guard.dequeue_player_tuple().await;
-        let player1=players_data.unwrap();
-        let mut players_data = wait_queue_clone_guard.dequeue_player_tuple().await;
-        let player2=players_data.unwrap();
+        let wait_hashmap_clone_mutex = rockpaperscissors_repository_guard.get_wait_hashmap();
+        let wait_hashmap_clone_guard = wait_hashmap_clone_mutex.lock().await;
 
 
-        let (winner_account_unique_id, am_i_win, result_is_draw) = match (player1.1.as_str(),
-                                                                          player2.1.as_str(), )
-        {
-            ("Rock", "Scissors") | ("Paper", "Rock") | ("Scissors", "Paper") => {
-                if account_id == player1.0{
-                    (player1.0, true, false)
-                } else {
-                    (player1.0, false, false)
-                }
-                // 플레이어 1이 이길 때
-            }
-            ("Scissors", "Rock") | ("Rock", "Paper") | ("Paper", "Scissors") => {
-                if account_id == player2.0 {
-                    (player2.0, true, false)
-                } else {
-                    (player2.0, false, false)
-                }
-                // 플레이어 2가 이길 때
-            }
-            _ => {
-                // 그 외의 경우 (무승부)
-                println!("무승부");
-                (0, false, true)
-            }
+        let mut my_choice=wait_hashmap_clone_guard.get_player_hashmap(account_unique_id.to_string()).await.unwrap();
+        let mut opponent_choice=wait_hashmap_clone_guard.get_player_hashmap(opponent_id.to_string()).await.unwrap();
+        // if let Some(value) = wait_hashmap_clone_guard.get(&(account_unique_id.to_string())).await {
+        //      my_choice = value.clone();
+        // }
+        // if let Some(value) = wait_hashmap_clone_guard.get(&(opponent_id.to_string())).await {
+        //      opponent_choice = value.clone();
+        // }
+
+        let mut rng = rand::thread_rng();
+        rng.gen::<bool>();
+        let am_i_win = match (my_choice.as_str(), opponent_choice.as_str()) {
+            ("Rock", "Scissors") | ("Paper", "Rock") | ("Scissors", "Paper") => true,
+            ("Scissors", "Rock") | ("Rock", "Paper") | ("Paper", "Scissors") => false,
+            _ => rng.gen::<bool>(),// 기본값을 설정하거나 아무 작업을 하지 않음
         };
-        (winner_account_unique_id, am_i_win, result_is_draw);
-        wait_queue_clone_guard.enqueue_player_tuple(player1).await;
-        wait_queue_clone_guard.enqueue_player_tuple(player2).await;
+
+
+
 
 
         drop(rockpaperscissors_repository_guard);
 
-        CheckWinnerResponse::new(am_i_win,result_is_draw)
+        CheckWinnerResponse::new(am_i_win)
     }
 }
+
+
