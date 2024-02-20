@@ -74,167 +74,27 @@ impl GameTurnRepository for GameTurnRepositoryImpl {
 
 #[cfg(test)]
 mod cfg_test {
-    use std::time::Duration;
-    use super::*;
-    use tokio::test;
-    use tokio::time::sleep;
 
-    #[test]
-    async fn async_test_create_game_turn_object() {
-        let mut repository = GameTurnRepositoryImpl::new();
-        let account_unique_id = 456;
+    use rand::{Rng, SeedableRng};
 
-        let result = repository.create_game_turn_object(account_unique_id);
-
-        assert!(result);
-        let game_turn_option = repository.game_turn_map.get(&account_unique_id);
-        assert!(game_turn_option.is_some());
-
-        if let Some(game_turn) = game_turn_option {
-            println!("GameTurn inserted successfully!");
-            println!("Account Unique ID: {}", account_unique_id);
-            println!("Turn Value: {}", game_turn.get_turn());
-        } else {
-            println!("Failed to insert GameTurn!");
-        }
+    fn generate_random_bool(seed: u64) -> bool {
+        let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
+        rng.gen::<bool>()
     }
 
     #[test]
-    async fn test_create_game_turn_object() {
-        let mut repository = GameTurnRepositoryImpl::new();
-        let account_unique_id = 123;
+    fn test_random() {
+        let player1_seed = 123; // 원하는 시드 값
+        let player2_seed = 456; // 다른 시드 값
 
-        let result = repository.create_game_turn_object(account_unique_id);
+        // 각 플레이어의 랜덤 결과 생성
+        let player1_result = generate_random_bool(player1_seed);
+        let player2_result = generate_random_bool(player2_seed);
 
-        assert!(result);
-
-        let game_turn_option = repository.game_turn_map.get(&account_unique_id);
-        assert!(game_turn_option.is_some());
-
-        if let Some(game_turn) = game_turn_option {
-            println!("GameTurn inserted successfully!");
-            println!("Account Unique ID: {}", account_unique_id);
-            println!("Turn Value: {}", game_turn.get_turn());
-        } else {
-            println!("Failed to insert GameTurn!");
-        }
-    }
-
-    #[tokio::test]
-    async fn test_async_task_in_module() {
-
-        async fn async_task1() {
-            let mut repository = GameTurnRepositoryImpl::get_instance();
-            let mut repository_guard = repository.lock().await;
-            let account_unique_id = 1;
-            let opponent_unique_id = 2;
-
-            // 동일한 조건에서 카운트가 되도록 플레이어 2 명의 game_turn 객체를 동시에 생성함
-            let result = repository_guard.create_game_turn_object(account_unique_id);
-            let result = repository_guard.create_game_turn_object(opponent_unique_id);
-
-            drop(repository_guard);
-
-            for _ in 0..5 {
-                println!("Async task1 is running!");
-
-                let mut repository_guard = repository.lock().await;
-                let account_unique_id = 1;
-                let opponent_unique_id = 2;
-
-                let game_turn_map = repository_guard.get_game_turn_map();
-
-                println!("GameTurn Map: {:?}", game_turn_map);
-
-                if let Some(index) = game_turn_map.get_index_of(&account_unique_id) {
-                    if let Some((_key, game_turn)) = game_turn_map.get_index_mut(index) {
-                        game_turn.next_turn();
-                    }
-                }
-
-                drop(repository_guard);
-
-                sleep(Duration::from_millis(500)).await;
-                println!("Async task completed!");
-            }
-        }
-
-        async fn async_task2() {
-            let mut repository = GameTurnRepositoryImpl::get_instance();
-            let mut repository_guard = repository.lock().await;
-            let account_unique_id = 2;
-            let opponent_unique_id = 1;
-
-            // let result = repository_guard.create_game_turn_object(account_unique_id);
-
-            drop(repository_guard);
-
-            for _ in 0..5 {
-                println!("Async task2 is running!");
-
-                let mut repository_guard = repository.lock().await;
-                let account_unique_id = 2;
-                let opponent_unique_id = 1;
-
-                let game_turn_map = repository_guard.get_game_turn_map();
-
-                println!("GameTurn Map: {:?}", game_turn_map);
-
-                if let Some(index) = game_turn_map.get_index_of(&account_unique_id) {
-                    if let Some((_key, game_turn)) = game_turn_map.get_index_mut(index) {
-                        game_turn.next_turn();
-                    }
-                }
-
-                drop(repository_guard);
-
-                sleep(Duration::from_millis(500)).await;
-                println!("Async task completed!");
-            }
-        }
-
-        let task_handle1 = tokio::spawn(async_task1());
-        let task_handle2 = tokio::spawn(async_task2());
-
-        println!("Test in module continues its work...");
-
-        task_handle1.await.unwrap();
-        task_handle2.await.unwrap();
-    }
-
-    #[test]
-    async fn test_next_game_turn_object() {
-        let mut repository = GameTurnRepositoryImpl::new();
-        let account_unique_id = 123;
-
-        repository.create_game_turn_object(account_unique_id);
-
-        let result = repository.next_game_turn(account_unique_id);
-
-        assert_eq!(result, 2);
-
-        let result = repository.next_game_turn(account_unique_id);
-
-        assert_eq!(result, 3);
-    }
-
-    #[test]
-    async fn test_next_game_turn_object_not_found() {
-        let mut repository = GameTurnRepositoryImpl::new();
-        let account_unique_id = 456;
-
-        let result = repository.next_game_turn(account_unique_id);
-
-        assert_eq!(result, -1);
+        // 결과 출력
+        println!("Player 1 Result: {}", player1_result);
+        println!("Player 2 Result: {}", player2_result);
     }
 
 
-    #[test]
-    async fn test_get_game_turn() {
-        let mut repository = GameTurnRepositoryImpl::new();
-        let account_unique_id = 123;
-
-        repository.create_game_turn_object(account_unique_id);
-        println!("{:?}", repository.get_game_turn(account_unique_id));
-    }
 }

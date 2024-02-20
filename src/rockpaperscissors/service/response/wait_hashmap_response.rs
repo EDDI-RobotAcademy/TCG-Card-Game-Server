@@ -1,12 +1,12 @@
 #[derive(Debug)]
-pub struct WaitQueueResponse {
+pub struct WaitHashmapResponse {
     is_success:bool,
 
 }
 
-impl WaitQueueResponse {
+impl WaitHashmapResponse {
     pub fn new(is_success:bool) -> Self {
-        WaitQueueResponse {
+        WaitHashmapResponse {
             is_success
         }
     }
