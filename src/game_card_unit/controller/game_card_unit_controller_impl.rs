@@ -263,25 +263,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let opponent_target_unit_card_index = opponent_target_unit_card_index_string.parse::<i32>().unwrap();
 
 
-        // 8. 공격한 유닛이 죽었는지 판정
-        let judge_death_of_unit_response = game_field_unit_service_guard
-            .judge_death_of_unit(
-                attack_unit_request_form.to_judge_death_of_unit_request(
-                    find_opponent_by_account_id_response.get_opponent_unique_id(),
-                    target_unit_card_index)).await;
-        // 유닛이 공격할 수 있는 상태인지 알 수 있는 부분이 필요함 (빙결)
-        // 무덤에 넣으려면 유닛 카드 id 가 필요함
-        // 9. 죽었다면 무덤 배치
-        if (!judge_death_of_unit_response.is_alive()) {
-            let mut game_tomb_service_guard = self.game_tomb_service.lock().await;
-            let check = game_tomb_service_guard
-                .add_dead_unit_to_tomb(
-                    attack_unit_request_form.to_add_dead_unit_to_tomb_request(
-                        find_opponent_by_account_id_response.get_opponent_unique_id(),
-                        0 )).await; // 상대 유닛의 카드id 값
-        }
 
-        //    죽은 유닛에 붙어있던 카드들 무덤 배치
+        // 9. 죽었다면 무덤 배치
         // TODO: game_card_passive_status 도메인이 구현되는 것이 가장 이상적임
         let opponent_target_unit_id =
             game_field_unit_service_guard.find_target_unit_id_by_index(
