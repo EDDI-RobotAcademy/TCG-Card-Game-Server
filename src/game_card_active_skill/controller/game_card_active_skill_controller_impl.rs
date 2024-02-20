@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
@@ -6,8 +7,6 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
-use crate::card_race::service::card_race_service::CardRaceService;
-use crate::card_race::service::card_race_service_impl::CardRaceServiceImpl;
 use crate::game_card_active_skill::controller::game_card_active_skill_controller::GameCardActiveSkillController;
 use crate::game_card_active_skill::controller::request_form::non_targeting_active_skill_request_form::NonTargetingActiveSkillRequestForm;
 use crate::game_card_active_skill::controller::request_form::targeting_active_skill_request_form::TargetingActiveSkillRequestForm;
@@ -16,9 +15,10 @@ use crate::game_card_active_skill::controller::response_form::targeting_active_s
 use crate::game_card_active_skill::entity::active_skill_type::ActiveSkillType;
 use crate::game_card_active_skill::service::game_card_active_skill_service::GameCardActiveSkillService;
 use crate::game_card_active_skill::service::game_card_active_skill_service_impl::GameCardActiveSkillServiceImpl;
-use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
+use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionPossibilityValidatorService;
+use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service_impl::GameFieldUnitActionPossibilityValidatorServiceImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
@@ -32,7 +32,7 @@ pub struct GameCardActiveSkillControllerImpl {
     notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
     game_card_active_skill_service: Arc<AsyncMutex<GameCardActiveSkillServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
-    card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>,
+    game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
 }
 
 impl GameCardActiveSkillControllerImpl {
@@ -42,7 +42,7 @@ impl GameCardActiveSkillControllerImpl {
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
                game_card_active_skill_service: Arc<AsyncMutex<GameCardActiveSkillServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
-               card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>) -> Self {
+               game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,) -> Self {
 
         GameCardActiveSkillControllerImpl {
             battle_room_service,
@@ -51,7 +51,7 @@ impl GameCardActiveSkillControllerImpl {
             notify_player_action_service,
             game_card_active_skill_service,
             game_protocol_validation_service,
-            card_race_service
+            game_field_unit_action_possibility_validator_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardActiveSkillControllerImpl>> {
@@ -66,7 +66,7 @@ impl GameCardActiveSkillControllerImpl {
                             NotifyPlayerActionServiceImpl::get_instance(),
                             GameCardActiveSkillServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance(),
-                            CardRaceServiceImpl::get_instance())));
+                            GameFieldUnitActionPossibilityValidatorServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -100,22 +100,6 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         // TODO: 프로토콜 검증 할 때가 아니라 패스
 
-        // Action 가능한 턴인지 판별
-        let mut game_field_unit_service_guard =
-            self.game_field_unit_service.lock().await;
-
-        let check_turn_action_response =
-            game_field_unit_service_guard.check_turn_action(
-                targeting_active_skill_request_form
-                    .to_check_turn_action_request(
-                        account_unique_id,
-                        unit_card_index)).await;
-
-        if check_turn_action_response.has_already_taken_action() {
-            println!("해당 유닛은 이미 액션을 취했습니다.");
-            return TargetingActiveSkillResponseForm::new(false)
-        }
-
         // Active Skill Summary 획득
         let usage_skill_index_string = targeting_active_skill_request_form.get_usage_skill_index();
         let usage_skill_index = usage_skill_index_string.parse::<i32>().unwrap();
@@ -132,22 +116,28 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         drop(game_card_active_skill_service_guard);
 
-        // 스킬 사용에 필요한 에너지만큼 가지고 있는지 판정
+        // 스킬 사용 가능 여부 판정
         let required_energy_race_to_use_skill =
             *summary_active_skill_effect_response.get_required_energy().get_required_energy_race();
         let required_energy_count_to_use_skill =
             summary_active_skill_effect_response.get_required_energy().get_required_energy_count();
 
-        let current_attached_energy_count_of_field_unit_index = game_field_unit_service_guard
-            .get_current_attached_energy_of_field_unit_by_index(
+        // TODO: 나올 때부터 Hashmap 으로 나와야 함
+        let mut required_energy_map = HashMap::new();
+        required_energy_map.insert(required_energy_race_to_use_skill, required_energy_count_to_use_skill);
+
+        let mut game_field_unit_action_possibility_validator_service_guard =
+            self.game_field_unit_action_possibility_validator_service.lock().await;
+
+        let is_using_active_skill_possible_response =
+            game_field_unit_action_possibility_validator_service_guard.is_using_active_skill_possible(
                 targeting_active_skill_request_form
-                    .to_get_current_attached_energy_of_field_unit_by_index_request(
+                    .to_is_using_active_skill_possible_request(
                         account_unique_id,
                         unit_card_index,
-                        required_energy_race_to_use_skill)).await.get_current_attached_energy();
+                        required_energy_map)).await;
 
-        if required_energy_count_to_use_skill > current_attached_energy_count_of_field_unit_index {
-            println!("스킬 사용에 필요한 에너지를 충족하지 않아 스킬 사용이 불가합니다.");
+        if !is_using_active_skill_possible_response.is_possible() {
             return TargetingActiveSkillResponseForm::new(false)
         }
 
@@ -170,9 +160,12 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
         let target_skill_type = summary_active_skill_effect_response.get_skill_type();
         let target_skill_damage = summary_active_skill_effect_response.get_skill_damage();
 
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
+
         if target_skill_type == &ActiveSkillType::SingleTarget {
-            let apply_damage_to_opponent_target_unit_response = game_field_unit_service_guard
-                .apply_damage_to_target_unit_index(
+            let apply_damage_to_opponent_target_unit_response =
+                game_field_unit_service_guard.apply_damage_to_target_unit_index(
                     targeting_active_skill_request_form
                         .to_apply_damage_to_target_unit_index(
                             opponent_unique_id,
@@ -198,6 +191,8 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                     account_unique_id,
                     unit_card_index)).await;
 
+        drop(game_field_unit_service_guard);
+
         TargetingActiveSkillResponseForm::new(true)
     }
 
@@ -220,21 +215,6 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
         let unit_card_index_string = non_targeting_active_skill_request_form.get_unit_card_index();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
 
-        let mut game_field_unit_service_guard =
-            self.game_field_unit_service.lock().await;
-
-        let check_turn_action_response =
-            game_field_unit_service_guard.check_turn_action(
-                non_targeting_active_skill_request_form
-                    .to_check_turn_action_request(
-                        account_unique_id,
-                        unit_card_index)).await;
-
-        if check_turn_action_response.has_already_taken_action() {
-            println!("해당 유닛은 이미 액션을 취했습니다.");
-            return NonTargetingActiveSkillResponseForm::new(false)
-        }
-
         // Active Skill Summary 획득
         let usage_skill_index_string = non_targeting_active_skill_request_form.get_usage_skill_index();
         let usage_skill_index = usage_skill_index_string.parse::<i32>().unwrap();
@@ -251,24 +231,31 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         drop(game_card_active_skill_service_guard);
 
-        // 스킬 사용에 필요한 에너지만큼 가지고 있는지 판정
+        // 스킬 사용 가능 여부 판정
         let required_energy_race_to_use_skill =
             *summary_active_skill_effect_response.get_required_energy().get_required_energy_race();
         let required_energy_count_to_use_skill =
             summary_active_skill_effect_response.get_required_energy().get_required_energy_count();
 
-        let current_attached_energy_count_of_field_unit_index =
-            game_field_unit_service_guard.get_current_attached_energy_of_field_unit_by_index(
+        let mut required_energy_map = HashMap::new();
+        required_energy_map.insert(required_energy_race_to_use_skill, required_energy_count_to_use_skill);
+
+        let mut game_field_unit_action_possibility_validator_service_guard =
+            self.game_field_unit_action_possibility_validator_service.lock().await;
+
+        let is_using_active_skill_possible_response =
+            game_field_unit_action_possibility_validator_service_guard.is_using_active_skill_possible(
                 non_targeting_active_skill_request_form
-                    .to_get_current_attached_energy_of_field_unit_by_index_request(
+                    .to_is_using_active_skill_possible_request(
                         account_unique_id,
                         unit_card_index,
-                        required_energy_race_to_use_skill)).await.get_current_attached_energy();
+                        required_energy_map)).await;
 
-        if required_energy_count_to_use_skill > current_attached_energy_count_of_field_unit_index {
-            println!("스킬 사용에 필요한 에너지를 충족하지 않아 스킬 사용이 불가합니다.");
+        if !is_using_active_skill_possible_response.is_possible() {
             return NonTargetingActiveSkillResponseForm::new(false)
         }
+
+        drop(game_field_unit_action_possibility_validator_service_guard);
 
         // 상대 고유값 찾기
         let mut battle_room_service_guard = self.battle_room_service.lock().await;
@@ -285,6 +272,9 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
         // TODO: 특수 에너지 효과 적용까지 추가 필요
         let non_target_skill_type = summary_active_skill_effect_response.get_skill_type();
         let non_target_skill_damage = summary_active_skill_effect_response.get_skill_damage();
+
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
 
         if non_target_skill_type == &ActiveSkillType::BroadArea {
             let apply_catastrophic_damage_to_opponent_field_unit_response =
@@ -312,6 +302,8 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                 .to_execute_turn_action_request(
                     account_unique_id,
                     unit_card_index)).await;
+
+        drop(game_field_unit_service_guard);
 
         NonTargetingActiveSkillResponseForm::new(true)
     }

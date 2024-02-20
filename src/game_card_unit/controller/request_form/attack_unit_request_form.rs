@@ -1,5 +1,6 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::game_card_passive_skill::service::request::summary_passive_skill_effect_request::SummaryPassiveSkillEffectRequest;
+use crate::game_card_unit::service::request::summary_unit_card_info_request::SummaryUnitCardInfoRequest;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::service::request::acquire_unit_attack_point_request::AcquireUnitAttackPointRequest;
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
@@ -8,6 +9,7 @@ use crate::game_field_unit::service::request::check_turn_action_request::CheckTu
 use crate::game_field_unit::service::request::execute_turn_action_request::ExecuteTurnActionRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
+use crate::game_field_unit_action_possibility_validator::service::request::is_unit_basic_attack_possible_request::IsUnitBasicAttackPossibleRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
@@ -42,11 +44,17 @@ impl AttackUnitRequestForm {
         GetValueWithKeyRequest::new(self.session_id.clone().as_str())
     }
 
-    pub fn to_check_turn_action_request(&self,
-                                        account_unique_id: i32,
-                                        attacker_unit_card_index: i32) -> CheckTurnActionRequest {
-        CheckTurnActionRequest::new(
-            account_unique_id, attacker_unit_card_index)
+    pub fn to_summary_unit_card_info_request(&self,
+                                             unit_card_id: i32) -> SummaryUnitCardInfoRequest {
+        SummaryUnitCardInfoRequest::new(unit_card_id)
+    }
+
+    pub fn to_is_unit_basic_attack_possible_request(&self,
+                                                    account_unique_id: i32,
+                                                    field_unit_index: i32,
+                                                    basic_attack_required_energy_count: i32) -> IsUnitBasicAttackPossibleRequest {
+        IsUnitBasicAttackPossibleRequest::new(
+            account_unique_id, field_unit_index, basic_attack_required_energy_count)
     }
 
     pub fn to_execute_turn_action_request(&self,
@@ -96,12 +104,6 @@ impl AttackUnitRequestForm {
                                                            target_unit_index: i32) -> AttackTargetUnitWithExtraEffectRequest {
         AttackTargetUnitWithExtraEffectRequest::new(
             opponent_unique_id, damage, extra_status_effect_list.clone(), target_unit_index)
-    }
-        pub fn to_add_dead_unit_to_tomb_request(&self, account_unique_id: i32, unit_card_id: i32) -> PlaceToTombRequest {
-        PlaceToTombRequest::new(
-            account_unique_id,
-            unit_card_id
-        )
     }
 
     pub fn to_judge_death_of_unit_request(&self,
