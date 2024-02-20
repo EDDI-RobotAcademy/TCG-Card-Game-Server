@@ -70,38 +70,6 @@ impl GameTurnRepository for GameTurnRepositoryImpl {
         -1
     }
 
-    fn decide_first_turn(&mut self, account_id: i32, player1_account_id:i32,player1_choice:String,
-                                                     player2_account_id:i32,player2_choice:String,) -> (i32,bool,bool) {
-        println!("GameTurnRepositoryImpl: decide_first_turn()");
-
-        let (winner_account_unique_id, am_i_win, result_is_draw) = match (player1_choice.as_str(),
-                                                                                          player2_choice.as_str(), )
-        {
-            ("Rock", "Scissors") | ("Paper", "Rock") | ("Scissors", "Paper") => {
-                if account_id == player1_account_id {
-                    (player1_account_id, true, false)
-                } else {
-                    (player1_account_id, false, false)
-                }
-                // 플레이어 1이 이길 때
-            }
-            ("Scissors", "Rock") | ("Rock", "Paper") | ("Paper", "Scissors") => {
-                if account_id == player2_account_id {
-                    (player2_account_id, true, false)
-                } else {
-                    (player2_account_id, false, false)
-                }
-                // 플레이어 2가 이길 때
-            }
-            _ => {
-                // 그 외의 경우 (무승부)
-                println!("무승부");
-                (0, false, true)
-            }
-        };
-        (winner_account_unique_id, am_i_win, result_is_draw)
-
-    }
 }
 
 #[cfg(test)]
