@@ -97,15 +97,7 @@ impl AttackUnitRequestForm {
         AttackTargetUnitWithExtraEffectRequest::new(
             opponent_unique_id, damage, extra_status_effect_list.clone(), target_unit_index)
     }
-
-    pub fn to_judge_death_of_unit_request(&self, account_unique_id: i32, unit_card_index: i32) -> JudgeDeathOfUnitRequest {
-        JudgeDeathOfUnitRequest::new(
-            account_unique_id,
-            unit_card_index
-        )
-    }
-    
-    pub fn to_add_dead_unit_to_tomb_request(&self, account_unique_id: i32, unit_card_id: i32) -> PlaceToTombRequest {
+        pub fn to_add_dead_unit_to_tomb_request(&self, account_unique_id: i32, unit_card_id: i32) -> PlaceToTombRequest {
         PlaceToTombRequest::new(
             account_unique_id,
             unit_card_id

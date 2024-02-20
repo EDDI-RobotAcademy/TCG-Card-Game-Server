@@ -44,7 +44,6 @@ pub struct GameCardUnitControllerImpl {
     notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
     game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
-    game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
 }
 
 impl GameCardUnitControllerImpl {
@@ -56,8 +55,7 @@ impl GameCardUnitControllerImpl {
                game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
                game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
-               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
-               game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>) -> Self {
+               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>) -> Self {
 
         GameCardUnitControllerImpl {
             game_hand_service,
@@ -68,8 +66,7 @@ impl GameCardUnitControllerImpl {
             game_tomb_service,
             notify_player_action_service,
             game_card_passive_skill_service,
-            game_protocol_validation_service,
-            game_tomb_service,
+            game_protocol_validation_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardUnitControllerImpl>> {
@@ -86,8 +83,7 @@ impl GameCardUnitControllerImpl {
                             GameTombServiceImpl::get_instance(),
                             NotifyPlayerActionServiceImpl::get_instance(),
                             GameCardPassiveSkillServiceImpl::get_instance(),
-                            GameProtocolValidationServiceImpl::get_instance(),
-                            GameTombServiceImpl::get_instance())));
+                            GameProtocolValidationServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -269,7 +265,6 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         // 피격 유닛이 기본 공격 면역을 가지고 있는지 확인
         let opponent_target_unit_card_index_string = attack_unit_request_form.get_target_unit_index();
         let opponent_target_unit_card_index = opponent_target_unit_card_index_string.parse::<i32>().unwrap();
-
 
 
         // 9. 죽었다면 무덤 배치
