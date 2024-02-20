@@ -266,6 +266,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let opponent_target_unit_card_index_string = attack_unit_request_form.get_target_unit_index();
         let opponent_target_unit_card_index = opponent_target_unit_card_index_string.parse::<i32>().unwrap();
 
+
+        // 9. 죽었다면 무덤 배치
         // TODO: game_card_passive_status 도메인이 구현되는 것이 가장 이상적임
         let opponent_target_unit_id =
             game_field_unit_service_guard.find_target_unit_id_by_index(

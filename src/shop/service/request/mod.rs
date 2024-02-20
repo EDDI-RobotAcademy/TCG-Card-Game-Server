@@ -1,2 +1,1 @@
-pub mod free_card_request;
-pub mod get_card_default_request;
+pub mod data_to_display_in_shop_request;

@@ -54,13 +54,13 @@ impl ShopGachaServiceImpl {
         }
         INSTANCE.clone()
     }
-    async fn get_account_unique_id(&self, session_id: &str) -> i32 {
-        let mut redis_in_memory_repository = self.redis_in_memory_repository.lock().await;
-        let account_unique_id_option_string = redis_in_memory_repository.get(session_id).await;
-        let account_unique_id_string = account_unique_id_option_string.unwrap();
-        let account_unique_id: i32 = account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32");
-        account_unique_id
-    }
+    // async fn get_account_unique_id(&self, session_id: &str) -> i32 {
+    //     let mut redis_in_memory_repository = self.redis_in_memory_repository.lock().await;
+    //     let account_unique_id_option_string = redis_in_memory_repository.get(session_id).await;
+    //     let account_unique_id_string = account_unique_id_option_string.unwrap();
+    //     let account_unique_id: i32 = account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32");
+    //     account_unique_id
+    // }
     async fn update_account_card_db(&self, account_unique_id: i32, update_card_list: Vec<i32>) {
         let account_card_repository = self.account_card_repository.lock().await;
         let get_account_card_list = account_card_repository.get_card_list(account_unique_id).await.unwrap().unwrap();
@@ -96,7 +96,7 @@ impl ShopGachaService for ShopGachaServiceImpl {
 
         let shop_card_for_gacha_repository = self.shop_card_for_gacha_repository.lock().await;
 
-        let account_unique_id = self.get_account_unique_id(get_specific_race_card_request.account_session_id()).await;
+        let account_unique_id = get_specific_race_card_request.account_id();
         // 뽑을 카드 리스트
         let specific_race_card_list = shop_card_for_gacha_repository.get_specific_race_card_list(get_specific_race_card_request.get_race_enum()).await;
         // 카드 10개 뽑기
@@ -113,13 +113,14 @@ impl ShopGachaService for ShopGachaServiceImpl {
 mod tests {
     use super::*;
     use tokio::test;
+    use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 
     #[test]
     async fn test_add_free_cards() {
         let shop_service_impl_mutex = ShopGachaServiceImpl::get_instance();
         let shop_service_impl_mutex_guard = shop_service_impl_mutex.lock().await;
 
-        let request = GetSpecificRaceCardRequest::new("qwer".to_string(), "Human".to_string(), true);
+        let request = GetSpecificRaceCardRequest::new(1, RaceEnum::Human, true);
 
         let result = shop_service_impl_mutex_guard.get_specific_race_card_default(request).await;
 

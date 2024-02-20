@@ -1,2 +1,1 @@
-pub mod free_card_response;
-pub mod get_card_default_response;
+pub mod data_to_display_in_shop_response;
