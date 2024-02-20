@@ -5,6 +5,8 @@ use crate::game_round::service::request::next_game_turn_request::NextGameRoundRe
 use crate::game_turn::service::request::next_turn_request::NextTurnRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::game_field_energy::service::request::add_field_energy_with_amount_request::AddFieldEnergyWithAmountRequest;
+use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
+use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 
 #[derive(Debug)]
 pub struct TurnEndRequestForm {
@@ -32,8 +34,16 @@ impl TurnEndRequestForm {
         FindOpponentByAccountIdRequest::new(account_unique_id)
     }
 
+    pub fn to_is_this_your_turn_request(&self, account_unique_id: i32) -> IsThisYourTurnRequest {
+        IsThisYourTurnRequest::new(account_unique_id)
+    }
+
     pub fn to_apply_status_effect_damage_iteratively_request(&self, account_unique_id: i32) -> ApplyStatusEffectDamageIterativelyRequest {
         ApplyStatusEffectDamageIterativelyRequest::new(account_unique_id)
+    }
+
+    pub fn to_game_field_unit_card_of_account_unique_id_request(&self, account_unique_id: i32) -> GetGameFieldUnitCardOfAccountUniqueIdRequest {
+        GetGameFieldUnitCardOfAccountUniqueIdRequest::new(account_unique_id)
     }
 
     pub fn to_next_turn_request(&self, account_unique_id: i32) -> NextTurnRequest {

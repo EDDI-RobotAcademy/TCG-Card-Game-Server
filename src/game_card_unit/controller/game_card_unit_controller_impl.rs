@@ -21,6 +21,8 @@ use crate::game_card_unit::service::game_card_unit_service::GameCardUnitService;
 use crate::game_card_unit::service::game_card_unit_service_impl::GameCardUnitServiceImpl;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
+use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionPossibilityValidatorService;
+use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service_impl::GameFieldUnitActionPossibilityValidatorServiceImpl;
 use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
@@ -44,6 +46,7 @@ pub struct GameCardUnitControllerImpl {
     notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
     game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
+    game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
 }
 
 impl GameCardUnitControllerImpl {
@@ -55,7 +58,8 @@ impl GameCardUnitControllerImpl {
                game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
                game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
-               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>) -> Self {
+               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
+               game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,) -> Self {
 
         GameCardUnitControllerImpl {
             game_hand_service,
@@ -66,7 +70,8 @@ impl GameCardUnitControllerImpl {
             game_tomb_service,
             notify_player_action_service,
             game_card_passive_skill_service,
-            game_protocol_validation_service
+            game_protocol_validation_service,
+            game_field_unit_action_possibility_validator_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardUnitControllerImpl>> {
@@ -83,7 +88,8 @@ impl GameCardUnitControllerImpl {
                             GameTombServiceImpl::get_instance(),
                             NotifyPlayerActionServiceImpl::get_instance(),
                             GameCardPassiveSkillServiceImpl::get_instance(),
-                            GameProtocolValidationServiceImpl::get_instance())));
+                            GameProtocolValidationServiceImpl::get_instance(),
+                            GameFieldUnitActionPossibilityValidatorServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -132,6 +138,13 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let is_it_unit_response = game_protocol_validation_service_guard.is_it_unit_card(
             deploy_unit_request_form.to_is_it_unit_card_request(unit_card_id)).await;
         if !is_it_unit_response.is_success() {
+            println!("유닛 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
+            return DeployUnitResponseForm::new(false)
+        }
+
+        let can_use_card_response = game_protocol_validation_service_guard.can_use_card(
+            deploy_unit_request_form.to_can_use_card_request(account_unique_id, unit_card_id)).await;
+        if !can_use_card_response.is_success() {
             println!("유닛 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
             return DeployUnitResponseForm::new(false)
         }
@@ -209,11 +222,15 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         return DeployUnitResponseForm::new(true)
     }
 
-    async fn request_to_attack_unit(&self, attack_unit_request_form: AttackUnitRequestForm) -> AttackUnitResponseForm {
+    async fn request_to_attack_unit(
+        &self, attack_unit_request_form: AttackUnitRequestForm) -> AttackUnitResponseForm {
+
         println!("GameCardUnitControllerImpl: request_to_attack_unit()");
 
         // 세션 아이디를 검증합니다.
-        let account_unique_id = self.is_valid_session(attack_unit_request_form.to_session_validation_request()).await;
+        let account_unique_id =
+            self.is_valid_session(attack_unit_request_form.to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             return AttackUnitResponseForm::new(false)
         }
@@ -225,16 +242,39 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let attacker_unit_card_index = attacker_unit_card_index_string.parse::<i32>().unwrap();
 
         // 액션 가능한 턴인지 검증
-        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let check_turn_action_response =
-            game_field_unit_service_guard.check_turn_action(
-                attack_unit_request_form
-                    .to_check_turn_action_request(account_unique_id, attacker_unit_card_index)).await;
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
 
-        if check_turn_action_response.has_already_taken_action() {
-            println!("해당 유닛은 이미 액션을 취했습니다.");
+        let attacker_unit_id =
+            game_field_unit_service_guard.find_target_unit_id_by_index(
+                attack_unit_request_form
+                    .to_find_unit_id_by_index_request(
+                        account_unique_id,
+                        attacker_unit_card_index)).await.get_found_opponent_unit_id();
+
+        let mut game_card_unit_service_guard =
+            self.game_card_unit_service.lock().await;
+
+        let attacker_unit_required_energy =
+            game_card_unit_service_guard.summary_unit_card(
+                attack_unit_request_form.to_summary_unit_card_info_request(
+                    attacker_unit_id)).await.get_unit_attack_required_energy();
+
+        drop(game_card_unit_service_guard);
+
+        let mut game_field_unit_action_possibility_validator_service_guard =
+            self.game_field_unit_action_possibility_validator_service.lock().await;
+
+        let is_unit_basic_attack_possible_response =
+            game_field_unit_action_possibility_validator_service_guard.is_unit_basic_attack_possible(
+                attack_unit_request_form.to_is_unit_basic_attack_possible_request(
+                    account_unique_id, attacker_unit_card_index, attacker_unit_required_energy)).await;
+
+        if !is_unit_basic_attack_possible_response.is_possible() {
             return AttackUnitResponseForm::new(false)
         }
+
+        drop(game_field_unit_action_possibility_validator_service_guard);
 
         // 유닛 인덱스에서 기본 공격력 정보 확보
         let find_attacker_unit_attack_point_response =
@@ -253,7 +293,9 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         attacker_unit_card_index)).await.get_extra_status_effect_list().clone();
 
         // 공격을 위해 상대방 고유값 획득
-        let battle_room_service_guard = self.battle_room_service.lock().await;
+        let battle_room_service_guard =
+            self.battle_room_service.lock().await;
+
         let opponent_unique_id =
             battle_room_service_guard.find_opponent_by_account_unique_id(
                 attack_unit_request_form
@@ -266,8 +308,6 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let opponent_target_unit_card_index_string = attack_unit_request_form.get_target_unit_index();
         let opponent_target_unit_card_index = opponent_target_unit_card_index_string.parse::<i32>().unwrap();
 
-
-        // 9. 죽었다면 무덤 배치
         // TODO: game_card_passive_status 도메인이 구현되는 것이 가장 이상적임
         let opponent_target_unit_id =
             game_field_unit_service_guard.find_target_unit_id_by_index(
@@ -308,19 +348,15 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         }
 
         // 반격 이전 공격 유닛의 패시브 확보
-        let attacker_unit_id =
-            game_field_unit_service_guard.find_target_unit_id_by_index(
-                attack_unit_request_form
-                    .to_find_unit_id_by_index_request(
-                        account_unique_id,
-                        attacker_unit_card_index)).await.get_found_opponent_unit_id();
-
         let attacker_unit_passive_skill_list =
             game_card_passive_skill_service_guard.summary_passive_skill(
                 attack_unit_request_form
                     .to_summary_passive_skill_request(
                         attacker_unit_id)).await.get_passive_skill_effect_list().clone();
 
+        drop(game_card_passive_skill_service_guard);
+
+        // 공격 유닛이 기본 공격 면역일 경우 반격 무효 처리
         for attacker_unit_passive_skill in attacker_unit_passive_skill_list {
             if attacker_unit_passive_skill.get_passive_skill_type() == &PassiveSkillType::PhysicalImmunity {
                 println!("공격한 유닛이 기본 공격 면역이 존재하여 반격이 적용되지 않습니다.");
@@ -332,7 +368,6 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                             .to_judge_death_of_unit_request(
                                 opponent_unique_id,
                                 opponent_target_unit_card_index)).await.get_dead_unit_id();
-
 
                 // 죽은 경우 묘지에 추가
                 let mut game_tomb_service_guard =
@@ -353,8 +388,6 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                 return AttackUnitResponseForm::new(true)
             }
         }
-
-        drop(game_card_passive_skill_service_guard);
 
         // 반격을 위해 피격 유닛의 공격력 확보
         let find_opponent_target_unit_attack_point_response =
@@ -433,6 +466,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         account_unique_id,
                         maybe_dead_attacker_unit_id)).await;
         }
+
+        drop(game_field_unit_service_guard);
 
         drop(game_tomb_service_guard);
 

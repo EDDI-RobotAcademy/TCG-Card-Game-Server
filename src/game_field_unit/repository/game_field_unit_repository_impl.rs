@@ -193,17 +193,6 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         -1
     }
-    fn check_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
-        let mut has_already_taken_action: bool = false;
-
-        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            let unit_card_index = unit_card_index as usize;
-
-            has_already_taken_action = game_field_unit.check_turn_action_of_unit(unit_card_index);
-        }
-
-        has_already_taken_action
-    }
 
     fn execute_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
@@ -366,20 +355,6 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         }
 
         false
-    }
-
-    fn get_field_unit_deployed_round(
-        &mut self,
-        account_unique_id: i32,
-        unit_card_index: i32) -> i32 {
-
-        println!("GameFieldUnitRepositoryImpl: get_field_unit_deployed_round()");
-
-        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            return game_field_unit.get_unit_deployed_round(unit_card_index as usize);
-        }
-
-        -1
     }
 }
 
