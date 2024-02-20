@@ -11,9 +11,7 @@ use crate::game_round::service::request::game_turn_request::GameRoundRequest;
 use crate::game_round::service::response::game_turn_response::GameRoundResponse;
 
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
-use crate::game_round::service::request::get_game_round_of_account_unique_id_request::GetGameRoundOfAccountUniqueIdRequest;
 use crate::game_round::service::request::next_game_turn_request::NextGameRoundRequest;
-use crate::game_round::service::response::get_game_round_of_account_unique_id_response::GetGameRoundOfAccountUniqueIdResponse;
 use crate::game_round::service::response::next_game_turn_response::NextGameRoundResponse;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
@@ -79,20 +77,6 @@ impl GameRoundService for GameRoundServiceImpl {
         let result = game_round_repository_guard.next_game_round_object(account_unique_id);
 
         NextGameRoundResponse::new(result)
-    }
-
-    async fn get_game_round_of_account_unique_id(&mut self, get_game_round_of_account_unique_id_request: GetGameRoundOfAccountUniqueIdRequest) -> GetGameRoundOfAccountUniqueIdResponse {
-        println!("GameFieldUnitServiceImpl: get_game_field_unit_card_of_account_unique_id()");
-
-        let account_unique_id = get_game_round_of_account_unique_id_request.get_account_unique_id();
-
-        let mut game_round_repository_guard = self.game_round_repository.lock().await;
-        let mut current_game_round = game_round_repository_guard.get_game_round_map();
-        let current_game_round_map = current_game_round.get_mut(&account_unique_id).unwrap();
-        let current_game_round_of_account_unique_id =current_game_round_map.get_round().clone();
-        drop(game_round_repository_guard);
-
-        return GetGameRoundOfAccountUniqueIdResponse::new(current_game_round_of_account_unique_id)
     }
 }
 
