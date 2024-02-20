@@ -7,6 +7,10 @@ use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
+use crate::game_deck::service::game_deck_service::GameDeckService;
+use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
+use crate::game_field_energy::service::game_field_energy_service::GameFieldEnergyService;
+use crate::game_field_energy::service::game_field_energy_service_impl::GameFieldEnergyServiceImpl;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
@@ -38,6 +42,8 @@ use crate::game_round::service::game_round_service_impl::GameRoundServiceImpl;
 pub struct GameTurnControllerImpl {
     game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
     game_round_service: Arc<AsyncMutex<GameRoundServiceImpl>>,
+    game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
+    game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
     battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
@@ -50,6 +56,8 @@ pub struct GameTurnControllerImpl {
 impl GameTurnControllerImpl {
     pub fn new(game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
                game_round_service: Arc<AsyncMutex<GameRoundServiceImpl>>,
+               game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
+               game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
                battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
@@ -60,6 +68,8 @@ impl GameTurnControllerImpl {
         GameTurnControllerImpl {
             game_turn_service,
             game_round_service,
+            game_deck_service,
+            game_field_energy_service,
             battle_room_service,
             game_field_unit_service,
             redis_in_memory_service,
@@ -76,6 +86,8 @@ impl GameTurnControllerImpl {
                         GameTurnControllerImpl::new(
                             GameTurnServiceImpl::get_instance(),
                             GameRoundServiceImpl::get_instance(),
+                            GameDeckServiceImpl::get_instance(),
+                            GameFieldEnergyServiceImpl::get_instance(),
                             BattleRoomServiceImpl::get_instance(),
                             GameFieldUnitServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
@@ -188,6 +200,16 @@ impl GameTurnController for GameTurnControllerImpl {
         let next_turn_response = game_turn_service_guard
             .next_turn(turn_end_request_form.to_next_turn_request(opponent_account_unique_id)).await;
         drop(game_turn_service_guard);
+
+        // 9. 상대방이 덱에서 카드를 드로우
+        let mut game_deck_service_guard = self.game_deck_service.lock().await;;
+        game_deck_service_guard.draw_cards_from_deck(turn_end_request_form.to_draw_cards_from_deck_request(opponent_account_unique_id)).await;
+        drop(game_deck_service_guard);
+
+        // 10. 상대방이 필드에너지 획득
+        let game_field_energy_service_guard = self.game_field_energy_service.lock().await;
+        game_field_energy_service_guard.add_field_energy_with_amount(turn_end_request_form.to_add_field_energy_request(opponent_account_unique_id)).await;
+        drop(game_field_energy_service_guard);
 
         // 9. 턴 종료 상황에서 상태 이상으로 죽은 유닛들, 데미지 등등을 알려줘야함
 
