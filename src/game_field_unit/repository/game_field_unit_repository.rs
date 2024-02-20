@@ -29,7 +29,6 @@ pub trait GameFieldUnitRepository {
     fn find_target_unit_id_by_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32) -> i32;
     fn apply_damage_to_target_unit_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32, damage: i32) -> bool;
     fn apply_instant_death_to_target_unit_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32) -> bool;
-    fn check_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool;
     fn reset_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool;
     fn execute_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool;
     fn judge_death_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> i32;
@@ -80,8 +79,4 @@ pub trait GameFieldUnitRepository {
         account_unique_id: i32,
         unit_card_index: i32,
         current_round_value: i32) -> bool;
-    fn get_field_unit_deployed_round(
-        &mut self,
-        account_unique_id: i32,
-        unit_card_index: i32) -> i32;
 }

@@ -3,10 +3,8 @@ use crate::battle_room::service::request::find_opponent_by_account_id_request::F
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_active_skill::service::request::summary_active_skill_effect_request::SummaryActiveSkillEffectRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
-use crate::game_field_unit::service::request::check_turn_action_request::CheckTurnActionRequest;
 use crate::game_field_unit::service::request::execute_turn_action_request::ExecuteTurnActionRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
-use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
 use crate::game_field_unit_action_possibility_validator::service::request::is_using_active_skill_possible_request::IsUsingActiveSkillPossibleRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 

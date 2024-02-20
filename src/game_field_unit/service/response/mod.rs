@@ -17,5 +17,5 @@ pub mod detach_multiple_energy_from_field_unit_response;
 pub mod get_current_attached_energy_of_field_unit_by_index_response;
 pub mod judge_death_of_unit_response;
 pub mod get_game_field_unit_card_of_account_uique_id_response;
-pub mod check_turn_action_response;
 pub mod execute_turn_action_response;
+pub mod reset_turn_action_response;

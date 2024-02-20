@@ -1,4 +1,3 @@
-use std::println;
 use async_trait::async_trait;
 use crate::game_field_unit::service::request::acquire_unit_attack_point_request::AcquireUnitAttackPointRequest;
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
@@ -14,7 +13,6 @@ use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_ind
 use crate::game_field_unit::service::request::attach_special_energy_to_unit_index_request::AttachSpecialEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attack_target_unit_with_extra_effect_request::AttackTargetUnitWithExtraEffectRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
-use crate::game_field_unit::service::request::check_turn_action_request::CheckTurnActionRequest;
 use crate::game_field_unit::service::request::detach_multiple_energy_from_field_unit_request::DetachMultipleEnergyFromFieldUnitRequest;
 use crate::game_field_unit::service::request::execute_turn_action_request::ExecuteTurnActionRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
@@ -36,7 +34,6 @@ use crate::game_field_unit::service::response::attach_multiple_energy_to_unit_in
 use crate::game_field_unit::service::response::attach_special_energy_to_unit_index_response::AttachSpecialEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attack_target_unit_with_extra_effect_response::AttackTargetUnitWithExtraEffectResponse;
 use crate::game_field_unit::service::response::judge_death_of_unit_response::JudgeDeathOfUnitResponse;
-use crate::game_field_unit::service::response::check_turn_action_response::CheckTurnActionResponse;
 use crate::game_field_unit::service::response::detach_multiple_energy_from_field_unit_response::DetachMultipleEnergyFromFieldUnitResponse;
 use crate::game_field_unit::service::response::execute_turn_action_response::ExecuteTurnActionResponse;
 use crate::game_field_unit::service::response::find_active_skill_usage_unit_id_by_index_response::FindActiveSkillUsageUnitIdByIndexResponse;
@@ -54,9 +51,8 @@ pub trait GameFieldUnitService {
     async fn apply_damage_to_target_unit_index(&mut self, apply_damage_to_target_unit_index_response: ApplyDamageToTargetUnitIndexRequest) -> ApplyDamageToTargetUnitIndexResponse;
     async fn apply_instant_death_to_target_unit_index(&mut self, apply_instant_death_to_target_unit_index_request: ApplyInstantDeathToTargetUnitIndexRequest) -> ApplyInstantDeathToTargetUnitIndexResponse;
     async fn judge_death_of_unit(&mut self, check_is_unit_alive_request: JudgeDeathOfUnitRequest) -> JudgeDeathOfUnitResponse;
-    async fn check_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse;
     async fn execute_turn_action(&mut self, execute_turn_action_request: ExecuteTurnActionRequest) -> ExecuteTurnActionResponse;
-    async fn reset_turn_action(&mut self, check_turn_action_request: CheckTurnActionRequest) -> CheckTurnActionResponse;
+    // TODO: reset 은 전체로 다시 만든다
     async fn get_current_health_point_of_field_unit_by_index(&self, get_current_health_point_of_field_unit_by_index_request: GetCurrentHealthPointOfFieldUnitByIndexRequest) -> GetCurrentHealthPointOfFieldUnitByIndexResponse;
 
     async fn attach_special_energy_to_field_unit_index(&mut self, attach_special_energy_to_unit_index_request: AttachSpecialEnergyToUnitIndexRequest) -> AttachSpecialEnergyToUnitIndexResponse;
