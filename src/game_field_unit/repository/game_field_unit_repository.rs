@@ -75,4 +75,13 @@ pub trait GameFieldUnitRepository {
         unit_card_index: i32,
         race_enum: RaceEnum,
         quantity: i32) -> bool;
+    fn set_field_unit_deployed_round(
+        &mut self,
+        account_unique_id: i32,
+        unit_card_index: i32,
+        current_round_value: i32) -> bool;
+    fn get_field_unit_deployed_round(
+        &mut self,
+        account_unique_id: i32,
+        unit_card_index: i32) -> i32;
 }

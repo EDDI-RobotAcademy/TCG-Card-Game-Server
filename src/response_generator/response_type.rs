@@ -75,10 +75,10 @@ pub enum ResponseType {
     BATTLE_DECK_LIST(AccountDeckListResponse),
     BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(GameDeckStartCardListResponse),
 
-    // First Turn Decision For Wait
+
+    // First Turn Decision
     ROCKPAPERSCISSORS(RockpaperscissorsResponseForm),
-    // First TUrn Decision
-    CHECK_WINNER(CheckWinnerResponseForm),
+    CHECK_ROCKPAPERSCISSORS_WINNER(CheckWinnerResponseForm),
 
     // Account Card
     ACCOUNT_CARD_LIST(AccountCardListResponse),

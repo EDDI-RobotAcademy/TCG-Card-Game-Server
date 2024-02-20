@@ -274,7 +274,6 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
 
-
             19 => {
                 // First Turn wait queue 최신 버전
                 if let Some(request_form) = create_rockpaperscissors_request_form(&data) {
@@ -296,14 +295,13 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     let mut rockpaperscissors_controller_mutex_guard = rockpaperscissors_controller_mutex.lock().await;
 
                     let response_form = rockpaperscissors_controller_mutex_guard.execute_check_winner_procedure(request_form).await;
-                    let response_type = Some(ResponseType::CHECK_WINNER(response_form));
+                    let response_type = Some(ResponseType::CHECK_ROCKPAPERSCISSORS_WINNER(response_form));
 
                     response_type
                 } else {
                     None
                 }
             },
-
             31 => {
                 // Account Card List
                 if let Some(request) = create_account_card_list_request(&data) {

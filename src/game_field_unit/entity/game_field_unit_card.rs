@@ -24,6 +24,7 @@ pub struct GameFieldUnitCard {
     harmful_status_effect_list: Vec<HarmfulStatusEffect>,
     turn_action: bool,
     is_alive: bool,
+    deployed_round: i32
 }
 
 impl GameFieldUnitCard {
@@ -54,6 +55,7 @@ impl GameFieldUnitCard {
             harmful_status_effect_list: Vec::new(),
             is_alive,
             turn_action: false,
+            deployed_round: -1,
         }
     }
 
@@ -80,19 +82,23 @@ impl GameFieldUnitCard {
     pub fn get_extra_status_effect_list(&self) -> &Vec<ExtraStatusEffect> {
         &self.extra_status_effect_list
     }
-    // get
+
     pub fn is_alive(&self) -> bool {
         self.is_alive
     }
+
     pub fn get_turn_action(&self) -> bool {
         self.turn_action
     }
+
     pub fn set_is_alive(&mut self, is_alive: bool) {
         self.is_alive = is_alive;
     }
+
     pub fn set_turn_action(&mut self, turn_action: bool) {
         self.turn_action = turn_action;
     }
+
     pub fn attach_energy(&mut self, race: RaceEnumValue, quantity: i32) {
         self.attached_energy_map.add_energy(race, quantity);
     }
@@ -199,6 +205,14 @@ impl GameFieldUnitCard {
         for extra_effect_state in extra_effect_state_list {
             self.impose_extra_effect_state(extra_effect_state);
         }
+    }
+
+    pub fn set_deployed_round(&mut self, round: i32) {
+        self.deployed_round = round;
+    }
+
+    pub fn get_deployed_round(&self) -> i32 {
+        self.deployed_round
     }
 }
 
