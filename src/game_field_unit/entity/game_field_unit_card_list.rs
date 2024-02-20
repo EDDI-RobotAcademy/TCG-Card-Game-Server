@@ -137,6 +137,20 @@ impl GameFieldUnitCardList {
             unit.detach_energy(race_enum, quantity);
         }
     }
+
+    pub fn set_unit_deployed_round(&mut self, unit_card_index: usize, round: i32) {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            unit.set_deployed_round(round);
+        }
+    }
+
+    pub fn get_unit_deployed_round(&mut self, unit_card_index: usize) -> i32 {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            return unit.get_deployed_round()
+        }
+
+        -1
+    }
 }
 
 #[cfg(test)]

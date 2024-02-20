@@ -351,6 +351,36 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             false
         }
     }
+
+    fn set_field_unit_deployed_round(
+        &mut self,
+        account_unique_id: i32,
+        unit_card_index: i32,
+        current_round_value: i32) -> bool {
+
+        println!("GameFieldUnitRepositoryImpl: set_field_unit_deployed_round()");
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            game_field_unit.set_unit_deployed_round(unit_card_index as usize, current_round_value);
+            return true
+        }
+
+        false
+    }
+
+    fn get_field_unit_deployed_round(
+        &mut self,
+        account_unique_id: i32,
+        unit_card_index: i32) -> i32 {
+
+        println!("GameFieldUnitRepositoryImpl: get_field_unit_deployed_round()");
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            return game_field_unit.get_unit_deployed_round(unit_card_index as usize);
+        }
+
+        -1
+    }
 }
 
 #[cfg(test)]

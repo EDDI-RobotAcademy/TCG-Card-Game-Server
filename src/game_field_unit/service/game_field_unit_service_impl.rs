@@ -54,17 +54,21 @@ use crate::game_field_unit::service::response::find_target_unit_id_by_index_resp
 use crate::game_field_unit::service::response::get_current_attached_energy_of_field_unit_by_index_response::GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_uique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
+use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 
 
 pub struct GameFieldUnitServiceImpl {
     game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
+    game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
 }
 
 impl GameFieldUnitServiceImpl {
-    pub fn new(game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>) -> Self {
+    pub fn new(game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
+               game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,) -> Self {
 
         GameFieldUnitServiceImpl {
             game_field_unit_repository,
+            game_round_repository
         }
     }
 
@@ -74,9 +78,18 @@ impl GameFieldUnitServiceImpl {
                 Arc::new(
                     AsyncMutex::new(
                         GameFieldUnitServiceImpl::new(
-                            GameFieldUnitRepositoryImpl::get_instance())));
+                            GameFieldUnitRepositoryImpl::get_instance(),
+                            GameRoundRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
+    }
+
+    async fn get_user_round_value(&self, account_unique_id: i32) -> Option<i32> {
+        let mut game_round_repository_guard = self.game_round_repository.lock().await;
+        game_round_repository_guard
+            .get_game_round_map()
+            .get(&account_unique_id)
+            .map(|user_round| user_round.get_round())
     }
 }
 
@@ -87,8 +100,11 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         println!("GameFieldUnitServiceImpl: add_unit_to_game_field()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        let response = game_field_unit_repository_guard.add_unit_to_game_field(
-            add_unit_to_game_field_request.get_account_unique_id(),
+
+        let account_unique_id = add_unit_to_game_field_request.get_account_unique_id();
+
+        let maybe_added_unit_index = game_field_unit_repository_guard.add_unit_to_game_field(
+            account_unique_id,
             add_unit_to_game_field_request.get_unit_card_id(),
             add_unit_to_game_field_request.get_unit_race(),
             add_unit_to_game_field_request.get_unit_grade(),
@@ -99,7 +115,18 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             add_unit_to_game_field_request.has_second_passive_skill(),
             add_unit_to_game_field_request.has_third_passive_skill());
 
-        AddUnitToGameFieldResponse::new(response)
+        let current_round_value =
+            self.get_user_round_value(account_unique_id).await.unwrap();
+
+        let summoned_round_setting_result =
+            game_field_unit_repository_guard.set_field_unit_deployed_round(
+                account_unique_id, maybe_added_unit_index, current_round_value);
+
+        if summoned_round_setting_result == false {
+            return AddUnitToGameFieldResponse::new(-1)
+        }
+
+        AddUnitToGameFieldResponse::new(maybe_added_unit_index)
     }
 
     async fn attach_energy_to_field_unit_index(&mut self, attach_energy_to_unit_index_request: AttachSingleEnergyToUnitIndexRequest) -> AttachSingleEnergyToUnitIndexResponse {
