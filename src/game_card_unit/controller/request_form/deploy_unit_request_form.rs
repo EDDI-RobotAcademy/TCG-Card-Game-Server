@@ -7,6 +7,7 @@ use crate::game_card_unit::service::request::summary_unit_card_info_request::Sum
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_field_unit::service::request::apply_passive_skill_list_request::ApplyPassiveSkillListRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
+use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_unit_card_request::IsItUnitCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_deploy_unit_request::NotifyToOpponentYouDeployUnitRequest;
@@ -43,6 +44,10 @@ impl DeployUnitRequestForm {
 
     pub fn to_is_it_unit_card_request(&self, unit_card_id: i32) -> IsItUnitCardRequest {
         IsItUnitCardRequest::new(unit_card_id)
+    }
+
+    pub fn to_can_use_card_request(&self, account_unique_id: i32, unit_card_id: i32) -> CanUseCardRequest {
+        CanUseCardRequest::new(account_unique_id, unit_card_id)
     }
 
     pub fn to_use_game_hand_unit_card_request(&self, account_unique_id: i32, unit_card_id: i32) -> UseGameHandUnitCardRequest {
