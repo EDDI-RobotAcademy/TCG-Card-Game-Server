@@ -122,7 +122,13 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             game_field_unit_repository_guard.set_field_unit_deployed_round(
                 account_unique_id, maybe_added_unit_index, current_round_value);
 
-        if summoned_round_setting_result == false {
+        let passive_status_setting_result =
+            game_field_unit_repository_guard.set_passive_status_list_of_unit(
+                account_unique_id,
+                maybe_added_unit_index,
+                add_unit_to_game_field_request.get_passive_status_list().clone());
+
+        if summoned_round_setting_result == false || passive_status_setting_result == false {
             return AddUnitToGameFieldResponse::new(-1)
         }
 

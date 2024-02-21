@@ -1,6 +1,7 @@
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
@@ -24,7 +25,8 @@ pub struct GameFieldUnitCard {
     harmful_status_effect_list: Vec<HarmfulStatusEffect>,
     turn_action: bool,
     is_alive: bool,
-    deployed_round: i32
+    deployed_round: i32,
+    passive_status_list: Vec<PassiveStatus>
 }
 
 impl GameFieldUnitCard {
@@ -56,6 +58,7 @@ impl GameFieldUnitCard {
             is_alive,
             turn_action: false,
             deployed_round: -1,
+            passive_status_list: Vec::new()
         }
     }
 
@@ -213,6 +216,14 @@ impl GameFieldUnitCard {
 
     pub fn get_deployed_round(&self) -> i32 {
         self.deployed_round
+    }
+
+    pub fn set_passive_status_list(&mut self, passive_status_list: Vec<PassiveStatus>) {
+        self.passive_status_list = passive_status_list;
+    }
+
+    pub fn get_passive_status_list_mut(&self) -> &Vec<PassiveStatus> {
+        &self.passive_status_list
     }
 }
 
@@ -376,7 +387,7 @@ mod tests {
             true
         );
 
-        let harmful_state = ExtraStatusEffect::new(ExtraEffect::Darkfire, 5, 5, 0);
+        let harmful_state = ExtraStatusEffect::new(ExtraEffect::DarkFire, 5, 5, 0);
         game_field_unit_card.impose_harmful_state(harmful_state.clone());
 
         println!("Before apply_status_effect_damage: {:?}", game_field_unit_card);
