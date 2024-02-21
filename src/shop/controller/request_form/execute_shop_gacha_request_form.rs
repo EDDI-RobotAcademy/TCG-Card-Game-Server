@@ -1,3 +1,4 @@
+use crate::account_card::service::request::update_account_card_db_request::UpdateAccountCardDbRequest;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_field_unit::service::request::execute_turn_action_request::ExecuteTurnActionRequest;
 
@@ -37,11 +38,14 @@ impl ExecuteShopGachaRequestForm {
     pub fn to_session_validation_request(&self) -> GetValueWithKeyRequest {
         GetValueWithKeyRequest::new(self.account_session_id.clone().as_str())
     }
-    pub fn to_pay_gole_request(&self, account_unique_id: i32, gold: i32) -> PayGoldRequest {
+    pub fn to_pay_gold_request(&self, account_unique_id: i32, gold: i32) -> PayGoldRequest {
         PayGoldRequest::new(account_unique_id, gold)
     }
 
     pub fn to_get_specific_race_card_request(&self, account_unique_id: i32, race_name: RaceEnum, is_confirmed_upper_legend: bool) -> GetSpecificRaceCardRequest {
         GetSpecificRaceCardRequest::new(account_unique_id, race_name, is_confirmed_upper_legend)
+    }
+    pub fn to_update_account_card_db_request(&self, account_unique_id: i32, update_card_list: Vec<i32> ) -> UpdateAccountCardDbRequest {
+        UpdateAccountCardDbRequest::new(account_unique_id, update_card_list)
     }
 }

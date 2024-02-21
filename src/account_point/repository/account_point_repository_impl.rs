@@ -6,7 +6,9 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use diesel::query_dsl::methods::{FilterDsl};
 use diesel::{Connection, MysqlConnection, QueryDsl, ExpressionMethods, RunQueryDsl};
+use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
 
+use crate::account_point::entity::account_id::AccountId;
 use crate::account_point::entity::account_point::AccountPoint;
 use crate::account_point::entity::account_point::account_points::dsl::{account_id, account_points};
 use crate::account_point::entity::account_point::account_points::columns;
@@ -39,12 +41,12 @@ impl AccountPointRepositoryImpl {
 #[async_trait]
 impl AccountPointRepository for AccountPointRepositoryImpl {
 
-    async fn set_account_point(&self, account_user_id: i32, golds: i32) -> AccountPoint {
-        Some(AccountPoint::new(account_user_id, golds)).unwrap().expect("REASON")
+    async fn set_account_point(&self, account_user_id: i32) -> AccountId {
+        Some(AccountId::new(account_user_id)).unwrap().expect("REASON")
     }
 
-    async fn save_account_points(&self, account_point: AccountPoint) -> Result<(), diesel::result::Error> {
-        use crate::account_point::entity::account_point::account_points::dsl::*;
+    async fn save_account_points(&self, account_id_only: AccountId) -> Result<(), diesel::result::Error> {
+        use crate::account_point::entity::account_id::account_points::dsl::*;
 
         println!("AccountRepositoryImpl: save()");
 
@@ -53,7 +55,7 @@ impl AccountPointRepository for AccountPointRepositoryImpl {
             .expect("Failed to establish a new connection");
 
         match diesel::insert_into(account_points)
-            .values(&account_point)
+            .values(&account_id_only)
             .execute(&mut connection)
         {
             Ok(_) => {
@@ -81,7 +83,7 @@ impl AccountPointRepository for AccountPointRepositoryImpl {
         let select_clause = account_points.select((columns::account_id, columns::gold));
         let where_clause = FilterDsl::filter(account_points, columns::account_id.eq(account_id));
         let found_accounts = where_clause
-            .select((columns::account_id, columns::gold))
+            .select((columns::account_id, columns::gold, columns::event_check))
             .load::<AccountPoint>(&mut connection)?;
 
         let found_account = found_accounts
@@ -138,4 +140,46 @@ impl AccountPointRepository for AccountPointRepositoryImpl {
             }
         }
     }
+    async fn update_event_check(&self, account_unique_id: i32) -> Result<usize, diesel::result::Error> {
+        println!("AccountPointRepositoryImpl: update_event_check()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        match diesel::update(FilterDsl::filter(account_points, columns::account_id.eq(account_unique_id)))
+            .set((
+                columns::event_check.eq(0),
+            ))
+            .execute(&mut connection)
+        {
+            Ok(num) => {
+                println!("event check updated successfully.");
+                Ok(num)
+            }
+            Err(e) => {
+                eprintln!("Error updating event check: {:?}", e);
+                Err(e)
+            }
+        }
+    }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // DELETE FROM deck_cards WHERE deck_id = 7777;
+    #[tokio::test]
+    async fn test_save_deck_card_list() {
+        let repository = AccountPointRepositoryImpl::get_instance();
+        let repository_guard = repository.lock().await;
+
+        let request = repository_guard.find_by_account_id(4).await.unwrap();
+
+
+        println!("result: {:?}", request);
+    }
+}
+

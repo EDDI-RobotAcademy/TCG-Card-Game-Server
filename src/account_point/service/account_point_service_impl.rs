@@ -6,6 +6,7 @@ use crate::account_point::repository::account_point_repository::AccountPointRepo
 
 use crate::account::repository::account_repository::AccountRepository;
 use crate::account::repository::account_repository_impl::AccountRepositoryImpl;
+use crate::account_point::entity::account_point::AccountPoint;
 
 use crate::account_point::repository::account_point_repository_impl::AccountPointRepositoryImpl;
 use crate::account_point::service::account_point_service::AccountPointService;
@@ -97,6 +98,17 @@ impl AccountPointService for AccountPointServiceImpl {
         }
         return PayGoldResponse::new(false)
     }
+    async fn find_by_account_id(&self, account_unique_id: i32 ) -> AccountPoint {
+        let account_point_repository = self.repository.lock().await;
+        let account_point = account_point_repository.find_by_account_id(account_unique_id).await.unwrap();
+
+        account_point.unwrap()
+    }
+    async fn update_event_check(&self, account_unique_id: i32) {
+        let account_point_repository = self.repository.lock().await;
+        account_point_repository.update_event_check(account_unique_id).await.expect("TODO: panic message");
+    }
+
 }
 
 #[cfg(test)]

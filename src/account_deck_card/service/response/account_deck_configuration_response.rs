@@ -13,4 +13,5 @@ impl AccountDeckConfigurationResponse {
     pub fn to_account_deck_configuration_response_form(&self) -> AccountDeckConfigurationResponseForm {
         AccountDeckConfigurationResponseForm::new( self.is_success, self.message.clone() )
     }
+    pub fn get_is_success(&self) -> bool { self.is_success }
 }
