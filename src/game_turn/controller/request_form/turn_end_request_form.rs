@@ -6,8 +6,10 @@ use crate::game_turn::service::request::next_turn_request::NextTurnRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::game_field_energy::service::request::add_field_energy_with_amount_request::AddFieldEnergyWithAmountRequest;
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
+use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
 use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
+use crate::game_tomb::service::request::add_dead_unit_list_to_tomb_request::AddDeadUnitListToTombRequest;
 
 #[derive(Debug)]
 pub struct TurnEndRequestForm {
@@ -41,6 +43,14 @@ impl TurnEndRequestForm {
 
     pub fn to_apply_status_effect_damage_iteratively_request(&self, account_unique_id: i32) -> ApplyStatusEffectDamageIterativelyRequest {
         ApplyStatusEffectDamageIterativelyRequest::new(account_unique_id)
+    }
+
+    pub fn to_judge_death_of_every_unit_request(&self, account_unique_id: i32) -> JudgeDeathOfEveryUnitRequest {
+        JudgeDeathOfEveryUnitRequest::new(account_unique_id)
+    }
+
+    pub fn to_add_dead_unit_list_to_tomb_request(&self, account_unique_id: i32, dead_unit_list: Vec<i32>) -> AddDeadUnitListToTombRequest {
+        AddDeadUnitListToTombRequest::new(account_unique_id, dead_unit_list)
     }
 
     pub fn to_game_field_unit_card_of_account_unique_id_request(&self, account_unique_id: i32) -> GetGameFieldUnitCardOfAccountUniqueIdRequest {
