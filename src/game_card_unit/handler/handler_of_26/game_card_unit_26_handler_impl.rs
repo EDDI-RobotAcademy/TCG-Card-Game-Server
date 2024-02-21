@@ -1,6 +1,7 @@
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_unit::entity::game_card_unit_info::GameCardUnitInfo;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_card_unit::handler::game_card_unit_handler::GameCardUnitHandler;
 
 pub struct UnitCard_26_Function;
@@ -20,7 +21,7 @@ pub struct UnitCard_26_Function;
 
 impl GameCardUnitHandler for UnitCard_26_Function {
     unsafe fn summary_unit_card(&self) -> GameCardUnitInfo {
-        println!("UnitCard_31_Function: summary_unit_card()");
+        println!("UnitCard_26_Function: summary_unit_card()");
 
         let mut game_card_unit_effect = GameCardUnitInfo::new(
             RaceEnum::Undead,
@@ -35,6 +36,10 @@ impl GameCardUnitHandler for UnitCard_26_Function {
             true,
             false,
             -1);
+
+        let mut passive_status_list_of_26 = Vec::new();
+        passive_status_list_of_26.push(PassiveStatus::PhysicalImmunity);
+        game_card_unit_effect.set_passive_status_list(passive_status_list_of_26);
 
         return game_card_unit_effect;
     }

@@ -1,5 +1,6 @@
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 
 #[derive(Debug)]
 pub struct AddUnitToGameFieldRequest {
@@ -12,7 +13,8 @@ pub struct AddUnitToGameFieldRequest {
     unit_attack_required_energy: i32,
     has_first_passive_skill: bool,
     has_second_passive_skill: bool,
-    has_third_passive_skill: bool
+    has_third_passive_skill: bool,
+    passive_status_list: Vec<PassiveStatus>
 }
 
 impl AddUnitToGameFieldRequest {
@@ -25,7 +27,8 @@ impl AddUnitToGameFieldRequest {
                unit_attack_required_energy: i32,
                has_first_passive_skill: bool,
                has_second_passive_skill: bool,
-               has_third_passive_skill: bool) -> Self {
+               has_third_passive_skill: bool,
+               passive_status_list: Vec<PassiveStatus>) -> Self {
 
         AddUnitToGameFieldRequest {
             account_unique_id,
@@ -37,7 +40,8 @@ impl AddUnitToGameFieldRequest {
             unit_attack_required_energy,
             has_first_passive_skill,
             has_second_passive_skill,
-            has_third_passive_skill
+            has_third_passive_skill,
+            passive_status_list
         }
     }
 
@@ -80,4 +84,6 @@ impl AddUnitToGameFieldRequest {
     pub fn has_third_passive_skill(&self) -> bool {
         self.has_third_passive_skill
     }
+
+    pub fn get_passive_status_list(&self) -> &Vec<PassiveStatus> { &self.passive_status_list }
 }

@@ -2,9 +2,9 @@ use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
-use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 
 pub trait GameFieldUnitRepository {
     fn create_game_field_unit_object(
@@ -137,4 +137,9 @@ pub trait GameFieldUnitRepository {
         account_unique_id: i32,
         attack_unit_index: i32,
         damage: i32) -> bool;
+    fn set_passive_status_list_of_unit(
+        &mut self,
+        account_unique_id: i32,
+        attack_unit_index: i32,
+        passive_status_list: Vec<PassiveStatus>) -> bool;
 }

@@ -1,6 +1,7 @@
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_unit::entity::game_card_unit_info::GameCardUnitInfo;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 
 #[derive(Debug)]
 pub struct SummaryUnitCardInfoResponse {
@@ -15,6 +16,8 @@ pub struct SummaryUnitCardInfoResponse {
     first_passive_skill: bool,
     second_passive_skill: bool,
     third_passive_skill: bool,
+    // TODO: 병종은 나중에 생각하자
+    passive_status_list: Vec<PassiveStatus>
 }
 
 impl SummaryUnitCardInfoResponse {
@@ -29,7 +32,8 @@ impl SummaryUnitCardInfoResponse {
         third_active_skill_required_energy: i32,
         first_passive_skill: bool,
         second_passive_skill: bool,
-        third_passive_skill: bool, ) -> Self {
+        third_passive_skill: bool,
+        passive_status_list: Vec<PassiveStatus> ) -> Self {
 
         Self {
             unit_race,
@@ -42,7 +46,8 @@ impl SummaryUnitCardInfoResponse {
             third_active_skill_required_energy,
             first_passive_skill,
             second_passive_skill,
-            third_passive_skill, }
+            third_passive_skill,
+            passive_status_list }
     }
 
     pub fn get_unit_race(&self) -> RaceEnum {
@@ -89,6 +94,8 @@ impl SummaryUnitCardInfoResponse {
         self.third_passive_skill
     }
 
+    pub fn get_passive_status_list(&self) -> &Vec<PassiveStatus> { &self.passive_status_list }
+
     pub fn from_game_card_unit_info(game_card_unit_info: GameCardUnitInfo) -> SummaryUnitCardInfoResponse {
 
         SummaryUnitCardInfoResponse::new(
@@ -102,6 +109,7 @@ impl SummaryUnitCardInfoResponse {
             game_card_unit_info.get_third_active_skill_required_energy(),
             game_card_unit_info.has_first_passive_skill(),
             game_card_unit_info.has_second_passive_skill(),
-            game_card_unit_info.has_third_passive_skill())
+            game_card_unit_info.has_third_passive_skill(),
+            game_card_unit_info.get_passive_status_list().clone())
     }
 }

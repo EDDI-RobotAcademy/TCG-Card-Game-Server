@@ -196,7 +196,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     unit_card_info_response.get_unit_attack_required_energy(),
                     unit_card_info_response.has_first_passive_skill(),
                     unit_card_info_response.has_second_passive_skill(),
-                    unit_card_info_response.has_third_passive_skill())).await;
+                    unit_card_info_response.has_third_passive_skill(),
+                    unit_card_info_response.get_passive_status_list().clone())).await;
 
         if add_unit_to_game_field_response.get_placed_unit_index() == -1 {
             println!("필드에 유닛 배치 중 문제가 발생하였습니다.");
