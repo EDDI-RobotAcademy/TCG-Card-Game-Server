@@ -7,7 +7,9 @@ use crate::account_card::repository::account_card_repository::AccountCardReposit
 use crate::account_card::repository::account_card_repository_impl::AccountCardRepositoryImpl;
 use crate::account_card::service::account_card_service::AccountCardService;
 use crate::account_card::service::request::account_card_list_request::AccountCardListRequest;
+use crate::account_card::service::request::update_account_card_db_request::UpdateAccountCardDbRequest;
 use crate::account_card::service::response::account_card_list_response::AccountCardListResponse;
+use crate::account_card::service::response::update_account_card_db_response::UpdateAccountCardDbResponse;
 
 
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
@@ -65,6 +67,22 @@ impl AccountCardService for AccountCardServiceImpl {
                 AccountCardListResponse::new(empty_set)
             }
         }
+    }
+
+    async fn update_account_card_db(&self, update_account_card_db_request: UpdateAccountCardDbRequest) -> UpdateAccountCardDbResponse{
+        let account_card_repository = self.repository.lock().await;
+        let get_account_card_list = account_card_repository.get_card_list(update_account_card_db_request.account_unique_id()).await.unwrap().unwrap();
+        let account_card_check = account_card_repository.check_same_card(update_account_card_db_request.update_card_list().clone(), get_account_card_list).await;
+
+        for checked_card in account_card_check {
+            if (checked_card.1 != 0){
+                account_card_repository.update_card_count(update_account_card_db_request.account_unique_id(), checked_card).await;
+            }
+            if (checked_card.1 == 0){
+                account_card_repository.save_new_card(update_account_card_db_request.account_unique_id(), checked_card.0).await;
+            }
+        }
+        UpdateAccountCardDbResponse::new(true)
     }
 }
 

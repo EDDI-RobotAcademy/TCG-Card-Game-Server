@@ -61,20 +61,20 @@ impl ShopGachaServiceImpl {
     //     let account_unique_id: i32 = account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32");
     //     account_unique_id
     // }
-    async fn update_account_card_db(&self, account_unique_id: i32, update_card_list: Vec<i32>) {
-        let account_card_repository = self.account_card_repository.lock().await;
-        let get_account_card_list = account_card_repository.get_card_list(account_unique_id).await.unwrap().unwrap();
-        let account_card_check = account_card_repository.check_same_card(update_card_list.clone(), get_account_card_list).await;
-
-        for checked_card in account_card_check {
-            if (checked_card.1 != 0){
-                account_card_repository.update_card_count(account_unique_id, checked_card).await;
-            }
-            if (checked_card.1 == 0){
-                account_card_repository.save_new_card(account_unique_id, checked_card.0).await;
-            }
-        }
-    }
+    // async fn update_account_card_db(&self, account_unique_id: i32, update_card_list: Vec<i32>) {
+    //     let account_card_repository = self.account_card_repository.lock().await;
+    //     let get_account_card_list = account_card_repository.get_card_list(account_unique_id).await.unwrap().unwrap();
+    //     let account_card_check = account_card_repository.check_same_card(update_card_list.clone(), get_account_card_list).await;
+    //
+    //     for checked_card in account_card_check {
+    //         if (checked_card.1 != 0){
+    //             account_card_repository.update_card_count(account_unique_id, checked_card).await;
+    //         }
+    //         if (checked_card.1 == 0){
+    //             account_card_repository.save_new_card(account_unique_id, checked_card.0).await;
+    //         }
+    //     }
+    // }
     async fn card_gacha_system (&self, grade_card_list: HashMap<i32,GradeEnum>, how_many_cards_to_get: i32, is_confirmed_upper_legend: bool) -> Vec<i32> {
         let shop_repository = self.repository.lock().await;
         let gacha_grade_result = shop_repository.apply_probability_by_grade(how_many_cards_to_get, is_confirmed_upper_legend);
@@ -96,13 +96,10 @@ impl ShopGachaService for ShopGachaServiceImpl {
 
         let shop_card_for_gacha_repository = self.shop_card_for_gacha_repository.lock().await;
 
-        let account_unique_id = get_specific_race_card_request.account_id();
         // 뽑을 카드 리스트
         let specific_race_card_list = shop_card_for_gacha_repository.get_specific_race_card_list(get_specific_race_card_request.get_race_enum()).await;
         // 카드 10개 뽑기
         let get_card_list = self.card_gacha_system(specific_race_card_list, 10, get_specific_race_card_request.is_confirmed_upper_legend()).await;
-
-        self.update_account_card_db(account_unique_id, get_card_list.clone()).await;
 
         GetSpecificRaceCardResponse::new(get_card_list)
     }

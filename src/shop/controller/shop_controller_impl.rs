@@ -3,6 +3,8 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::{Mutex as AsyncMutex, Mutex};
+use crate::account_card::service::account_card_service::AccountCardService;
+use crate::account_card::service::account_card_service_impl::AccountCardServiceImpl;
 
 use crate::shop::controller::shop_controller::ShopController;
 use crate::shop::controller::request_form::execute_shop_gacha_request_form::ExecuteShopGachaRequestForm;
@@ -29,17 +31,21 @@ pub struct ShopControllerImpl {
     account_point_service: Arc<AsyncMutex<AccountPointServiceImpl>>,
     shop_gacha_service: Arc<AsyncMutex<ShopGachaServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
+    account_card_service: Arc<AsyncMutex<AccountCardServiceImpl>>,
 }
 
 impl ShopControllerImpl {
     pub fn new(account_point_service: Arc<AsyncMutex<AccountPointServiceImpl>>,
                shop_gacha_service: Arc<AsyncMutex<ShopGachaServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
+               account_card_service: Arc<AsyncMutex<AccountCardServiceImpl>>,
+
     ) -> Self {
         ShopControllerImpl {
             account_point_service,
             shop_gacha_service,
             redis_in_memory_service,
+            account_card_service,
         }
     }
     pub fn get_instance() -> Arc<Mutex<ShopControllerImpl>> {
@@ -50,7 +56,8 @@ impl ShopControllerImpl {
                         ShopControllerImpl::new(
                             AccountPointServiceImpl::get_instance(),
                             ShopGachaServiceImpl::get_instance(),
-                            RedisInMemoryServiceImpl::get_instance())));
+                            RedisInMemoryServiceImpl::get_instance(),
+                            AccountCardServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -92,30 +99,45 @@ impl ShopController for ShopControllerImpl {
                 account_unique_id,
                 execute_shop_gacha_request_form.get_race_enum(),
                 execute_shop_gacha_request_form.is_confirmed_upper_legend())).await;
+        //4. 카드 저장
+        let account_card_service_guard = self.account_card_service.lock().await;
+        let update_account_card_db_response = account_card_service_guard.update_account_card_db(
+            execute_shop_gacha_request_form.to_update_account_card_db_request(
+                account_unique_id,
+                get_specific_race_card_response.clone().get_card_id_list().clone())).await;
 
-        ExecuteShopGachaResponseForm::new(get_specific_race_card_response.get_card_id_list(), true)
+
+        ExecuteShopGachaResponseForm::new(get_specific_race_card_response.get_card_id_list(), update_account_card_db_response.get_is_success())
     }
     async fn execute_free_gacha(&self, execute_free_gacha_request_form: ExecuteFreeGachaRequestForm) -> ExecuteFreeGachaResponseForm {
-        //1. 무료 뽑기 가능한지 확인
         let redis_in_memory_service_guard = self.redis_in_memory_service.lock().await;
         let session_validation_response = redis_in_memory_service_guard.get_value_with_key(
             execute_free_gacha_request_form.to_session_validation_request()).await;
         let value_string = session_validation_response.get_value();
-        let save_daily_token_redis_response = redis_in_memory_service_guard.save_daily_key_and_value(
-            execute_free_gacha_request_form.to_save_daily_key_and_value_request(
-                session_validation_response.get_value())).await;
+        let account_unique_id = value_string.parse::<i32>().unwrap_or_else(|_| { -1 });
 
-        if !save_daily_token_redis_response.is_success() {
-            return ExecuteFreeGachaResponseForm::new(vec![0], false);
-        }
+        //1. 무료 뽑기 가능한지 확인
+        // let save_daily_token_redis_response = redis_in_memory_service_guard.save_daily_key_and_value(
+        //     execute_free_gacha_request_form.to_save_daily_key_and_value_request(
+        //         session_validation_response.get_value())).await;
+        //
+        // if !save_daily_token_redis_response.is_success() {
+        //     return ExecuteFreeGachaResponseForm::new(vec![0], false);
+        // }
 
         //2. 카드 뽑기
         let shop_gacha_service_guard = self.shop_gacha_service.lock().await;
         let get_specific_race_card_response = shop_gacha_service_guard.get_specific_race_card_default(
             execute_free_gacha_request_form.to_get_specific_race_card_request(
-                value_string.parse::<i32>().unwrap_or_else(|_| { -1 }),
+                account_unique_id,
                 execute_free_gacha_request_form.get_race_enum(),
                 execute_free_gacha_request_form.is_confirmed_upper_legend())).await;
+        //3. 카드 저장
+        let account_card_service_guard = self.account_card_service.lock().await;
+        let update_account_card_db_response = account_card_service_guard.update_account_card_db(
+            execute_free_gacha_request_form.to_update_account_card_db_request(
+                account_unique_id,
+                get_specific_race_card_response.clone().get_card_id_list().clone())).await;
 
         ExecuteFreeGachaResponseForm::new(get_specific_race_card_response.get_card_id_list(), true)
     }
@@ -151,7 +173,7 @@ mod tests {
         // let result = shop_service_impl_mutex_guard.get_specific_race_card_default(request).await;
         //
         // println!("result: {:?}", result);
-        let request = ExecuteFreeGachaRequestForm::new("qwer".to_string(), "Human".to_string(), true);
+        let request = ExecuteFreeGachaRequestForm::new("qwer".to_string(), "Undead".to_string(), true);
         let result = shop_controller_impl_mutex_guard.execute_free_gacha(request).await;
 
         println!("{:?}", result);
