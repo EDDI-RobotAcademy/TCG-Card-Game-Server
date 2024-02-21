@@ -35,6 +35,7 @@ use crate::game_card_unit::controller::response_form::deploy_unit_response_form:
 use crate::game_card_unit::controller::response_form::attack_unit_response_form::AttackUnitResponseForm;
 use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
 use crate::game_field_energy::controller::response_form::attach_field_energy_to_field_unit_response_form::AttachFieldEnergyToFieldUnitResponseForm;
+use crate::game_winner_check::service::response::surrender_response::SurrenderResponse;
 use crate::game_hand::controller::response_form::mulligan_response_form::MulliganResponseForm;
 use crate::game_turn::controller::response_form::turn_end_response_form::TurnEndResponseForm;
 use crate::notify_player_action::entity::notify_opponent_increase_field_energy_item_usage::NotifyOpponentIncreaseFieldEnergyItemUsage;
@@ -57,6 +58,7 @@ use crate::rockpaperscissors::controller::response_form::rockpaperscissors_respo
 use crate::shop::controller::response_form::execute_free_gacha_response_form::ExecuteFreeGachaResponseForm;
 use crate::shop::controller::response_form::execute_shop_gacha_response_form::ExecuteShopGachaResponseForm;
 use crate::shop::service::response::data_to_display_in_shop_response::DataToDisplayInShopResponse;
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ResponseType {
@@ -141,6 +143,9 @@ pub enum ResponseType {
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),
+
+    // Game Surrender
+    GAME_SURRENDER(SurrenderResponse),
 
     // Mulligan
     CHANGE_FIRST_HAND(MulliganResponseForm),
