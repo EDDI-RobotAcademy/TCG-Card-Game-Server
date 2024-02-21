@@ -52,7 +52,7 @@ use crate::notify_player_action::entity::notify_opponent_to_damage_main_characte
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
-use crate::rockpaperscissors::controller::response_form::check_rockpaperscissors_winner_response_form::CheckWinnerResponseForm;
+use crate::rockpaperscissors::controller::response_form::check_rockpaperscissors_winner_response_form::CheckRockpaperscissorsWinnerResponseForm;
 use crate::rockpaperscissors::controller::response_form::rockpaperscissors_response_form::RockpaperscissorsResponseForm;
 use crate::shop::controller::response_form::execute_free_gacha_response_form::ExecuteFreeGachaResponseForm;
 use crate::shop::controller::response_form::execute_shop_gacha_response_form::ExecuteShopGachaResponseForm;
@@ -79,7 +79,7 @@ pub enum ResponseType {
 
     // First Turn Decision
     ROCKPAPERSCISSORS(RockpaperscissorsResponseForm),
-    CHECK_ROCKPAPERSCISSORS_WINNER(CheckWinnerResponseForm),
+    CHECK_ROCKPAPERSCISSORS_WINNER(CheckRockpaperscissorsWinnerResponseForm),
 
     // Account Card
     ACCOUNT_CARD_LIST(AccountCardListResponse),

@@ -6,21 +6,21 @@ use crate::game_protocol_validation::service::request::is_it_support_card_reques
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug,Clone,Serialize,Deserialize)]
-pub struct CheckWinnerResponseForm {
-    am_i_winner:bool,
+pub struct CheckRockpaperscissorsWinnerResponseForm {
+    am_i_first_turn:bool,
 
 }
 
-impl CheckWinnerResponseForm {
-    pub fn new(am_i_winner:bool,
+impl CheckRockpaperscissorsWinnerResponseForm {
+    pub fn new(am_i_first_turn:bool,
                 ) -> Self {
-        CheckWinnerResponseForm {
-            am_i_winner,
+        CheckRockpaperscissorsWinnerResponseForm {
+            am_i_first_turn,
 
 
         }
     }
-    pub fn get_am_i_winner(&self) -> bool { self.am_i_winner }
+    pub fn get_am_i_first_turn(&self) -> bool { self.am_i_first_turn }
     
 
 

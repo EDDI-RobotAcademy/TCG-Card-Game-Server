@@ -6,13 +6,13 @@ use crate::game_protocol_validation::service::request::is_it_support_card_reques
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
-pub struct CheckWinnerRequestForm {
+pub struct CheckRockpaperscissorsWinnerRequestForm {
     session_id:String,
 }
 
-impl CheckWinnerRequestForm {
+impl CheckRockpaperscissorsWinnerRequestForm {
     pub fn new(session_id: String ) -> Self {
-        CheckWinnerRequestForm {
+        CheckRockpaperscissorsWinnerRequestForm {
             session_id,
 
         }
