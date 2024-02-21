@@ -10,6 +10,7 @@ use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_card_energy::entity::summary_energy_card_effect::SummaryEnergyCardEffect;
 
 use crate::game_card_energy::handler::game_card_energy_handler::GameCardEnergyHandler;
+use crate::game_card_energy::handler::handler_of_151::game_card_energy_151_handler_impl::EnergyCard_151_Function;
 use crate::game_card_energy::handler::handler_of_93::game_card_energy_93_handler_impl::EnergyCard_93_Function;
 use crate::game_card_energy::repository::game_card_energy_repository::GameCardEnergyRepository;
 
@@ -37,7 +38,7 @@ impl GameCardEnergyRepositoryImpl {
         energy_card_functions.insert(110, Box::new(NoneEnergyFunction) as Box<dyn GameCardEnergyHandler>);
         energy_card_functions.insert(111, Box::new(NoneEnergyFunction) as Box<dyn GameCardEnergyHandler>);
         energy_card_functions.insert(118, Box::new(NoneEnergyFunction) as Box<dyn GameCardEnergyHandler>);
-        // energy_card_functions.insert(151, Box::new(EnergyCard_151_Function) as Box<dyn GameCardEnergyHandler>);
+        energy_card_functions.insert(151, Box::new(EnergyCard_151_Function) as Box<dyn GameCardEnergyHandler>);
         energy_card_functions.insert(185, Box::new(NoneEnergyFunction) as Box<dyn GameCardEnergyHandler>);
 
         GameCardEnergyRepositoryImpl { energy_card_functions }

@@ -140,6 +140,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         }
     }
 
+    // TODO: 필드 위 모든 유닛의 아이디 값을 다룰 수 있으므로 Naming 이 바뀌면 더 좋을 것
     fn find_target_unit_id_by_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32) -> i32 {
         if let Some(opponent_game_field_unit) = self.game_field_unit_map.get(&opponent_unique_id) {
             if (0..opponent_game_field_unit.get_all_unit_list_in_game_field().len() as i32).contains(&opponent_target_unit_index) {
@@ -177,6 +178,26 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         false
     }
 
+    fn reset_turn_action_of_all_unit(&mut self, account_unique_id: i32) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            for unit_card in game_field_unit.get_all_field_unit_list_mut() {
+                unit_card.set_turn_action(false)
+            }
+            return true
+        }
+
+        false
+    }
+
+    fn execute_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let unit_card_index = unit_card_index as usize;
+            game_field_unit.execute_turn_action_of_unit(unit_card_index);
+            return true
+        }
+
+        false
+    }
     fn judge_death_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> i32 {
         println!("GameFieldUnitRepositoryImpl: judge_death_of_unit()");
 
@@ -194,26 +215,6 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         -1
     }
 
-    fn execute_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
-        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            let unit_card_index = unit_card_index as usize;
-            game_field_unit.execute_turn_action_of_unit(unit_card_index);
-            return true
-        }
-
-        false
-    }
-    fn reset_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
-        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            let unit_card_index = unit_card_index as usize;
-            game_field_unit.reset_turn_action_of_unit(unit_card_index);
-            return true
-        }
-
-        false
-    }
-
-
     fn attach_special_energy_to_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: i32, race_enum: RaceEnum, quantity: i32, status_effect_list: Vec<StatusEffect>) -> bool {
         println!("GameFieldUnitRepositoryImpl: attach_special_energy_to_indexed_unit()");
 
@@ -230,7 +231,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         return false
     }
 
-    // TODO: Game Field Unit이 너무 거대해지고 있음 (그러나 당장 고려 할 수 없는 상황임)
+    // TODO: Game Field Unit 이 너무 거대해지고 있음 (그러나 당장 고려 할 수 없는 상황임)
     fn apply_harmful_status_effect_damage_iteratively(&mut self, account_unique_id: i32) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             game_field_unit.apply_status_effect_damage_iteratively();
@@ -351,6 +352,32 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             game_field_unit.set_unit_deployed_round(unit_card_index as usize, current_round_value);
+            return true
+        }
+
+        false
+    }
+
+    // 소환 시 단일기 적용 패시브를 가진 유닛이 가장 가까운 상대를 공격할 수 있습니다
+    fn apply_damage_to_nearest_target(
+        &mut self,
+        account_unique_id: i32,
+        attack_unit_index: i32,
+        damage: i32) -> bool {
+
+        println!("GameFieldUnitRepositoryImpl: apply_damage_to_nearest_target()");
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let field_unit_list_mut = game_field_unit.get_all_field_unit_list_mut();
+            if field_unit_list_mut.len() == 0 {
+                println!("no target to attack");
+                return true
+            }
+            for target_unit_index in (0..field_unit_list_mut.len()).rev() {
+                if target_unit_index == attack_unit_index as usize {
+                    field_unit_list_mut[target_unit_index].apply_damage(damage);
+                }
+            }
             return true
         }
 

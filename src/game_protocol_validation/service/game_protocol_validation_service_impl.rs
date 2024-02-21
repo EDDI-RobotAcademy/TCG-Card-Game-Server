@@ -100,14 +100,19 @@ impl GameProtocolValidationServiceImpl {
     }
 
     async fn can_use_mythical_card(&self, can_use_card_request: &CanUseCardRequest, round: i32) -> bool {
-        if let target_card_number = can_use_card_request.get_support_card_number() {
-            let card_grade_repository_guard = self.card_grade_repository.lock().await;
-            if let card_grade = card_grade_repository_guard.get_card_grade(&target_card_number).await {
-                return card_grade == GradeEnum::Mythical && round >= 5;
+        let target_card_id = can_use_card_request.get_card_id();
+        let card_grade_repository_guard = self.card_grade_repository.lock().await;
+        let card_grade = card_grade_repository_guard.get_card_grade(&target_card_id).await;
+        drop(card_grade_repository_guard);
+        if card_grade == GradeEnum::Mythical {
+            return if round >= 5 {
+                true
+            } else {
+                false
             }
         }
 
-        false
+        true
     }
     async fn get_account_unique_id(&self, session_id: &str) -> i32 {
         let mut redis_in_memory_repository = self.redis_in_memory_repository.lock().await;
@@ -121,7 +126,7 @@ impl GameProtocolValidationServiceImpl {
 #[async_trait]
 impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
 
-    // TODO: 확장성을 고려하여 추후 아래의 check_cards_from_hand 로 교체 작업 필요
+    // TODO: 확장성을 고려하여 추후 아래의 check_card_from_hand 로 교체 작업 필요
     async fn check_protocol_hacking(&mut self, support_card_protocol_validation_request: CheckProtocolHackingRequest) -> CheckProtocolHackingResponse {
         let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
         let game_hand = game_hand_repository_guard.get_game_hand_map().get(&support_card_protocol_validation_request.get_account_unique_id());
@@ -131,14 +136,19 @@ impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
             return CheckProtocolHackingResponse::new(false)
         }
 
-        let mut result = true;
+        let mut result = false;
         let target_card_number = support_card_protocol_validation_request.get_support_card_number();
 
-        for &target_card in game_hand.unwrap().get_all_card_list_in_game_hand().iter() {
-            if target_card.get_card() == target_card_number {
-                result = false;
-                break;
-            }
+        let game_hand_card_list = game_hand.unwrap().get_all_card_list_in_game_hand().clone();
+
+        // 비교를 위한 test_hand_card_id_list 형성
+        let mut test_hand_card_id_list = Vec::new();
+        for game_hand_card in game_hand_card_list {
+            test_hand_card_id_list.push(game_hand_card.get_card());
+        }
+
+        if test_hand_card_id_list.contains(&target_card_number) {
+            result = true;
         }
 
         CheckProtocolHackingResponse::new(result)
@@ -184,6 +194,7 @@ impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
         let round_option = self.get_user_round_value(&can_use_card_request).await;
         let round = round_option.unwrap();
 
+        // 신화 등급인 경우만 round 까지 확인하여 반환
         if !self.can_use_mythical_card(&can_use_card_request, round).await {
             return CanUseCardResponse::new(false)
         }
