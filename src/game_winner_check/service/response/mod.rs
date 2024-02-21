@@ -1,0 +1,1 @@
+pub mod check_main_character_response;
