@@ -10,6 +10,7 @@ use diesel::row::NamedRow;
 
 
 use rand::{Rng, SeedableRng};
+use rand::prelude::SliceRandom;
 use rand::rngs::{OsRng, StdRng};
 use rand::seq::index::sample;
 
@@ -29,8 +30,10 @@ use crate::match_waiting_timer::repository::match_waiting_timer_repository_impl:
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 use crate::rockpaperscissors::service::request::check_draw_choice_request::CheckDrawChoiceRequest;
+use crate::rockpaperscissors::service::request::check_opponent_hashmap_request::CheckOpponentHashmapRequest;
 use crate::rockpaperscissors::service::request::check_rockpaperscissors_winner_request::{CheckRockpaperscissorsWinnerRequest};
-use crate::rockpaperscissors::service::response::check_draw_choice_response;
+
+use crate::rockpaperscissors::service::response::check_opponent_hashmap_response::CheckOpponentHashmapResponse;
 use crate::rockpaperscissors::service::response::check_rockpaperscissors_winner_response::CheckRockpaperscissorsWinnerResponse;
 
 pub struct RockpaperscissorsServiceImpl {
@@ -92,6 +95,7 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
     async fn insert_player_data_to_hashmap(&self, insert_player_data_to_hashmap_request: WaitHashmapRequest) -> WaitHashmapResponse {
         println!("RockpaperscissorsServiceImpl: insert_player_data_to_hashmap()");
         let account_unique_id = insert_player_data_to_hashmap_request.get_account_unique_id();
+        let opponent_id=insert_player_data_to_hashmap_request.get_opponent_id();
         let choice=insert_player_data_to_hashmap_request.get_choice().to_string();
         let mut player_map: HashMap<String, String> = Default::default();
         player_map.insert(account_unique_id.to_string(), choice);
@@ -102,7 +106,7 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
         match_waiting_timer_repository.set_match_waiting_timer(account_unique_id).await;
 
         let mut response = rockpaperscissors_repository.insert_player_hashmap_for_wait(player_map).await;
-
+         rockpaperscissors_repository.change_draw_choice_repo(account_unique_id.to_string(),opponent_id.to_string());
         if response.is_ok() {
             return WaitHashmapResponse::new(true)
         }
@@ -112,20 +116,13 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
     }
 
     async fn check_draw_choice(&self, check_draw_choice_request: CheckDrawChoiceRequest){
+        println!("RockpaperscissorsServiceImpl: check_draw_choice()");
         let account_unique_id=check_draw_choice_request.get_account_unique_id().to_string();
         let opponent_id=check_draw_choice_request.get_opponent_id().to_string();
-        let choices = vec!["Rock", "Paper", "Scissors"];
-        let mut rng = StdRng::seed_from_u64(42); // 임의의 시드값 사용
 
-        // "Rock", "Paper", "Scissors" 중에서 중복되지 않게 2개 선택
-        let sampled_indices = sample(&mut rng, choices.len(), 2);
-        let selected_choices: Vec<&str> = sampled_indices.into_iter().map(|index| choices[index]).collect();
         let rockpaperscissors_repository_guard = self.rockpaperscissors_repository.lock().await;
-        // let wait_hashmap_clone_mutex = rockpaperscissors_repository_guard.get_wait_hashmap();
-        // let wait_hashmap_clone_guard = wait_hashmap_clone_mutex.lock().await;
-        rockpaperscissors_repository_guard.change_draw_choice_repo(account_unique_id,opponent_id,selected_choices);
-        // let mut my_choice=wait_hashmap_clone_guard.get_player_hashmap(account_unique_id.to_string()).await.unwrap();
-        // let mut opponent_choice=wait_hashmap_clone_guard.get_player_hashmap(opponent_id.to_string()).await.unwrap();
+
+        rockpaperscissors_repository_guard.change_draw_choice_repo(account_unique_id,opponent_id).await;
 
     }
 
@@ -141,12 +138,11 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
         let mut my_choice=wait_hashmap_clone_guard.get_player_hashmap(account_unique_id.to_string()).await.unwrap();
         let mut opponent_choice=wait_hashmap_clone_guard.get_player_hashmap(opponent_id.to_string()).await.unwrap();
 
-        let mut rng = OsRng::default();
-        let random_bool: bool = rng.gen();
+
         let am_i_win = match (my_choice.as_str(), opponent_choice.as_str()) {
             ("Rock", "Scissors") | ("Paper", "Rock") | ("Scissors", "Paper") => true,
             ("Scissors", "Rock") | ("Rock", "Paper") | ("Paper", "Scissors") => false,
-            _ => random_bool,
+            _ => false,
         };
         drop(rockpaperscissors_repository_guard);
         let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
@@ -154,10 +150,23 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
         if am_i_win==true
         {
             game_turn_repository_guard.next_game_turn(account_unique_id);
+            drop(game_turn_repository_guard);
+            return CheckRockpaperscissorsWinnerResponse::new("WIN".to_string())
         }
-        drop(game_turn_repository_guard);
 
-        CheckRockpaperscissorsWinnerResponse::new(am_i_win)
+
+        return CheckRockpaperscissorsWinnerResponse::new("LOSE".to_string())
+    }
+
+    async fn check_opponent_hashmap(&self, check_opponent_hashmap_request: CheckOpponentHashmapRequest) -> CheckOpponentHashmapResponse {
+        println!("RockpaperscissorsServiceImpl: check_opponent_hashmap()");
+
+        let opponent_id=check_opponent_hashmap_request.get_opponent_id().to_string();
+
+        let rockpaperscissors_repository_guard = self.rockpaperscissors_repository.lock().await;
+
+        let opponent_check=rockpaperscissors_repository_guard.check_opponent_hashmap_repo(opponent_id).await;
+        return CheckOpponentHashmapResponse::new(opponent_check.unwrap())
     }
 }
 

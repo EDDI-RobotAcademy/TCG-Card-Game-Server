@@ -12,6 +12,7 @@ use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFie
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::request::acquire_unit_attack_point_request::AcquireUnitAttackPointRequest;
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
+use crate::game_field_unit::service::request::acquire_unit_passive_status_list_request::AcquireUnitPassiveStatusListRequest;
 
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_field_unit::service::request::apply_catastrophic_damage_to_field_unit_request::ApplyCatastrophicDamageToFieldUnitRequest;
@@ -34,6 +35,7 @@ use crate::game_field_unit::service::request::get_game_field_unit_card_of_accoun
 use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
+use crate::game_field_unit::service::response::acquire_unit_passive_status_list_response::AcquireUnitPassiveStatusListResponse;
 
 use crate::game_field_unit::service::response::add_unit_to_game_field_response::AddUnitToGameFieldResponse;
 use crate::game_field_unit::service::response::apply_catastrophic_damage_to_field_unit_response::ApplyCatastrophicDamageToFieldUnitResponse;
@@ -122,7 +124,13 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             game_field_unit_repository_guard.set_field_unit_deployed_round(
                 account_unique_id, maybe_added_unit_index, current_round_value);
 
-        if summoned_round_setting_result == false {
+        let passive_status_setting_result =
+            game_field_unit_repository_guard.set_passive_status_list_of_unit(
+                account_unique_id,
+                maybe_added_unit_index,
+                add_unit_to_game_field_request.get_passive_status_list().clone());
+
+        if summoned_round_setting_result == false || passive_status_setting_result == false {
             return AddUnitToGameFieldResponse::new(-1)
         }
 
@@ -317,14 +325,6 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         // TODO: Need to Refactor
         for passive_skill in passive_skill_list.iter() {
             match passive_skill.get_passive_skill_type() {
-                PassiveSkillType::PhysicalImmunity => {
-                    println!("물리 공격 면역 효과를 적용합니다");
-
-                    game_field_unit_repository_guard.impose_extra_effect_state_to_indexed_unit(
-                        apply_passive_skill_list_request.get_account_unique_id(),
-                        apply_passive_skill_list_request.get_unit_card_index(),
-                        passive_skill.clone());
-                },
                 PassiveSkillType::BroadArea => {
                     println!("패시브 광역기!");
 
@@ -410,5 +410,17 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         let game_field_unit_list_of_account_unique_id =game_field_unit_account_unique_id.get_all_unit_list_in_game_field().clone();
 
         return GetGameFieldUnitCardOfAccountUniqueIdResponse::new(game_field_unit_list_of_account_unique_id)
+    }
+
+    async fn acquire_unit_passive_status_list(&mut self, acquire_unit_passive_status_list_request: AcquireUnitPassiveStatusListRequest) -> AcquireUnitPassiveStatusListResponse {
+        println!("GameFieldUnitServiceImpl: get_game_field_unit_card_of_account_unique_id()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let passive_status_list =
+            game_field_unit_repository_guard.get_passive_status_list_of_unit(
+                acquire_unit_passive_status_list_request.get_account_unique_id(),
+                acquire_unit_passive_status_list_request.get_unit_index());
+
+        AcquireUnitPassiveStatusListResponse::new(passive_status_list)
     }
 }

@@ -1,5 +1,6 @@
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 
 #[derive(Debug)]
 pub struct GameCardUnitInfo {
@@ -14,8 +15,8 @@ pub struct GameCardUnitInfo {
     first_passive_skill: bool,
     second_passive_skill: bool,
     third_passive_skill: bool,
-    // TODO: 병종과 관련한 enum 값도 정리가 필요함
     military_occupational_specialty: i32,
+    passive_status_list: Vec<PassiveStatus>
 }
 
 impl GameCardUnitInfo {
@@ -45,7 +46,8 @@ impl GameCardUnitInfo {
                 first_passive_skill,
                 second_passive_skill,
                 third_passive_skill,
-                military_occupational_specialty
+                military_occupational_specialty,
+                passive_status_list: Vec::new()
             }
     }
 
@@ -96,4 +98,9 @@ impl GameCardUnitInfo {
     pub fn has_third_passive_skill(&self) -> bool {
         self.third_passive_skill
     }
+
+    pub fn set_passive_status_list(&mut self, passive_status_list: Vec<PassiveStatus>) {
+        self.passive_status_list = passive_status_list;
+    }
+    pub fn get_passive_status_list(&self) -> &Vec<PassiveStatus> { &self.passive_status_list }
 }
