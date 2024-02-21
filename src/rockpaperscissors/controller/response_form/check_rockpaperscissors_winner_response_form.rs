@@ -5,14 +5,14 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
-#[derive(Debug,Clone,Serialize,Deserialize)]
-pub struct CheckRockpaperscissorsWinnerResponseForm {
-    am_i_first_turn:bool,
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CheckRockpaperscissorsWinnerResponseForm {
+    am_i_first_turn: String,
 }
 
 impl CheckRockpaperscissorsWinnerResponseForm {
-    pub fn new(am_i_first_turn:bool,
+    pub fn new(am_i_first_turn:String,
                 ) -> Self {
         CheckRockpaperscissorsWinnerResponseForm {
             am_i_first_turn,
@@ -20,7 +20,7 @@ impl CheckRockpaperscissorsWinnerResponseForm {
 
         }
     }
-    pub fn get_am_i_first_turn(&self) -> bool { self.am_i_first_turn }
+    pub fn get_am_i_first_turn(&self) -> &str { &self.am_i_first_turn }
     
 
 

@@ -55,5 +55,12 @@ impl RockpaperscissorsRepository for RockpaperscissorsRepositoryImpl {
         Ok(true)
     }
 
+    async fn check_opponent_hashmap_repo(&self,  opponent_id: String) -> Result<bool, Box<dyn Error>> {
+        println!("RockpaperscissorsRepositoryImpl: check_opponent_hashmap_repo()");
+        let waiting_hashmap_guard = self.wait_hashmap.lock().await;
+        let mut check_result=waiting_hashmap_guard.check_opponent_hashmap(opponent_id).await;
+        return Ok(check_result.unwrap());
+
+    }
 }
 

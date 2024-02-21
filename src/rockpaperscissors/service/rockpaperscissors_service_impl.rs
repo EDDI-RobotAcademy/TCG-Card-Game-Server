@@ -30,8 +30,10 @@ use crate::match_waiting_timer::repository::match_waiting_timer_repository_impl:
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 use crate::rockpaperscissors::service::request::check_draw_choice_request::CheckDrawChoiceRequest;
+use crate::rockpaperscissors::service::request::check_opponent_hashmap_request::CheckOpponentHashmapRequest;
 use crate::rockpaperscissors::service::request::check_rockpaperscissors_winner_request::{CheckRockpaperscissorsWinnerRequest};
-use crate::rockpaperscissors::service::response::check_draw_choice_response;
+
+use crate::rockpaperscissors::service::response::check_opponent_hashmap_response::CheckOpponentHashmapResponse;
 use crate::rockpaperscissors::service::response::check_rockpaperscissors_winner_response::CheckRockpaperscissorsWinnerResponse;
 
 pub struct RockpaperscissorsServiceImpl {
@@ -148,10 +150,23 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
         if am_i_win==true
         {
             game_turn_repository_guard.next_game_turn(account_unique_id);
+            drop(game_turn_repository_guard);
+            return CheckRockpaperscissorsWinnerResponse::new("WIN".to_string())
         }
-        drop(game_turn_repository_guard);
 
-        CheckRockpaperscissorsWinnerResponse::new(am_i_win)
+
+        return CheckRockpaperscissorsWinnerResponse::new("LOSE".to_string())
+    }
+
+    async fn check_opponent_hashmap(&self, check_opponent_hashmap_request: CheckOpponentHashmapRequest) -> CheckOpponentHashmapResponse {
+        println!("RockpaperscissorsServiceImpl: check_opponent_hashmap()");
+
+        let opponent_id=check_opponent_hashmap_request.get_opponent_id().to_string();
+
+        let rockpaperscissors_repository_guard = self.rockpaperscissors_repository.lock().await;
+
+        let opponent_check=rockpaperscissors_repository_guard.check_opponent_hashmap_repo(opponent_id).await;
+        return CheckOpponentHashmapResponse::new(opponent_check.unwrap())
     }
 }
 

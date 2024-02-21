@@ -19,6 +19,8 @@ use crate::rockpaperscissors::controller::response_form::check_rockpaperscissors
 use crate::rockpaperscissors::controller::response_form::rockpaperscissors_response_form::RockpaperscissorsResponseForm;
 use crate::rockpaperscissors::controller::rockpaperscissors_controller::RockpaperscissorsController;
 use crate::rockpaperscissors::service::request::check_draw_choice_request::CheckDrawChoiceRequest;
+use crate::rockpaperscissors::service::request::check_opponent_hashmap_request::CheckOpponentHashmapRequest;
+use crate::rockpaperscissors::service::response::check_opponent_hashmap_response::CheckOpponentHashmapResponse;
 use crate::rockpaperscissors::service::request::check_rockpaperscissors_winner_request::CheckRockpaperscissorsWinnerRequest;
 use crate::rockpaperscissors::service::request::wait_hashmap_request::WaitHashmapRequest;
 use crate::rockpaperscissors::service::rockpaperscissors_service::RockpaperscissorsService;
@@ -107,16 +109,24 @@ impl RockpaperscissorsController for RockpaperscissorsControllerImpl {
         let account_unique_id = self.is_valid_session(check_winner_rockpaperscissors_request_form.to_session_validation_request()).await;
         if account_unique_id == -1 {
             println!("Invalid session");
-            return CheckRockpaperscissorsWinnerResponseForm::new( false)
+            return CheckRockpaperscissorsWinnerResponseForm::new( "LOSE".to_string())
         }
 
         let opponent_unique_id = self.get_opponent_unique_id(
             check_winner_rockpaperscissors_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
         let mut rockpaperscissors_service_guard = self.rockpaperscissors_service.lock().await;
-
-        let winner_response=rockpaperscissors_service_guard.check_rockpaperscissors_winner(CheckRockpaperscissorsWinnerRequest::new(account_unique_id,opponent_unique_id)).await;
-        return CheckRockpaperscissorsWinnerResponseForm::new( winner_response.get_am_i_winner());
+        let mut opponent_check=rockpaperscissors_service_guard.check_opponent_hashmap(CheckOpponentHashmapRequest::new(
+            opponent_unique_id)).await;
+        if opponent_check.get_opponent_check()==false
+        {
+            drop(rockpaperscissors_service_guard);
+            return CheckRockpaperscissorsWinnerResponseForm::new( "WAIT".to_string())
+        }
+        let mut winner_response=rockpaperscissors_service_guard.check_rockpaperscissors_winner(CheckRockpaperscissorsWinnerRequest::new(
+                                                                                                                                account_unique_id,opponent_unique_id)).await;
+        drop(rockpaperscissors_service_guard);
+        return CheckRockpaperscissorsWinnerResponseForm::new( winner_response.get_am_i_winner().to_string())
     }
 }
 

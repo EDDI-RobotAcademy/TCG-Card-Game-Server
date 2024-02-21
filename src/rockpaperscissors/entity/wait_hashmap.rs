@@ -78,6 +78,25 @@ impl WaitHashMap {
         // 찾지 못했을 때는 None을 반환
         None
     }
+    pub async fn check_opponent_hashmap(&self, opponent_id:String) -> Option<bool>
+    {
+        println!("check_opponent_hashmap");
+        let mut guard = self.player_hashmap_list.lock().await;
+
+        let mut opponent_choice=None;
+        for (key, value) in guard.iter() {
+
+            if key == &opponent_id {
+                // 특정 키에 대한 값을 찾았을 때, 해당 값을 반환
+                opponent_choice=Some(value.clone());
+            }
+        }
+        if opponent_choice != None
+        {
+            return Some(true);
+        }
+        return Some(false);
+    }
 
 }
 
