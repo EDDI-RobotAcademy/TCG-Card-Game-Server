@@ -222,7 +222,7 @@ impl GameFieldUnitCard {
         self.passive_status_list = passive_status_list;
     }
 
-    pub fn get_passive_status_list_mut(&self) -> &Vec<PassiveStatus> {
+    pub fn get_passive_status_list(&self) -> &Vec<PassiveStatus> {
         &self.passive_status_list
     }
 }

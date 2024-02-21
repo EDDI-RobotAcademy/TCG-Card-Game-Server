@@ -403,6 +403,17 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         false
     }
+
+    fn get_passive_status_list_of_unit(&mut self, account_unique_id: i32, unit_index: i32) -> Vec<PassiveStatus> {
+        println!("GameFieldUnitRepositoryImpl: set_passive_status_list_of_unit()");
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
+            return game_field_unit_card_list[unit_index as usize].get_passive_status_list().clone();
+        }
+
+        Vec::new()
+    }
 }
 
 #[cfg(test)]
