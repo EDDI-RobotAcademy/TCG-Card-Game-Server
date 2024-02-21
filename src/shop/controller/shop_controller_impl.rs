@@ -17,6 +17,10 @@ use crate::account_point::service::account_point_service_impl::AccountPointServi
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::shop::controller::request_form::show_me_the_money_request::ShowMeTheMoneyRequest;
+use crate::shop::controller::response_form::show_me_the_money_response::ShowMeTheMoneyResponse;
+use crate::shop::service::request::data_to_display_in_shop_request::DataToDisplayInShopRequest;
+use crate::shop::service::shop_service_impl::ShopServiceImpl;
 
 use crate::shop_gacha::service::shop_gacha_service::ShopGachaService;
 use crate::shop_gacha::service::shop_gacha_service_impl::ShopGachaServiceImpl;
@@ -76,7 +80,7 @@ impl ShopController for ShopControllerImpl {
         //2. 재화 사용
         let account_point_service_guard = self.account_point_service.lock().await;
         let check_pay_gold_response = account_point_service_guard.pay_gold(
-            execute_shop_gacha_request_form.to_pay_gole_request(account_unique_id, 100)
+            execute_shop_gacha_request_form.to_pay_gold_request(account_unique_id, 100)
         ).await;
         if !check_pay_gold_response.get_is_success() {
             return ExecuteShopGachaResponseForm::new(vec![0], false);
@@ -116,4 +120,49 @@ impl ShopController for ShopControllerImpl {
         ExecuteFreeGachaResponseForm::new(get_specific_race_card_response.get_card_id_list(), true)
     }
 
+    async fn show_me_the_money(&self, show_me_the_money_request: ShowMeTheMoneyRequest) -> ShowMeTheMoneyResponse {
+        let account_unique_id = self.is_valid_session(show_me_the_money_request.to_session_validation_request()).await;
+
+        let account_point_service = self.account_point_service.lock().await;
+        let gain_account_point = account_point_service.gain_gold(
+            show_me_the_money_request.to_gain_gold_request(account_unique_id, 100)).await;
+
+        if !gain_account_point.get_is_success() {
+            return ShowMeTheMoneyResponse::new(false);
+        }
+        ShowMeTheMoneyResponse::new(true)
+    }
+
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::test;
+
+    #[test]
+    async fn test_add_free_cards() {
+        let shop_controller_impl_mutex = ShopControllerImpl::get_instance();
+        let shop_controller_impl_mutex_guard = shop_controller_impl_mutex.lock().await;
+        //
+        // let request = GetCardDefaultRequest::new("qwer".to_string(), "Human".to_string(), true);
+        //
+        // let result = shop_service_impl_mutex_guard.get_specific_race_card_default(request).await;
+        //
+        // println!("result: {:?}", result);
+        let request = ExecuteFreeGachaRequestForm::new("qwer".to_string(), "Human".to_string(), true);
+        let result = shop_controller_impl_mutex_guard.execute_free_gacha(request).await;
+
+        println!("{:?}", result);
+    }
+    #[test]
+    async fn test_show_me_the_money() {
+        let shop_controller_impl_mutex = ShopControllerImpl::get_instance();
+        let shop_controller_impl_mutex_guard = shop_controller_impl_mutex.lock().await;
+        let request = ShowMeTheMoneyRequest::new("qwer".to_string());
+        let result = shop_controller_impl_mutex_guard.show_me_the_money(request).await;
+
+        println!("{:?}", result);
+    }
 }
