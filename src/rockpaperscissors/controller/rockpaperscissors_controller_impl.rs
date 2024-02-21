@@ -13,12 +13,14 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
-use crate::rockpaperscissors::controller::request_form::check_winner_request_form::CheckWinnerRequestForm;
+use crate::rockpaperscissors::controller::request_form::check_rockpaperscissors_winner_request_form::CheckRockpaperscissorsWinnerRequestForm;
 use crate::rockpaperscissors::controller::request_form::rockpaperscissors_request_form::RockpaperscissorsRequestForm;
-use crate::rockpaperscissors::controller::response_form::check_rockpaperscissors_winner_response_form::CheckWinnerResponseForm;
+use crate::rockpaperscissors::controller::response_form::check_rockpaperscissors_winner_response_form::CheckRockpaperscissorsWinnerResponseForm;
 use crate::rockpaperscissors::controller::response_form::rockpaperscissors_response_form::RockpaperscissorsResponseForm;
 use crate::rockpaperscissors::controller::rockpaperscissors_controller::RockpaperscissorsController;
 use crate::rockpaperscissors::service::request::check_draw_choice_request::CheckDrawChoiceRequest;
+use crate::rockpaperscissors::service::request::check_opponent_hashmap_request::CheckOpponentHashmapRequest;
+use crate::rockpaperscissors::service::response::check_opponent_hashmap_response::CheckOpponentHashmapResponse;
 use crate::rockpaperscissors::service::request::check_rockpaperscissors_winner_request::CheckRockpaperscissorsWinnerRequest;
 use crate::rockpaperscissors::service::request::wait_hashmap_request::WaitHashmapRequest;
 use crate::rockpaperscissors::service::rockpaperscissors_service::RockpaperscissorsService;
@@ -86,12 +88,14 @@ impl RockpaperscissorsController for RockpaperscissorsControllerImpl {
             println!("Invalid session");
             return RockpaperscissorsResponseForm::new(false)
         }
-        // let opponent_unique_id = self.get_opponent_unique_id(
-        //     rockpaperscissors_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+        let opponent_id = self.get_opponent_unique_id(
+            rockpaperscissors_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
         let mut rockpaperscissors_service_guard = self.rockpaperscissors_service.lock().await;
         let wait_queue_response=rockpaperscissors_service_guard.insert_player_data_to_hashmap(
                                                 WaitHashmapRequest::new(account_unique_id,
+                                                                        opponent_id,
                                                                       rockpaperscissors_request_form.get_choice().to_string())).await;
+        rockpaperscissors_service_guard.check_draw_choice(CheckDrawChoiceRequest::new(account_unique_id,opponent_id)).await;
         if wait_queue_response.get_is_success() == false {
             return RockpaperscissorsResponseForm::new(false)
         }
@@ -99,22 +103,30 @@ impl RockpaperscissorsController for RockpaperscissorsControllerImpl {
 
     }
 
-    async fn execute_check_winner_procedure(&self, check_winner_rockpaperscissors_request_form: CheckWinnerRequestForm) -> CheckWinnerResponseForm {
+    async fn execute_check_winner_procedure(&self, check_winner_rockpaperscissors_request_form: CheckRockpaperscissorsWinnerRequestForm) -> CheckRockpaperscissorsWinnerResponseForm {
         println!("RockpaperscissorsControllerImpl: execute_rockpaperscissors_procedure()");
 
         let account_unique_id = self.is_valid_session(check_winner_rockpaperscissors_request_form.to_session_validation_request()).await;
         if account_unique_id == -1 {
             println!("Invalid session");
-            return CheckWinnerResponseForm::new( false)
+            return CheckRockpaperscissorsWinnerResponseForm::new( "LOSE".to_string())
         }
 
         let opponent_unique_id = self.get_opponent_unique_id(
             check_winner_rockpaperscissors_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
         let mut rockpaperscissors_service_guard = self.rockpaperscissors_service.lock().await;
-        rockpaperscissors_service_guard.check_draw_choice(CheckDrawChoiceRequest::new(account_unique_id,opponent_unique_id)).await;
-        let winner_response=rockpaperscissors_service_guard.check_rockpaperscissors_winner(CheckRockpaperscissorsWinnerRequest::new(account_unique_id,opponent_unique_id)).await;
-        return CheckWinnerResponseForm::new( winner_response.get_am_i_winner());
+        let mut opponent_check=rockpaperscissors_service_guard.check_opponent_hashmap(CheckOpponentHashmapRequest::new(
+            opponent_unique_id)).await;
+        if opponent_check.get_opponent_check()==false
+        {
+            drop(rockpaperscissors_service_guard);
+            return CheckRockpaperscissorsWinnerResponseForm::new( "WAIT".to_string())
+        }
+        let mut winner_response=rockpaperscissors_service_guard.check_rockpaperscissors_winner(CheckRockpaperscissorsWinnerRequest::new(
+                                                                                                                                account_unique_id,opponent_unique_id)).await;
+        drop(rockpaperscissors_service_guard);
+        return CheckRockpaperscissorsWinnerResponseForm::new( winner_response.get_am_i_winner().to_string())
     }
 }
 
