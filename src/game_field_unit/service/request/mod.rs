@@ -20,3 +20,4 @@ pub mod get_game_field_unit_card_of_account_uique_id_request;
 pub mod execute_turn_action_request;
 pub mod reset_turn_action_of_all_field_unit_request;
 pub mod acquire_unit_passive_status_list_request;
+pub mod judge_death_of_every_unit_request;
