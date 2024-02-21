@@ -139,7 +139,7 @@ impl ShopController for ShopControllerImpl {
                 account_unique_id,
                 get_specific_race_card_response.clone().get_card_id_list().clone())).await;
 
-        ExecuteFreeGachaResponseForm::new(get_specific_race_card_response.get_card_id_list(), true)
+        ExecuteFreeGachaResponseForm::new(get_specific_race_card_response.get_card_id_list(), update_account_card_db_response.get_is_success())
     }
 
     async fn show_me_the_money(&self, show_me_the_money_request: ShowMeTheMoneyRequest) -> ShowMeTheMoneyResponse {
