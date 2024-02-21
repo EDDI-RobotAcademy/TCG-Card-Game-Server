@@ -100,9 +100,9 @@ impl GameProtocolValidationServiceImpl {
     }
 
     async fn can_use_mythical_card(&self, can_use_card_request: &CanUseCardRequest, round: i32) -> bool {
-        let target_card_number = can_use_card_request.get_support_card_number();
+        let target_card_id = can_use_card_request.get_card_id();
         let card_grade_repository_guard = self.card_grade_repository.lock().await;
-        let card_grade = card_grade_repository_guard.get_card_grade(&target_card_number).await;
+        let card_grade = card_grade_repository_guard.get_card_grade(&target_card_id).await;
         drop(card_grade_repository_guard);
         if card_grade == GradeEnum::Mythical {
             return if round >= 5 {
@@ -126,7 +126,7 @@ impl GameProtocolValidationServiceImpl {
 #[async_trait]
 impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
 
-    // TODO: 확장성을 고려하여 추후 아래의 check_cards_from_hand 로 교체 작업 필요
+    // TODO: 확장성을 고려하여 추후 아래의 check_card_from_hand 로 교체 작업 필요
     async fn check_protocol_hacking(&mut self, support_card_protocol_validation_request: CheckProtocolHackingRequest) -> CheckProtocolHackingResponse {
         let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
         let game_hand = game_hand_repository_guard.get_game_hand_map().get(&support_card_protocol_validation_request.get_account_unique_id());

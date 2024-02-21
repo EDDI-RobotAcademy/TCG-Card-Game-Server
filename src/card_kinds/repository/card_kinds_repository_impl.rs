@@ -81,11 +81,11 @@ mod tests {
     async fn test_get_card_kind() {
         let card_kinds_repository_mutex = CardKindsRepositoryImpl::get_instance();
         let card_kinds_repository_guard = card_kinds_repository_mutex.lock().await;
-        let card_number: i32 = 2;
+        let card_number: i32 = 19;
         let card_kind = card_kinds_repository_guard.get_card_kind(&card_number).await;
 
 
-        assert_eq!(card_kind , KindsEnum::Support);
+        assert_eq!(card_kind , KindsEnum::Unit);
         println!("card_kind: {:?}", card_kind);
     }
 
