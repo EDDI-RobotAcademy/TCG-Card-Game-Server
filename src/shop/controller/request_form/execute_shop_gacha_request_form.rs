@@ -37,7 +37,7 @@ impl ExecuteShopGachaRequestForm {
     pub fn to_session_validation_request(&self) -> GetValueWithKeyRequest {
         GetValueWithKeyRequest::new(self.account_session_id.clone().as_str())
     }
-    pub fn to_pay_gole_request(&self, account_unique_id: i32, gold: i32) -> PayGoldRequest {
+    pub fn to_pay_gold_request(&self, account_unique_id: i32, gold: i32) -> PayGoldRequest {
         PayGoldRequest::new(account_unique_id, gold)
     }
 
