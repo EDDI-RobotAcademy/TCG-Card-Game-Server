@@ -57,7 +57,7 @@ pub trait GameFieldUnitService {
     async fn apply_damage_to_target_unit_index(&mut self, apply_damage_to_target_unit_index_response: ApplyDamageToTargetUnitIndexRequest) -> ApplyDamageToTargetUnitIndexResponse;
     async fn apply_instant_death_to_target_unit_index(&mut self, apply_instant_death_to_target_unit_index_request: ApplyInstantDeathToTargetUnitIndexRequest) -> ApplyInstantDeathToTargetUnitIndexResponse;
     async fn judge_death_of_unit(&mut self, check_is_unit_alive_request: JudgeDeathOfUnitRequest) -> JudgeDeathOfUnitResponse;
-    async fn judge_death_of_all_field_unit(&mut self, judge_death_of_every_unit_request: JudgeDeathOfEveryUnitRequest) -> JudgeDeathOfEveryUnitResponse;
+    async fn judge_death_of_every_field_unit(&mut self, judge_death_of_every_unit_request: JudgeDeathOfEveryUnitRequest) -> JudgeDeathOfEveryUnitResponse;
     async fn execute_turn_action(&mut self, execute_turn_action_request: ExecuteTurnActionRequest) -> ExecuteTurnActionResponse;
     async fn reset_turn_action_of_all_field_unit(&mut self, reset_turn_action_of_all_field_unit_request: ResetTurnActionOfAllFieldUnitRequest) -> ResetTurnActionOfAllFieldUnitResponse;
     async fn get_current_health_point_of_field_unit_by_index(&self, get_current_health_point_of_field_unit_by_index_request: GetCurrentHealthPointOfFieldUnitByIndexRequest) -> GetCurrentHealthPointOfFieldUnitByIndexResponse;

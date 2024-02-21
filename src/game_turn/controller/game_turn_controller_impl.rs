@@ -6,17 +6,12 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 
-use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
 use crate::game_field_energy::service::game_field_energy_service::GameFieldEnergyService;
 use crate::game_field_energy::service::game_field_energy_service_impl::GameFieldEnergyServiceImpl;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
-use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
-use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
-use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum::{Death, Survival};
-use crate::game_main_character::service::game_main_character_service::GameMainCharacterService;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
@@ -27,15 +22,12 @@ use crate::game_turn::controller::response_form::turn_end_response_form::TurnEnd
 use crate::game_turn::service::game_turn_service::GameTurnService;
 
 use crate::game_turn::service::game_turn_service_impl::GameTurnServiceImpl;
-use crate::game_turn::service::request::first_turn_decision_request::FirstTurnDecisionRequest;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
-use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
-use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+
 use crate::game_main_character::service::game_main_character_service_impl::GameMainCharacterServiceImpl;
-use crate::game_main_character::service::request::check_main_character_of_account_unique_id_request::CheckMainCharacterOfAccountUniqueIdRequest;
 use crate::game_round::service::game_round_service::GameRoundService;
 use crate::game_round::service::game_round_service_impl::GameRoundServiceImpl;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
@@ -158,10 +150,10 @@ impl GameTurnController for GameTurnControllerImpl {
                     account_unique_id)).await;
 
         let dead_unit_list =
-            game_field_unit_service_guard.judge_death_of_all_field_unit(
+            game_field_unit_service_guard.judge_death_of_every_field_unit(
                 turn_end_request_form
                     .to_judge_death_of_every_unit_request(
-                        account_unique_id)).await.get_dead_unit_id_list();
+                        account_unique_id)).await.get_dead_unit_id_list().clone();
 
         if !dead_unit_list.is_empty() {
             let mut game_tomb_service_guard =
@@ -170,7 +162,7 @@ impl GameTurnController for GameTurnControllerImpl {
             game_tomb_service_guard.add_dead_unit_list_to_tomb(
                 turn_end_request_form.to_add_dead_unit_list_to_tomb_request(
                     account_unique_id,
-                    dead_unit_list.clone())).await;
+                    dead_unit_list)).await;
 
             drop(game_tomb_service_guard);
         }
