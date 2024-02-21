@@ -210,7 +210,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         JudgeDeathOfUnitResponse::new(response)
     }
 
-    async fn judge_death_of_all_field_unit(&mut self, judge_death_of_every_unit_request: JudgeDeathOfEveryUnitRequest) -> JudgeDeathOfEveryUnitResponse {
+    async fn judge_death_of_every_field_unit(&mut self, judge_death_of_every_unit_request: JudgeDeathOfEveryUnitRequest) -> JudgeDeathOfEveryUnitResponse {
         println!("GameFieldUnitServiceImpl: judge_death_of_unit()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
