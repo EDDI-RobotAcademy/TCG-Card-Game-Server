@@ -4,3 +4,4 @@ pub mod use_game_hand_unit_card_request;
 pub mod use_game_hand_energy_card_request;
 pub mod use_game_hand_item_card_request;
 pub mod use_game_hand_tool_card_request;
+pub mod add_card_list_to_hand_request;

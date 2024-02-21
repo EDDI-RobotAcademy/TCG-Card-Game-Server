@@ -23,6 +23,7 @@ use crate::game_hand::repository::game_hand_repository::GameHandRepository;
 
 use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryImpl;
 use crate::game_hand::service::game_hand_service::GameHandService;
+use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
 use crate::game_hand::service::request::put_cards_on_deck_request::{PutCardsOnDeckRequest};
 
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
@@ -30,6 +31,7 @@ use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGa
 use crate::game_hand::service::request::use_game_hand_item_card_request::UseGameHandItemCardRequest;
 use crate::game_hand::service::request::use_game_hand_tool_card_request::UseGameHandToolCardRequest;
 use crate::game_hand::service::request::use_game_hand_unit_card_request::UseGameHandUnitCardRequest;
+use crate::game_hand::service::response::add_card_list_to_hand_response::AddCardListToHandResponse;
 use crate::game_hand::service::response::put_cards_on_deck_response::PutCardsOnDeckResponse;
 use crate::game_hand::service::response::use_game_hand_energy_card_response::UseGameHandEnergyCardResponse;
 use crate::game_hand::service::response::use_game_hand_item_card_response::UseGameHandItemCardResponse;
@@ -153,6 +155,17 @@ impl GameHandServiceImpl {
 
 #[async_trait]
 impl GameHandService for GameHandServiceImpl {
+    async fn add_card_list_to_hand(&mut self, add_card_list_to_hand_request: AddCardListToHandRequest) -> AddCardListToHandResponse {
+        println!("GameHandServiceImpl: add_card_list_to_hand()");
+
+        let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
+        let result =
+            game_hand_repository_guard.add_card_list_to_hand(
+                add_card_list_to_hand_request.get_account_unique_id(),
+                add_card_list_to_hand_request.get_card_list().clone());
+
+        AddCardListToHandResponse::new(result)
+    }
     async fn put_hand_cards_to_deck(&mut self, request: PutCardsOnDeckRequest) -> PutCardsOnDeckResponse {
         // account_unique_id setting
         let session_id = request.get_session_id();

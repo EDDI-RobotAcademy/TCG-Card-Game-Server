@@ -8,6 +8,7 @@ use crate::game_field_energy::service::request::add_field_energy_with_amount_req
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
 use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
+use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::add_dead_unit_list_to_tomb_request::AddDeadUnitListToTombRequest;
 
@@ -71,6 +72,10 @@ impl TurnEndRequestForm {
 
     pub fn to_draw_cards_from_deck_request(&self, opponent_account_unique_id: i32) -> DrawCardsFromDeckRequest {
         DrawCardsFromDeckRequest::new(opponent_account_unique_id, 1)
+    }
+
+    pub fn to_add_card_list_to_hand_request(&self, account_unique_id: i32, card_list: Vec<i32>) -> AddCardListToHandRequest {
+        AddCardListToHandRequest::new(account_unique_id, card_list)
     }
 
     pub fn to_add_field_energy_request(&self, opponent_account_unique_id: i32) -> AddFieldEnergyWithAmountRequest {
