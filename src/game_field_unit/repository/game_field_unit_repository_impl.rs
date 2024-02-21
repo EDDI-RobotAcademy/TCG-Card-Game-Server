@@ -357,6 +357,32 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         false
     }
+
+    // 소환 시 단일기 적용 패시브를 가진 유닛이 가장 가까운 상대를 공격할 수 있습니다
+    fn apply_damage_to_nearest_target(
+        &mut self,
+        account_unique_id: i32,
+        attack_unit_index: i32,
+        damage: i32) -> bool {
+
+        println!("GameFieldUnitRepositoryImpl: apply_damage_to_nearest_target()");
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let field_unit_list_mut = game_field_unit.get_all_field_unit_list_mut();
+            if field_unit_list_mut.len() == 0 {
+                println!("no target to attack");
+                return true
+            }
+            for target_unit_index in (0..field_unit_list_mut.len()).rev() {
+                if target_unit_index == attack_unit_index as usize {
+                    field_unit_list_mut[target_unit_index].apply_damage(damage);
+                }
+            }
+            return true
+        }
+
+        false
+    }
 }
 
 #[cfg(test)]
