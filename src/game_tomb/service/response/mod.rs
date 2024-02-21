@@ -1,1 +1,2 @@
 pub mod place_to_tomb_response;
+pub mod add_dead_unit_list_to_tomb_response;

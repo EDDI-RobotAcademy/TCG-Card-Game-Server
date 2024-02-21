@@ -121,7 +121,7 @@ impl GameFieldUnitCard {
         self.unit_health_point.set_current_health_point(current_health);
     }
 
-    // TODO: 이 부분도 Domain이 점점 커지고 있음 (Deadline 고려하면 현재는 수습 불가)
+    // TODO: 이 부분도 Domain 이 점점 커지고 있음 (Deadline 고려하면 현재는 수습 불가)
     // 네이밍 이슈로 harmful_status_effect 를 별개로 구성 (해로운 효과와 에너지 부착으로 추가 획득한 효과가 구별되어야함)
     pub fn attach_special_energy(&mut self, race: RaceEnumValue, quantity: i32, status_effect_list: Vec<StatusEffect>) {
         self.attached_energy_map.add_energy(race, quantity);

@@ -230,7 +230,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             // TODO: 상황에 따라 공격 / 버프 등등에 대한 고찰이 들어가면 더 좋았을 것임
             println!("처리 할 패시브 효과가 있습니다");
 
-            let add_unit_to_game_field_response = game_field_unit_service_guard
+            game_field_unit_service_guard
                 .apply_passive_skill_list(
                     deploy_unit_request_form.to_apply_passive_skill_list_request(
                         account_unique_id,

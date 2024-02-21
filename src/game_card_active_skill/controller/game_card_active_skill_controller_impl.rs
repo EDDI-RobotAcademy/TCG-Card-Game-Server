@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
+use diesel::IntoSql;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
@@ -20,12 +21,15 @@ use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnit
 use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionPossibilityValidatorService;
 use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service_impl::GameFieldUnitActionPossibilityValidatorServiceImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
+use crate::game_tomb::service::game_tomb_service::GameTombService;
+use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 pub struct GameCardActiveSkillControllerImpl {
+    game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
     battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
@@ -36,7 +40,8 @@ pub struct GameCardActiveSkillControllerImpl {
 }
 
 impl GameCardActiveSkillControllerImpl {
-    pub fn new(battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
+    pub fn new(game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
+               battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
@@ -45,13 +50,14 @@ impl GameCardActiveSkillControllerImpl {
                game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,) -> Self {
 
         GameCardActiveSkillControllerImpl {
+            game_tomb_service,
             battle_room_service,
             game_field_unit_service,
             redis_in_memory_service,
             notify_player_action_service,
             game_card_active_skill_service,
             game_protocol_validation_service,
-            game_field_unit_action_possibility_validator_service
+            game_field_unit_action_possibility_validator_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardActiveSkillControllerImpl>> {
@@ -60,6 +66,7 @@ impl GameCardActiveSkillControllerImpl {
                 Arc::new(
                     AsyncMutex::new(
                         GameCardActiveSkillControllerImpl::new(
+                            GameTombServiceImpl::get_instance(),
                             BattleRoomServiceImpl::get_instance(),
                             GameFieldUnitServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
@@ -153,7 +160,6 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         // 타게팅 데미지 적용
         // TODO: 현재에는 단일 타겟팅밖에 없으나 다중 타겟팅이 존재하는 경우 추가 처리 필요
-        // TODO: 특수 에너지 효과 적용까지 추가 필요
         let target_card_index_string = targeting_active_skill_request_form.get_opponent_target_card_index();
         let target_card_index = target_card_index_string.parse::<i32>().unwrap();
 
@@ -163,23 +169,50 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
         let mut game_field_unit_service_guard =
             self.game_field_unit_service.lock().await;
 
-        if target_skill_type == &ActiveSkillType::SingleTarget {
-            let apply_damage_to_opponent_target_unit_response =
-                game_field_unit_service_guard.apply_damage_to_target_unit_index(
-                    targeting_active_skill_request_form
-                        .to_apply_damage_to_target_unit_index(
-                            opponent_unique_id,
-                            target_card_index,
-                            target_skill_damage)).await;
+        let extra_effect_list_of_unit_using_skill =
+            game_field_unit_service_guard.acquire_unit_extra_effect(
+                targeting_active_skill_request_form
+                    .to_acquire_unit_extra_effect_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_extra_status_effect_list().clone();
 
-            if !apply_damage_to_opponent_target_unit_response.is_success() {
-                println!("Targeting 스킬로 데미지를 입히는 데에 실패했습니다.");
-                return TargetingActiveSkillResponseForm::new(false)
+        if target_skill_type == &ActiveSkillType::SingleTarget {
+
+            // extra effect 가 존재하는 경우 특수 효과가 가미된 공격 진행
+            if !extra_effect_list_of_unit_using_skill.is_empty() {
+                game_field_unit_service_guard.attack_target_unit_with_extra_effect(
+                    targeting_active_skill_request_form
+                        .to_attack_target_with_extra_effect_request(
+                            opponent_unique_id,
+                            target_skill_damage,
+                            extra_effect_list_of_unit_using_skill, target_card_index)).await;
             }
 
-            // TODO: 공격 당한 유닛 사망 판정 - 영찬
+            // 특수 효과가 없는 경우 일반 공격 진행
+            game_field_unit_service_guard.apply_damage_to_target_unit_index(
+                targeting_active_skill_request_form
+                    .to_apply_damage_to_target_unit_index_request(
+                        opponent_unique_id,
+                        target_card_index,
+                        target_skill_damage)).await;
 
-            // TODO: 사망 판정 값이 참이라면 무덤으로 보내기 - 영찬
+            let maybe_dead_unit_id =
+                game_field_unit_service_guard.judge_death_of_unit(
+                    targeting_active_skill_request_form
+                        .to_judge_death_of_unit_request(
+                            opponent_unique_id,
+                            target_card_index)).await.get_dead_unit_id();
+
+            if maybe_dead_unit_id != -1 {
+                let mut game_tomb_service_guard =
+                    self.game_tomb_service.lock().await;
+
+                game_tomb_service_guard.add_dead_unit_to_tomb(
+                    targeting_active_skill_request_form
+                        .to_add_dead_unit_to_tomb_request(
+                            opponent_unique_id,
+                            maybe_dead_unit_id)).await;
+            }
 
             // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로 - 상근
         }
@@ -268,15 +301,24 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
         drop(battle_room_service_guard);
 
         // 논타겟 데미지 효과 적용
-        // TODO: 현재에는 전 유닛 데미지밖에 없으나 다중 랜덤 논타겟이 추가된다면 처리 필요함
-        // TODO: 특수 에너지 효과 적용까지 추가 필요
+        // TODO: 현재에는 전 유닛 데미지밖에 없으나 단일/다중 랜덤 논타겟이 추가된다면 처리 필요함
         let non_target_skill_type = summary_active_skill_effect_response.get_skill_type();
         let non_target_skill_damage = summary_active_skill_effect_response.get_skill_damage();
 
         let mut game_field_unit_service_guard =
             self.game_field_unit_service.lock().await;
 
+        let extra_effect_list_of_unit_using_skill =
+            game_field_unit_service_guard.acquire_unit_extra_effect(
+                non_targeting_active_skill_request_form
+                    .to_acquire_unit_extra_effect_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_extra_status_effect_list().clone();
+
         if non_target_skill_type == &ActiveSkillType::BroadArea {
+
+            // TODO: extra_effect_list_of_unit_using_skill 를 광역으로 뿌리는 서비스 필요
+
             let apply_catastrophic_damage_to_opponent_field_unit_response =
                 game_field_unit_service_guard.apply_catastrophic_damage_to_field_unit(
                     non_targeting_active_skill_request_form
@@ -288,10 +330,6 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                 println!("Non-Targeting 스킬로 데미지를 입히는 데에 실패했습니다.");
                 return NonTargetingActiveSkillResponseForm::new(false)
             }
-
-            // TODO: 공격 당한 유닛 사망 판정 - 영찬
-
-            // TODO: 사망 판정 값이 참이라면 무덤으로 보내기 - 영찬
 
             // TODO: 스킬 사용으로 인한 광역 논타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
         }
