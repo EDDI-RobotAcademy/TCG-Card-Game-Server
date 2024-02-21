@@ -1,2 +1,3 @@
 pub mod execute_shop_gacha_response_form;
 pub mod execute_free_gacha_response_form;
+pub mod show_me_the_money_response;
