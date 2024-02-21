@@ -102,7 +102,7 @@ impl AccountService for AccountServiceImpl {
         // 저장된 계정의 id 를 가지고, account_point 에 재화 관련 계정정보 생성
         let found_account = account_repository.find_by_user_id(account.user_id()).await.unwrap();
         let found_account_id = found_account.unwrap().id;
-        let set_account_point_id = account_point_repository.set_account_point(found_account_id,100).await;
+        let set_account_point_id = account_point_repository.set_account_point(found_account_id).await;
         let result_account_point = account_point_repository.save_account_points(set_account_point_id).await;
 
         if result_account.is_ok() && result_account_point.is_ok() {
@@ -271,5 +271,14 @@ mod tests {
         let account_delete_request = AccountDeleteRequest::new("test_id", "test_password".to_string(), "test_redis_token".to_string());
 
         account_service.account_delete(account_delete_request).await;
+    }
+    #[test]
+    async fn test_register() {
+        let account_service_mutex = AccountServiceImpl::get_instance();
+        let account_service = account_service_mutex.lock().await;
+
+        let register_request = AccountRegisterRequest::new("test_id2", "test_password".to_string());
+
+        account_service.account_register(register_request).await;
     }
 }
