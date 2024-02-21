@@ -685,7 +685,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             1015 => {
-                // Multiple Target Damage by Field Unit Sacrifice Item Card Usage
+                // Opponent Field Unit Energy Removal Item Usage
                 if let Some(request_form) = create_opponent_field_unit_energy_removal_item_request_form(&data) {
                     let game_card_item_controller_mutex = GameCardItemControllerImpl::get_instance();
                     let game_card_item_controller = game_card_item_controller_mutex.lock().await;

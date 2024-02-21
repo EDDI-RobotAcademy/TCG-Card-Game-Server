@@ -320,33 +320,30 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
                 PassiveSkillType::PhysicalImmunity => {
                     println!("물리 공격 면역 효과를 적용합니다");
 
-                    let apply_damage_to_nearly_unit_response = game_field_unit_repository_guard
-                        .impose_extra_effect_state_to_indexed_unit(
-                            apply_passive_skill_list_request.get_account_unique_id(),
-                            apply_passive_skill_list_request.get_unit_card_index(),
-                            passive_skill.clone());
+                    game_field_unit_repository_guard.impose_extra_effect_state_to_indexed_unit(
+                        apply_passive_skill_list_request.get_account_unique_id(),
+                        apply_passive_skill_list_request.get_unit_card_index(),
+                        passive_skill.clone());
                 },
                 PassiveSkillType::BroadArea => {
                     println!("패시브 광역기!");
 
                     let damage = passive_skill.get_skill_damage();
 
-                    let apply_damage_to_nearly_unit_response = game_field_unit_repository_guard
-                        .apply_damage_to_every_unit(
-                            apply_passive_skill_list_request.get_opponent_unique_id(),
-                            damage);
+                    game_field_unit_repository_guard.apply_damage_to_every_unit(
+                        apply_passive_skill_list_request.get_opponent_unique_id(),
+                        damage);
                 },
                 PassiveSkillType::SingleTarget => {
                     println!("패시브 단일기!");
 
                     let damage = passive_skill.get_skill_damage();
 
-                    // TODO: 현재 살아있는 유닛 중 가장 가까운 인덱스의 유닛을 때리도록 구성합니다
-                    // 생존 판정 및 무덤 이동 처리가 되어야 작업 할 수 있음
-                    // let apply_damage_to_nearly_unit_response = game_field_unit_repository_guard
-                    //     .apply_damage_to_nearly_unit(
-                    //         apply_passive_skill_list_request.get_opponent_unique_id(),
-                    //         damage);
+                    // TODO: 일단은 가장 가까운 상대 유닛을 가격하도록 설정, 추후 변경 가능
+                    game_field_unit_repository_guard.apply_damage_to_nearest_target(
+                        apply_passive_skill_list_request.get_opponent_unique_id(),
+                        apply_passive_skill_list_request.get_unit_card_index(),
+                        damage);
                 },
                 _ => (),
             }

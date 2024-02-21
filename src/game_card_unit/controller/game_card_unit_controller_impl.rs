@@ -116,7 +116,9 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         println!("GameCardUnitControllerImpl: request_to_deploy_unit()");
 
         // 1. 세션 아이디를 검증합니다.
-        let account_unique_id = self.is_valid_session(deploy_unit_request_form.to_session_validation_request()).await;
+        let account_unique_id =
+            self.is_valid_session(deploy_unit_request_form.to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             return DeployUnitResponseForm::new(false)
         }
@@ -125,56 +127,76 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let unit_id_string = deploy_unit_request_form.get_unit_id();
         let unit_card_id = unit_id_string.parse::<i32>().unwrap();
 
-        // 2. GameProtocolValidation Service 호출하여 Hand에 있는지 확인하여 해킹 여부 검증
-        let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
-        let check_protocol_hacking_response = game_protocol_validation_service_guard.check_protocol_hacking(
-            deploy_unit_request_form.to_check_protocol_hacking_request(account_unique_id, unit_card_id)).await;
+        // 2. Game Protocol Validation Service 호출하여 Hand 에 있는지 확인하여 해킹 여부 검증
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let check_protocol_hacking_response =
+            game_protocol_validation_service_guard.check_protocol_hacking(
+                deploy_unit_request_form.to_check_protocol_hacking_request(account_unique_id,
+                                                                           unit_card_id)).await;
+
         if !check_protocol_hacking_response.is_success() {
             println!("해킹범을 검거합니다!");
             return DeployUnitResponseForm::new(false)
         }
 
-        // 3. CardKinds Service를 호출하여 실제 유닛 카드가 맞는지 확인
-        let is_it_unit_response = game_protocol_validation_service_guard.is_it_unit_card(
-            deploy_unit_request_form.to_is_it_unit_card_request(unit_card_id)).await;
+        // 3. Card Kinds Service 를 호출하여 실제 유닛 카드가 맞는지 확인
+        let is_it_unit_response =
+            game_protocol_validation_service_guard.is_it_unit_card(
+                deploy_unit_request_form.to_is_it_unit_card_request(unit_card_id)).await;
+
         if !is_it_unit_response.is_success() {
             println!("유닛 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
             return DeployUnitResponseForm::new(false)
         }
 
-        let can_use_card_response = game_protocol_validation_service_guard.can_use_card(
-            deploy_unit_request_form.to_can_use_card_request(account_unique_id, unit_card_id)).await;
+        // 4. 신화 등급의 경우 라운드 체크하도록 함
+        let can_use_card_response =
+            game_protocol_validation_service_guard.can_use_card(
+                deploy_unit_request_form.to_can_use_card_request(account_unique_id,
+                                                                 unit_card_id)).await;
+
         if !can_use_card_response.is_success() {
-            println!("유닛 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
+            println!("신화 등급 카드는 5라운드부터 사용 가능합니다.");
             return DeployUnitResponseForm::new(false)
         }
 
-        // 4. Hand Service 호출하여 카드 사용
-        let mut game_hand_service_guard = self.game_hand_service.lock().await;
-        let use_game_hand_unit_card_response = game_hand_service_guard.use_unit_card(
-            deploy_unit_request_form.to_use_game_hand_unit_card_request(account_unique_id, unit_card_id)).await;
+        // 5. Hand Service 호출하여 카드 사용
+        let mut game_hand_service_guard =
+            self.game_hand_service.lock().await;
+
+        let use_game_hand_unit_card_response =
+            game_hand_service_guard.use_unit_card(
+                deploy_unit_request_form.to_use_game_hand_unit_card_request(account_unique_id,
+                                                                            unit_card_id)).await;
+
         let usage_hand_card_id = use_game_hand_unit_card_response.get_found_unit_card_id();
 
-        // TODO: 배틀 필드에 배치 할 유닛 카드 정보 요약
-        let mut game_card_service_guard = self.game_card_unit_service.lock().await;
-        let unit_card_info_response = game_card_service_guard.summary_unit_card(
-            deploy_unit_request_form.to_summary_unit_card_info_request(unit_card_id)).await;
+        let mut game_card_service_guard =
+            self.game_card_unit_service.lock().await;
 
-        // 5. Battle Field에 유닛 배치
-        // TODO: 여기서 unit_index 값 가져오세요.
-        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let add_unit_to_game_field_response = game_field_unit_service_guard.add_unit_to_game_field(
-            deploy_unit_request_form.to_add_unit_to_game_field_request(
-                account_unique_id,
-                usage_hand_card_id,
-                unit_card_info_response.get_unit_race(),
-                unit_card_info_response.get_unit_grade(),
-                unit_card_info_response.get_unit_attack_point(),
-                unit_card_info_response.get_unit_health_point(),
-                unit_card_info_response.get_unit_attack_required_energy(),
-                unit_card_info_response.has_first_passive_skill(),
-                unit_card_info_response.has_second_passive_skill(),
-                unit_card_info_response.has_third_passive_skill())).await;
+        let unit_card_info_response =
+            game_card_service_guard.summary_unit_card(
+                deploy_unit_request_form.to_summary_unit_card_info_request(unit_card_id)).await;
+
+        // 5. Battle Field 에 유닛 배치
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
+
+        let add_unit_to_game_field_response =
+            game_field_unit_service_guard.add_unit_to_game_field(
+                deploy_unit_request_form.to_add_unit_to_game_field_request(
+                    account_unique_id,
+                    usage_hand_card_id,
+                    unit_card_info_response.get_unit_race(),
+                    unit_card_info_response.get_unit_grade(),
+                    unit_card_info_response.get_unit_attack_point(),
+                    unit_card_info_response.get_unit_health_point(),
+                    unit_card_info_response.get_unit_attack_required_energy(),
+                    unit_card_info_response.has_first_passive_skill(),
+                    unit_card_info_response.has_second_passive_skill(),
+                    unit_card_info_response.has_third_passive_skill())).await;
 
         if add_unit_to_game_field_response.get_placed_unit_index() == -1 {
             println!("필드에 유닛 배치 중 문제가 발생하였습니다.");
@@ -182,23 +204,29 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         }
 
         // 6. 상대방의 고유 id 값을 확보
-        let battle_room_service_guard = self.battle_room_service.lock().await;
-        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
-            deploy_unit_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+        let battle_room_service_guard =
+            self.battle_room_service.lock().await;
+
+        let find_opponent_by_account_id_response =
+            battle_room_service_guard.find_opponent_by_account_unique_id(
+                deploy_unit_request_form
+                    .to_find_opponent_by_account_id_request(account_unique_id)).await;
 
         // 7. 유닛이 출격하자마자 발동하는 스킬이 있는지 확인
-        let game_card_passive_skill_service_guard = self.game_card_passive_skill_service.lock().await;
-        let passive_skill_response = game_card_passive_skill_service_guard.summary_passive_skill(
-            deploy_unit_request_form.to_summary_passive_skill_request(usage_hand_card_id)).await;
+        let game_card_passive_skill_service_guard =
+            self.game_card_passive_skill_service.lock().await;
+
+        let passive_skill_response =
+            game_card_passive_skill_service_guard.summary_passive_skill(
+                deploy_unit_request_form.to_summary_passive_skill_request(usage_hand_card_id)).await;
+
+        drop(game_card_passive_skill_service_guard);
 
         // TODO: 여기서도 Domain 분리를 고려하면 좋을텐데 우선은 배제합니다.
         if !passive_skill_response.is_empty() {
-            // 상황에 따라 공격 / 버프 등등에 대한 고찰이 들어가면 더 좋았을 것임
-            println!("처리 할 패시브 효과가 있습니다");
 
-            // 8. 패시브 스킬 사용 (공격) <- 현재 광역기, 단일 공격기와 물리 공격 면역 뿐임
-            //    그러므로 사실은 Handler 처리를 해주면 더 좋겠지만 우선 그냥 만듬
-            // let passive_skill_effect_list = passive_skill_response.get_passive_skill_effect_list();
+            // TODO: 상황에 따라 공격 / 버프 등등에 대한 고찰이 들어가면 더 좋았을 것임
+            println!("처리 할 패시브 효과가 있습니다");
 
             let add_unit_to_game_field_response = game_field_unit_service_guard
                 .apply_passive_skill_list(
@@ -210,10 +238,15 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         }
 
         // 9. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
-        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_to_opponent_you_deploy_unit_response = notify_player_action_service_guard.notify_opponent_you_deploy_unit(
-            deploy_unit_request_form.to_notify_to_opponent_what_you_do_request(
-                find_opponent_by_account_id_response.get_opponent_unique_id(), usage_hand_card_id)).await;
+        let mut notify_player_action_service_guard =
+            self.notify_player_action_service.lock().await;
+
+        let notify_to_opponent_you_deploy_unit_response =
+            notify_player_action_service_guard.notify_opponent_you_deploy_unit(
+                deploy_unit_request_form.to_notify_to_opponent_what_you_do_request(
+                    find_opponent_by_account_id_response.get_opponent_unique_id(),
+                    usage_hand_card_id)).await;
+
         if !notify_to_opponent_you_deploy_unit_response.is_success() {
             println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
             return DeployUnitResponseForm::new(false)
