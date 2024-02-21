@@ -9,6 +9,7 @@ use crate::game_hand::service::request::use_game_hand_item_card_request::UseGame
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
+use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_field_unit_energy_removal_item_card_request::NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardRequest;
@@ -41,6 +42,11 @@ impl RemoveOpponentFieldUnitEnergyItemRequestForm {
 
     pub fn to_session_validation_request(&self) -> GetValueWithKeyRequest {
         GetValueWithKeyRequest::new(self.session_id.clone().as_str())
+    }
+
+    pub fn to_is_this_your_turn_request(&self,
+                                        account_unique_id: i32) -> IsThisYourTurnRequest {
+        IsThisYourTurnRequest::new(account_unique_id)
     }
 
     pub fn to_check_protocol_hacking_request(&self,

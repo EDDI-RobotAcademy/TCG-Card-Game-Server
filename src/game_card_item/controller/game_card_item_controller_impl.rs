@@ -53,6 +53,7 @@ use crate::game_protocol_validation::service::request::is_it_item_card_request::
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+use crate::game_turn::controller::response_form::turn_end_response_form::TurnEndResponseForm;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
@@ -74,6 +75,7 @@ pub struct GameCardItemControllerImpl {
     game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
     game_lost_zone_service: Arc<AsyncMutex<GameLostZoneServiceImpl>>,
     card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>,
+
 }
 
 impl GameCardItemControllerImpl {
@@ -194,6 +196,20 @@ impl GameCardItemController for GameCardItemControllerImpl {
             println!("Invalid session");
             return TargetDeathItemResponseForm::new(false)
         }
+
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                target_death_item_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return TargetDeathItemResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
 
         // TODO: 세션을 제외하고 애초에 UI 에서 숫자로 전송하면 더 좋다.
         let item_card_id_string = target_death_item_request_form.get_item_card_id();
@@ -319,6 +335,21 @@ impl GameCardItemController for GameCardItemControllerImpl {
             return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
         }
 
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                add_field_energy_with_field_unit_health_point_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
+
         let item_card_id_string = add_field_energy_with_field_unit_health_point_request_form.get_item_card_id();
         let item_card_id = item_card_id_string.parse::<i32>().unwrap();
 
@@ -419,10 +450,30 @@ impl GameCardItemController for GameCardItemControllerImpl {
             return CatastrophicDamageItemResponseForm::new(false)
         }
 
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                catastrophic_damage_item_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return CatastrophicDamageItemResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
         // TODO: 프로토콜 검증은 추후 추가
 
         let item_card_id_string = catastrophic_damage_item_request_form.get_item_card_id();
         let item_card_id = item_card_id_string.parse::<i32>().unwrap();
+
+        let can_use_card_response = self.is_able_to_use(
+            catastrophic_damage_item_request_form.to_can_use_card_request(account_unique_id, item_card_id)).await;
+        if !can_use_card_response {
+            println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
+            return CatastrophicDamageItemResponseForm::new(false)
+        }
 
         let mut summarized_item_effect_response = self.get_summary_of_item_card(
             catastrophic_damage_item_request_form.to_summary_item_effect_request(item_card_id)).await;
@@ -557,6 +608,20 @@ impl GameCardItemController for GameCardItemControllerImpl {
             return MultipleTargetDamageByFieldUnitDeathItemResponseForm::new(false)
         }
 
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                multiple_target_damage_by_field_unit_death_item_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
         // TODO: 프로토콜 검증은 추후 추가
 
         // 사용할 변수들 사전 parsing
@@ -664,6 +729,21 @@ impl GameCardItemController for GameCardItemControllerImpl {
             return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
         }
 
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
+
         // TODO: 프로토콜 검증은 추후 추가
 
         // 사용할 변수들 사전 parsing
@@ -750,8 +830,6 @@ impl GameCardItemController for GameCardItemControllerImpl {
             return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
         }
         drop(notify_player_action_service_guard);
-
-
 
         RemoveOpponentFieldUnitEnergyItemResponseForm::new(true)
     }

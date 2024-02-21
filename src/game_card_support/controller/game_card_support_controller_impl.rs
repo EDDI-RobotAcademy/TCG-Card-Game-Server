@@ -9,6 +9,7 @@ use crate::battle_room::service::request::find_opponent_by_account_id_request::F
 use crate::card_grade::service::card_grade_service::CardGradeService;
 use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
+use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
 use crate::game_card_support::controller::request_form::draw_support_request_form::DrawSupportRequestForm;
 use crate::game_card_support::controller::request_form::energy_boost_support_request_form::EnergyBoostSupportRequestForm;
@@ -182,6 +183,20 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return EnergyBoostSupportResponseForm::new(false)
         }
 
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                energy_boost_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return EnergyBoostSupportResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
+
         // TODO: 세션을 제외하고 애초에 UI 에서 숫자로 전송하면 더 좋다.
         let support_card_number_string = energy_boost_support_request_form.get_support_card_id();
         let support_card_number = support_card_number_string.parse::<i32>().unwrap();
@@ -290,6 +305,20 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return DrawSupportResponseForm::new(Vec::new())
         }
 
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                draw_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return DrawSupportResponseForm::new(Vec::new())
+        }
+
+        drop(game_protocol_validation_service_guard);
+
         let support_card_number_string = draw_support_request_form.get_support_card_id().to_string();
         let support_card_number = support_card_number_string.parse::<i32>().unwrap();
 
@@ -369,6 +398,20 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             println!("Invalid session error");
             return SearchUnitSupportResponseForm::new(false)
         }
+
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                search_unit_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return SearchUnitSupportResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
 
         let support_card_number_string = search_unit_support_request_form.get_support_card_number().to_string();
         let support_card_number = support_card_number_string.parse::<i32>().unwrap();
@@ -493,6 +536,20 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             println!("Invalid session error");
             return RemoveOpponentFieldEnergySupportResponseForm::new(false)
         }
+
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                remove_opponent_field_energy_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
 
         let support_card_number_string = remove_opponent_field_energy_support_request_form.get_support_card_id().to_string();
         let support_card_number = support_card_number_string.parse::<i32>().unwrap();
