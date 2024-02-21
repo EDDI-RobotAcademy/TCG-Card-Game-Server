@@ -10,6 +10,7 @@ use crate::game_field_unit::service::request::execute_turn_action_request::Execu
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
 use crate::game_field_unit_action_possibility_validator::service::request::is_unit_basic_attack_possible_request::IsUnitBasicAttackPossibleRequest;
+use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
@@ -42,6 +43,11 @@ impl AttackUnitRequestForm {
 
     pub fn to_session_validation_request(&self) -> GetValueWithKeyRequest {
         GetValueWithKeyRequest::new(self.session_id.clone().as_str())
+    }
+
+    pub fn to_is_this_your_turn_request(&self,
+                                        account_unique_id: i32) -> IsThisYourTurnRequest {
+        IsThisYourTurnRequest::new(account_unique_id)
     }
 
     pub fn to_summary_unit_card_info_request(&self,

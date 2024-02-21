@@ -12,6 +12,8 @@ use crate::game_field_energy::service::game_field_energy_service::GameFieldEnerg
 use crate::game_field_energy::service::game_field_energy_service_impl::GameFieldEnergyServiceImpl;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
+use crate::game_hand::service::game_hand_service::GameHandService;
+use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
@@ -43,7 +45,8 @@ pub struct GameTurnControllerImpl {
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
     game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
-    game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>
+    game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
+    game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
 }
 
 impl GameTurnControllerImpl {
@@ -56,7 +59,8 @@ impl GameTurnControllerImpl {
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
                game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
-               game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>
+               game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
+               game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
              ) -> Self {
 
         GameTurnControllerImpl {
@@ -69,7 +73,8 @@ impl GameTurnControllerImpl {
             redis_in_memory_service,
             game_protocol_validation_service,
             game_main_character_service,
-            game_tomb_service
+            game_tomb_service,
+            game_hand_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameTurnControllerImpl>> {
@@ -87,7 +92,8 @@ impl GameTurnControllerImpl {
                             RedisInMemoryServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance(),
                             GameMainCharacterServiceImpl::get_instance(),
-                            GameTombServiceImpl::get_instance())));
+                            GameTombServiceImpl::get_instance(),
+                            GameHandServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -196,10 +202,23 @@ impl GameTurnController for GameTurnControllerImpl {
         let mut game_deck_service_guard =
             self.game_deck_service.lock().await;
 
-        game_deck_service_guard.draw_cards_from_deck(
-            turn_end_request_form.to_draw_cards_from_deck_request(opponent_unique_id)).await;
+        let drawn_card_list =
+            game_deck_service_guard.draw_cards_from_deck(
+                turn_end_request_form
+                    .to_draw_cards_from_deck_request(
+                        opponent_unique_id)).await.get_drawn_card_list().clone();
 
         drop(game_deck_service_guard);
+
+        // 상대방이 드로우한 카드 핸드에 추가
+        let mut game_hand_service_guard =
+            self.game_hand_service.lock().await;
+
+        game_hand_service_guard.add_card_list_to_hand(
+            turn_end_request_form
+                .to_add_card_list_to_hand_request(opponent_unique_id, drawn_card_list)).await;
+
+        drop(game_hand_service_guard);
 
         // 상대방이 필드에너지 획득
         let game_field_energy_service_guard =

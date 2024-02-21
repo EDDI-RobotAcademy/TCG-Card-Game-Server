@@ -6,8 +6,10 @@ use crate::game_card_energy::service::request::summary_special_energy_card_effec
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_special_energy_to_unit_index_request::AttachSpecialEnergyToUnitIndexRequest;
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
+use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_energy_card_request::IsItEnergyCardRequest;
+use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::{NotifyOpponentYouUseEnergyCardRequest};
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
@@ -42,12 +44,21 @@ impl AttachSpecialEnergyCardRequestForm {
         GetValueWithKeyRequest::new(self.session_id.clone().as_str())
     }
 
+    pub fn to_is_this_your_turn_request(&self,
+                                        account_unique_id: i32) -> IsThisYourTurnRequest {
+        IsThisYourTurnRequest::new(account_unique_id)
+    }
+
     pub fn to_check_protocol_hacking_request(&self, account_unique_id: i32, energy_card_id: i32) -> CheckProtocolHackingRequest {
         CheckProtocolHackingRequest::new(account_unique_id, energy_card_id)
     }
 
     pub fn to_is_it_energy_card_request(&self, energy_card_id: i32) -> IsItEnergyCardRequest {
         IsItEnergyCardRequest::new(energy_card_id)
+    }
+
+    pub fn to_can_use_card_request(&self, account_unique_id: i32, energy_card_number: i32) -> CanUseCardRequest {
+        CanUseCardRequest::new(account_unique_id, energy_card_number)
     }
 
     pub fn to_use_game_hand_energy_card_request(&self, account_unique_id: i32, energy_card_id: i32) -> UseGameHandEnergyCardRequest {
