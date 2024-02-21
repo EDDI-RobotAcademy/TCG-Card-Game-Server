@@ -533,7 +533,7 @@ mod tests {
         game_field_unit_card_list.add_field_unit(game_field_unit_card1.clone());
         game_field_unit_card_list.add_field_unit(game_field_unit_card2.clone());
 
-        let harmful_state = ExtraStatusEffect::new(ExtraEffect::Darkfire, 2, 5, 3);
+        let harmful_state = ExtraStatusEffect::new(ExtraEffect::DarkFire, 2, 5, 3);
 
         let unit_card_index = 1;
         println!("Before imposing harmful state to indexed unit: {:?}", game_field_unit_card_list);
@@ -582,7 +582,7 @@ mod tests {
         game_field_unit_card_list.add_field_unit(game_field_unit_card2.clone());
 
         let harmful_state_list = vec![
-            ExtraStatusEffect::new(ExtraEffect::Darkfire, 2, 5, 3),
+            ExtraStatusEffect::new(ExtraEffect::DarkFire, 2, 5, 3),
             ExtraStatusEffect::new(ExtraEffect::Freeze, 3, 0, 2),
         ];
 

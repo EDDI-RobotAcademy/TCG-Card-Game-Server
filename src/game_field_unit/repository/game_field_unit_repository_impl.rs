@@ -8,6 +8,7 @@ use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
@@ -77,6 +78,8 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
                     second_passive_skill,
                     third_passive_skill,
                     true));
+
+
 
             unit_index
         } else {
@@ -352,6 +355,49 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             game_field_unit.set_unit_deployed_round(unit_card_index as usize, current_round_value);
+            return true
+        }
+
+        false
+    }
+
+    // 소환 시 단일기 적용 패시브를 가진 유닛이 가장 가까운 상대를 공격할 수 있습니다
+    fn apply_damage_to_nearest_target(
+        &mut self,
+        account_unique_id: i32,
+        attack_unit_index: i32,
+        damage: i32) -> bool {
+
+        println!("GameFieldUnitRepositoryImpl: apply_damage_to_nearest_target()");
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let field_unit_list_mut = game_field_unit.get_all_field_unit_list_mut();
+            if field_unit_list_mut.len() == 0 {
+                println!("no target to attack");
+                return true
+            }
+            for target_unit_index in (0..field_unit_list_mut.len()).rev() {
+                if target_unit_index == attack_unit_index as usize {
+                    field_unit_list_mut[target_unit_index].apply_damage(damage);
+                }
+            }
+            return true
+        }
+
+        false
+    }
+
+    fn set_passive_status_list_of_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_index: i32,
+        passive_status_list: Vec<PassiveStatus>) -> bool {
+
+        println!("GameFieldUnitRepositoryImpl: set_passive_status_list_of_unit()");
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
+            game_field_unit_card_list[unit_index as usize].set_passive_status_list(passive_status_list);
             return true
         }
 
@@ -821,6 +867,11 @@ mod tests {
             2,
             RaceEnum::Chaos,
             5
+        );
+
+        let list = vec![PassiveStatus::PhysicalImmunity];
+        game_field_unit_repository.set_passive_status_list_of_unit(
+            1, 1, list
         );
 
         println!("{:?}", game_field_unit_repository.get_game_field_unit_map().get(&1))

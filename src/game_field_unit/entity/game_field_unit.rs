@@ -442,7 +442,7 @@ mod tests {
         game_field_unit.add_unit_to_game_field(unit1);
         game_field_unit.add_unit_to_game_field(unit2);
 
-        let harmful_state = ExtraStatusEffect::new(ExtraEffect::Darkfire, 2, 5, 3);
+        let harmful_state = ExtraStatusEffect::new(ExtraEffect::DarkFire, 2, 5, 3);
         game_field_unit.game_field_unit.impose_harmful_state_list_iteratively(vec![harmful_state.clone()]);
         game_field_unit.apply_status_effect_damage_iteratively();
 

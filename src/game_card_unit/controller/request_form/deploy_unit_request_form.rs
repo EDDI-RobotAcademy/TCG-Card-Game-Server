@@ -3,6 +3,7 @@ use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
 use crate::game_card_passive_skill::service::request::summary_passive_skill_effect_request::SummaryPassiveSkillEffectRequest;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_card_unit::service::request::summary_unit_card_info_request::SummaryUnitCardInfoRequest;
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
 use crate::game_field_unit::service::request::apply_passive_skill_list_request::ApplyPassiveSkillListRequest;
@@ -69,7 +70,8 @@ impl DeployUnitRequestForm {
                                              unit_attack_required_energy: i32,
                                              first_passive_skill: bool,
                                              second_passive_skill: bool,
-                                             third_passive_skill: bool) -> AddUnitToGameFieldRequest {
+                                             third_passive_skill: bool,
+                                             passive_status_list: Vec<PassiveStatus>) -> AddUnitToGameFieldRequest {
 
         AddUnitToGameFieldRequest::new(
             account_unique_id,
@@ -81,7 +83,8 @@ impl DeployUnitRequestForm {
             unit_attack_required_energy,
             first_passive_skill,
             second_passive_skill,
-            third_passive_skill)
+            third_passive_skill,
+            passive_status_list)
     }
 
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {

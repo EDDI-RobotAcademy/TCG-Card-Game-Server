@@ -20,7 +20,7 @@ pub struct UnitCard_27_Function;
 
 impl GameCardUnitHandler for UnitCard_27_Function {
     unsafe fn summary_unit_card(&self) -> GameCardUnitInfo {
-        println!("UnitCard_31_Function: summary_unit_card()");
+        println!("UnitCard_27_Function: summary_unit_card()");
 
         let mut game_card_unit_effect = GameCardUnitInfo::new(
             RaceEnum::Undead,

@@ -1,6 +1,7 @@
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
@@ -24,7 +25,8 @@ pub struct GameFieldUnitCard {
     harmful_status_effect_list: Vec<HarmfulStatusEffect>,
     turn_action: bool,
     is_alive: bool,
-    deployed_round: i32
+    deployed_round: i32,
+    passive_status_list: Vec<PassiveStatus>
 }
 
 impl GameFieldUnitCard {
@@ -56,6 +58,7 @@ impl GameFieldUnitCard {
             is_alive,
             turn_action: false,
             deployed_round: -1,
+            passive_status_list: Vec::new()
         }
     }
 
@@ -119,7 +122,7 @@ impl GameFieldUnitCard {
     }
 
     // TODO: 이 부분도 Domain이 점점 커지고 있음 (Deadline 고려하면 현재는 수습 불가)
-    // 네이밍 이슈로 harmful_status_effect를 별개로 구성 (해로운 효과와 에너지 부착으로 추가 획득한 효과가 구별되어야함)
+    // 네이밍 이슈로 harmful_status_effect 를 별개로 구성 (해로운 효과와 에너지 부착으로 추가 획득한 효과가 구별되어야함)
     pub fn attach_special_energy(&mut self, race: RaceEnumValue, quantity: i32, status_effect_list: Vec<StatusEffect>) {
         self.attached_energy_map.add_energy(race, quantity);
         for status_effect in status_effect_list.iter().cloned() {
@@ -160,18 +163,18 @@ impl GameFieldUnitCard {
             self.decrease_reuse_turn(index);
 
             // 만약 상태 지속 턴이 0이 되었을 경우 해당 상태 효과를 제거
-            if self.harmful_status_effect_list[index].get_status_duration_turn() == 0 {
+            if self.harmful_status_effect_list[index].get_status_duration_round() == 0 {
                 index_to_remove.push(index);
             }
         }
 
-        // index_to_remove에 저장된 인덱스들을 제거
+        // index_to_remove 에 저장된 인덱스들을 제거
         for index in index_to_remove {
             self.harmful_status_effect_list.remove(index);
         }
     }
 
-    // ExtraStatusEffect의 효과 데미지 적용
+    // ExtraStatusEffect 의 효과 데미지 적용
     fn apply_damage_from_effect(&mut self, index: usize) {
         let effect_damage = self.harmful_status_effect_list[index].get_effect_damage();
         if effect_damage > 0 {
@@ -181,19 +184,19 @@ impl GameFieldUnitCard {
         }
     }
 
-    // ExtraStatusEffect의 상태 지속 턴 감소
+    // ExtraStatusEffect 의 상태 지속 턴 감소
     fn decrease_status_duration(&mut self, index: usize) {
-        let current_duration = self.harmful_status_effect_list[index].get_status_duration_turn();
+        let current_duration = self.harmful_status_effect_list[index].get_status_duration_round();
         if current_duration > 0 {
-            self.harmful_status_effect_list[index].set_status_duration_turn(current_duration - 1);
+            self.harmful_status_effect_list[index].set_status_duration_round(current_duration - 1);
         }
     }
 
-    // ExtraStatusEffect의 재사용 턴 감소 (빙결의 경우 같은 유닛을 계속 얼릴 수 없음)
+    // ExtraStatusEffect 의 재사용 턴 감소 (빙결의 경우 같은 유닛을 계속 얼릴 수 없음)
     fn decrease_reuse_turn(&mut self, index: usize) {
-        let current_reuse_turn = self.harmful_status_effect_list[index].get_reuse_turn();
+        let current_reuse_turn = self.harmful_status_effect_list[index].get_reapply_round();
         if current_reuse_turn > 0 {
-            self.harmful_status_effect_list[index].set_reuse_turn(current_reuse_turn - 1);
+            self.harmful_status_effect_list[index].set_reapply_round(current_reuse_turn - 1);
         }
     }
 
@@ -213,6 +216,14 @@ impl GameFieldUnitCard {
 
     pub fn get_deployed_round(&self) -> i32 {
         self.deployed_round
+    }
+
+    pub fn set_passive_status_list(&mut self, passive_status_list: Vec<PassiveStatus>) {
+        self.passive_status_list = passive_status_list;
+    }
+
+    pub fn get_passive_status_list_mut(&self) -> &Vec<PassiveStatus> {
+        &self.passive_status_list
     }
 }
 
@@ -376,7 +387,7 @@ mod tests {
             true
         );
 
-        let harmful_state = ExtraStatusEffect::new(ExtraEffect::Darkfire, 5, 5, 0);
+        let harmful_state = ExtraStatusEffect::new(ExtraEffect::DarkFire, 5, 5, 0);
         game_field_unit_card.impose_harmful_state(harmful_state.clone());
 
         println!("Before apply_status_effect_damage: {:?}", game_field_unit_card);

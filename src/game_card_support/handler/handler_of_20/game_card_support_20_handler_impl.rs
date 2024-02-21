@@ -7,7 +7,7 @@ pub struct SupportCard_20_Function;
 impl GameCardSupportHandler for SupportCard_20_Function {
     unsafe fn generate_support_card_effect_summary(&self) -> GameCardSupportEffect {
         let mut game_card_support_effect = GameCardSupportEffect::new(RaceEnum::Undead, 0);
-        game_card_support_effect.set_need_to_draw_card_count(2);
+        game_card_support_effect.set_need_to_draw_card_count(3);
 
         game_card_support_effect
     }

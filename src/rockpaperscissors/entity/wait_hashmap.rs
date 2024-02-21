@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use tokio::sync::Mutex;
 use std::sync::Arc;
+use rand::prelude::{SliceRandom, StdRng};
+use rand::SeedableRng;
 
 #[derive(Debug,)]
 pub struct WaitHashMap {
@@ -39,7 +41,8 @@ impl WaitHashMap {
         // 찾지 못했을 때는 None을 반환
         None
     }
-    pub async fn change_draw_choice_hashmap(&self, account_unique_id: String,opponent_id: String,random_choice:Vec<&str>) -> Option<String> {
+    pub async fn change_draw_choice_hashmap(&self, account_unique_id: String,opponent_id: String) -> Option<String> {
+        println!("same_choice_occur->insert_random_choice");
         let mut guard = self.player_hashmap_list.lock().await;
         let mut my_choice=None;
         let mut opponent_choice=None;
@@ -53,46 +56,47 @@ impl WaitHashMap {
                 opponent_choice=Some(value.clone());
             }
         }
-        if  (Some(my_choice.clone()), Some(opponent_choice.clone())) != (None, None)
-        {
-            if my_choice==opponent_choice
-            {
 
-                guard.insert(account_unique_id,random_choice[0].to_string());
-                guard.insert(opponent_id,random_choice[1].to_string());
+            if my_choice.clone()==opponent_choice.clone()
+            {
+                let choices = vec!["Rock", "Paper", "Scissors"];
+                let mut rng = StdRng::from_entropy(); // 시드 값을 현재 시간 등의 엔트로피로 설정
+
+                // "Rock", "Paper", "Scissors" 중에서 중복되지 않게 2개 선택
+                let random_choices: Vec<&str> = choices
+                    .choose_multiple(&mut rng, 2)
+                    .cloned()
+                    .collect();
+                guard.insert(account_unique_id,random_choices[0].to_string());
+
+                guard.insert(opponent_id,random_choices[1].to_string());
+
+                println!("hashmap_list----->>>{:?}",guard);
             }
-        }
+
 
         // 찾지 못했을 때는 None을 반환
         None
     }
+    pub async fn check_opponent_hashmap(&self, opponent_id:String) -> Option<bool>
+    {
+        println!("check_opponent_hashmap");
+        let mut guard = self.player_hashmap_list.lock().await;
 
+        let mut opponent_choice=None;
+        for (key, value) in guard.iter() {
 
-    // pub async fn dequeue_player_tuple(&self) -> Option<(i32,String)> {
-    //     let mut guard = self.player_tuple_list.lock().await;
-    //     guard.pop()
-    // }
-
-    // pub async fn process_queue(&self, max_players: usize) {
-    //     let mut guard = self.player_tuple_list.lock().await;
-    //     while guard.len() > max_players {
-    //         guard.remove(0);
-    //     }
-    // }
-    //
-    // pub async fn dequeue_n_players_tuple(&self, count: usize) -> Vec<(i32,String)> {
-    //     let mut guard = self.player_tuple_list.lock().await;
-    //     let mut dequeued_players = Vec::new();
-    //
-    //     if guard.len() >= count {
-    //         dequeued_players.push(guard.pop().unwrap());
-    //         println!("dequeued_players: {:?}", dequeued_players);
-    //         dequeued_players.push(guard.pop().unwrap());
-    //         println!("dequeued_players: {:?}", dequeued_players);
-    //     }
-    //
-    //     dequeued_players
-    // }
+            if key == &opponent_id {
+                // 특정 키에 대한 값을 찾았을 때, 해당 값을 반환
+                opponent_choice=Some(value.clone());
+            }
+        }
+        if opponent_choice != None
+        {
+            return Some(true);
+        }
+        return Some(false);
+    }
 
 }
 
