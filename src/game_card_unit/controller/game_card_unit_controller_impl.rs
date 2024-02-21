@@ -16,6 +16,7 @@ use crate::game_card_unit::controller::request_form::attack_unit_request_form::A
 use crate::game_card_unit::controller::request_form::deploy_unit_request_form::DeployUnitRequestForm;
 use crate::game_card_unit::controller::response_form::attack_unit_response_form::AttackUnitResponseForm;
 use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_card_unit::service::game_card_unit_service::GameCardUnitService;
 
 use crate::game_card_unit::service::game_card_unit_service_impl::GameCardUnitServiceImpl;
@@ -342,28 +343,16 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let opponent_target_unit_card_index_string = attack_unit_request_form.get_target_unit_index();
         let opponent_target_unit_card_index = opponent_target_unit_card_index_string.parse::<i32>().unwrap();
 
-        // TODO: game_card_passive_status 도메인이 구현되는 것이 가장 이상적임
-        let opponent_target_unit_id =
-            game_field_unit_service_guard.find_target_unit_id_by_index(
+        let opponent_target_unit_passive_status_list =
+            game_field_unit_service_guard.acquire_unit_passive_status_list(
                 attack_unit_request_form
-                    .to_find_unit_id_by_index_request(
+                    .to_acquire_unit_passive_status_list_request(
                         opponent_unique_id,
-                        opponent_target_unit_card_index)).await.get_found_opponent_unit_id();
+                        opponent_target_unit_card_index)).await.get_passive_status_effect_list().clone();
 
-        let mut game_card_passive_skill_service_guard =
-            self.game_card_passive_skill_service.lock().await;
-
-        let opponent_target_unit_passive_skill_list =
-            game_card_passive_skill_service_guard.summary_passive_skill(
-                attack_unit_request_form
-                    .to_summary_passive_skill_request(
-                        opponent_target_unit_id)).await.get_passive_skill_effect_list().clone();
-
-        for opponent_target_unit_passive_skill in opponent_target_unit_passive_skill_list {
-            if opponent_target_unit_passive_skill.get_passive_skill_type() == &PassiveSkillType::PhysicalImmunity {
-                println!("기본 공격 면역 패시브로 인해 공격을 가할 수 없습니다.");
-                return AttackUnitResponseForm::new(false)
-            }
+        if opponent_target_unit_passive_status_list.contains(&PassiveStatus::PhysicalImmunity) {
+            println!("기본 공격 면역 패시브로 인해 공격을 가할 수 없습니다.");
+            return AttackUnitResponseForm::new(false)
         }
 
         // 적 타겟 유닛을 효과를 가지고 공격
@@ -381,46 +370,45 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             return AttackUnitResponseForm::new(false)
         }
 
-        // 반격 이전 공격 유닛의 패시브 확보
-        let attacker_unit_passive_skill_list =
-            game_card_passive_skill_service_guard.summary_passive_skill(
+        // 반격 이전 공격 유닛의 기본 지속 상태 확보
+        let attacker_unit_passive_status_list =
+            game_field_unit_service_guard.acquire_unit_passive_status_list(
                 attack_unit_request_form
-                    .to_summary_passive_skill_request(
-                        attacker_unit_id)).await.get_passive_skill_effect_list().clone();
-
-        drop(game_card_passive_skill_service_guard);
+                    .to_acquire_unit_passive_status_list_request(
+                        account_unique_id,
+                        attacker_unit_card_index)).await.get_passive_status_effect_list().clone();
 
         // 공격 유닛이 기본 공격 면역일 경우 반격 무효 처리
-        for attacker_unit_passive_skill in attacker_unit_passive_skill_list {
-            if attacker_unit_passive_skill.get_passive_skill_type() == &PassiveSkillType::PhysicalImmunity {
-                println!("공격한 유닛이 기본 공격 면역이 존재하여 반격이 적용되지 않습니다.");
+        if attacker_unit_passive_status_list.contains(&PassiveStatus::PhysicalImmunity) {
+            println!("공격한 유닛이 기본 공격 면역이 존재하여 반격이 적용되지 않습니다.");
 
-                // 피격 유닛이 죽었는지 판정
-                let maybe_dead_opponent_unit_id =
-                    game_field_unit_service_guard.judge_death_of_unit(
-                        attack_unit_request_form
-                            .to_judge_death_of_unit_request(
-                                opponent_unique_id,
-                                opponent_target_unit_card_index)).await.get_dead_unit_id();
+            // 피격 유닛이 죽었는지 판정
+            let maybe_dead_opponent_unit_id =
+                game_field_unit_service_guard.judge_death_of_unit(
+                    attack_unit_request_form
+                        .to_judge_death_of_unit_request(
+                            opponent_unique_id,
+                            opponent_target_unit_card_index)).await.get_dead_unit_id();
 
-                // 죽은 경우 묘지에 추가
-                let mut game_tomb_service_guard =
-                    self.game_tomb_service.lock().await;
+            // 죽은 경우 묘지에 추가
+            let mut game_tomb_service_guard =
+                self.game_tomb_service.lock().await;
 
-                if maybe_dead_opponent_unit_id != -1 {
-                    println!("공격 당한 유닛이 사망했으므로 묘지로 이동합니다.");
+            if maybe_dead_opponent_unit_id != -1 {
+                println!("공격 당한 유닛이 사망했으므로 묘지로 이동합니다.");
 
-                    game_tomb_service_guard.add_used_card_to_tomb(
-                        attack_unit_request_form
-                            .to_place_dead_unit_to_tomb_request(
-                                opponent_unique_id,
-                                maybe_dead_opponent_unit_id)).await;
-                }
-
-                drop(game_tomb_service_guard);
-
-                return AttackUnitResponseForm::new(true)
+                game_tomb_service_guard.add_used_card_to_tomb(
+                    attack_unit_request_form
+                        .to_place_dead_unit_to_tomb_request(
+                            opponent_unique_id,
+                            maybe_dead_opponent_unit_id)).await;
             }
+
+            drop(game_tomb_service_guard);
+
+            // TODO: 여기서 걸리는 경우에도 Notify 할 수 있어야 함
+
+            return AttackUnitResponseForm::new(true)
         }
 
         // 반격을 위해 피격 유닛의 공격력 확보
@@ -440,19 +428,13 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         opponent_target_unit_card_index)).await.get_extra_status_effect_list().clone();
 
         // 공격한 유닛에게 피격 유닛의 효과와 함께 반격 적용
-        let counter_attack_from_opponent_target_unit_with_extra_effect_response =
-            game_field_unit_service_guard.attack_target_unit_with_extra_effect(
-                attack_unit_request_form
-                    .to_attack_target_unit_with_extra_effect_request(
-                        account_unique_id,
-                        find_opponent_target_unit_attack_point_response.get_attack_point(),
-                        &opponent_target_unit_extra_effect_list,
-                        attacker_unit_card_index)).await;
-
-        if !counter_attack_from_opponent_target_unit_with_extra_effect_response.is_success() {
-            println!("반격 적용에 실패했습니다.");
-            return AttackUnitResponseForm::new(false)
-        }
+        game_field_unit_service_guard.attack_target_unit_with_extra_effect(
+            attack_unit_request_form
+                .to_attack_target_unit_with_extra_effect_request(
+                    account_unique_id,
+                    find_opponent_target_unit_attack_point_response.get_attack_point(),
+                    &opponent_target_unit_extra_effect_list,
+                    attacker_unit_card_index)).await;
 
         // 액션 완료 설정
         game_field_unit_service_guard.execute_turn_action(

@@ -140,6 +140,10 @@ pub trait GameFieldUnitRepository {
     fn set_passive_status_list_of_unit(
         &mut self,
         account_unique_id: i32,
-        attack_unit_index: i32,
+        unit_index: i32,
         passive_status_list: Vec<PassiveStatus>) -> bool;
+    fn get_passive_status_list_of_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_index: i32) -> Vec<PassiveStatus>;
 }
