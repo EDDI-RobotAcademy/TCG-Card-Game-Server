@@ -75,4 +75,11 @@ impl AccountDeckCardService for AccountDeckCardServiceImpl {
             }
         }
     }
+    async fn deck_card_delete(&self, deck_id: i32) {
+        println!("AccountDeckCardServiceImpl: deck_card_delete()");
+
+        let deck_card_repository = self.deck_card_repository.lock().await;
+        deck_card_repository.delete_deck_cards(deck_id).await.expect("TODO: panic message");
+    }
+
 }

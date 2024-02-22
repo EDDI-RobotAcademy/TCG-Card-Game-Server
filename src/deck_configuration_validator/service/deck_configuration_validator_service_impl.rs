@@ -2,10 +2,13 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
+use crate::account_card::repository::account_card_repository::AccountCardRepository;
+use crate::account_card::repository::account_card_repository_impl::AccountCardRepositoryImpl;
 use crate::card_grade::repository::card_grade_repository::CardGradeRepository;
 
 use crate::card_grade::repository::card_grade_repository_impl::CardGradeRepositoryImpl;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
+use crate::common::converter::vector_to_hash_converter::VectorToHashConverter;
 use crate::deck_configuration_validator::repository::deck_configuration_validator_repository::DeckConfigurationValidatorRepository;
 use crate::deck_configuration_validator::repository::deck_configuration_validator_repository_impl::DeckConfigurationValidatorRepositoryImpl;
 
@@ -13,15 +16,19 @@ use crate::deck_configuration_validator::service::deck_configuration_validator_s
 
 pub struct DeckConfigurationValidatorServiceImpl {
     deck_configuration_repository: Arc<AsyncMutex<DeckConfigurationValidatorRepositoryImpl>>,
-    card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>
+    card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
+    accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>
 }
 
 impl DeckConfigurationValidatorServiceImpl {
     pub fn new(deck_configuration_repository: Arc<AsyncMutex<DeckConfigurationValidatorRepositoryImpl>>,
-               card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>) -> Self {
+               card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
+               accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>
+    ) -> Self {
         DeckConfigurationValidatorServiceImpl {
             deck_configuration_repository,
-            card_grade_repository
+            card_grade_repository,
+            accuont_card_repository
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<DeckConfigurationValidatorServiceImpl>> {
@@ -31,7 +38,8 @@ impl DeckConfigurationValidatorServiceImpl {
                     AsyncMutex::new(
                         DeckConfigurationValidatorServiceImpl::new(
                             DeckConfigurationValidatorRepositoryImpl::get_instance(),
-                            CardGradeRepositoryImpl::get_instance())));
+                            CardGradeRepositoryImpl::get_instance(),
+                            AccountCardRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -114,6 +122,27 @@ impl DeckConfigurationValidatorService for DeckConfigurationValidatorServiceImpl
             }
         })
     }
+    async fn do_you_have_this_card(&self, card_list: Vec<i32>, account_unique_id: i32) -> bool {
+        let card_list_vec = VectorToHashConverter::convert_vector_to_hash(&card_list);
+        println!("{:?}", card_list_vec);
+        //1. 해당 어카운트의 카드 가져오기
+        let account_card_repository_guard = self.accuont_card_repository.lock().await;
+        let account_card_list = account_card_repository_guard.get_card_list(account_unique_id).await.unwrap().unwrap();
+        println!("{:?}", account_card_list);
+        //2. 어카운트의 카드 리스트와 받아온 카드리스트 비교
+        for (card_id, card_count) in card_list_vec {
+            let mut check_contain_key = false;
+            for account_card in &account_card_list {
+                if account_card.contains_key(&card_id) {
+                    check_contain_key = true;
+                    if account_card[&card_id] < card_count { return false; }
+                }
+            }
+            if check_contain_key == false { return false; }
+        }
+        true
+    }
+
 }
 
 #[cfg(test)]
@@ -140,5 +169,18 @@ mod tests {
         if validation_result.is_err() {
             println!("{:?}", validation_result.unwrap_err());
         }
+    }
+    #[test]
+    async fn test_do_you_have() {
+        let deck_configuration_validator_service
+            = DeckConfigurationValidatorServiceImpl::get_instance();
+        let deck_configuration_validator_service_guard
+            = deck_configuration_validator_service.lock().await;
+
+        let sample_card_list = [30,3,4,3,3].to_vec();
+
+        let validation_result = deck_configuration_validator_service_guard.do_you_have_this_card(sample_card_list , 1).await;
+
+        println!("{}", validation_result);
     }
 }
