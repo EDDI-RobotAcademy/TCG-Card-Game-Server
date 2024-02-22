@@ -1,6 +1,8 @@
 use std::ops::Deref;
 use std::sync::Arc;
 use async_trait::async_trait;
+use chrono::{Datelike, DateTime, Local};
+use diesel::IntoSql;
 use lazy_static::lazy_static;
 
 use tokio::sync::{Mutex as AsyncMutex, Mutex};
@@ -135,6 +137,19 @@ impl ShopController for ShopControllerImpl {
         let account_unique_id = value_string.parse::<i32>().unwrap_or_else(|_| { -1 });
 
         //1. 무료 뽑기 가능한지 확인
+        let account_point_service_guard = self.account_point_service.lock().await;
+        let get_account_point_in_db = account_point_service_guard.find_by_account_id(account_unique_id).await;
+        let free_gacha_year = get_account_point_in_db.get_free_gacha_year();
+        let free_gacha_month = get_account_point_in_db.get_free_gacha_month();
+        let free_gacha_day = get_account_point_in_db.get_free_gacha_day();
+
+        let now : DateTime<Local> = Local::now();
+
+        if now.year().unsigned_abs() == free_gacha_year && now.month() == free_gacha_month && now.day() == free_gacha_day {
+            return ExecuteFreeGachaResponseForm::new(vec![0], false);
+        }
+        account_point_service_guard.update_free_gacha_check(account_unique_id).await;
+
         // let save_daily_token_redis_response = redis_in_memory_service_guard.save_daily_key_and_value(
         //     execute_free_gacha_request_form.to_save_daily_key_and_value_request(
         //         session_validation_response.get_value())).await;
@@ -241,10 +256,10 @@ mod tests {
         let shop_controller_impl_mutex = ShopControllerImpl::get_instance();
         let shop_controller_impl_mutex_guard = shop_controller_impl_mutex.lock().await;
 
-        // let request = ExecuteFreeGachaRequestForm::new("qwer".to_string(), "Undead".to_string(), true);
-        // let result = shop_controller_impl_mutex_guard.execute_free_gacha(request).await;
-        let request = EventDistributeCardsRequestForm::new("qwer".to_string());
-        let result = shop_controller_impl_mutex_guard.event_distribute_cards(request).await;
+        let request = ExecuteFreeGachaRequestForm::new("qwer".to_string(), "Undead".to_string(), true);
+        let result = shop_controller_impl_mutex_guard.execute_free_gacha(request).await;
+        // let request = EventDistributeCardsRequestForm::new("qwer".to_string());
+        // let result = shop_controller_impl_mutex_guard.event_distribute_cards(request).await;
 
         println!("{:?}", result);
     }
