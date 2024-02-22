@@ -1,0 +1,1 @@
+pub mod notice_draw_card_by_using_hand_card_response;
