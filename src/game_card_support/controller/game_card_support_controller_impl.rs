@@ -45,6 +45,8 @@ use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
+use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
+use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
@@ -61,7 +63,8 @@ pub struct GameCardSupportControllerImpl {
     game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
     card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
-    game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>
+    game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
+    notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
 }
 
 impl GameCardSupportControllerImpl {
@@ -76,7 +79,8 @@ impl GameCardSupportControllerImpl {
                game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
-               game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>) -> Self {
+               game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
+               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,) -> Self {
 
         GameCardSupportControllerImpl {
             battle_room_service,
@@ -90,7 +94,8 @@ impl GameCardSupportControllerImpl {
             game_field_energy_service,
             redis_in_memory_service,
             card_grade_service,
-            game_card_support_usage_counter_service
+            game_card_support_usage_counter_service,
+            notify_player_action_info_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardSupportControllerImpl>> {
@@ -110,7 +115,8 @@ impl GameCardSupportControllerImpl {
                             GameFieldEnergyServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
                             CardGradeServiceImpl::get_instance(),
-                            GameCardSupportUsageCounterServiceImpl::get_instance())));
+                            GameCardSupportUsageCounterServiceImpl::get_instance(),
+                            NotifyPlayerActionInfoServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -298,11 +304,12 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
     async fn request_to_use_draw_support(&self, draw_support_request_form: DrawSupportRequestForm) -> DrawSupportResponseForm {
         println!("GameCardSupportControllerImpl: request_to_use_draw_support()");
 
-        let account_unique_id = self.is_valid_session(
-            draw_support_request_form.to_session_validation_request()).await;
+        let account_unique_id =
+            self.is_valid_session(draw_support_request_form.to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             println!("Invalid session error");
-            return DrawSupportResponseForm::new(Vec::new())
+            return DrawSupportResponseForm::new(false)
         }
 
         let mut game_protocol_validation_service_guard =
@@ -314,7 +321,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return DrawSupportResponseForm::new(Vec::new())
+            return DrawSupportResponseForm::new(false)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -326,43 +333,59 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             draw_support_request_form.to_check_protocol_hacking_request(account_unique_id, support_card_number)).await;
         if !check_hand_hacking_response {
             println!("Hand hacking detected - account unique id : {}", account_unique_id);
-            return DrawSupportResponseForm::new(Vec::new())
+            return DrawSupportResponseForm::new(false)
         }
 
         let is_it_support_response = self.is_it_support_card(
             draw_support_request_form.to_is_it_support_card_request(support_card_number)).await;
         if !is_it_support_response {
             println!("Support card hacking detected - account unique id : {}", account_unique_id);
-            return DrawSupportResponseForm::new(Vec::new())
+            return DrawSupportResponseForm::new(false)
         }
 
         let can_use_card_response = self.is_able_to_use(
             draw_support_request_form.to_can_use_card_request(account_unique_id, support_card_number)).await;
         if !can_use_card_response {
             println!("A mythical grade card can be used after round 4.");
-            return DrawSupportResponseForm::new(Vec::new())
+            return DrawSupportResponseForm::new(false)
         }
 
-        let mut game_card_support_usage_counter_service = self.game_card_support_usage_counter_service.lock().await;
+        let mut game_card_support_usage_counter_service =
+            self.game_card_support_usage_counter_service.lock().await;
+
         let check_support_card_usage_count_response =
             game_card_support_usage_counter_service.check_support_card_usage_count(
                 draw_support_request_form.to_check_support_card_usage_count_request(account_unique_id)).await;
 
         if check_support_card_usage_count_response.get_used_count() > 0 {
             println!("Support card usage limit over");
-            return DrawSupportResponseForm::new(Vec::new())
+            return DrawSupportResponseForm::new(false)
         }
 
-        let card_effect_summary = self.get_summary_of_support_card(
+        let support_card_effect_summary = self.get_summary_of_support_card(
             draw_support_request_form.to_summarize_support_card_effect_request(support_card_number)).await;
 
-        let game_deck_service_guard = self.game_deck_service.lock().await;
-        let draw_deck_response = game_deck_service_guard
-            .draw_deck(draw_support_request_form.to_draw_deck_request(card_effect_summary.get_need_to_draw_card_count())).await;
+        let mut game_deck_service_guard = self.game_deck_service.lock().await;
+        let draw_deck_response =
+            game_deck_service_guard.draw_cards_from_deck(
+                draw_support_request_form
+                    .to_draw_cards_from_deck_request(
+                        account_unique_id,
+                        support_card_effect_summary.get_need_to_draw_card_count())).await;
+
         let drawn_cards = draw_deck_response.get_drawn_card_list().clone();
+
+        drop(game_deck_service_guard);
 
         let usage_hand_card = self.use_support_card(
             draw_support_request_form.to_use_game_hand_support_card_request(account_unique_id, support_card_number)).await;
+
+        let mut game_hand_service_guard = self.game_hand_service.lock().await;
+        game_hand_service_guard.add_card_list_to_hand(
+            draw_support_request_form
+                .to_add_card_list_to_hand_request(account_unique_id, drawn_cards.clone())).await;
+
+        drop(game_hand_service_guard);
 
         self.place_used_card_to_tomb(
             draw_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
@@ -370,22 +393,23 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         game_card_support_usage_counter_service.update_support_card_usage_count(
             draw_support_request_form.to_update_support_card_usage_count_request(account_unique_id)).await;
 
+        drop(game_card_support_usage_counter_service);
+
         let opponent_unique_id = self.get_opponent_unique_id(
             draw_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
-        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_opponent_you_use_draw_support_response = notify_player_action_service_guard.notify_to_opponent_you_use_draw_support_card(
-            draw_support_request_form.to_notify_opponent_you_use_draw_support_card_request(
-                opponent_unique_id,
-                support_card_number,
-                card_effect_summary.get_need_to_draw_card_count())).await;
-        if !notify_opponent_you_use_draw_support_response.is_success() {
-            println!("Notification Error - Failed to notice draw support card usage to opponent.");
-        }
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
 
-        drop(notify_player_action_service_guard);
+        notify_player_action_info_service_guard.notice_draw_card_by_using_hand_card(
+            draw_support_request_form
+                .to_notice_draw_card_by_using_hand_card_request(
+                    account_unique_id,
+                    opponent_unique_id,
+                    support_card_number,
+                    drawn_cards.clone())).await;
 
-        DrawSupportResponseForm::new(drawn_cards)
+        DrawSupportResponseForm::new(true)
     }
 
     // 여러 장의 유닛 카드 동시에 검색해서 핸드에 추가하는 형태
