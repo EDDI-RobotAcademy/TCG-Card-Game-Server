@@ -54,6 +54,8 @@ use crate::request_generator::energy_boost_support_request_form_generator::creat
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
 use crate::game_turn::service::game_turn_service::GameTurnService;
 use crate::game_turn::service::game_turn_service_impl::GameTurnServiceImpl;
+use crate::game_winner_check::service::game_winner_check_service::GameWinnerCheckService;
+use crate::game_winner_check::service::game_winner_check_service_impl::GameWinnerCheckServiceImpl;
 use crate::request_generator::attach_field_energy_to_field_unit_request_form_generator::create_attach_field_energy_to_field_unit_request_form;
 use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
@@ -67,6 +69,7 @@ use crate::request_generator::rockpaperscissors_request_generator::create_rockpa
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
 use crate::request_generator::targeting_active_skill_request_form_generator::create_targeting_active_skill_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
+use crate::request_generator::surrender_request_generator::create_surrender_request;
 use crate::response_generator::response_type::ResponseType;
 use crate::rockpaperscissors::controller::rockpaperscissors_controller::RockpaperscissorsController;
 use crate::rockpaperscissors::controller::rockpaperscissors_controller_impl::RockpaperscissorsControllerImpl;
@@ -706,6 +709,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = game_turn_controller.request_turn_end(request).await;
                     let response_type = Some(ResponseType::GAME_NEXT_TURN(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            4443 => {
+                // Game Surrender
+                if let Some(request) = create_surrender_request(&data) {
+                    let game_winner_check_service_mutex = GameWinnerCheckServiceImpl::get_instance();
+                    let mut game_winner_check_service = game_winner_check_service_mutex.lock().await;
+
+                    let response = game_winner_check_service.set_game_winner_by_surrender(request).await;
+                    let response_type = Some(ResponseType::GAME_SURRENDER(response));
 
                     response_type
                 } else {
