@@ -10,4 +10,5 @@ use crate::account_deck_card::service::response::account_deck_configuration_resp
 pub trait AccountDeckCardService {
     async fn deck_configuration_register(&self, deck_configuration_request: AccountDeckConfigurationRequest) -> AccountDeckConfigurationResponse;
     async fn deck_card_list(&self, deck_card_list_request: AccountDeckCardListRequest) -> AccountDeckCardListResponse;
+    async fn deck_card_delete(&self, deck_id: i32) ;
 }

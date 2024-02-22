@@ -5,8 +5,10 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::account_deck_card::controller::account_deck_card_controller::AccountDeckCardController;
 use crate::account_deck_card::controller::request_form::account_deck_card_list_request_form::AccountDeckCardListRequestFrom;
+use crate::account_deck_card::controller::request_form::account_deck_card_modify_request_form::AccountDeckCardModifyRequestForm;
 use crate::account_deck_card::controller::request_form::account_deck_configuration_request_form::AccountDeckConfigurationRequestForm;
 use crate::account_deck_card::controller::response_form::account_deck_card_list_response_form::AccountDeckCardListResponseForm;
+use crate::account_deck_card::controller::response_form::account_deck_card_modify_response_form::AccountDeckCardModifyResponseForm;
 use crate::account_deck_card::controller::response_form::account_deck_configuration_response_form::AccountDeckConfigurationResponseForm;
 
 use crate::account_deck_card::service::account_deck_card_service::AccountDeckCardService;
@@ -79,6 +81,33 @@ impl AccountDeckCardController for AccountDeckCardControllerImpl {
 
         response.to_account_deck_card_list_response_form()
     }
+    async fn deck_card_modify(
+        &self, account_deck_card_modify_request_form: AccountDeckCardModifyRequestForm) -> AccountDeckCardModifyResponseForm {
+        println!("AccountDeckCardControllerImpl: deck_card_modify()");
+
+        let deck_configuration_validator_service_guard =
+            self.deck_configuration_validator_service.lock().await;
+
+        let validation_result = deck_configuration_validator_service_guard
+            .validate_deck(&account_deck_card_modify_request_form.card_id_list_form()).await;
+
+        return match validation_result {
+            Ok(()) => {
+                let account_deck_card_service_guard =
+                    self.account_deck_card_service.lock().await;
+                let _ = account_deck_card_service_guard.deck_card_delete(account_deck_card_modify_request_form.deck_id_form()).await;
+
+                let response = account_deck_card_service_guard
+                    .deck_configuration_register(
+                        account_deck_card_modify_request_form.to_account_deck_configuration_request()).await;
+
+                AccountDeckCardModifyResponseForm::new(response.get_is_success())
+            }
+            Err(error_message) => {
+                AccountDeckCardModifyResponseForm::new(false)
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -95,15 +124,14 @@ mod tests {
         ];
 
         let deck_configuration_request_form
-            = AccountDeckConfigurationRequestForm::new(21, card_list);
+            = AccountDeckCardModifyRequestForm::new(4, card_list);
 
         let account_deck_card_controller = AccountDeckCardControllerImpl::get_instance();
         let account_deck_card_controller_guard = account_deck_card_controller.lock().await;
 
         let result = account_deck_card_controller_guard
-            .deck_configuration_register(deck_configuration_request_form).await;
+            .deck_card_modify(deck_configuration_request_form).await;
 
         println!("is_saved: {:?}", result.get_is_success());
-        println!("message: {:?}", result.get_message());
     }
 }
