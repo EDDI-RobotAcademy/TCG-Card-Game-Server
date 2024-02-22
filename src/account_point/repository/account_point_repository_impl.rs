@@ -1,11 +1,13 @@
 use std::sync::Arc;
 use async_trait::async_trait;
+use chrono::{Datelike, Local};
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
 
 use diesel::query_dsl::methods::{FilterDsl};
 use diesel::{Connection, MysqlConnection, QueryDsl, ExpressionMethods, RunQueryDsl};
+use diesel::dsl::today;
 use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
 
 use crate::account_point::entity::account_id::AccountId;
@@ -83,7 +85,7 @@ impl AccountPointRepository for AccountPointRepositoryImpl {
         let select_clause = account_points.select((columns::account_id, columns::gold));
         let where_clause = FilterDsl::filter(account_points, columns::account_id.eq(account_id));
         let found_accounts = where_clause
-            .select((columns::account_id, columns::gold, columns::event_check))
+            .select((columns::account_id, columns::gold, columns::event_check, columns::free_gacha_check))
             .load::<AccountPoint>(&mut connection)?;
 
         let found_account = found_accounts
@@ -163,11 +165,35 @@ impl AccountPointRepository for AccountPointRepositoryImpl {
             }
         }
     }
+    async fn update_free_gacha_check(&self, account_unique_id: i32) -> Result<usize, diesel::result::Error> {
+        println!("AccountPointRepositoryImpl: update_free_gacha_check()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        match diesel::update(FilterDsl::filter(account_points, columns::account_id.eq(account_unique_id)))
+            .set((
+                columns::free_gacha_check.eq(today),
+            ))
+            .execute(&mut connection)
+        {
+            Ok(num) => {
+                println!("free gacha check updated successfully.");
+                Ok(num)
+            }
+            Err(e) => {
+                eprintln!("Error updating free gacha check: {:?}", e);
+                Err(e)
+            }
+        }
+    }
 }
 
 
 #[cfg(test)]
 mod tests {
+    use std::any::Any;
     use super::*;
 
     // DELETE FROM deck_cards WHERE deck_id = 7777;
@@ -176,8 +202,8 @@ mod tests {
         let repository = AccountPointRepositoryImpl::get_instance();
         let repository_guard = repository.lock().await;
 
-        let request = repository_guard.find_by_account_id(4).await.unwrap();
-
+        let request = repository_guard.update_free_gacha_check(4).await.unwrap();
+        // let request = repository_guard.find_by_account_id(4).await.unwrap();
 
         println!("result: {:?}", request);
     }

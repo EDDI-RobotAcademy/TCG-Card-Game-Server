@@ -108,6 +108,10 @@ impl AccountPointService for AccountPointServiceImpl {
         let account_point_repository = self.repository.lock().await;
         account_point_repository.update_event_check(account_unique_id).await.expect("TODO: panic message");
     }
+    async fn update_free_gacha_check(&self, account_unique_id: i32) {
+        let account_point_repository = self.repository.lock().await;
+        account_point_repository.update_free_gacha_check(account_unique_id).await.expect("TODO: panic message");
+    }
 
 }
 

@@ -11,5 +11,6 @@ pub trait AccountPointRepository {
     async fn update_gold(&self, account_point: AccountPoint, gold: i32) -> Result<usize, diesel::result::Error>;
     async fn delete_account_points(&self, account_id: i32) -> Result<(), diesel::result::Error>;
     async fn update_event_check(&self, account_unique_id: i32) -> Result<usize, diesel::result::Error> ;
+    async fn update_free_gacha_check(&self, account_unique_id: i32) -> Result<usize, diesel::result::Error> ;
 
     }

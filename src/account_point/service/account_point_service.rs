@@ -13,4 +13,5 @@ pub trait AccountPointService {
     async fn pay_gold(&self, pay_gold_response: PayGoldRequest ) -> PayGoldResponse;
     async fn find_by_account_id(&self, account_unique_id: i32 ) -> AccountPoint;
     async fn update_event_check(&self, account_unique_id: i32);
-}
+    async fn update_free_gacha_check(&self, account_unique_id: i32);
+    }
