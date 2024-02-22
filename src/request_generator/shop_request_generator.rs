@@ -1,5 +1,5 @@
 use serde_json::Value as JsonValue;
-use crate::game_turn::controller::request_form::turn_end_request_form::TurnEndRequestForm;
+use crate::shop::controller::request_form::event_distribute_cards_request_form::EventDistributeCardsRequestForm;
 use crate::shop::controller::request_form::execute_free_gacha_request_form::ExecuteFreeGachaRequestForm;
 use crate::shop::controller::request_form::execute_shop_gacha_request_form::ExecuteShopGachaRequestForm;
 use crate::shop::service::request::data_to_display_in_shop_request::DataToDisplayInShopRequest;
@@ -32,6 +32,15 @@ pub fn create_execute_free_gacha_request_form(data: &JsonValue) -> Option<Execut
         data.get("is_confirmed_upper_legend").and_then(|v| v.as_bool()))
     {
         Some(ExecuteFreeGachaRequestForm::new(account_session_id.to_string(), race_name.to_string(), is_confirmed_upper_legend))
+    } else {
+        None
+    }
+}
+pub fn create_event_distribute_cards_request_form(data: &JsonValue) -> Option<EventDistributeCardsRequestForm> {
+    if let (Some(account_session_id)) = (
+        data.get("sessionInfo").and_then(|v| v.as_str()))
+    {
+        Some(EventDistributeCardsRequestForm::new(account_session_id.to_string()))
     } else {
         None
     }

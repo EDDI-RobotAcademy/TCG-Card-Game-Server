@@ -48,7 +48,7 @@ use crate::request_generator::attach_general_energy_card_request_form_generator:
 use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
 use crate::request_generator::mulligan_request_generator::create_mulligan_request_form;
 use crate::request_generator::session_request_generator::create_session_login_request;
-use crate::request_generator::shop_request_generator::{create_data_to_display_in_shop_request, create_execute_free_gacha_request_form, create_execute_shop_gacha_request_form};
+use crate::request_generator::shop_request_generator::{create_data_to_display_in_shop_request, create_event_distribute_cards_request_form, create_execute_free_gacha_request_form, create_execute_shop_gacha_request_form};
 use crate::request_generator::deploy_unit_request_form_generator::create_deploy_unit_request_form;
 use crate::request_generator::energy_boost_support_request_form_generator::create_energy_boost_support_request_form;
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
@@ -414,7 +414,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     let mut shop_service = shop_service_mutex.lock().await;
 
                     let response = shop_service.data_to_display_in_shop(request).await;
-                    let response_type = Some(ResponseType::DATA_TO_DISPLAY_IN_SHOP_RESPONSE(response));
+                    let response_type = Some(ResponseType::SHOP_DATA(response));
 
                     response_type
                 } else {
@@ -428,7 +428,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     let mut shop_controller = shop_controller_mutex.lock().await;
 
                     let response = shop_controller.execute_shop_gacha(request).await;
-                    let response_type = Some(ResponseType::EXECUTE_SHOP_GACHA_RESPONSE_FORM(response));
+                    let response_type = Some(ResponseType::SHOP_GACHA(response));
 
                     response_type
                 } else {
@@ -442,7 +442,21 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     let mut shop_controller = shop_controller_mutex.lock().await;
 
                     let response = shop_controller.execute_free_gacha(request).await;
-                    let response_type = Some(ResponseType::EXECUTE_FREE_GACHA_RESPONSE_FORM(response));
+                    let response_type = Some(ResponseType::FREE_GACHA(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            90 => {
+                // Shop Distirbute Cards Deck
+                if let Some(request) = create_event_distribute_cards_request_form(&data) {
+                    let shop_controller_mutex = ShopControllerImpl::get_instance();
+                    let mut shop_controller = shop_controller_mutex.lock().await;
+
+                    let response = shop_controller.event_distribute_cards(request).await;
+                    let response_type = Some(ResponseType::EVENT_DISTRIBUTE_CARDS(response));
 
                     response_type
                 } else {
