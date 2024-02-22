@@ -294,6 +294,26 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         false
     }
 
+    fn attack_every_unit_with_extra_effect(
+        &mut self,
+        opponent_unique_id: i32,
+        damage: i32,
+        extra_status_effect_list: Vec<ExtraStatusEffect>
+    ) -> bool {
+        println!("GameFieldUnitRepositoryImpl: attack_every_unit_with_extra_effect()");
+
+        if let Some(game_field_unit) = self.get_game_field_unit_map().get_mut(&opponent_unique_id) {
+            let game_field_unit_list_mut = game_field_unit.get_all_field_unit_list_mut();
+            for unit in game_field_unit_list_mut {
+                unit.apply_damage(damage);
+                unit.impose_harmful_state_list(extra_status_effect_list.clone());
+            }
+            return true
+        }
+
+        false
+    }
+
     fn apply_damage_to_every_unit(
         &mut self,
         opponent_unique_id: i32,

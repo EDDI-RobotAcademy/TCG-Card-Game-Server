@@ -12,6 +12,7 @@ use crate::game_field_unit::service::request::apply_status_effect_damage_iterati
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::attach_special_energy_to_unit_index_request::AttachSpecialEnergyToUnitIndexRequest;
+use crate::game_field_unit::service::request::attack_every_unit_with_extra_effect_request::AttackEveryUnitWithExtraEffectRequest;
 use crate::game_field_unit::service::request::attack_target_unit_with_extra_effect_request::AttackTargetUnitWithExtraEffectRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
 use crate::game_field_unit::service::request::detach_multiple_energy_from_field_unit_request::DetachMultipleEnergyFromFieldUnitRequest;
@@ -36,6 +37,7 @@ use crate::game_field_unit::service::response::apply_status_effect_damage_iterat
 use crate::game_field_unit::service::response::attach_single_energy_to_unit_index_response::AttachSingleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attach_multiple_energy_to_unit_index_response::AttachMultipleEnergyToUnitIndexResponse;
 use crate::game_field_unit::service::response::attach_special_energy_to_unit_index_response::AttachSpecialEnergyToUnitIndexResponse;
+use crate::game_field_unit::service::response::attack_every_unit_with_extra_effect_response::AttackEveryUnitWithExtraEffectResponse;
 use crate::game_field_unit::service::response::attack_target_unit_with_extra_effect_response::AttackTargetUnitWithExtraEffectResponse;
 use crate::game_field_unit::service::response::judge_death_of_unit_response::JudgeDeathOfUnitResponse;
 use crate::game_field_unit::service::response::detach_multiple_energy_from_field_unit_response::DetachMultipleEnergyFromFieldUnitResponse;
@@ -67,6 +69,7 @@ pub trait GameFieldUnitService {
     async fn acquire_unit_attack_point(&mut self, acquire_unit_attack_point_request: AcquireUnitAttackPointRequest) -> AcquireUnitAttackPointResponse;
     async fn acquire_unit_extra_effect(&mut self, acquire_unit_extra_effect_request: AcquireUnitExtraEffectRequest) -> AcquireUnitExtraEffectResponse;
     async fn attack_target_unit_with_extra_effect(&mut self, attack_target_unit_with_extra_effect_request: AttackTargetUnitWithExtraEffectRequest) -> AttackTargetUnitWithExtraEffectResponse;
+    async fn attack_every_unit_with_extra_effect(&mut self, attack_every_unit_with_extra_effect_request: AttackEveryUnitWithExtraEffectRequest) -> AttackEveryUnitWithExtraEffectResponse;
     async fn apply_passive_skill_list(&mut self, apply_passive_skill_list_request: ApplyPassiveSkillListRequest) -> ApplyPassiveSkillListResponse;
     async fn apply_catastrophic_damage_to_field_unit(&mut self, apply_catastrophic_damage_to_field_unit: ApplyCatastrophicDamageToFieldUnitRequest) -> ApplyCatastrophicDamageToFieldUnitResponse;
     async fn detach_multiple_energy_from_field_unit(&mut self, detach_multiple_energy_from_field_unit_request: DetachMultipleEnergyFromFieldUnitRequest) -> DetachMultipleEnergyFromFieldUnitResponse;
