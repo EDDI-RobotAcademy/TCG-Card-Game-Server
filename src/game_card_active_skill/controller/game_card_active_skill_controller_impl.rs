@@ -20,6 +20,7 @@ use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitServi
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionPossibilityValidatorService;
 use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service_impl::GameFieldUnitActionPossibilityValidatorServiceImpl;
+use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
@@ -102,6 +103,21 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
             return TargetingActiveSkillResponseForm::new(false)
         }
 
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                targeting_active_skill_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return TargetingActiveSkillResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
+
         let unit_card_index_string = targeting_active_skill_request_form.get_unit_card_index();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
 
@@ -129,7 +145,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
         let required_energy_count_to_use_skill =
             summary_active_skill_effect_response.get_required_energy().get_required_energy_count();
 
-        // TODO: 나올 때부터 Hashmap 으로 나와야 함
+        // TODO: 나올 때부터 Hashmap 으로 나와야 함 -> 이거는 진짜 하는게 좋을 것
         let mut required_energy_map = HashMap::new();
         required_energy_map.insert(required_energy_race_to_use_skill, required_energy_count_to_use_skill);
 
@@ -214,7 +230,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                             maybe_dead_unit_id)).await;
             }
 
-            // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로 - 상근
+            // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
         }
 
         // 12. 유닛의 이번 턴 Action 을 true 로 세팅
@@ -242,13 +258,28 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
             return NonTargetingActiveSkillResponseForm::new(false)
         }
 
+        // Action 가능한 턴인지 판별
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                non_targeting_active_skill_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return NonTargetingActiveSkillResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
+
         // TODO: 프로토콜 검증 할 때가 아니라 패스
 
-        // Action 가능한 턴인지 판별
+        // Active Skill Summary 획득
         let unit_card_index_string = non_targeting_active_skill_request_form.get_unit_card_index();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
 
-        // Active Skill Summary 획득
         let usage_skill_index_string = non_targeting_active_skill_request_form.get_usage_skill_index();
         let usage_skill_index = usage_skill_index_string.parse::<i32>().unwrap();
 
@@ -317,18 +348,36 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         if non_target_skill_type == &ActiveSkillType::BroadArea {
 
-            // TODO: extra_effect_list_of_unit_using_skill 를 광역으로 뿌리는 서비스 필요
-
-            let apply_catastrophic_damage_to_opponent_field_unit_response =
-                game_field_unit_service_guard.apply_catastrophic_damage_to_field_unit(
+            if !extra_effect_list_of_unit_using_skill.is_empty() {
+                game_field_unit_service_guard.attack_every_unit_with_extra_effect(
                     non_targeting_active_skill_request_form
-                        .to_apply_catastrophic_damage_to_field_unit_request(
+                        .to_attack_every_unit_with_extra_effect_request(
                             opponent_unique_id,
-                            non_target_skill_damage)).await;
+                            non_target_skill_damage,
+                            extra_effect_list_of_unit_using_skill)).await;
+            }
 
-            if !apply_catastrophic_damage_to_opponent_field_unit_response.is_success() {
-                println!("Non-Targeting 스킬로 데미지를 입히는 데에 실패했습니다.");
-                return NonTargetingActiveSkillResponseForm::new(false)
+            game_field_unit_service_guard.apply_catastrophic_damage_to_field_unit(
+                non_targeting_active_skill_request_form
+                    .to_apply_catastrophic_damage_to_field_unit_request(
+                        opponent_unique_id,
+                        non_target_skill_damage)).await;
+
+            let dead_unit_list =
+                game_field_unit_service_guard.judge_death_of_every_field_unit(
+                    non_targeting_active_skill_request_form
+                        .to_judge_death_of_every_unit_request(
+                            opponent_unique_id)).await.get_dead_unit_id_list().clone();
+
+            if !dead_unit_list.is_empty() {
+                let mut game_tomb_service_guard =
+                    self.game_tomb_service.lock().await;
+
+                game_tomb_service_guard.add_dead_unit_list_to_tomb(
+                    non_targeting_active_skill_request_form
+                        .to_add_dead_unit_list_to_tomb_request(
+                            opponent_unique_id,
+                            dead_unit_list)).await;
             }
 
             // TODO: 스킬 사용으로 인한 광역 논타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로

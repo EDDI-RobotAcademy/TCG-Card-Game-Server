@@ -10,6 +10,7 @@ use crate::game_field_unit::service::request::execute_turn_action_request::Execu
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
 use crate::game_field_unit_action_possibility_validator::service::request::is_using_active_skill_possible_request::IsUsingActiveSkillPossibleRequest;
+use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
@@ -54,21 +55,30 @@ impl TargetingActiveSkillRequestForm {
         GetValueWithKeyRequest::new(self.session_id.clone().as_str())
     }
 
+    pub fn to_is_this_your_turn_request(&self,
+                                        account_unique_id: i32) -> IsThisYourTurnRequest {
+        IsThisYourTurnRequest::new(
+            account_unique_id)
+    }
+
     pub fn to_execute_turn_action_request(&self,
                                           account_unique_id: i32,
                                           attacker_unit_card_index: i32) -> ExecuteTurnActionRequest {
         ExecuteTurnActionRequest::new(
-            account_unique_id, attacker_unit_card_index)
+            account_unique_id,
+            attacker_unit_card_index)
     }
 
     pub fn to_find_active_skill_usage_unit_id_by_index_request(&self, account_unique_id: i32, unit_card_index: i32) -> FindActiveSkillUsageUnitIdByIndexRequest {
         FindActiveSkillUsageUnitIdByIndexRequest::new(
-            account_unique_id, unit_card_index)
+            account_unique_id,
+            unit_card_index)
     }
 
     pub fn to_summary_active_skill_effect_response(&self, unit_card_index: i32, usage_skill_index: i32) -> SummaryActiveSkillEffectRequest {
         SummaryActiveSkillEffectRequest::new(
-            unit_card_index, usage_skill_index)
+            unit_card_index,
+            usage_skill_index)
     }
 
     pub fn to_is_using_active_skill_possible_request(&self,
