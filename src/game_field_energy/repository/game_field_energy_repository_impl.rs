@@ -81,6 +81,14 @@ impl GameFieldEnergyRepository for GameFieldEnergyRepositoryImpl {
 
         false
     }
+
+    fn remove_game_field_energy_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
+        if let Some(game_field_energy) = self.game_field_energy_map.get_mut(&account_unique_id) {
+            self.game_field_energy_map.remove(&account_unique_id);
+            return true
+        }
+        return false
+    }
 }
 
 #[cfg(test)]

@@ -105,6 +105,9 @@ impl BattleReadyAccountHashService for BattleReadyAccountHashServiceImpl {
             BattleReadyAccountHashStatus::FAIL => {
                 BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::FAIL)
             },
+            BattleReadyAccountHashStatus::BATTLE_FINISH => {
+                BattleReadyAccountHashResponse::new(BattleReadyAccountHashStatus::BATTLE_FINISH)
+            },
         }
     }
 

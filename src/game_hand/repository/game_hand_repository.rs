@@ -6,4 +6,5 @@ pub trait GameHandRepository {
     fn add_card_list_to_hand(&mut self, account_unique_id: i32, card_list: Vec<i32>) -> bool;
     fn remove_card_list_from_hand(&mut self, account_unique_id: i32, card_list: Vec<i32>) -> bool;
     fn use_specific_card(&mut self, account_unique_id: i32, card_number: i32) -> Option<GameHandCard>;
+    fn remove_game_hand_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool;
 }

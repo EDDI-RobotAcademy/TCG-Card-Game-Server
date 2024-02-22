@@ -151,4 +151,5 @@ pub trait GameFieldUnitRepository {
         &mut self,
         account_unique_id: i32,
         unit_index: i32) -> Vec<PassiveStatus>;
+    fn remove_game_field_unit_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool;
 }
