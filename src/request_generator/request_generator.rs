@@ -82,8 +82,6 @@ use crate::shop::controller::shop_controller::ShopController;
 use crate::shop::controller::shop_controller_impl::ShopControllerImpl;
 use crate::shop::service::shop_service::ShopService;
 use crate::shop::service::shop_service_impl::ShopServiceImpl;
-use crate::shop_gacha::service::shop_gacha_service::ShopGachaService;
-use crate::shop_gacha::service::shop_gacha_service_impl::ShopGachaServiceImpl;
 
 
 // TODO: 이 부분도 같이 ugly 해졌는데 추후 고칠 필요 있음

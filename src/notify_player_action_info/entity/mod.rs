@@ -16,3 +16,7 @@ pub mod player_field_energy_info;
 pub mod field_unit_health_point_info;
 pub mod field_unit_energy_info;
 pub mod player_field_unit_health_point_info;
+pub mod field_unit_extra_effect_info;
+pub mod field_unit_harmful_status_info;
+pub mod field_unit_survival_info;
+pub mod player_field_unit_survival_info;

@@ -10,6 +10,7 @@ use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
 use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
@@ -461,6 +462,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
 
         return game_field_unit_card_list[unit_index as usize].get_unit_health_point()
+    }
+
+    fn acquire_extra_effect_list_of_indexed_unit(&mut self, account_unique_id: i32, unit_index: i32) -> Vec<ExtraEffect> {
+        println!("GameFieldUnitRepositoryImpl: acquire_extra_effect_list_of_indexed_unit()");
+
+        let game_field_unit = self.game_field_unit_map.get_mut(&account_unique_id).unwrap();
+        let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
+
+        return game_field_unit_card_list[unit_index as usize].get_extra_effect_list()
     }
 }
 

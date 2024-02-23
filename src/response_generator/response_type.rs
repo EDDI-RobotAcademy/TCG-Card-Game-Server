@@ -63,6 +63,7 @@ use crate::notify_player_action_info::entity::player_drawn_card_list_info::Playe
 use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
 use crate::notify_player_action_info::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
+use crate::notify_player_action_info::entity::player_field_unit_survival_info::PlayerFieldUnitSurvivalInfo;
 use crate::notify_player_action_info::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::notify_player_action_info::entity::player_search_card_list_info::PlayerSearchCardListInfo;
 use crate::notify_player_action_info::entity::player_search_count_info::PlayerSearchCountInfo;
@@ -168,6 +169,7 @@ pub enum ResponseType {
     NOTIFY_SEARCH_COUNT(PlayerSearchCountInfo),
     NOTIFY_FIELD_ENERGY(PlayerFieldEnergyInfo),
     NOTIFY_FIELD_UNIT_HEALTH_POINT(PlayerFieldUnitHealthPointInfo),
+    NOTIFY_FIELD_UNIT_SURVIVAL(PlayerFieldUnitSurvivalInfo),
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),

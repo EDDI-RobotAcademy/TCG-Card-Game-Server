@@ -1,6 +1,7 @@
 use std::ops::Deref;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
@@ -169,6 +170,14 @@ impl GameFieldUnitCardList {
         }
 
         -1
+    }
+
+    pub fn get_unit_extra_effect_list(&mut self, unit_card_index: usize) -> Vec<ExtraEffect> {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            return unit.get_extra_effect_list()
+        }
+
+        Vec::new()
     }
 }
 
