@@ -442,6 +442,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             return true
         }
         return false
+    }
 
     fn acquire_energy_map_of_indexed_unit(&mut self, account_unique_id: i32, unit_index: i32) -> &AttachedEnergyMap {
         println!("GameFieldUnitRepositoryImpl: acquire_energy_map_of_indexed_unit()");
