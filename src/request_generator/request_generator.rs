@@ -43,7 +43,7 @@ use crate::request_generator::battle_ready_account_hash_request_generator::creat
 use crate::request_generator::battle_wait_queue_request_generator::create_battle_wait_queue_request;
 use crate::request_generator::check_battle_prepare_request_generator::create_check_battle_prepare_request;
 use crate::request_generator::client_program_request_generator::create_client_program_exit_request;
-use crate::request_generator::account_deck_card_request_generator::{create_account_deck_card_list_request_form, create_account_deck_configuration_request_form};
+use crate::request_generator::account_deck_card_request_generator::{create_account_deck_card_list_request_form, create_account_deck_card_modify_request_form, create_account_deck_configuration_request_form};
 use crate::request_generator::attach_general_energy_card_request_form_generator::create_attach_general_energy_card_request_form;
 use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
 use crate::request_generator::mulligan_request_generator::create_mulligan_request_form;
@@ -415,6 +415,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = deck_card_controller_mutex_guard.deck_card_list(request_form).await;
                     let response_type = Some(ResponseType::DECK_CARD_LIST(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            53 => {
+                // Account Deck Card Modify
+                if let Some(request_form) = create_account_deck_card_modify_request_form(&data) {
+                    let deck_card_controller_mutex = AccountDeckCardControllerImpl::get_instance();
+                    let mut deck_card_controller_mutex_guard = deck_card_controller_mutex.lock().await;
+
+                    let response_form = deck_card_controller_mutex_guard.deck_card_modify(request_form).await;
+                    let response_type = Some(ResponseType::DECK_CARD_MODIFY(response_form));
 
                     response_type
                 } else {

@@ -10,6 +10,7 @@ use crate::account_deck::service::response::account_deck_list_response::AccountD
 use crate::account_deck::service::response::account_deck_modify_response::AccountDeckModifyResponse;
 use crate::account_deck::service::response::account_deck_register_response::AccountDeckRegisterResponse;
 use crate::account_deck_card::controller::response_form::account_deck_card_list_response_form::AccountDeckCardListResponseForm;
+use crate::account_deck_card::controller::response_form::account_deck_card_modify_response_form::AccountDeckCardModifyResponseForm;
 use crate::account_deck_card::controller::response_form::account_deck_configuration_response_form::AccountDeckConfigurationResponseForm;
 use crate::account_point::service::response::gain_gold_response::GainGoldResponse;
 use crate::account_point::service::response::pay_gold_response::PayGoldResponse;
@@ -104,6 +105,7 @@ pub enum ResponseType {
     // Account Deck Card
     DECK_CARD_CONFIGURATION(AccountDeckConfigurationResponseForm),
     DECK_CARD_LIST(AccountDeckCardListResponseForm),
+    DECK_CARD_MODIFY(AccountDeckCardModifyResponseForm),
 
     // Shop
     SHOP_DATA(DataToDisplayInShopResponse),

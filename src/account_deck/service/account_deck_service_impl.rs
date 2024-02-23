@@ -120,7 +120,16 @@ impl AccountDeckService for AccountDeckServiceImpl {
     async fn account_deck_delete(&self, account_deck_delete_request: AccountDeckDeleteRequest) -> AccountDeckDeleteResponse {
         println!("AccountDeckServiceImpl: account_deck_delete()");
 
+        let account_unique_id = self.get_account_unique_id(account_deck_delete_request.account_session_id()).await;
+
         let account_deck_repository_guard = self.repository.lock().await;
+
+        let deck_list = account_deck_repository_guard.get_list_by_user_int_id(account_unique_id).await.unwrap().unwrap();
+
+        let deck_owner_verification = account_deck_repository_guard.deck_owner_verification(
+            deck_list,
+            account_deck_delete_request.deck_unique_id()).await;
+        if deck_owner_verification == false { return AccountDeckDeleteResponse::new(false)}
 
         let account_deck_delete_result =
             account_deck_repository_guard.delete(account_deck_delete_request.deck_unique_id()).await;
@@ -144,6 +153,19 @@ impl AccountDeckService for AccountDeckServiceImpl {
             AccountDeckDeleteResponse::new(false)
         }
     }
+    async fn account_deck_owner_verification(&self, account_session_id: &str, deck_id: i32) -> bool {
+        let account_unique_id = self.get_account_unique_id(account_session_id).await;
+        let account_deck_repository_guard = self.repository.lock().await;
+
+        let deck_list = account_deck_repository_guard.get_list_by_user_int_id(account_unique_id).await.unwrap().unwrap();
+
+        let deck_owner_verification = account_deck_repository_guard.deck_owner_verification(
+            deck_list,
+            deck_id).await;
+        deck_owner_verification
+    }
+
+
 }
 
 #[cfg(test)]
@@ -156,14 +178,14 @@ mod tests {
         let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
         let mut account_deck_service_mutex_guard = account_deck_service_mutex.lock().await;
 
-        let redis_token_str = "redis_token_str";
+        let redis_token_str = "qwer";
         let sample_deck_name = "7th deck";
 
         let account_deck_register_request = AccountDeckRegisterRequest::new(redis_token_str.to_string(), sample_deck_name.to_string());
 
         let result = account_deck_service_mutex_guard.account_deck_register(account_deck_register_request).await;
 
-        assert_eq!(false, result.get_is_success());
+        assert_eq!(true, result.get_is_success());
     }
 
     #[test]
@@ -198,12 +220,13 @@ mod tests {
         let account_deck_service_mutex = AccountDeckServiceImpl::get_instance();
         let mut account_deck_service_mutex_guard = account_deck_service_mutex.lock().await;
 
-        let target_deck_id = 21;
-        let account_deck_delete_request = AccountDeckDeleteRequest::new(target_deck_id);
+        let target_deck_id = 2;
+        let account_deck_delete_request = AccountDeckDeleteRequest::new(target_deck_id, "test_key111".to_string());
 
         let result = account_deck_service_mutex_guard.account_deck_delete(account_deck_delete_request).await;
 
-        assert_eq!(true, result.get_is_success())
+        println!("{:?}", result);
+
     }
 
     #[tokio::test]

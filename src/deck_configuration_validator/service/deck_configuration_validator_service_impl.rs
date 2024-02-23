@@ -13,22 +13,28 @@ use crate::deck_configuration_validator::repository::deck_configuration_validato
 use crate::deck_configuration_validator::repository::deck_configuration_validator_repository_impl::DeckConfigurationValidatorRepositoryImpl;
 
 use crate::deck_configuration_validator::service::deck_configuration_validator_service::DeckConfigurationValidatorService;
+use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
+use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
 pub struct DeckConfigurationValidatorServiceImpl {
     deck_configuration_repository: Arc<AsyncMutex<DeckConfigurationValidatorRepositoryImpl>>,
     card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
-    accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>
+    accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
+    redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
 }
 
 impl DeckConfigurationValidatorServiceImpl {
     pub fn new(deck_configuration_repository: Arc<AsyncMutex<DeckConfigurationValidatorRepositoryImpl>>,
                card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
-               accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>
+               accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
+               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+
     ) -> Self {
         DeckConfigurationValidatorServiceImpl {
             deck_configuration_repository,
             card_grade_repository,
-            accuont_card_repository
+            accuont_card_repository,
+            redis_in_memory_repository,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<DeckConfigurationValidatorServiceImpl>> {
@@ -39,9 +45,16 @@ impl DeckConfigurationValidatorServiceImpl {
                         DeckConfigurationValidatorServiceImpl::new(
                             DeckConfigurationValidatorRepositoryImpl::get_instance(),
                             CardGradeRepositoryImpl::get_instance(),
-                            AccountCardRepositoryImpl::get_instance())));
+                            AccountCardRepositoryImpl::get_instance(),
+                            RedisInMemoryRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
+    }
+    async fn get_account_unique_id(&self, account_session_id: &str) -> i32 {
+        let mut redis_in_memory_repository = self.redis_in_memory_repository.lock().await;
+        let account_unique_id_option_string = redis_in_memory_repository.get(account_session_id).await;
+        let account_unique_id_string = account_unique_id_option_string.unwrap();
+        account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32")
     }
 }
 
@@ -122,13 +135,13 @@ impl DeckConfigurationValidatorService for DeckConfigurationValidatorServiceImpl
             }
         })
     }
-    async fn do_you_have_this_card(&self, card_list: Vec<i32>, account_unique_id: i32) -> bool {
+    async fn do_you_have_this_card(&self, card_list: Vec<i32>, account_session_id: &str) -> bool {
+        let account_unique_id = self.get_account_unique_id(account_session_id).await;
+
         let card_list_vec = VectorToHashConverter::convert_vector_to_hash(&card_list);
-        println!("{:?}", card_list_vec);
         //1. 해당 어카운트의 카드 가져오기
         let account_card_repository_guard = self.accuont_card_repository.lock().await;
         let account_card_list = account_card_repository_guard.get_card_list(account_unique_id).await.unwrap().unwrap();
-        println!("{:?}", account_card_list);
         //2. 어카운트의 카드 리스트와 받아온 카드리스트 비교
         for (card_id, card_count) in card_list_vec {
             let mut check_contain_key = false;
@@ -179,7 +192,7 @@ mod tests {
 
         let sample_card_list = [30,3,4,3,3].to_vec();
 
-        let validation_result = deck_configuration_validator_service_guard.do_you_have_this_card(sample_card_list , 1).await;
+        let validation_result = deck_configuration_validator_service_guard.do_you_have_this_card(sample_card_list , "qwer").await;
 
         println!("{}", validation_result);
     }
