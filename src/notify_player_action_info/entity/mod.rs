@@ -1,12 +1,12 @@
 pub mod player_index_enum;
 pub mod field_unit_info;
 pub mod used_hand_card_info;
-pub mod attached_energy_map_info;
+pub mod attached_energy_info;
 pub mod player_field_unit_info;
 pub mod player_hand_use_info;
 pub mod extra_effect_info;
 pub mod harmful_effect_info;
-pub mod draw_count_info;
-pub mod drawn_card_list_info;
 pub mod player_drawn_card_list_info;
 pub mod player_draw_count_info;
+pub mod player_field_unit_energy_info;
+pub mod player_deck_card_list_use_info;
