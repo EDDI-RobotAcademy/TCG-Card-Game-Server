@@ -225,6 +225,14 @@ impl GameFieldUnitCard {
     pub fn get_passive_status_list(&self) -> &Vec<PassiveStatus> {
         &self.passive_status_list
     }
+
+    pub fn get_extra_effect_list(&mut self) -> Vec<ExtraEffect> {
+        let mut extra_effect_list = Vec::new();
+        for extra_status_effect in &self.extra_status_effect_list {
+            extra_effect_list.push(extra_status_effect.get_extra_effect().clone())
+        }
+        extra_effect_list
+    }
 }
 
 #[cfg(test)]

@@ -10,15 +10,18 @@ use crate::game_field_energy::repository::game_field_energy_repository_impl::Gam
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
 use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
+use crate::notify_player_action_info::entity::field_unit_survival_info::FieldUnitSurvivalInfo;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository_impl::NotifyPlayerActionInfoRepositoryImpl;
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
+use crate::notify_player_action_info::service::request::notice_apply_damage_to_every_unit_by_using_hand_card_request::NoticeApplyDamageToEveryUnitByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_boost_energy_to_specific_unit_by_using_hand_card_request::{NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest};
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_specific_unit_by_using_hand_card_request::{NoticeApplyDamageToSpecificUnitByUsingHandCardRequest};
 use crate::notify_player_action_info::service::request::notice_draw_card_by_using_hand_card_request::NoticeDrawCardByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_unit_by_using_hand_card_request::NoticeRemoveEnergyOfSpecificUnitByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_remove_field_energy_by_using_hand_card_request::NoticeRemoveFieldEnergyByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_search_card_by_using_hand_card_request::NoticeSearchCardByUsingHandCardRequest;
+use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_unit_by_using_hand_card_response::NoticeApplyDamageToEveryUnitByUsingHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_boost_energy_to_specific_unit_by_using_hand_card_response::{NoticeBoostEnergyToSpecificUnitByUsingHandCardResponse};
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_specific_unit_by_using_hand_card_response::{NoticeApplyDamageToSpecificUnitByUsingHandCardResponse};
 use crate::notify_player_action_info::service::response::notice_draw_card_by_using_hand_card_response::NoticeDrawCardByUsingHandCardResponse;
@@ -96,7 +99,6 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
 
         let response =
             notify_player_action_info_repository_guard.notify_player_boost_energy_to_specific_unit_by_using_hand_card(
-                notice_boost_energy_to_specific_unit_by_using_hand_card_request.get_account_unique_id(),
                 notice_boost_energy_to_specific_unit_by_using_hand_card_request.get_opponent_unique_id(),
                 notice_boost_energy_to_specific_unit_by_using_hand_card_request.get_used_hand_card_id(),
                 hand_card_kind_enum,
@@ -129,7 +131,6 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
 
         let response =
             notify_player_action_info_repository_guard.notify_player_draw_card_by_using_hand_card(
-                notice_draw_card_by_using_hand_card_request.get_account_unique_id(),
                 notice_draw_card_by_using_hand_card_request.get_opponent_unique_id(),
                 notice_draw_card_by_using_hand_card_request.get_used_hand_card_id(),
                 hand_card_kind_enum,
@@ -160,7 +161,6 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
 
         let response =
             notify_player_action_info_repository_guard.notify_player_search_card_by_using_hand_card(
-                notice_search_card_by_using_hand_card_request.get_account_unique_id(),
                 notice_search_card_by_using_hand_card_request.get_opponent_unique_id(),
                 notice_search_card_by_using_hand_card_request.get_used_hand_card_id(),
                 hand_card_kind_enum,
@@ -201,7 +201,6 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
 
         let response =
             notify_player_action_info_repository_guard.notify_player_remove_field_energy_by_using_hand_card(
-                notice_remove_field_energy_by_using_hand_card_request.get_account_unique_id(),
                 notice_remove_field_energy_by_using_hand_card_request.get_opponent_unique_id(),
                 notice_remove_field_energy_by_using_hand_card_request.get_used_hand_card_id(),
                 hand_card_kind_enum,
@@ -242,7 +241,6 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
 
         let response =
             notify_player_action_info_repository_guard.notify_player_remove_energy_of_specific_unit_by_using_hand_card(
-                notice_remove_energy_of_specific_unit_by_using_hand_card_request.get_account_unique_id(),
                 notice_remove_energy_of_specific_unit_by_using_hand_card_request.get_opponent_unique_id(),
                 notice_remove_energy_of_specific_unit_by_using_hand_card_request.get_used_hand_card_id(),
                 hand_card_kind_enum,
@@ -286,22 +284,98 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
             notice_apply_damage_to_specific_unit_by_using_hand_card_request.get_unit_index(),
             current_health_point_of_indexed_unit);
 
+        let mut field_unit_survival_map = HashMap::new();
+        if current_health_point_of_indexed_unit <= 0 {
+            field_unit_survival_map.insert(
+                notice_apply_damage_to_specific_unit_by_using_hand_card_request.get_unit_index(), false)
+        } else {
+            field_unit_survival_map.insert(
+                notice_apply_damage_to_specific_unit_by_using_hand_card_request.get_unit_index(), true)
+        };
+
         let field_unit_health_info =
             FieldUnitHealthPointInfo::new(field_unit_health_point_map);
+        let field_unit_survival_info =
+            FieldUnitSurvivalInfo::new(field_unit_survival_map);
 
         let mut notify_player_action_info_repository_guard =
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notify_player_apply_damage_to_specific_unit_by_using_hand_card(
-                notice_apply_damage_to_specific_unit_by_using_hand_card_request.get_account_unique_id(),
+            notify_player_action_info_repository_guard.notify_player_apply_damage_to_unit_by_using_hand_card(
                 notice_apply_damage_to_specific_unit_by_using_hand_card_request.get_opponent_unique_id(),
                 notice_apply_damage_to_specific_unit_by_using_hand_card_request.get_used_hand_card_id(),
                 hand_card_kind_enum,
-                field_unit_health_info).await;
+                field_unit_health_info,
+                field_unit_survival_info).await;
 
         drop(notify_player_action_info_repository_guard);
 
         NoticeApplyDamageToSpecificUnitByUsingHandCardResponse::new(response)
+    }
+
+    async fn notice_apply_damage_to_every_unit_by_using_hand_card(
+        &mut self, notice_apply_damage_to_every_unit_by_using_hand_card_request: NoticeApplyDamageToEveryUnitByUsingHandCardRequest)
+        -> NoticeApplyDamageToEveryUnitByUsingHandCardResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_remove_energy_of_specific_unit_by_using_hand_card()");
+
+        let mut card_kind_repository_guard =
+            self.card_kind_repository.lock().await;
+
+        let hand_card_kind_enum =
+            card_kind_repository_guard.get_card_kind(
+                &notice_apply_damage_to_every_unit_by_using_hand_card_request.get_used_hand_card_id()).await;
+
+        drop(card_kind_repository_guard);
+
+        let mut game_field_unit_repository_guard=
+            self.game_field_unit_repository.lock().await;
+
+        let field_unit_list_usize =
+            game_field_unit_repository_guard.get_game_field_unit_map()
+                .get(&notice_apply_damage_to_every_unit_by_using_hand_card_request
+                    .get_opponent_unique_id()).unwrap().get_all_unit_list_in_game_field().len();
+
+        let mut field_unit_health_point_map = HashMap::new();
+
+        let mut field_unit_survival_map = HashMap::new();
+
+        for unit_index in (0..field_unit_list_usize).rev() {
+            let current_health_point_of_indexed_unit =
+                game_field_unit_repository_guard.acquire_health_point_of_indexed_unit(
+                    notice_apply_damage_to_every_unit_by_using_hand_card_request.get_opponent_unique_id(),
+                    unit_index as i32).get_current_health_point();
+
+            field_unit_health_point_map.insert(unit_index as i32, current_health_point_of_indexed_unit);
+
+            if current_health_point_of_indexed_unit <= 0 {
+                field_unit_survival_map.insert(unit_index as i32, false);
+            } else {
+                field_unit_survival_map.insert(unit_index as i32, true);
+            }
+        }
+
+        drop(game_field_unit_repository_guard);
+
+        let field_unit_health_info =
+            FieldUnitHealthPointInfo::new(field_unit_health_point_map);
+        let field_unit_survival_info =
+            FieldUnitSurvivalInfo::new(field_unit_survival_map);
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notify_player_apply_damage_to_unit_by_using_hand_card(
+                notice_apply_damage_to_every_unit_by_using_hand_card_request.get_opponent_unique_id(),
+                notice_apply_damage_to_every_unit_by_using_hand_card_request.get_used_hand_card_id(),
+                hand_card_kind_enum,
+                field_unit_health_info,
+                field_unit_survival_info).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeApplyDamageToEveryUnitByUsingHandCardResponse::new(response)
     }
 }
