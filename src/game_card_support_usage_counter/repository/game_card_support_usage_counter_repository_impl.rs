@@ -70,6 +70,14 @@ impl GameCardSupportUsageCounterRepository for GameCardSupportUsageCounterReposi
 
         true
     }
+
+    fn remove_game_support_card_usage_counter_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
+        if let Some(support_card_usage_counter) = self.support_card_usage_counter_map.get_mut(&account_unique_id) {
+            self.support_card_usage_counter_map.remove(&account_unique_id);
+            return true
+        }
+        return false
+    }
 }
 
 #[cfg(test)]

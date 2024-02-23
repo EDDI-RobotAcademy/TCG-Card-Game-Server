@@ -92,6 +92,7 @@ mod rockpaperscissors;
 mod game_card_support_usage_counter;
 mod game_field_unit_action_possibility_validator;
 mod game_winner_check;
+mod battle_finish;
 mod notify_player_action_info;
 
 #[tokio::main]

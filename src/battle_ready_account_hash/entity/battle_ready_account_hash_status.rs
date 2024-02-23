@@ -7,4 +7,5 @@ pub enum BattleReadyAccountHashStatus {
     PREPARE_PROCESS,
     SUCCESS,
     FAIL,
+    BATTLE_FINISH,
 }

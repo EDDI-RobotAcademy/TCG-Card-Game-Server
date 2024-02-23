@@ -62,6 +62,13 @@ impl GameTombRepository for GameTombRepositoryImpl {
         true
     }
 
+    fn remove_game_tomb_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
+        if let Some(game_tomb) = self.game_tomb_map.get_mut(&account_unique_id) {
+            self.game_tomb_map.remove(&account_unique_id);
+            return true
+        }
+        return false
+    }
 }
 
 #[cfg(test)]

@@ -3,4 +3,5 @@ pub trait GameCardSupportUsageCounterRepository {
     fn reset_support_card_usage_counter(&mut self, account_unique_id: i32) -> bool;
     fn check_support_card_usage_counter(&mut self, account_unique_id: i32) -> i32;
     fn update_support_card_usage_counter(&mut self, account_unique_id: i32) -> bool;
+    fn remove_game_support_card_usage_counter_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool;
 }

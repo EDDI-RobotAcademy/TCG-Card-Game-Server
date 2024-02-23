@@ -436,6 +436,14 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         Vec::new()
     }
 
+    fn remove_game_field_unit_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            self.game_field_unit_map.remove(&account_unique_id);
+            return true
+        }
+        return false
+    }
+
     fn acquire_energy_map_of_indexed_unit(&mut self, account_unique_id: i32, unit_index: i32) -> &AttachedEnergyMap {
         println!("GameFieldUnitRepositoryImpl: acquire_energy_map_of_indexed_unit()");
 
