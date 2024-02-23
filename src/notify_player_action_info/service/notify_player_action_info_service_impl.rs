@@ -5,6 +5,8 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
 use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
+use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
+use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository_impl::NotifyPlayerActionInfoRepositoryImpl;
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
@@ -15,18 +17,21 @@ use crate::notify_player_action_info::service::response::notice_draw_card_by_usi
 
 pub struct NotifyPlayerActionInfoServiceImpl {
     notify_player_action_info_repository: Arc<AsyncMutex<NotifyPlayerActionInfoRepositoryImpl>>,
-    card_kind_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>
+    card_kind_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
+    game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
 }
 
 impl NotifyPlayerActionInfoServiceImpl {
     pub fn new(
         notify_player_action_info_repository: Arc<AsyncMutex<NotifyPlayerActionInfoRepositoryImpl>>,
-        card_kind_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>
+        card_kind_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
+        game_field_unit_repository: Arc<AsyncMutex<GameFieldUnitRepositoryImpl>>,
     ) -> Self {
 
         NotifyPlayerActionInfoServiceImpl {
             notify_player_action_info_repository,
-            card_kind_repository
+            card_kind_repository,
+            game_field_unit_repository
         }
     }
 
@@ -37,7 +42,8 @@ impl NotifyPlayerActionInfoServiceImpl {
                     AsyncMutex::new(
                         NotifyPlayerActionInfoServiceImpl::new(
                             NotifyPlayerActionInfoRepositoryImpl::get_instance(),
-                            CardKindsRepositoryImpl::get_instance())));
+                            CardKindsRepositoryImpl::get_instance(),
+                            GameFieldUnitRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -60,10 +66,15 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
 
         drop(card_kind_repository_guard);
 
+        let mut game_field_unit_repository_guard=
+            self.game_field_unit_repository.lock().await;
+
         let attached_energy_info =
-            notice_boost_energy_to_specific_unit_by_using_hand_card_request
-            .get_attached_energy_map()
-            .to_attached_energy_info();
+            game_field_unit_repository_guard.acquire_energy_map_of_indexed_unit(
+                notice_boost_energy_to_specific_unit_by_using_hand_card_request.get_account_unique_id(),
+                notice_boost_energy_to_specific_unit_by_using_hand_card_request.get_unit_index()).to_attached_energy_info();
+
+        println!("attached_energy_info: {:?}", attached_energy_info);
 
         let mut notify_player_action_info_repository_guard =
             self.notify_player_action_info_repository.lock().await;
