@@ -1,17 +1,16 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
-use crate::notify_player_action_info::entity::used_hand_card_info::UsedHandCardInfo;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct PlayerHandUseInfo {
-    player_hand_use_map: HashMap<PlayerIndex, UsedHandCardInfo>,
+pub struct PlayerSearchCountInfo {
+    player_search_count_map: HashMap<PlayerIndex, i32>,
 }
 
-impl PlayerHandUseInfo {
-    pub fn new(player_hand_use_map: HashMap<PlayerIndex, UsedHandCardInfo>) -> Self {
-        PlayerHandUseInfo {
-            player_hand_use_map
+impl PlayerSearchCountInfo {
+    pub fn new(player_search_count_map: HashMap<PlayerIndex, i32>) -> Self {
+        PlayerSearchCountInfo {
+            player_search_count_map
         }
     }
 }

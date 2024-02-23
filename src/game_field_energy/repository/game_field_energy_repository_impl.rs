@@ -37,7 +37,7 @@ impl GameFieldEnergyRepository for GameFieldEnergyRepositoryImpl {
     fn create_field_energy_object(&mut self, account_unique_id: i32) -> bool {
         println!("FieldEnergyRepositoryImpl: create_field_energy_object()");
 
-        let new_game_field_energy_map = GameFieldEnergy::new(1);
+        let new_game_field_energy_map = GameFieldEnergy::new(0);
         self.game_field_energy_map.insert(account_unique_id, new_game_field_energy_map);
 
         true
@@ -80,6 +80,14 @@ impl GameFieldEnergyRepository for GameFieldEnergyRepositoryImpl {
         }
 
         false
+    }
+
+    fn remove_game_field_energy_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
+        if let Some(game_field_energy) = self.game_field_energy_map.get_mut(&account_unique_id) {
+            self.game_field_energy_map.remove(&account_unique_id);
+            return true
+        }
+        return false
     }
 }
 

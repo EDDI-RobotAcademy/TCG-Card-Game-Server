@@ -1,5 +1,3 @@
-use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
-
 #[derive(Debug)]
 pub struct NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest {
     account_unique_id: i32,
@@ -7,7 +5,6 @@ pub struct NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest {
     used_hand_card_id: i32,
     found_energy_card_id_list: Vec<i32>,
     unit_index: i32,
-    attached_energy_map: AttachedEnergyMap,
 }
 
 impl NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest {
@@ -15,15 +12,13 @@ impl NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest {
                opponent_unique_id: i32,
                used_hand_card_id: i32,
                found_energy_card_id_list: Vec<i32>,
-               unit_index: i32,
-               attached_energy_map: AttachedEnergyMap) -> Self {
+               unit_index: i32) -> Self {
         NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest {
             account_unique_id,
             opponent_unique_id,
             used_hand_card_id,
             found_energy_card_id_list,
             unit_index,
-            attached_energy_map,
         }
     }
 
@@ -36,6 +31,4 @@ impl NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest {
     pub fn get_found_energy_card_id_list(&self) -> &Vec<i32> { &self.found_energy_card_id_list }
 
     pub fn get_unit_index(&self) -> i32 { self.unit_index }
-
-    pub fn get_attached_energy_map(&self) -> &AttachedEnergyMap { &self.attached_energy_map }
 }

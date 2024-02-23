@@ -105,6 +105,7 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
     }
 
 
+
     fn get_remain_deck_card_count(&self, account_id: i32) -> i32 {
         if let Some(game_deck) = self.game_deck_map.get(&account_id)
         {
@@ -114,6 +115,15 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
         {
             0i32
         }
+    }
+
+
+    fn remove_game_deck_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
+        if let Some(game_deck) = self.game_deck_map.get_mut(&account_unique_id) {
+            self.game_deck_map.remove(&account_unique_id);
+            return true
+        }
+        return false
     }
 
 }
@@ -205,5 +215,17 @@ mod tests {
         repo_guard.shuffle_game_deck(account_unique_id);
         let current_cards = repo_guard.get_game_deck_card_ids(account_unique_id);
         println!("Shuffled cards: {:?}", current_cards);
+    }
+    #[tokio::test]
+    async fn test_game_deck_repository_impl_remove_game_deck_object_by_account_unique_id() {
+        let mut repo = GameDeckRepositoryImpl::new();
+        let account_unique_id = 1;
+        assert!(repo.create_game_deck_object(account_unique_id));
+        let game_deck_map = repo.get_game_deck_map();
+        println!("game_deck_map before remove: {:?}", game_deck_map);
+        assert!(game_deck_map.contains_key(&account_unique_id));
+        assert!(repo.remove_game_deck_hash_by_account_unique_id(account_unique_id));
+        let game_deck_map_after_remove = repo.get_game_deck_map();
+        println!("game_deck_map before remove: {:?}", game_deck_map_after_remove);
     }
 }

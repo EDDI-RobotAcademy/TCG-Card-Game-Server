@@ -52,6 +52,14 @@ impl GameLostZoneRepository for GameLostZoneRepositoryImpl {
 
         true
     }
+
+    fn remove_game_lost_zone_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
+        if let Some(game_lost_zone) = self.game_lost_zone_map.get_mut(&account_unique_id) {
+            self.game_lost_zone_map.remove(&account_unique_id);
+            return true
+        }
+        return false
+    }
 }
 
 #[cfg(test)]

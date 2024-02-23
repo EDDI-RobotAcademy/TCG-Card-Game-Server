@@ -61,6 +61,14 @@ impl GameMainCharacterRepository for GameMainCharacterRepositoryImpl {
         let health_point_main_character = main_character_of_account_unique_id.get_health_point();
         return health_point_main_character;
     }
+
+    fn remove_game_main_character_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
+        if let Some(game_main_character) = self.game_main_character_map.get_mut(&account_unique_id) {
+            self.game_main_character_map.remove(&account_unique_id);
+            return true
+        }
+        return false
+    }
 }
 
 #[cfg(test)]

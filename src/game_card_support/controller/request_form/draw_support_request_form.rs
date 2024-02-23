@@ -4,6 +4,7 @@ use crate::game_card_support_usage_counter::service::request::check_support_card
 use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
 use crate::game_deck::service::request::draw_cards_from_deck_request::DrawCardsFromDeckRequest;
 use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
+use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
 use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
@@ -74,13 +75,13 @@ impl DrawSupportRequestForm {
             used_hand_card_id,
             drawn_card_list)
     }
-    pub fn to_draw_deck_request(&self, draw_count: i32) -> GameDeckCardDrawRequest {
-        GameDeckCardDrawRequest::new(self.session_id.clone(), draw_count)
-    }
     pub fn to_draw_cards_from_deck_request(&self, account_unique_id: i32, draw_count: i32) -> DrawCardsFromDeckRequest {
         DrawCardsFromDeckRequest::new(account_unique_id, draw_count)
     }
     pub fn to_add_card_list_to_hand_request(&self, account_unique_id: i32, card_list: Vec<i32>) -> AddCardListToHandRequest {
         AddCardListToHandRequest::new(account_unique_id, card_list)
+    }
+    pub fn to_shuffle_deck_request(&self) -> GameDeckCardShuffleRequest {
+        GameDeckCardShuffleRequest::new( self.session_id.clone() )
     }
 }
