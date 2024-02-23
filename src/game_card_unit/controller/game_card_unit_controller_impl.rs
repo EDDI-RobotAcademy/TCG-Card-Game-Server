@@ -254,7 +254,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             return DeployUnitResponseForm::new(false)
         }
 
-        return DeployUnitResponseForm::new(true)
+        DeployUnitResponseForm::new(true)
     }
 
     async fn request_to_attack_unit(
