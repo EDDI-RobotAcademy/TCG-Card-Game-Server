@@ -33,6 +33,7 @@ use crate::game_card_support::controller::response_form::draw_support_response_f
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_card_support::controller::response_form::remove_opponent_field_energy_support_response_form::RemoveOpponentFieldEnergySupportResponseForm;
 use crate::game_card_support::controller::response_form::search_unit_support_response_form::SearchUnitSupportResponseForm;
+use crate::game_card_unit::controller::response_form::attack_game_main_character_response_form::AttackGameMainCharacterResponseForm;
 use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
 use crate::game_card_unit::controller::response_form::attack_unit_response_form::AttackUnitResponseForm;
 use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
@@ -55,7 +56,7 @@ use crate::notify_player_action::entity::notify_opponent_to_damage_main_characte
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
-use crate::notify_player_action_info::entity::player_deck_card_list_use_info::PlayerDeckCardListUseInfo;
+use crate::notify_player_action_info::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::notify_player_action_info::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
@@ -136,6 +137,7 @@ pub enum ResponseType {
     TARGETING_ACTIVE_SKILL(TargetingActiveSkillResponseForm),
     NON_TARGETING_ACTIVE_SKILL(NonTargetingActiveSkillResponseForm),
     ATTACH_FIELD_ENERGY_TO_UNIT(AttachFieldEnergyToFieldUnitResponseForm),
+    ATTACK_MAIN_CHARACTER(AttackGameMainCharacterResponseForm),
 
 
     // Notification to players
@@ -159,7 +161,7 @@ pub enum ResponseType {
     NOTIFY_DRAWN_CARD_LIST(PlayerDrawnCardListInfo),
     NOTIFY_DRAW_COUNT(PlayerDrawCountInfo),
     NOTIFY_FIELD_UNIT_ENERGY(PlayerFieldUnitEnergyInfo),
-    NOTIFY_DECK_CARD_LIST_USE(PlayerDeckCardListUseInfo),
+    NOTIFY_DECK_CARD_USE_LIST(PlayerDeckCardUseListInfo),
     NOTIFY_SEARCH_CARD_LIST(PlayerSearchCardListInfo),
     NOTIFY_SEARCH_COUNT(PlayerSearchCountInfo),
     NOTIFY_FIELD_ENERGY(PlayerFieldEnergyInfo),

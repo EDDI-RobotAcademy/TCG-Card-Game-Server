@@ -7,7 +7,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::connection_context::repository::connection_context_repository_impl::ConnectionContextRepositoryImpl;
 use crate::notify_player_action_info::entity::attached_energy_info::{AttachedEnergyInfo};
-use crate::notify_player_action_info::entity::player_deck_card_list_use_info::PlayerDeckCardListUseInfo;
+use crate::notify_player_action_info::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::notify_player_action_info::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
@@ -19,7 +19,7 @@ use crate::notify_player_action_info::entity::player_search_card_list_info::Play
 use crate::notify_player_action_info::entity::player_search_count_info::PlayerSearchCountInfo;
 use crate::notify_player_action_info::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
-use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LIST_USE, NOTIFY_DRAW_COUNT, NOTIFY_DRAWN_CARD_LIST, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_HAND_CARD_USE, NOTIFY_SEARCH_CARD_LIST, NOTIFY_SEARCH_COUNT};
+use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_DRAWN_CARD_LIST, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_HAND_CARD_USE, NOTIFY_SEARCH_CARD_LIST, NOTIFY_SEARCH_COUNT};
 
 pub struct NotifyPlayerActionInfoRepositoryImpl;
 
@@ -62,12 +62,12 @@ impl NotifyPlayerActionInfoRepositoryImpl {
     fn get_player_deck_card_list_use_info(&self,
                                           notify_player_index: PlayerIndex,
                                           used_deck_card_list: Vec<i32>
-    ) -> PlayerDeckCardListUseInfo {
+    ) -> PlayerDeckCardUseListInfo {
 
         let mut player_deck_card_list_use_map = HashMap::new();
         player_deck_card_list_use_map.insert(notify_player_index, used_deck_card_list);
 
-        PlayerDeckCardListUseInfo::new(player_deck_card_list_use_map)
+        PlayerDeckCardUseListInfo::new(player_deck_card_list_use_map)
     }
 
     fn get_player_field_unit_energy_info(&self,
@@ -189,13 +189,13 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_DECK_CARD_LIST_USE(player_deck_card_list_use_info_for_opponent)))).await;
+                    NOTIFY_DECK_CARD_USE_LIST(player_deck_card_list_use_info_for_opponent)))).await;
 
         // 스스로에게 덱에서 추가적으로 사용한 카드 공지
         account_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_DECK_CARD_LIST_USE(player_deck_card_list_use_info_for_account)))).await;
+                    NOTIFY_DECK_CARD_USE_LIST(player_deck_card_list_use_info_for_account)))).await;
 
         let player_field_unit_energy_info_for_opponent =
             self.get_player_field_unit_energy_info(Opponent, unit_index, attached_energy_info.clone());

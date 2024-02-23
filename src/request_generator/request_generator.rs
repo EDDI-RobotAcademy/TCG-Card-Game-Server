@@ -743,6 +743,10 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            1016 => {
+                // Attack Main Character
+                todo!()
+            },
             3333 => {
                 // Game Next Turn
                 if let Some(request) = create_game_turn_request_form(&data) {
