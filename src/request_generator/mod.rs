@@ -28,10 +28,11 @@ pub mod targeting_active_skill_request_form_generator;
 pub mod attach_special_energy_card_request_form_generator;
 pub mod non_targeting_active_skill_request_form_generator;
 pub mod attach_field_energy_to_field_unit_request_form_generator;
-mod rockpaperscissors_request_generator;
-mod check_rockpaperscissors_winner_request_generator;
+pub mod rockpaperscissors_request_generator;
+pub mod check_rockpaperscissors_winner_request_generator;
 pub mod surrender_request_generator;
-mod battle_match_cancel_request_generator;
+pub mod battle_match_cancel_request_generator;
+pub mod attack_game_main_character_request_form_generator;
 
 
 

@@ -59,6 +59,7 @@ use crate::game_winner_check::service::game_winner_check_service_impl::GameWinne
 use crate::request_generator::attach_field_energy_to_field_unit_request_form_generator::create_attach_field_energy_to_field_unit_request_form;
 use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
+use crate::request_generator::attack_game_main_character_request_form_generator::create_attack_game_main_character_request_form;
 use crate::request_generator::battle_match_cancel_request_generator::create_battle_match_cancel_request;
 use crate::request_generator::check_rockpaperscissors_winner_request_generator::create_check_rockpaperscissors_winner_request_form;
 use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item_request_form, create_opponent_field_unit_energy_removal_item_request_form, create_target_death_item_request_form};
@@ -745,7 +746,18 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             },
             1016 => {
                 // Attack Main Character
-                todo!()
+                if let Some(request_form) = create_attack_game_main_character_request_form(&data) {
+                    let game_card_unit_controller_mutex = GameCardUnitControllerImpl::get_instance();
+                    let game_card_unit_controller = game_card_unit_controller_mutex.lock().await;
+
+                    let response_form = game_card_unit_controller.request_to_attack_game_main_character(request_form).await;
+                    let response_type = Some(ResponseType::ATTACK_MAIN_CHARACTER(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+
             },
             3333 => {
                 // Game Next Turn
