@@ -6,6 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::game_deck::entity::game_deck::GameDeck;
 use crate::game_deck::entity::game_deck_card::GameDeckCard;
+use crate::game_deck::entity::game_deck_card_list;
 use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
 
 pub struct GameDeckRepositoryImpl {
@@ -37,6 +38,7 @@ impl GameDeckRepositoryImpl {
             Vec::new()
         }
     }
+
 
     pub fn get_instance() -> Arc<AsyncMutex<GameDeckRepositoryImpl>> {
         lazy_static! {
@@ -102,6 +104,20 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
         Vec::new()
     }
 
+
+
+    fn get_remain_deck_card_count(&self, account_id: i32) -> i32 {
+        if let Some(game_deck) = self.game_deck_map.get(&account_id)
+        {
+            game_deck.get_all_cards_in_game_deck().len() as i32
+        }
+        else
+        {
+            0i32
+        }
+    }
+
+
     fn remove_game_deck_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
         if let Some(game_deck) = self.game_deck_map.get_mut(&account_unique_id) {
             self.game_deck_map.remove(&account_unique_id);
@@ -109,6 +125,7 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
         }
         return false
     }
+
 }
 
 #[cfg(test)]

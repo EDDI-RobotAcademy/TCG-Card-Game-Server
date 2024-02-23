@@ -14,6 +14,7 @@ use crate::account_deck_card::controller::response_form::account_deck_card_modif
 use crate::account_deck_card::controller::response_form::account_deck_configuration_response_form::AccountDeckConfigurationResponseForm;
 use crate::account_point::service::response::gain_gold_response::GainGoldResponse;
 use crate::account_point::service::response::pay_gold_response::PayGoldResponse;
+use crate::battle_field_info::service::response::remain_deck_card_count_response::RemainDeckCardCountResponse;
 use crate::battle_ready_account_hash::service::response::battle_ready_account_hash_response::BattleReadyAccountHashResponse;
 use crate::battle_ready_account_hash::service::response::check_battle_prepare_response::CheckBattlePrepareResponse;
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
@@ -95,7 +96,8 @@ pub enum ResponseType {
     // First Turn Decision
     ROCKPAPERSCISSORS(RockpaperscissorsResponseForm),
     CHECK_ROCKPAPERSCISSORS_WINNER(CheckRockpaperscissorsWinnerResponseForm),
-
+    // Battle Info Remain Deck card count
+    REMAIN_DECK_CARD_COUNT(RemainDeckCardCountResponse),
     // Account Card
     ACCOUNT_CARD_LIST(AccountCardListResponse),
 

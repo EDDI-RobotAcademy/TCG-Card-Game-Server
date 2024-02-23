@@ -31,8 +31,11 @@ pub mod attach_field_energy_to_field_unit_request_form_generator;
 pub mod rockpaperscissors_request_generator;
 pub mod check_rockpaperscissors_winner_request_generator;
 pub mod surrender_request_generator;
+mod remain_deck_card_count_request_generator;
+
 pub mod battle_match_cancel_request_generator;
 pub mod attack_game_main_character_request_form_generator;
+
 
 
 
