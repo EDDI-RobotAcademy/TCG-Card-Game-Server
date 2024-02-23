@@ -12,8 +12,10 @@ use crate::notify_player_action_info::repository::notify_player_action_info_repo
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
 use crate::notify_player_action_info::service::request::notice_boost_energy_to_specific_unit_by_using_hand_card_request::{NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest};
 use crate::notify_player_action_info::service::request::notice_draw_card_by_using_hand_card_request::NoticeDrawCardByUsingHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_search_card_by_using_hand_card_request::NoticeSearchCardByUsingHandCardRequest;
 use crate::notify_player_action_info::service::response::notice_boost_energy_to_specific_unit_by_using_hand_card_response::{NoticeBoostEnergyToSpecificUnitByUsingHandCardResponse};
 use crate::notify_player_action_info::service::response::notice_draw_card_by_using_hand_card_response::NoticeDrawCardByUsingHandCardResponse;
+use crate::notify_player_action_info::service::response::notice_search_card_by_using_hand_card_response::NoticeSearchCardByUsingHandCardResponse;
 
 pub struct NotifyPlayerActionInfoServiceImpl {
     notify_player_action_info_repository: Arc<AsyncMutex<NotifyPlayerActionInfoRepositoryImpl>>,
@@ -89,6 +91,8 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
                 notice_boost_energy_to_specific_unit_by_using_hand_card_request.get_unit_index(),
                 attached_energy_info).await;
 
+        drop(notify_player_action_info_repository_guard);
+
         NoticeBoostEnergyToSpecificUnitByUsingHandCardResponse::new(response)
     }
 
@@ -118,6 +122,39 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
                 hand_card_kind_enum,
                 notice_draw_card_by_using_hand_card_request.get_drawn_card_list().clone()).await;
 
+        drop(notify_player_action_info_repository_guard);
+
         NoticeDrawCardByUsingHandCardResponse::new(response)
+    }
+
+    async fn notice_search_card_by_using_hand_card(
+        &mut self, notice_search_card_by_using_hand_card_request: NoticeSearchCardByUsingHandCardRequest)
+        -> NoticeSearchCardByUsingHandCardResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_search_card_by_using_hand_card()");
+
+        let mut card_kind_repository_guard =
+            self.card_kind_repository.lock().await;
+
+        let hand_card_kind_enum =
+            card_kind_repository_guard.get_card_kind(
+                &notice_search_card_by_using_hand_card_request.get_used_hand_card_id()).await;
+
+        drop(card_kind_repository_guard);
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notify_player_search_card_by_using_hand_card(
+                notice_search_card_by_using_hand_card_request.get_account_unique_id(),
+                notice_search_card_by_using_hand_card_request.get_opponent_unique_id(),
+                notice_search_card_by_using_hand_card_request.get_used_hand_card_id(),
+                hand_card_kind_enum,
+                notice_search_card_by_using_hand_card_request.get_found_card_list().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeSearchCardByUsingHandCardResponse::new(response)
     }
 }
