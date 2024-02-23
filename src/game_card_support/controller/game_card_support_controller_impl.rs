@@ -40,6 +40,8 @@ use crate::game_protocol_validation::service::game_protocol_validation_service_i
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
+use crate::game_round::service::game_round_service::GameRoundService;
+use crate::game_round::service::game_round_service_impl::GameRoundServiceImpl;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
@@ -182,8 +184,10 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
     async fn request_to_use_energy_boost_support(&self, energy_boost_support_request_form: EnergyBoostSupportRequestForm) -> EnergyBoostSupportResponseForm {
         println!("GameCardSupportControllerImpl: request_to_use_energy_boost_support()");
 
-        // 1. Redis에서 토큰을 가지고 있는지 검증
-        let account_unique_id = self.is_valid_session(energy_boost_support_request_form.to_session_validation_request()).await;
+        // 1. Redis 에서 토큰을 가지고 있는지 검증
+        let account_unique_id = self.is_valid_session(
+            energy_boost_support_request_form.to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             println!("Invalid session");
             return EnergyBoostSupportResponseForm::new(false)
@@ -269,16 +273,20 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let unit_card_index_string = energy_boost_support_request_form.get_unit_index_number();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
 
-        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let attach_multiple_energy_to_unit_index_response = game_field_unit_service_guard.attach_multiple_energy_to_field_unit_index(
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
+
+        game_field_unit_service_guard.attach_multiple_energy_to_field_unit_index(
             energy_boost_support_request_form.to_attach_multiple_energy_to_unit_index_request(
                 account_unique_id,
                 unit_card_index,
                 *boost_race_reference,
-                energy_from_deck_info.get_energy_count())).await;
+                found_card_from_deck_response.found_card_list().len() as i32)).await;
 
         game_card_support_usage_counter_service.update_support_card_usage_count(
             energy_boost_support_request_form.to_update_support_card_usage_count_request(account_unique_id)).await;
+
+        drop(game_card_support_usage_counter_service);
 
         // 10. 상대방의 고유 id 값을 확보
         let opponent_unique_id = self.get_opponent_unique_id(

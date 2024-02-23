@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
+use crate::notify_player_action_info::entity::attached_energy_info::AttachedEnergyInfo;
 
 #[derive(Debug, Clone)]
 pub struct AttachedEnergyMap {
@@ -45,6 +46,15 @@ impl AttachedEnergyMap {
         }
 
         count
+    }
+
+    pub fn to_attached_energy_info(&self) -> AttachedEnergyInfo {
+        let mut energy_hash = HashMap::new();
+        for (race_enum_value, energy_count) in self.energy_map.iter() {
+            energy_hash.insert(race_enum_value.clone() as i32, energy_count.clone());
+        }
+
+        AttachedEnergyInfo::new(energy_hash)
     }
 }
 
