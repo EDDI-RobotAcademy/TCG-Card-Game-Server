@@ -364,14 +364,18 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let support_card_number = support_card_number_string.parse::<i32>().unwrap();
 
         let check_hand_hacking_response = self.is_valid_protocol(
-            draw_support_request_form.to_check_protocol_hacking_request(account_unique_id, support_card_number)).await;
+            draw_support_request_form
+                .to_check_protocol_hacking_request(account_unique_id, support_card_number)).await;
+
         if !check_hand_hacking_response {
             println!("Hand hacking detected - account unique id : {}", account_unique_id);
             return DrawSupportResponseForm::new(false)
         }
 
         let is_it_support_response = self.is_it_support_card(
-            draw_support_request_form.to_is_it_support_card_request(support_card_number)).await;
+            draw_support_request_form
+                .to_is_it_support_card_request(support_card_number)).await;
+
         if !is_it_support_response {
             println!("Support card hacking detected - account unique id : {}", account_unique_id);
             return DrawSupportResponseForm::new(false)
@@ -397,9 +401,12 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         }
 
         let support_card_effect_summary = self.get_summary_of_support_card(
-            draw_support_request_form.to_summarize_support_card_effect_request(support_card_number)).await;
+            draw_support_request_form
+                .to_summarize_support_card_effect_request(support_card_number)).await;
 
-        let mut game_deck_service_guard = self.game_deck_service.lock().await;
+        let mut game_deck_service_guard =
+            self.game_deck_service.lock().await;
+
         let draw_deck_response =
             game_deck_service_guard.draw_cards_from_deck(
                 draw_support_request_form
@@ -415,9 +422,12 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         drop(game_deck_service_guard);
 
         let usage_hand_card = self.use_support_card(
-            draw_support_request_form.to_use_game_hand_support_card_request(account_unique_id, support_card_number)).await;
+            draw_support_request_form
+                .to_use_game_hand_support_card_request(account_unique_id, support_card_number)).await;
 
-        let mut game_hand_service_guard = self.game_hand_service.lock().await;
+        let mut game_hand_service_guard =
+            self.game_hand_service.lock().await;
+
         game_hand_service_guard.add_card_list_to_hand(
             draw_support_request_form
                 .to_add_card_list_to_hand_request(account_unique_id, drawn_cards.clone())).await;
@@ -451,7 +461,6 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         DrawSupportResponseForm::new(true)
     }
 
-    // 여러 장의 유닛 카드 동시에 검색해서 핸드에 추가하는 형태
     async fn request_to_use_search_unit_support(&self, search_unit_support_request_form: SearchUnitSupportRequestForm) -> SearchUnitSupportResponseForm {
         println!("GameCardSupportControllerImpl: request_to_use_search_unit_support()");
 
@@ -603,48 +612,57 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return RemoveOpponentFieldEnergySupportResponseForm::new(false)
         }
 
-        // let mut game_protocol_validation_service_guard =
-        //     self.game_protocol_validation_service.lock().await;
-        //
-        // let is_this_your_turn_response =
-        //     game_protocol_validation_service_guard.is_this_your_turn(
-        //         remove_opponent_field_energy_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
-        //
-        // if !is_this_your_turn_response.is_success() {
-        //     println!("당신의 턴이 아닙니다.");
-        //     return RemoveOpponentFieldEnergySupportResponseForm::new(false)
-        // }
-        //
-        // drop(game_protocol_validation_service_guard);
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                remove_opponent_field_energy_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
 
         let support_card_number_string = remove_opponent_field_energy_support_request_form.get_support_card_id().to_string();
         let support_card_number = support_card_number_string.parse::<i32>().unwrap();
 
         let check_hand_hacking_response = self.is_valid_protocol(
-            remove_opponent_field_energy_support_request_form.to_check_protocol_hacking_request(account_unique_id, support_card_number)).await;
+            remove_opponent_field_energy_support_request_form
+                .to_check_protocol_hacking_request(account_unique_id, support_card_number)).await;
+
         if !check_hand_hacking_response {
             println!("Hand hacking detected - account unique id : {}", account_unique_id);
             return RemoveOpponentFieldEnergySupportResponseForm::new(false)
         }
 
         let is_it_support_response = self.is_it_support_card(
-            remove_opponent_field_energy_support_request_form.to_is_it_support_card_request(support_card_number)).await;
+            remove_opponent_field_energy_support_request_form
+                .to_is_it_support_card_request(support_card_number)).await;
+
         if !is_it_support_response {
             println!("Support card hacking detected - account unique id : {}", account_unique_id);
             return RemoveOpponentFieldEnergySupportResponseForm::new(false)
         }
 
         let can_use_card_response = self.is_able_to_use(
-            remove_opponent_field_energy_support_request_form.to_can_use_card_request(account_unique_id, support_card_number)).await;
+            remove_opponent_field_energy_support_request_form
+                .to_can_use_card_request(account_unique_id, support_card_number)).await;
+
         if !can_use_card_response {
             println!("A mythical grade card can be used after round 4.");
             return RemoveOpponentFieldEnergySupportResponseForm::new(false)
         }
 
-        let mut game_card_support_usage_counter_service = self.game_card_support_usage_counter_service.lock().await;
+        let mut game_card_support_usage_counter_service =
+            self.game_card_support_usage_counter_service.lock().await;
+
         let check_support_card_usage_count_response =
             game_card_support_usage_counter_service.check_support_card_usage_count(
-                remove_opponent_field_energy_support_request_form.to_check_support_card_usage_count_request(account_unique_id)).await;
+                remove_opponent_field_energy_support_request_form
+                    .to_check_support_card_usage_count_request(account_unique_id)).await;
 
         if check_support_card_usage_count_response.get_used_count() > 0 {
             println!("Support card usage limit over");
@@ -652,16 +670,23 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         }
 
         let card_effect_summary = self.get_summary_of_support_card(
-            remove_opponent_field_energy_support_request_form.to_summarize_support_card_effect_request(support_card_number)).await;
+            remove_opponent_field_energy_support_request_form
+                .to_summarize_support_card_effect_request(support_card_number)).await;
 
         let opponent_unique_id = self.get_opponent_unique_id(
-            remove_opponent_field_energy_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+            remove_opponent_field_energy_support_request_form
+                .to_find_opponent_by_account_id_request(account_unique_id)).await;
 
-        let mut game_field_energy_service_guard = self.game_field_energy_service.lock().await;
-        let remove_field_energy_with_amount_response = game_field_energy_service_guard.remove_field_energy_with_amount(
-            remove_opponent_field_energy_support_request_form.to_remove_field_energy_with_amount_request(
-                opponent_unique_id,
-                card_effect_summary.get_removal_amount_of_opponent_field_energy())).await;
+        let mut game_field_energy_service_guard =
+            self.game_field_energy_service.lock().await;
+
+        let remove_field_energy_with_amount_response =
+            game_field_energy_service_guard.remove_field_energy_with_amount(
+                remove_opponent_field_energy_support_request_form
+                    .to_remove_field_energy_with_amount_request(
+                        opponent_unique_id,
+                        card_effect_summary.get_removal_amount_of_opponent_field_energy())).await;
+
         if !remove_field_energy_with_amount_response.get_is_success() {
             println!("Failed to remove opponent's field energy.");
             return RemoveOpponentFieldEnergySupportResponseForm::new(false)
@@ -681,24 +706,19 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             remove_opponent_field_energy_support_request_form
                 .to_update_support_card_usage_count_request(account_unique_id)).await;
 
-        // let mut notify_player_action_service_guard =
-        //     self.notify_player_action_service.lock().await;
-        //
-        // let notify_opponent_you_use_support_card_response =
-        //     notify_player_action_service_guard
-        //         .notify_opponent_you_use_field_energy_remove_support_card(
-        //             remove_opponent_field_energy_support_request_form
-        //                 .to_notify_to_opponent_you_use_field_energy_remove_support_card_request(
-        //                     opponent_unique_id,
-        //                     support_card_number,
-        //                     card_effect_summary.get_removal_amount_of_opponent_field_energy())).await;
-        //
-        // // TODO: 만약 공지가 제대로 되지 않았다고 하면 어떻게 진행할 것인가; 여기에서 return false 해버리면 지난 logic 은 그대로 수행된 채로 남게 됨
-        // if !notify_opponent_you_use_support_card_response.is_success() {
-        //     println!("Notification Error - Failed to notice field energy remove support card usage to opponent.");
-        // }
-        //
-        // drop(notify_player_action_service_guard);
+        drop(game_card_support_usage_counter_service);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_remove_field_energy_by_using_hand_card(
+            remove_opponent_field_energy_support_request_form
+                .to_notice_remove_energy_of_specific_unit_by_using_hand_card_request(
+                    account_unique_id,
+                    opponent_unique_id,
+                    usage_hand_card)).await;
+
+        drop(notify_player_action_info_service_guard);
 
         RemoveOpponentFieldEnergySupportResponseForm::new(true)
     }

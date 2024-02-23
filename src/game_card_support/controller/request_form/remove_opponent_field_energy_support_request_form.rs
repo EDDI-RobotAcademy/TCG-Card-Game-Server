@@ -10,6 +10,7 @@ use crate::game_protocol_validation::service::request::is_it_support_card_reques
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_field_energy_remove_support_card_request::NotifyToOpponentYouUseFieldEnergyRemoveSupportCardRequest;
+use crate::notify_player_action_info::service::request::notice_remove_field_energy_by_using_hand_card_request::NoticeRemoveFieldEnergyByUsingHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -65,5 +66,15 @@ impl RemoveOpponentFieldEnergySupportRequestForm {
     }
     pub fn to_notify_to_opponent_you_use_field_energy_remove_support_card_request(&self, opponent_unique_id: i32, usage_support_card_id: i32, field_energy_removed: i32) -> NotifyToOpponentYouUseFieldEnergyRemoveSupportCardRequest {
         NotifyToOpponentYouUseFieldEnergyRemoveSupportCardRequest::new(opponent_unique_id, usage_support_card_id, field_energy_removed)
+    }
+    pub fn to_notice_remove_energy_of_specific_unit_by_using_hand_card_request(
+        &self,
+        account_unique_id: i32,
+        opponent_unique_id: i32,
+        used_hand_card_id: i32) -> NoticeRemoveFieldEnergyByUsingHandCardRequest {
+        NoticeRemoveFieldEnergyByUsingHandCardRequest::new(
+            account_unique_id,
+            opponent_unique_id,
+            used_hand_card_id)
     }
 }
