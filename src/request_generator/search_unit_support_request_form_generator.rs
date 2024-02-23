@@ -9,8 +9,10 @@ pub fn create_search_unit_support_request_form(data: &JsonValue) -> Option<Searc
     ) {
         let mut target_unit_card_list: Vec<String> = Vec::new();
         for unit_card_id_value in target_unit_id_list {
-            let unit_card_id_string = unit_card_id_value.to_string();
-            target_unit_card_list.push(unit_card_id_string);
+            if let Some(unit_card_id_str) = unit_card_id_value.as_str() {
+                let unit_card_id_string = unit_card_id_str.to_string();
+                target_unit_card_list.push(unit_card_id_string);
+            }
         }
         Some(SearchUnitSupportRequestForm::new(session_id, support_card_id, target_unit_card_list))
     } else {

@@ -577,17 +577,18 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let opponent_unique_id = self.get_opponent_unique_id(
             search_unit_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
 
-        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_opponent_you_use_support_card_response = notify_player_action_service_guard.notify_opponent_you_use_search_support_card(
-            search_unit_support_request_form.to_notify_opponent_you_use_search_support_card(
-                opponent_unique_id,
-                support_card_number,
-                target_unit_card_number_list.len() as i32)).await;
-        if !notify_opponent_you_use_support_card_response.is_success() {
-            println!("Notification Error - Failed to notice search unit support card usage to opponent.");
-        }
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
 
-        drop(notify_player_action_service_guard);
+        notify_player_action_info_service_guard.notice_search_card_by_using_hand_card(
+            search_unit_support_request_form
+                .to_notice_search_card_by_using_hand_card_request(
+                    account_unique_id,
+                    opponent_unique_id,
+                    usage_hand_card,
+                    target_unit_card_number_list.clone())).await;
+
+        drop(notify_player_action_info_service_guard);
 
         SearchUnitSupportResponseForm::new(true)
     }
@@ -602,19 +603,19 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return RemoveOpponentFieldEnergySupportResponseForm::new(false)
         }
 
-        let mut game_protocol_validation_service_guard =
-            self.game_protocol_validation_service.lock().await;
-
-        let is_this_your_turn_response =
-            game_protocol_validation_service_guard.is_this_your_turn(
-                remove_opponent_field_energy_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
-
-        if !is_this_your_turn_response.is_success() {
-            println!("당신의 턴이 아닙니다.");
-            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
-        }
-
-        drop(game_protocol_validation_service_guard);
+        // let mut game_protocol_validation_service_guard =
+        //     self.game_protocol_validation_service.lock().await;
+        //
+        // let is_this_your_turn_response =
+        //     game_protocol_validation_service_guard.is_this_your_turn(
+        //         remove_opponent_field_energy_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+        //
+        // if !is_this_your_turn_response.is_success() {
+        //     println!("당신의 턴이 아닙니다.");
+        //     return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+        // }
+        //
+        // drop(game_protocol_validation_service_guard);
 
         let support_card_number_string = remove_opponent_field_energy_support_request_form.get_support_card_id().to_string();
         let support_card_number = support_card_number_string.parse::<i32>().unwrap();
@@ -669,27 +670,35 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         drop(game_field_energy_service_guard);
 
         let usage_hand_card = self.use_support_card(
-            remove_opponent_field_energy_support_request_form.to_use_game_hand_support_card_request(account_unique_id, support_card_number)).await;
+            remove_opponent_field_energy_support_request_form
+                .to_use_game_hand_support_card_request(account_unique_id, support_card_number)).await;
 
         self.place_used_card_to_tomb(
-            remove_opponent_field_energy_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+            remove_opponent_field_energy_support_request_form
+                .to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
 
         game_card_support_usage_counter_service.update_support_card_usage_count(
-            remove_opponent_field_energy_support_request_form.to_update_support_card_usage_count_request(account_unique_id)).await;
+            remove_opponent_field_energy_support_request_form
+                .to_update_support_card_usage_count_request(account_unique_id)).await;
 
-        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_opponent_you_use_support_card_response = notify_player_action_service_guard.notify_opponent_you_use_field_energy_remove_support_card(
-            remove_opponent_field_energy_support_request_form.to_notify_to_opponent_you_use_field_energy_remove_support_card_request(
-                opponent_unique_id,
-                support_card_number,
-                card_effect_summary.get_removal_amount_of_opponent_field_energy())).await;
-
-        // TODO: 만약 공지가 제대로 되지 않았다고 하면 어떻게 진행할 것인가; 여기에서 return false 해버리면 지난 logic 은 그대로 수행된 채로 남게 됨
-        if !notify_opponent_you_use_support_card_response.is_success() {
-            println!("Notification Error - Failed to notice field energy remove support card usage to opponent.");
-        }
-
-        drop(notify_player_action_service_guard);
+        // let mut notify_player_action_service_guard =
+        //     self.notify_player_action_service.lock().await;
+        //
+        // let notify_opponent_you_use_support_card_response =
+        //     notify_player_action_service_guard
+        //         .notify_opponent_you_use_field_energy_remove_support_card(
+        //             remove_opponent_field_energy_support_request_form
+        //                 .to_notify_to_opponent_you_use_field_energy_remove_support_card_request(
+        //                     opponent_unique_id,
+        //                     support_card_number,
+        //                     card_effect_summary.get_removal_amount_of_opponent_field_energy())).await;
+        //
+        // // TODO: 만약 공지가 제대로 되지 않았다고 하면 어떻게 진행할 것인가; 여기에서 return false 해버리면 지난 logic 은 그대로 수행된 채로 남게 됨
+        // if !notify_opponent_you_use_support_card_response.is_success() {
+        //     println!("Notification Error - Failed to notice field energy remove support card usage to opponent.");
+        // }
+        //
+        // drop(notify_player_action_service_guard);
 
         RemoveOpponentFieldEnergySupportResponseForm::new(true)
     }
