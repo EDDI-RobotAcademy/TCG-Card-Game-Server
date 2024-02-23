@@ -10,6 +10,7 @@ use crate::notify_player_action_info::entity::attached_energy_info::{AttachedEne
 use crate::notify_player_action_info::entity::player_deck_card_list_use_info::PlayerDeckCardListUseInfo;
 use crate::notify_player_action_info::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
+use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
 use crate::notify_player_action_info::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
@@ -18,7 +19,7 @@ use crate::notify_player_action_info::entity::player_search_card_list_info::Play
 use crate::notify_player_action_info::entity::player_search_count_info::PlayerSearchCountInfo;
 use crate::notify_player_action_info::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
-use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LIST_USE, NOTIFY_DRAW_COUNT, NOTIFY_DRAWN_CARD_LIST, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_HAND_CARD_USE, NOTIFY_SEARCH_CARD_LIST, NOTIFY_SEARCH_COUNT};
+use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LIST_USE, NOTIFY_DRAW_COUNT, NOTIFY_DRAWN_CARD_LIST, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_HAND_CARD_USE, NOTIFY_SEARCH_CARD_LIST, NOTIFY_SEARCH_COUNT};
 
 pub struct NotifyPlayerActionInfoRepositoryImpl;
 
@@ -126,6 +127,17 @@ impl NotifyPlayerActionInfoRepositoryImpl {
         player_search_count_map.insert(notify_player_index, found_card_list.len() as i32);
 
         PlayerSearchCountInfo::new(player_search_count_map)
+    }
+
+    fn get_player_field_energy_info(&self,
+                                    notify_player_index: PlayerIndex,
+                                    field_energy_count: i32
+    ) -> PlayerFieldEnergyInfo {
+
+        let mut player_field_energy_map = HashMap::new();
+        player_field_energy_map.insert(notify_player_index, field_energy_count);
+
+        PlayerFieldEnergyInfo::new(player_field_energy_map)
     }
 }
 
@@ -317,6 +329,61 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         true
     }
 
+    async fn notify_player_remove_field_energy_by_using_hand_card(
+        &mut self,
+        account_unique_id: i32,
+        opponent_unique_id: i32,
+        used_hand_card_id: i32,
+        used_hand_card_type: KindsEnum,
+        remaining_field_energy_count: i32) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_remove_field_energy_by_using_hand_card()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let account_socket_option = connection_context_map_guard.get(&account_unique_id);
+        let account_socket_mutex = account_socket_option.unwrap();
+        let account_socket_guard = account_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+        let account_receiver_transmitter_channel = account_socket_guard.each_client_receiver_transmitter_channel();
+
+        // 상대에게 무슨 카드를 썼는지 공지
+        let player_hand_card_use_info =
+            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_type);
+
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_HAND_CARD_USE(player_hand_card_use_info)))).await;
+
+        let player_field_energy_info_for_opponent =
+            self.get_player_field_energy_info(You, remaining_field_energy_count);
+        let player_field_energy_info_for_account =
+            self.get_player_field_energy_info(Opponent, remaining_field_energy_count);
+
+        // 상대에게 갱신된 필드 에너지 정보 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_ENERGY(player_field_energy_info_for_opponent)))).await;
+
+        // 스스로에게 갱신된 필드 에너지 정보 공지
+        account_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_ENERGY(player_field_energy_info_for_account)))).await;
+
+        true
+    }
+
     async fn notify_player_remove_energy_of_specific_unit_by_using_hand_card(
         &mut self,
         account_unique_id: i32,
@@ -326,7 +393,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         opponent_unit_index: i32,
         attached_energy_info: AttachedEnergyInfo) -> bool {
 
-        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_search_card_by_using_hand_card()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_remove_energy_of_specific_unit_by_using_hand_card()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;

@@ -12,3 +12,4 @@ pub mod player_field_unit_energy_info;
 pub mod player_deck_card_list_use_info;
 pub mod player_search_card_list_info;
 pub mod player_search_count_info;
+pub mod player_field_energy_info;

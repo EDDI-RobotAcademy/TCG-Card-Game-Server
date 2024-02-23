@@ -58,6 +58,7 @@ use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_re
 use crate::notify_player_action_info::entity::player_deck_card_list_use_info::PlayerDeckCardListUseInfo;
 use crate::notify_player_action_info::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
+use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
 use crate::notify_player_action_info::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::notify_player_action_info::entity::player_search_card_list_info::PlayerSearchCardListInfo;
@@ -161,6 +162,7 @@ pub enum ResponseType {
     NOTIFY_DECK_CARD_LIST_USE(PlayerDeckCardListUseInfo),
     NOTIFY_SEARCH_CARD_LIST(PlayerSearchCardListInfo),
     NOTIFY_SEARCH_COUNT(PlayerSearchCountInfo),
+    NOTIFY_FIELD_ENERGY(PlayerFieldEnergyInfo),
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),
