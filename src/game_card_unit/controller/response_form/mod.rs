@@ -1,2 +1,3 @@
 pub mod deploy_unit_response_form;
 pub mod attack_unit_response_form;
+pub mod attack_game_main_character_response_form;
