@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use crate::notify_player_action_info::entity::attached_energy_info::AttachedEnergyInfo;
 use crate::notify_player_action_info::entity::extra_effect_info::ExtraEffectInfo;

@@ -62,6 +62,7 @@ use crate::notify_player_action_info::entity::player_draw_count_info::PlayerDraw
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
 use crate::notify_player_action_info::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
+use crate::notify_player_action_info::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
 use crate::notify_player_action_info::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::notify_player_action_info::entity::player_search_card_list_info::PlayerSearchCardListInfo;
 use crate::notify_player_action_info::entity::player_search_count_info::PlayerSearchCountInfo;
@@ -141,7 +142,6 @@ pub enum ResponseType {
     ATTACH_FIELD_ENERGY_TO_UNIT(AttachFieldEnergyToFieldUnitResponseForm),
     ATTACK_MAIN_CHARACTER(AttackGameMainCharacterResponseForm),
 
-
     // Notification to players
     NOTIFY_OPPONENT_TO_UNIT_DEPLOY(NotifyOpponentToUnitDeploy),
     NOTIFY_OPPONENT_TO_FIELD_ENERGY_USAGE(NotifyOpponentToFieldEnergyUsage),
@@ -167,6 +167,7 @@ pub enum ResponseType {
     NOTIFY_SEARCH_CARD_LIST(PlayerSearchCardListInfo),
     NOTIFY_SEARCH_COUNT(PlayerSearchCountInfo),
     NOTIFY_FIELD_ENERGY(PlayerFieldEnergyInfo),
+    NOTIFY_FIELD_UNIT_HEALTH_POINT(PlayerFieldUnitHealthPointInfo),
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),

@@ -6,6 +6,7 @@ use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
+use crate::game_field_unit::entity::unit_health_point::UnitHealthPoint;
 
 pub trait GameFieldUnitRepository {
     fn create_game_field_unit_object(
@@ -159,4 +160,9 @@ pub trait GameFieldUnitRepository {
         &mut self,
         account_unique_id: i32,
         unit_index: i32) -> &AttachedEnergyMap;
+
+    fn acquire_health_point_of_indexed_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_index: i32) -> &UnitHealthPoint;
 }

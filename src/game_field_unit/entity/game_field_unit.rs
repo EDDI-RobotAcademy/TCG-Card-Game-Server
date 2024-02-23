@@ -21,7 +21,7 @@ impl GameFieldUnit {
         self.game_field_unit.add_field_unit(field_unit)
     }
 
-    pub fn get_get_attached_energy_count_of_field_unit_with_race(&mut self, unit_card_index: usize, race_enum: RaceEnum) -> i32 {
+    pub fn get_attached_energy_count_of_field_unit_with_race(&mut self, unit_card_index: usize, race_enum: RaceEnum) -> i32 {
         self.game_field_unit.get_attached_race_energy_count_of_field_unit(unit_card_index, race_enum)
     }
 
