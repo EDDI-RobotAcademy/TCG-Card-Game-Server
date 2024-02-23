@@ -20,4 +20,11 @@ pub trait NotifyPlayerActionInfoRepository {
         used_hand_card_id: i32,
         used_hand_card_type: KindsEnum,
         drawn_card_list: Vec<i32>) -> bool;
+    async fn notify_player_search_card_by_using_hand_card(
+        &mut self,
+        account_unique_id: i32,
+        opponent_unique_id: i32,
+        used_hand_card_id: i32,
+        used_hand_card_type: KindsEnum,
+        found_card_id_list_from_deck: Vec<i32>) -> bool;
 }
