@@ -49,6 +49,13 @@ impl BattleWaitQueueRepository for BattleWaitQueueRepositoryImpl {
         battle_wait_queue_guard.dequeue_n_players(count).await
     }
 
+    async fn dequeue_player_id_from_wait_queue(&self,account_unique_id:i32) -> Result<bool, Box<dyn Error>> {
+        println!("BattleWaitQueueRepositoryImpl: dequeue_player_id_from_wait_queue()");
+        let battle_wait_queue_guard = self.battle_wait_queue.lock().await;
+         let  result=battle_wait_queue_guard.dequeue_player(account_unique_id).await;
+        Ok(result)
+    }
+
     async fn get_wait_queue_length(&self) -> i32 {
         println!("BattleWaitQueueRepositoryImpl: dequeue_two_players_from_wait_queue()");
         let battle_wait_queue_guard = self.battle_wait_queue.lock().await;

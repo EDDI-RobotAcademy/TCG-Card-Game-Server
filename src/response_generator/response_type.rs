@@ -16,6 +16,7 @@ use crate::account_point::service::response::pay_gold_response::PayGoldResponse;
 use crate::battle_ready_account_hash::service::response::battle_ready_account_hash_response::BattleReadyAccountHashResponse;
 use crate::battle_ready_account_hash::service::response::check_battle_prepare_response::CheckBattlePrepareResponse;
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
+use crate::battle_wait_queue::service::response::battle_match_cancel_response::BattleMatchCancelResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::game_card_active_skill::controller::response_form::non_targeting_active_skill_response_form::NonTargetingActiveSkillResponseForm;
@@ -82,7 +83,8 @@ pub enum ResponseType {
     WHAT_IS_THE_ROOM_NUMBER(WhatIsTheRoomNumberResponse),
     BATTLE_DECK_LIST(AccountDeckListResponse),
     BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(GameDeckStartCardListResponse),
-
+    // Battle Match Cancel
+    BATTLE_MATCH_CANCEL(BattleMatchCancelResponse),
 
     // First Turn Decision
     ROCKPAPERSCISSORS(RockpaperscissorsResponseForm),

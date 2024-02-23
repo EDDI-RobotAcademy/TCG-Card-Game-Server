@@ -1,1 +1,2 @@
 pub mod battle_wait_queue_response;
+pub mod battle_match_cancel_response;
