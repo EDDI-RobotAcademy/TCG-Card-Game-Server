@@ -12,9 +12,11 @@ use crate::notify_player_action_info::repository::notify_player_action_info_repo
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
 use crate::notify_player_action_info::service::request::notice_boost_energy_to_specific_unit_by_using_hand_card_request::{NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest};
 use crate::notify_player_action_info::service::request::notice_draw_card_by_using_hand_card_request::NoticeDrawCardByUsingHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_unit_by_using_hand_card_request::NoticeRemoveEnergyOfSpecificUnitByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_search_card_by_using_hand_card_request::NoticeSearchCardByUsingHandCardRequest;
 use crate::notify_player_action_info::service::response::notice_boost_energy_to_specific_unit_by_using_hand_card_response::{NoticeBoostEnergyToSpecificUnitByUsingHandCardResponse};
 use crate::notify_player_action_info::service::response::notice_draw_card_by_using_hand_card_response::NoticeDrawCardByUsingHandCardResponse;
+use crate::notify_player_action_info::service::response::notice_remove_energy_of_specific_unit_by_using_hand_card_response::NoticeRemoveEnergyOfSpecificUnitByUsingHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_search_card_by_using_hand_card_response::NoticeSearchCardByUsingHandCardResponse;
 
 pub struct NotifyPlayerActionInfoServiceImpl {
@@ -76,7 +78,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
                 notice_boost_energy_to_specific_unit_by_using_hand_card_request.get_account_unique_id(),
                 notice_boost_energy_to_specific_unit_by_using_hand_card_request.get_unit_index()).to_attached_energy_info();
 
-        println!("attached_energy_info: {:?}", attached_energy_info);
+        drop(game_field_unit_repository_guard);
 
         let mut notify_player_action_info_repository_guard =
             self.notify_player_action_info_repository.lock().await;
@@ -156,5 +158,47 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         drop(notify_player_action_info_repository_guard);
 
         NoticeSearchCardByUsingHandCardResponse::new(response)
+    }
+
+    async fn notice_remove_energy_of_specific_unit_by_using_hand_card(
+        &mut self, notice_remove_energy_of_specific_unit_by_using_hand_card_request: NoticeRemoveEnergyOfSpecificUnitByUsingHandCardRequest)
+        -> NoticeRemoveEnergyOfSpecificUnitByUsingHandCardResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_remove_energy_of_specific_unit_by_using_hand_card()");
+
+        let mut card_kind_repository_guard =
+            self.card_kind_repository.lock().await;
+
+        let hand_card_kind_enum =
+            card_kind_repository_guard.get_card_kind(
+                &notice_remove_energy_of_specific_unit_by_using_hand_card_request.get_used_hand_card_id()).await;
+
+        drop(card_kind_repository_guard);
+
+        let mut game_field_unit_repository_guard=
+            self.game_field_unit_repository.lock().await;
+
+        let attached_energy_info =
+            game_field_unit_repository_guard.acquire_energy_map_of_indexed_unit(
+                notice_remove_energy_of_specific_unit_by_using_hand_card_request.get_account_unique_id(),
+                notice_remove_energy_of_specific_unit_by_using_hand_card_request.get_unit_index()).to_attached_energy_info();
+
+        drop(game_field_unit_repository_guard);
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notify_player_remove_energy_of_specific_unit_by_using_hand_card(
+                notice_remove_energy_of_specific_unit_by_using_hand_card_request.get_account_unique_id(),
+                notice_remove_energy_of_specific_unit_by_using_hand_card_request.get_opponent_unique_id(),
+                notice_remove_energy_of_specific_unit_by_using_hand_card_request.get_used_hand_card_id(),
+                hand_card_kind_enum,
+                notice_remove_energy_of_specific_unit_by_using_hand_card_request.get_unit_index(),
+                attached_energy_info).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeRemoveEnergyOfSpecificUnitByUsingHandCardResponse::new(response)
     }
 }

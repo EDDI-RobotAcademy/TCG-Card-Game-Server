@@ -204,6 +204,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         true
     }
+
     async fn notify_player_draw_card_by_using_hand_card(
         &mut self,
         account_unique_id: i32,
@@ -259,6 +260,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         true
     }
+
     async fn notify_player_search_card_by_using_hand_card(
         &mut self,
         account_unique_id: i32,
@@ -311,6 +313,62 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
             Arc::new(
                 AsyncMutex::new(
                     NOTIFY_SEARCH_CARD_LIST(player_search_card_list_info_for_account)))).await;
+
+        true
+    }
+
+    async fn notify_player_remove_energy_of_specific_unit_by_using_hand_card(
+        &mut self,
+        account_unique_id: i32,
+        opponent_unique_id: i32,
+        used_hand_card_id: i32,
+        used_hand_card_type: KindsEnum,
+        opponent_unit_index: i32,
+        attached_energy_info: AttachedEnergyInfo) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_search_card_by_using_hand_card()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let account_socket_option = connection_context_map_guard.get(&account_unique_id);
+        let account_socket_mutex = account_socket_option.unwrap();
+        let account_socket_guard = account_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+        let account_receiver_transmitter_channel = account_socket_guard.each_client_receiver_transmitter_channel();
+
+        // 상대에게 무슨 카드를 썼는지 공지
+        let player_hand_card_use_info =
+            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_type);
+
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_HAND_CARD_USE(player_hand_card_use_info)))).await;
+
+        let player_field_unit_energy_info_for_opponent =
+            self.get_player_field_unit_energy_info(You, opponent_unit_index, attached_energy_info.clone());
+        let player_field_unit_energy_info_for_account =
+            self.get_player_field_unit_energy_info(Opponent, opponent_unit_index, attached_energy_info.clone());
+
+        // 상대에게 내 필드 유닛의 에너지 정보 업데이트 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_UNIT_ENERGY(player_field_unit_energy_info_for_opponent)))).await;
+
+        // 스스로에게 내 필드 유닛의 에너지 정보 업데이트 공지
+        account_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_UNIT_ENERGY(player_field_unit_energy_info_for_account)))).await;
 
         true
     }
