@@ -4,9 +4,11 @@ use crate::account_deck_card::controller::request_form::account_deck_card_list_r
 use crate::account_deck_card::controller::request_form::account_deck_configuration_request_form::AccountDeckConfigurationRequestForm;
 
 pub fn create_account_deck_configuration_request_form(data: &JsonValue) -> Option<AccountDeckConfigurationRequestForm> {
-    if let (Some(deck_id), Some(card_list)) = (
+    if let (Some(deck_id), Some(card_list), Some(sessionInfo)) = (
         data.get("deckId").and_then(|v| v.as_i64()),
-        data.get("cardIdList").and_then(|v| v.as_array())
+        data.get("cardIdList").and_then(|v| v.as_array()),
+        data.get("sessionInfo").and_then(|v| v.as_str()),
+
     ) {
         let deck_id_i32 = deck_id as i32;
         let mut card_vec_i32 = Vec::new();
@@ -17,7 +19,7 @@ pub fn create_account_deck_configuration_request_form(data: &JsonValue) -> Optio
                 card_vec_i32.push(card_id_i32);
             }
         }
-        Some(AccountDeckConfigurationRequestForm::new(deck_id_i32, card_vec_i32))
+        Some(AccountDeckConfigurationRequestForm::new(deck_id_i32, card_vec_i32, sessionInfo.to_string()))
     } else {
         None
     }

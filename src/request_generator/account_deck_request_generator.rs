@@ -38,9 +38,12 @@ pub fn create_deck_modify_request(data: &JsonValue) -> Option<AccountDeckModifyR
 }
 
 pub fn create_deck_delete_request(data: &JsonValue) -> Option<AccountDeckDeleteRequest> {
-    if let Some(deck_unique_id) = data.get("deckId").and_then(|v| v.as_i64()) {
+    if let (Some(deck_unique_id), Some(account_session_id))= (
+        data.get("deckId").and_then(|v| v.as_i64()),
+        data.get("sessionInfo").and_then(|v| v.as_str())
+    ) {
         let deck_unique_id_i32 = deck_unique_id as i32;
-        Some(AccountDeckDeleteRequest::new(deck_unique_id_i32))
+        Some(AccountDeckDeleteRequest::new(deck_unique_id_i32, account_session_id.to_string()))
     } else {
         None
     }

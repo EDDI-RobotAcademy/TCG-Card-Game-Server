@@ -199,4 +199,12 @@ impl AccountDeckRepository for AccountDeckRepositoryImpl {
             }
         }
     }
+    async fn deck_owner_verification(&self, account_deck_list: Vec<HashMap<i32, String>>, deck_id: i32) -> bool {
+        let mut valid_deck_owner = false;
+        for deck in account_deck_list {
+            if deck.contains_key(&deck_id){ valid_deck_owner = true; }
+        }
+        valid_deck_owner
+    }
+
 }

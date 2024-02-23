@@ -2,6 +2,8 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
+use crate::account_deck::service::account_deck_service::AccountDeckService;
+use crate::account_deck::service::account_deck_service_impl::AccountDeckServiceImpl;
 
 use crate::account_deck_card::controller::account_deck_card_controller::AccountDeckCardController;
 use crate::account_deck_card::controller::request_form::account_deck_card_list_request_form::AccountDeckCardListRequestFrom;
@@ -18,15 +20,18 @@ use crate::deck_configuration_validator::service::deck_configuration_validator_s
 
 pub struct AccountDeckCardControllerImpl {
     account_deck_card_service: Arc<AsyncMutex<AccountDeckCardServiceImpl>>,
-    deck_configuration_validator_service: Arc<AsyncMutex<DeckConfigurationValidatorServiceImpl>>
+    deck_configuration_validator_service: Arc<AsyncMutex<DeckConfigurationValidatorServiceImpl>>,
+    account_deck_service: Arc<AsyncMutex<AccountDeckServiceImpl>>,
 }
 
 impl AccountDeckCardControllerImpl {
     pub fn new(account_deck_card_service: Arc<AsyncMutex<AccountDeckCardServiceImpl>>,
-               deck_configuration_validator_service: Arc<AsyncMutex<DeckConfigurationValidatorServiceImpl>>) -> Self {
+               deck_configuration_validator_service: Arc<AsyncMutex<DeckConfigurationValidatorServiceImpl>>,
+               account_deck_service: Arc<AsyncMutex<AccountDeckServiceImpl>>, ) -> Self {
         AccountDeckCardControllerImpl {
             account_deck_card_service,
-            deck_configuration_validator_service
+            deck_configuration_validator_service,
+            account_deck_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<AccountDeckCardControllerImpl>> {
@@ -36,7 +41,8 @@ impl AccountDeckCardControllerImpl {
                     AsyncMutex::new(
                         AccountDeckCardControllerImpl::new(
                             AccountDeckCardServiceImpl::get_instance(),
-                            DeckConfigurationValidatorServiceImpl::get_instance())));
+                            DeckConfigurationValidatorServiceImpl::get_instance(),
+                            AccountDeckServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -48,8 +54,24 @@ impl AccountDeckCardController for AccountDeckCardControllerImpl {
         &self, account_deck_configuration_request_form: AccountDeckConfigurationRequestForm) -> AccountDeckConfigurationResponseForm {
         println!("AccountDeckCardControllerImpl: deck_configuration_register()");
 
+        let account_deck_service_guard = self.account_deck_service.lock().await;
+        let account_deck_owner_verification = account_deck_service_guard.account_deck_owner_verification(
+            account_deck_configuration_request_form.account_session_id(),
+            account_deck_configuration_request_form.deck_id_form()).await;
+        if account_deck_owner_verification == false {
+            return AccountDeckConfigurationResponseForm::new(false, "not your deck".to_string());
+        }
+
         let deck_configuration_validator_service_guard =
             self.deck_configuration_validator_service.lock().await;
+
+        let validation_card_owner = deck_configuration_validator_service_guard
+            .do_you_have_this_card(
+                account_deck_configuration_request_form.card_id_list_form(),
+                account_deck_configuration_request_form.account_session_id()).await;
+        if validation_card_owner == false {
+            return AccountDeckConfigurationResponseForm::new(false, "not your card".to_string())
+        }
 
         let validation_result = deck_configuration_validator_service_guard
             .validate_deck(&account_deck_configuration_request_form.card_id_list_form()).await;
@@ -85,8 +107,24 @@ impl AccountDeckCardController for AccountDeckCardControllerImpl {
         &self, account_deck_card_modify_request_form: AccountDeckCardModifyRequestForm) -> AccountDeckCardModifyResponseForm {
         println!("AccountDeckCardControllerImpl: deck_card_modify()");
 
+        let account_deck_service_guard = self.account_deck_service.lock().await;
+        let account_deck_owner_verification = account_deck_service_guard.account_deck_owner_verification(
+            account_deck_card_modify_request_form.account_session_id(),
+            account_deck_card_modify_request_form.deck_id_form()).await;
+        if account_deck_owner_verification == false {
+            return AccountDeckCardModifyResponseForm::new(false);
+        }
+
         let deck_configuration_validator_service_guard =
             self.deck_configuration_validator_service.lock().await;
+
+        let validation_card_owner = deck_configuration_validator_service_guard
+            .do_you_have_this_card(
+                account_deck_card_modify_request_form.card_id_list_form(),
+                account_deck_card_modify_request_form.account_session_id()).await;
+        if validation_card_owner == false {
+            return AccountDeckCardModifyResponseForm::new(false)
+        }
 
         let validation_result = deck_configuration_validator_service_guard
             .validate_deck(&account_deck_card_modify_request_form.card_id_list_form()).await;
@@ -120,17 +158,17 @@ mod tests {
 
         let card_list = vec![
             19, 8, 8, 8, 9, 9, 25, 25, 25, 27, 27, 27, 151, 20, 20, 20, 2, 2, 2,
-            26, 26, 26, 30, 31, 31, 31, 32, 32, 32, 33, 33, 35, 35, 36, 36, 93, 93, 93, 100, 100
+            26, 26, 26, 30, 31, 31, 31, 32, 32, 32, 33, 33, 35, 35, 36, 36, 93, 93, 93, 130, 130
         ];
 
         let deck_configuration_request_form
-            = AccountDeckCardModifyRequestForm::new(4, card_list);
+            = AccountDeckConfigurationRequestForm::new(23, card_list, "qwer".to_string());
 
         let account_deck_card_controller = AccountDeckCardControllerImpl::get_instance();
         let account_deck_card_controller_guard = account_deck_card_controller.lock().await;
 
         let result = account_deck_card_controller_guard
-            .deck_card_modify(deck_configuration_request_form).await;
+            .deck_configuration_register(deck_configuration_request_form).await;
 
         println!("is_saved: {:?}", result.get_is_success());
     }
