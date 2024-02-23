@@ -15,6 +15,7 @@ use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
+use crate::game_field_unit::entity::unit_health_point::UnitHealthPoint;
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 
 pub struct GameFieldUnitRepositoryImpl {
@@ -451,6 +452,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
 
         return game_field_unit_card_list[unit_index as usize].get_attached_energy()
+    }
+
+    fn acquire_health_point_of_indexed_unit(&mut self, account_unique_id: i32, unit_index: i32) -> &UnitHealthPoint {
+        println!("GameFieldUnitRepositoryImpl: acquire_health_point_of_indexed_unit()");
+
+        let game_field_unit = self.game_field_unit_map.get_mut(&account_unique_id).unwrap();
+        let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
+
+        return game_field_unit_card_list[unit_index as usize].get_unit_health_point()
     }
 }
 

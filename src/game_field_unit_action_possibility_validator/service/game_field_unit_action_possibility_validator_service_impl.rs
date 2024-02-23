@@ -90,7 +90,7 @@ impl GameFieldUnitActionPossibilityValidatorServiceImpl {
             .get_game_field_unit_map()
             .get_mut(&account_unique_id)
             .map(|mut field_unit| field_unit
-                .get_get_attached_energy_count_of_field_unit_with_race(field_unit_index as usize,
+                .get_attached_energy_count_of_field_unit_with_race(field_unit_index as usize,
                                                                        race_enum))
     }
 
