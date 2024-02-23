@@ -32,6 +32,7 @@ mod rockpaperscissors_request_generator;
 mod check_rockpaperscissors_winner_request_generator;
 pub mod surrender_request_generator;
 mod battle_match_cancel_request_generator;
+mod remain_deck_card_count_request_generator;
 
 
 

@@ -9,6 +9,8 @@ use crate::account_deck_card::controller::account_deck_card_controller::AccountD
 use crate::account_deck_card::controller::account_deck_card_controller_impl::AccountDeckCardControllerImpl;
 use crate::account_point::service::account_point_service::AccountPointService;
 use crate::account_point::service::account_point_service_impl::AccountPointServiceImpl;
+use crate::battle_field_info::service::battle_field_info_service::BattleFieldInfoService;
+use crate::battle_field_info::service::battle_field_info_service_impl::BattleFieldInfoServiceImpl;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service::BattleReadyAccountHashService;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service_impl::BattleReadyAccountHashServiceImpl;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
@@ -66,6 +68,7 @@ use crate::request_generator::game_next_turn_request_generator::create_game_turn
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::non_targeting_active_skill_request_form_generator::create_non_targeting_active_skill_request_form;
 use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
+use crate::request_generator::remain_deck_card_count_request_generator::create_remain_deck_card_count_request;
 use crate::request_generator::rockpaperscissors_request_generator::create_rockpaperscissors_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
 use crate::request_generator::targeting_active_skill_request_form_generator::create_targeting_active_skill_request_form;
@@ -504,6 +507,23 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 } else {
                     None
                 }
+            },
+                101=> {
+            // battle field info remain my deck card count
+                if let Some(request) = create_remain_deck_card_count_request(&data) {
+                let battle_field_info_service_mutex = BattleFieldInfoServiceImpl::get_instance();
+                let mut battle_field_info_service = battle_field_info_service_mutex.lock().await;
+
+                let response = battle_field_info_service.get_remain_deck_card_count(request).await;
+                let response_type = Some(ResponseType::REMAIN_DECK_CARD_COUNT(response));
+
+                    response_type
+                }
+                else
+                {
+                    None
+                }
+
             },
             1000 => {
                 // Unit attack
