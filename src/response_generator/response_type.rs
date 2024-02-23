@@ -54,8 +54,10 @@ use crate::notify_player_action::entity::notify_opponent_to_damage_main_characte
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
+use crate::notify_player_action_info::entity::player_deck_card_list_use_info::PlayerDeckCardListUseInfo;
 use crate::notify_player_action_info::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
+use crate::notify_player_action_info::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::player_hand_use_info::PlayerHandUseInfo;
 use crate::rockpaperscissors::controller::response_form::check_rockpaperscissors_winner_response_form::CheckRockpaperscissorsWinnerResponseForm;
 use crate::rockpaperscissors::controller::response_form::rockpaperscissors_response_form::RockpaperscissorsResponseForm;
@@ -149,9 +151,11 @@ pub enum ResponseType {
     NOTIFY_OPPONENT_TO_DESTORY_DECK_ITEM_USAGE(NotifyOpponentToDestroyDeckItemUsage),
     NOTIFY_OPPONENT_TO_FIELD_UNIT_ENERGY_REMOVAL_ITEM_USAGE(NotifyOpponentToFieldUnitEnergyRemovalItemUsage),
 
-    NOTIFY_HAND_USE(PlayerHandUseInfo),
+    NOTIFY_HAND_CARD_USE(PlayerHandUseInfo),
     NOTIFY_DRAWN_CARD_LIST(PlayerDrawnCardListInfo),
     NOTIFY_DRAW_COUNT(PlayerDrawCountInfo),
+    NOTIFY_FIELD_UNIT_ENERGY(PlayerFieldUnitEnergyInfo),
+    NOTIFY_DECK_CARD_LIST_USE(PlayerDeckCardListUseInfo),
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),
