@@ -5,6 +5,8 @@ use crate::game_card_support_usage_counter::service::request::check_support_card
 use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_deck::service::request::found_card_from_deck_request::FoundCardFromDeckRequest;
+use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
+use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
@@ -12,6 +14,7 @@ use crate::game_protocol_validation::service::request::is_it_support_card_reques
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_boost_card_request::NotifyToOpponentYouUseEnergyBoostCardRequest;
+use crate::notify_player_action_info::service::request::notice_boost_energy_to_specific_unit_by_using_hand_card_request::NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -93,19 +96,28 @@ impl EnergyBoostSupportRequestForm {
         AttachMultipleEnergyToUnitIndexRequest::new(account_unique_id, unit_number, boost_race, energy_count)
     }
 
-    pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
+    pub fn to_shuffle_deck_request(&self) -> GameDeckCardShuffleRequest {
+        GameDeckCardShuffleRequest::new( self.session_id.clone() )
+    }
+
+    pub fn to_find_opponent_by_account_id_request(&self,
+                                                  account_unique_id: i32) -> FindOpponentByAccountIdRequest {
         FindOpponentByAccountIdRequest::new(
             account_unique_id)
     }
 
-    pub fn to_notify_to_opponent_you_use_energy_card_request(
-        &self, opponent_unique_id: i32,
-        unit_card_index: i32,
-        usage_hand_card_id: i32,
-        boosting_energy_count: i32,
-        boosting_energy_card_id: i32) -> NotifyToOpponentYouUseEnergyBoostCardRequest {
-
-            NotifyToOpponentYouUseEnergyBoostCardRequest::new(
-                opponent_unique_id, unit_card_index, usage_hand_card_id, boosting_energy_count, boosting_energy_card_id)
+    pub fn to_notice_boost_energy_to_specific_unit_by_using_hand_card_request(
+        &self,
+        account_unique_id: i32,
+        opponent_unique_id: i32,
+        used_hand_card_id: i32,
+        found_energy_card_id_list: Vec<i32>,
+        unit_index: i32) -> NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest {
+        NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest::new(
+            account_unique_id,
+            opponent_unique_id,
+            used_hand_card_id,
+            found_energy_card_id_list,
+            unit_index)
     }
 }

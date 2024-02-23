@@ -9,7 +9,9 @@ use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repo
 use crate::battle_wait_queue::repository::battle_wait_queue_repository::BattleWaitQueueRepository;
 use crate::battle_wait_queue::repository::battle_wait_queue_repository_impl::BattleWaitQueueRepositoryImpl;
 use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueueService;
+use crate::battle_wait_queue::service::request::battle_match_cancel_request::BattleMatchCancelRequest;
 use crate::battle_wait_queue::service::request::battle_wait_queue_request::BattleWaitQueueRequest;
+use crate::battle_wait_queue::service::response::battle_match_cancel_response::BattleMatchCancelResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::match_waiting_timer::repository::match_waiting_timer_repository::MatchWaitingTimerRepository;
 use crate::match_waiting_timer::repository::match_waiting_timer_repository_impl::MatchWaitingTimerRepositoryImpl;
@@ -83,5 +85,23 @@ impl BattleWaitQueueService for BattleWaitQueueServiceImpl {
         }
 
         return BattleWaitQueueResponse::new(false)
+    }
+
+    async fn dequeue_player_id_from_wait_queue(&self, battle_match_cancel_request: BattleMatchCancelRequest) -> BattleMatchCancelResponse {
+        println!("BattleWaitQueueServiceImpl: battle_match_cancel()");
+        let account_unique_id = self.parse_account_unique_id(battle_match_cancel_request.get_session_id()).await;
+
+        let battle_wait_queue_repository = self.battle_wait_queue_repository.lock().await;
+
+        let mut battle_ready_account_hash_repository = self.battle_ready_account_hash_repository.lock().await;
+        battle_ready_account_hash_repository.save_battle_ready_account_hash(account_unique_id, BattleReadyAccountHashStatus::FAIL).await;
+
+        let response = battle_wait_queue_repository.dequeue_player_id_from_wait_queue(account_unique_id).await.unwrap();
+
+        if response==true {
+            return BattleMatchCancelResponse::new(true)
+        }
+
+        return BattleMatchCancelResponse::new(false)
     }
 }

@@ -16,4 +16,5 @@ pub trait AccountDeckService {
     async fn account_deck_list(&self, account_deck_list_request: AccountDeckListRequest) -> AccountDeckListResponse;
     async fn account_deck_modify(&self, account_deck_modify_request: AccountDeckModifyRequest) -> AccountDeckModifyResponse;
     async fn account_deck_delete(&self, account_deck_delete_request: AccountDeckDeleteRequest) -> AccountDeckDeleteResponse;
+    async fn account_deck_owner_verification(&self, account_session_id: &str, deck_id: i32) -> bool;
 }
