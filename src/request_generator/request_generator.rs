@@ -59,6 +59,7 @@ use crate::game_winner_check::service::game_winner_check_service_impl::GameWinne
 use crate::request_generator::attach_field_energy_to_field_unit_request_form_generator::create_attach_field_energy_to_field_unit_request_form;
 use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
+use crate::request_generator::battle_match_cancel_request_generator::create_battle_match_cancel_request;
 use crate::request_generator::check_rockpaperscissors_winner_request_generator::create_check_rockpaperscissors_winner_request_form;
 use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item_request_form, create_opponent_field_unit_energy_removal_item_request_form, create_target_death_item_request_form};
 use crate::request_generator::game_next_turn_request_generator::create_game_turn_request_form;
@@ -203,7 +204,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             },
             13 => {
                 // Battle Match Cancel
-                None
+                if let Some(request) = create_battle_match_cancel_request(&data) {
+                    println!("request generator: battle match request protocol");
+                    let battle_wait_queue_service_mutex = BattleWaitQueueServiceImpl::get_instance();
+                    let mut battle_wait_queue_service = battle_wait_queue_service_mutex.lock().await;
+
+                    let response = battle_wait_queue_service.dequeue_player_id_from_wait_queue(request).await;
+                    let response_type = Some(ResponseType::BATTLE_MATCH_CANCEL(response));
+                    println!("response_type: {:?}", response_type);
+
+                    response_type
+                } else {
+                    None
+                }
+
             },
             14 => {
                 // Check Battle Prepare (CHECK_BATTLE_PREPARE)
