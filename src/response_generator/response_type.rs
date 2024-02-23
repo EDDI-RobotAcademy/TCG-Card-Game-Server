@@ -33,6 +33,7 @@ use crate::game_card_support::controller::response_form::draw_support_response_f
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_card_support::controller::response_form::remove_opponent_field_energy_support_response_form::RemoveOpponentFieldEnergySupportResponseForm;
 use crate::game_card_support::controller::response_form::search_unit_support_response_form::SearchUnitSupportResponseForm;
+use crate::game_card_unit::controller::response_form::attack_game_main_character_response_form::AttackGameMainCharacterResponseForm;
 use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
 use crate::game_card_unit::controller::response_form::attack_unit_response_form::AttackUnitResponseForm;
 use crate::game_deck::service::response::game_deck_start_card_list_response::{GameDeckStartCardListResponse};
@@ -136,6 +137,7 @@ pub enum ResponseType {
     TARGETING_ACTIVE_SKILL(TargetingActiveSkillResponseForm),
     NON_TARGETING_ACTIVE_SKILL(NonTargetingActiveSkillResponseForm),
     ATTACH_FIELD_ENERGY_TO_UNIT(AttachFieldEnergyToFieldUnitResponseForm),
+    ATTACK_MAIN_CHARACTER(AttackGameMainCharacterResponseForm),
 
 
     // Notification to players
