@@ -485,6 +485,20 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         return game_field_unit_card_list[unit_index as usize].get_unit_health_point()
     }
 
+    fn acquire_current_health_point_of_all_unit(&mut self, account_unique_id: i32) -> Vec<i32> {
+        println!("GameFieldUnitRepositoryImpl: acquire_current_health_point_of_all_unit()");
+
+        let game_field_unit = self.game_field_unit_map.get_mut(&account_unique_id).unwrap();
+        let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
+
+        let mut current_health_point_of_all_unit = Vec::new();
+        for game_field_unit_card in game_field_unit_card_list {
+            current_health_point_of_all_unit.push(game_field_unit_card.get_unit_health_point().get_current_health_point());
+        }
+
+        current_health_point_of_all_unit
+    }
+
     fn acquire_extra_effect_list_of_indexed_unit(&mut self, account_unique_id: i32, unit_index: i32) -> Vec<ExtraEffect> {
         println!("GameFieldUnitRepositoryImpl: acquire_extra_effect_list_of_indexed_unit()");
 

@@ -31,6 +31,7 @@ use crate::game_field_unit::service::request::execute_turn_action_request::Execu
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
+use crate::game_field_unit::service::request::get_current_health_point_of_all_field_unit_request::GetCurrentHealthPointOfAllFieldUnitRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
@@ -56,6 +57,7 @@ use crate::game_field_unit::service::response::execute_turn_action_response::Exe
 use crate::game_field_unit::service::response::find_active_skill_usage_unit_id_by_index_response::FindActiveSkillUsageUnitIdByIndexResponse;
 use crate::game_field_unit::service::response::find_target_unit_id_by_index_response::FindTargetUnitIdByIndexResponse;
 use crate::game_field_unit::service::response::get_current_attached_energy_of_field_unit_by_index_response::GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
+use crate::game_field_unit::service::response::get_current_health_point_of_all_field_unit_response::GetCurrentHealthPointOfAllFieldUnitResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_uique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
 use crate::game_field_unit::service::response::judge_death_of_every_unit_response::JudgeDeathOfEveryUnitResponse;
@@ -247,15 +249,23 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         println!("GameFieldUnitServiceImpl: get_current_health_point_of_field_unit_by_index()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        let found_field_unit_response = game_field_unit_repository_guard.find_indexed_unit(
-            get_current_health_point_of_field_unit_by_index_request.get_account_unique_id(),
-            get_current_health_point_of_field_unit_by_index_request.get_field_unit_index());
+        let account_unique_id = get_current_health_point_of_field_unit_by_index_request.get_account_unique_id();
+        let unit_index = get_current_health_point_of_field_unit_by_index_request.get_field_unit_index();
+        let current_health_point_of_indexed_unit =
+            game_field_unit_repository_guard.acquire_current_health_point_of_all_unit(account_unique_id)[unit_index as usize];
 
-        return if let Some(found_field_unit) = found_field_unit_response {
-            GetCurrentHealthPointOfFieldUnitByIndexResponse::new(found_field_unit.get_unit_health_point().get_current_health_point())
-        } else {
-            GetCurrentHealthPointOfFieldUnitByIndexResponse::new(-1)
-        }
+        GetCurrentHealthPointOfFieldUnitByIndexResponse::new(current_health_point_of_indexed_unit)
+    }
+
+    async fn get_current_health_point_of_all_field_unit(&self, get_current_health_point_of_all_field_unit_request: GetCurrentHealthPointOfAllFieldUnitRequest) -> GetCurrentHealthPointOfAllFieldUnitResponse {
+        println!("GameFieldUnitServiceImpl: get_current_health_point_of_all_field_unit()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let account_unique_id = get_current_health_point_of_all_field_unit_request.get_account_unique_id();
+        let current_health_point_of_indexed_unit =
+            game_field_unit_repository_guard.acquire_current_health_point_of_all_unit(account_unique_id);
+
+        GetCurrentHealthPointOfAllFieldUnitResponse::new(current_health_point_of_indexed_unit)
     }
 
     async fn attach_special_energy_to_field_unit_index(&mut self, attach_special_energy_to_unit_index_request: AttachSpecialEnergyToUnitIndexRequest) -> AttachSpecialEnergyToUnitIndexResponse {
@@ -406,23 +416,19 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
     }
 
     async fn get_current_attached_energy_of_field_unit_by_index(&mut self, get_current_attached_energy_of_field_unit_by_index_request: GetCurrentAttachedEnergyOfFieldUnitByIndexRequest) -> GetCurrentAttachedEnergyOfFieldUnitByIndexResponse {
-        println!("GameFieldUnitServiceImpl: detach_multiple_energy_from_field_unit()");
+        println!("GameFieldUnitServiceImpl: get_current_attached_energy_of_field_unit_by_index()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        let found_field_unit_response = game_field_unit_repository_guard.find_indexed_unit(
+        let field_unit_energy_map = game_field_unit_repository_guard.acquire_energy_map_of_indexed_unit(
             get_current_attached_energy_of_field_unit_by_index_request.get_account_unique_id(),
             get_current_attached_energy_of_field_unit_by_index_request.get_field_unit_index());
 
-        return if let Some(found_field_unit) = found_field_unit_response {
-            GetCurrentAttachedEnergyOfFieldUnitByIndexResponse::new(
-                found_field_unit
-                    .get_attached_energy()
-                        .get_energy_quantity(
-                            &RaceEnumValue::from(
-                                *get_current_attached_energy_of_field_unit_by_index_request.get_energy_race() as i32)).unwrap_or(&-1).clone())
-        } else {
-            GetCurrentAttachedEnergyOfFieldUnitByIndexResponse::new(-1)
-        }
+        let attached_energy_count =
+            *field_unit_energy_map.get_energy_quantity(
+                &RaceEnumValue::from(
+                    *get_current_attached_energy_of_field_unit_by_index_request.get_energy_race() as i32)).unwrap();
+
+        GetCurrentAttachedEnergyOfFieldUnitByIndexResponse::new(attached_energy_count)
     }
 
     // TODO: Need Refactor
@@ -440,7 +446,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
     }
 
     async fn acquire_unit_passive_status_list(&mut self, acquire_unit_passive_status_list_request: AcquireUnitPassiveStatusListRequest) -> AcquireUnitPassiveStatusListResponse {
-        println!("GameFieldUnitServiceImpl: get_game_field_unit_card_of_account_unique_id()");
+        println!("GameFieldUnitServiceImpl: acquire_unit_passive_status_list()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let passive_status_list =

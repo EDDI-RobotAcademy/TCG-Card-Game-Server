@@ -22,3 +22,4 @@ pub mod reset_turn_action_of_all_field_unit_request;
 pub mod acquire_unit_passive_status_list_request;
 pub mod judge_death_of_every_unit_request;
 pub mod attack_every_unit_with_extra_effect_request;
+pub mod get_current_health_point_of_all_field_unit_request;

@@ -20,6 +20,7 @@ use crate::game_field_unit::service::request::execute_turn_action_request::Execu
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
+use crate::game_field_unit::service::request::get_current_health_point_of_all_field_unit_request::GetCurrentHealthPointOfAllFieldUnitRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
@@ -45,6 +46,7 @@ use crate::game_field_unit::service::response::execute_turn_action_response::Exe
 use crate::game_field_unit::service::response::find_active_skill_usage_unit_id_by_index_response::FindActiveSkillUsageUnitIdByIndexResponse;
 use crate::game_field_unit::service::response::find_target_unit_id_by_index_response::FindTargetUnitIdByIndexResponse;
 use crate::game_field_unit::service::response::get_current_attached_energy_of_field_unit_by_index_response::GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
+use crate::game_field_unit::service::response::get_current_health_point_of_all_field_unit_response::GetCurrentHealthPointOfAllFieldUnitResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_uique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
 use crate::game_field_unit::service::response::judge_death_of_every_unit_response::JudgeDeathOfEveryUnitResponse;
@@ -63,6 +65,7 @@ pub trait GameFieldUnitService {
     async fn execute_turn_action(&mut self, execute_turn_action_request: ExecuteTurnActionRequest) -> ExecuteTurnActionResponse;
     async fn reset_turn_action_of_all_field_unit(&mut self, reset_turn_action_of_all_field_unit_request: ResetTurnActionOfAllFieldUnitRequest) -> ResetTurnActionOfAllFieldUnitResponse;
     async fn get_current_health_point_of_field_unit_by_index(&self, get_current_health_point_of_field_unit_by_index_request: GetCurrentHealthPointOfFieldUnitByIndexRequest) -> GetCurrentHealthPointOfFieldUnitByIndexResponse;
+    async fn get_current_health_point_of_all_field_unit(&self, get_current_health_point_of_all_field_unit_request: GetCurrentHealthPointOfAllFieldUnitRequest) -> GetCurrentHealthPointOfAllFieldUnitResponse;
     async fn attach_special_energy_to_field_unit_index(&mut self, attach_special_energy_to_unit_index_request: AttachSpecialEnergyToUnitIndexRequest) -> AttachSpecialEnergyToUnitIndexResponse;
     async fn find_active_skill_usage_unit_id_by_index(&mut self, find_active_skill_usage_unit_id_by_index_request: FindActiveSkillUsageUnitIdByIndexRequest) -> FindActiveSkillUsageUnitIdByIndexResponse;
     async fn apply_status_effect_damage_iteratively(&mut self, apply_status_effect_damage_iteratively_request: ApplyStatusEffectDamageIterativelyRequest) -> ApplyStatusEffectDamageIterativelyResponse;
