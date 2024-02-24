@@ -7,6 +7,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::connection_context::repository::connection_context_repository_impl::ConnectionContextRepositoryImpl;
 use crate::notify_player_action_info::entity::attached_energy_info::{AttachedEnergyInfo};
+use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::notify_player_action_info::entity::field_unit_survival_info::FieldUnitSurvivalInfo;
 use crate::notify_player_action_info::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
@@ -76,15 +77,11 @@ impl NotifyPlayerActionInfoRepositoryImpl {
 
     fn get_player_field_unit_energy_info(&self,
                                          notify_player_index: PlayerIndex,
-                                         unit_index: i32,
-                                         attached_energy_info: AttachedEnergyInfo
+                                         field_unit_energy_info: FieldUnitEnergyInfo
     ) -> PlayerFieldUnitEnergyInfo {
 
-        let mut field_unit_energy_map = HashMap::new();
-        field_unit_energy_map.insert(unit_index, attached_energy_info);
-
         let mut player_field_unit_energy_map = HashMap::new();
-        player_field_unit_energy_map.insert(notify_player_index, field_unit_energy_map);
+        player_field_unit_energy_map.insert(notify_player_index, field_unit_energy_info);
 
         PlayerFieldUnitEnergyInfo::new(player_field_unit_energy_map)
     }
@@ -175,8 +172,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         used_hand_card_id: i32,
         used_hand_card_type: KindsEnum,
         found_energy_card_id_list_form_deck: Vec<i32>,
-        unit_index: i32,
-        attached_energy_info: AttachedEnergyInfo) -> bool {
+        field_unit_energy_info: FieldUnitEnergyInfo) -> bool {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_boost_energy_to_specific_unit_by_using_hand_card()");
 
@@ -211,7 +207,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
 
         let player_field_unit_energy_info =
-            self.get_player_field_unit_energy_info(Opponent, unit_index, attached_energy_info);
+            self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info);
 
         // 상대에게 내 필드 유닛의 에너지 정보 업데이트 공지
         opponent_receiver_transmitter_channel.send(
@@ -350,8 +346,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         opponent_unique_id: i32,
         used_hand_card_id: i32,
         used_hand_card_type: KindsEnum,
-        opponent_unit_index: i32,
-        attached_energy_info: AttachedEnergyInfo) -> bool {
+        field_unit_energy_info: FieldUnitEnergyInfo) -> bool {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_remove_energy_of_specific_unit_by_using_hand_card()");
 
@@ -376,7 +371,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                     NOTIFY_HAND_CARD_USE(player_hand_card_use_info)))).await;
 
         let player_field_unit_energy_info =
-            self.get_player_field_unit_energy_info(You, opponent_unit_index, attached_energy_info.clone());
+            self.get_player_field_unit_energy_info(You, field_unit_energy_info);
 
         // 상대에게 내 필드 유닛의 에너지 정보 업데이트 공지
         opponent_receiver_transmitter_channel.send(
@@ -395,7 +390,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         field_unit_health_point_info: FieldUnitHealthPointInfo,
         field_unit_survival_info: FieldUnitSurvivalInfo) -> bool {
 
-        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_remove_energy_of_specific_unit_by_using_hand_card()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_apply_damage_to_unit_by_using_hand_card()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -434,6 +429,47 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
             Arc::new(
                 AsyncMutex::new(
                     NOTIFY_FIELD_UNIT_SURVIVAL(player_field_unit_survival_info)))).await;
+
+        true
+    }
+
+    async fn notify_player_attach_energy_to_unit_by_using_hand_card(
+        &mut self,
+        opponent_unique_id: i32,
+        used_hand_card_id: i32,
+        used_hand_card_type: KindsEnum,
+        field_unit_energy_info: FieldUnitEnergyInfo) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_attach_energy_to_unit_by_using_hand_card()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        // 상대에게 무슨 카드를 썼는지 공지
+        let player_hand_card_use_info =
+            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_type);
+
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_HAND_CARD_USE(player_hand_card_use_info)))).await;
+
+        let player_field_unit_energy_info =
+            self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info);
+
+        // 상대에게 내 필드 유닛의 에너지 정보 업데이트 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_UNIT_ENERGY(player_field_unit_energy_info)))).await;
 
         true
     }
