@@ -20,6 +20,8 @@ use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueu
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
+use crate::fake_battle_room::controller::fake_battle_room_controller::FakeBattleRoomController;
+use crate::fake_battle_room::controller::fake_battle_room_controller_impl::FakeBattleRoomControllerImpl;
 use crate::game_card_active_skill::controller::game_card_active_skill_controller::GameCardActiveSkillController;
 use crate::game_card_active_skill::controller::game_card_active_skill_controller_impl::GameCardActiveSkillControllerImpl;
 use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
@@ -64,6 +66,7 @@ use crate::request_generator::attack_unit_request_form_generator::create_attack_
 use crate::request_generator::attack_game_main_character_request_form_generator::create_attack_game_main_character_request_form;
 use crate::request_generator::battle_match_cancel_request_generator::create_battle_match_cancel_request;
 use crate::request_generator::check_rockpaperscissors_winner_request_generator::create_check_rockpaperscissors_winner_request_form;
+use crate::request_generator::fake_battle_room_create_request_form_generator::create_fake_battle_room_create_request_form;
 use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item_request_form, create_opponent_field_unit_energy_removal_item_request_form, create_target_death_item_request_form};
 use crate::request_generator::game_next_turn_request_generator::create_game_turn_request_form;
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
@@ -819,6 +822,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            8001 => {
+                // Fake Battle Room Test
+                if let Some(request) = create_fake_battle_room_create_request_form(&data) {
+                    let fake_battle_room_controller_mutex = FakeBattleRoomControllerImpl::get_instance();
+                    let mut ake_battle_room_controller = fake_battle_room_controller_mutex.lock().await;
+
+                    let response = ake_battle_room_controller.request_to_create_fake_battle_room(request).await;
+                    let response_type = Some(ResponseType::FAKE_BATTLE_ROOM_CREATION(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            }
             _ => None,
         }
     } else {
