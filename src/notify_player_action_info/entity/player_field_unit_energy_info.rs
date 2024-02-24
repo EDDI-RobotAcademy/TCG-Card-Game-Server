@@ -1,15 +1,16 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::notify_player_action_info::entity::attached_energy_info::AttachedEnergyInfo;
+use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlayerFieldUnitEnergyInfo {
-    player_field_unit_energy_map: HashMap<PlayerIndex, HashMap<i32, AttachedEnergyInfo>>,
+    player_field_unit_energy_map: HashMap<PlayerIndex, FieldUnitEnergyInfo>,
 }
 
 impl PlayerFieldUnitEnergyInfo {
-    pub fn new(player_field_unit_energy_map: HashMap<PlayerIndex, HashMap<i32, AttachedEnergyInfo>>) -> Self {
+    pub fn new(player_field_unit_energy_map: HashMap<PlayerIndex, FieldUnitEnergyInfo>) -> Self {
         PlayerFieldUnitEnergyInfo {
             player_field_unit_energy_map
         }
@@ -37,13 +38,15 @@ mod tests {
 
         let mut field_unit_energy_map1 = HashMap::new();
         field_unit_energy_map1.insert(1, attached_energy_info1);
+        let field_unit_energy_info1 = FieldUnitEnergyInfo::new(field_unit_energy_map1);
 
         let mut field_unit_energy_map2 = HashMap::new();
         field_unit_energy_map2.insert(3, attached_energy_info2);
+        let field_unit_energy_info2 = FieldUnitEnergyInfo::new(field_unit_energy_map2);
 
         let mut player_field_unit_energy_map = HashMap::new();
-        player_field_unit_energy_map.insert(PlayerIndex::Opponent, field_unit_energy_map1);
-        player_field_unit_energy_map.insert(PlayerIndex::You, field_unit_energy_map2);
+        player_field_unit_energy_map.insert(PlayerIndex::Opponent, field_unit_energy_info1);
+        player_field_unit_energy_map.insert(PlayerIndex::You, field_unit_energy_info2);
 
         let player_field_unit_energy_info = PlayerFieldUnitEnergyInfo::new(player_field_unit_energy_map);
 

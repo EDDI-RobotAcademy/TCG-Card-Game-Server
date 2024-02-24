@@ -472,6 +472,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         return game_field_unit_card_list[unit_index as usize].get_extra_effect_list()
     }
+
+    fn acquire_survival_of_indexed_unit(&mut self, account_unique_id: i32, unit_index: i32) -> bool {
+        println!("GameFieldUnitRepositoryImpl: acquire_extra_effect_list_of_indexed_unit()");
+
+        let game_field_unit = self.game_field_unit_map.get_mut(&account_unique_id).unwrap();
+        let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
+
+        return game_field_unit_card_list[unit_index as usize].is_alive()
+    }
 }
 
 #[cfg(test)]

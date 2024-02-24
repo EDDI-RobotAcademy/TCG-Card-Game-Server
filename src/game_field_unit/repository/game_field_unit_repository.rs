@@ -171,4 +171,9 @@ pub trait GameFieldUnitRepository {
         &mut self,
         account_unique_id: i32,
         unit_index: i32) -> Vec<ExtraEffect>;
+
+    fn acquire_survival_of_indexed_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_index: i32) -> bool;
 }
