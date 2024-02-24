@@ -1,4 +1,5 @@
 use crate::account::service::request::account_login_request::AccountLoginRequest;
+use crate::fake_battle_room::service::request::create_battle_fake_room_request::CreateFakeBattleRoomRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -24,19 +25,19 @@ impl CreateFakeBattleRoomRequestForm {
         }
     }
 
-    pub fn first_fake_test_account_id(&self) -> &str {
+    pub fn get_first_fake_test_account_id(&self) -> &str {
         &self.first_fake_test_account_id
     }
 
-    pub fn first_fake_test_account_password(&self) -> &str {
+    pub fn get_first_fake_test_account_password(&self) -> &str {
         &self.first_fake_test_account_password
     }
 
-    pub fn second_fake_test_account_id(&self) -> &str {
+    pub fn get_second_fake_test_account_id(&self) -> &str {
         &self.second_fake_test_account_id
     }
 
-    pub fn second_fake_test_account_password(&self) -> &str {
+    pub fn get_second_fake_test_account_password(&self) -> &str {
         &self.second_fake_test_account_password
     }
 
@@ -51,6 +52,13 @@ impl CreateFakeBattleRoomRequestForm {
         AccountLoginRequest::new(
             &self.first_fake_test_account_id,
             self.first_fake_test_account_password.clone(),
+        )
+    }
+
+    pub fn to_create_fake_battle_room_request(&self) -> CreateFakeBattleRoomRequest {
+        CreateFakeBattleRoomRequest::new(
+            (&self.first_fake_test_account_id).parse().unwrap(),
+            (&self.second_fake_test_account_id).parse().unwrap()
         )
     }
 }
