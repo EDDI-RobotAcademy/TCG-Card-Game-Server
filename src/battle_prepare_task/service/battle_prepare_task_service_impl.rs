@@ -279,7 +279,6 @@ async fn test_prepare_for_player_battle() {
 
     drop(guard);
 
-    // Spawn the asynchronous task
     let task = tokio::spawn(async move {
         let battle_prepare_service = BattlePrepareTaskServiceImpl::get_instance();
         let battle_prepare_service_guard = battle_prepare_service.lock().await;

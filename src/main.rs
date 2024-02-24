@@ -95,6 +95,7 @@ mod game_winner_check;
 mod battle_finish;
 mod notify_player_action_info;
 mod battle_field_info;
+mod fake_battle_room;
 
 #[tokio::main]
 async fn main() {
