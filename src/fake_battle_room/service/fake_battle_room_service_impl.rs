@@ -11,6 +11,8 @@ use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repo
 use crate::battle_room::repository::battle_room_repository::BattleRoomRepository;
 use crate::battle_room::repository::battle_room_repository_impl::BattleRoomRepositoryImpl;
 use crate::fake_battle_room::service::fake_battle_room_service::FakeBattleRoomService;
+use crate::fake_battle_room::service::request::create_battle_fake_room_request::CreateFakeBattleRoomRequest;
+use crate::fake_battle_room::service::response::create_battle_fake_room_response::CreateFakeBattleRoomResponse;
 use crate::game_card_support_usage_counter::repository::game_card_support_usage_counter_repository_impl::GameCardSupportUsageCounterRepositoryImpl;
 use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
 use crate::game_field_energy::repository::game_field_energy_repository_impl::GameFieldEnergyRepositoryImpl;
@@ -109,7 +111,14 @@ pub async fn spawn_async_task_for_fake_battle_room(user_id: i32) {
 
 #[async_trait]
 impl FakeBattleRoomService for FakeBattleRoomServiceImpl {
-    async fn create_fake_battle_room(&self, fake_your_id: i32, fake_opponent_id: i32) {
+    async fn create_fake_battle_room(
+        &self,
+        create_fake_battle_room_request: CreateFakeBattleRoomRequest)
+        -> CreateFakeBattleRoomResponse {
+
+        let fake_your_id = create_fake_battle_room_request.get_first_fake_account_id();
+        let fake_opponent_id = create_fake_battle_room_request.get_second_fake_account_id();
+
         let users_to_process: Vec<i32> = vec![fake_your_id, fake_opponent_id];
 
         let battle_room_repository_guard = self.battle_room_repository.lock().await;
@@ -125,6 +134,8 @@ impl FakeBattleRoomService for FakeBattleRoomServiceImpl {
         for handle in handles {
             handle.await.expect("Failed to await spawned task");
         }
+
+        return CreateFakeBattleRoomResponse::new(true)
     }
 }
 
@@ -140,6 +151,9 @@ mod tests {
         let fake_battle_room_service_mutex = FakeBattleRoomServiceImpl::get_instance();
         let fake_battle_room_service_guard = fake_battle_room_service_mutex.lock().await;
 
-        fake_battle_room_service_guard.create_fake_battle_room(1, 2).await;
+        let create_fake_battle_room_request = CreateFakeBattleRoomRequest::new(1, 2);
+        let result = fake_battle_room_service_guard.create_fake_battle_room(create_fake_battle_room_request).await;
+
+        assert_eq!(result.is_success(), true)
     }
 }
