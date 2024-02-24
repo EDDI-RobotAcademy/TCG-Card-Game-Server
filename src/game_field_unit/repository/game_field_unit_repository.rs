@@ -79,7 +79,10 @@ pub trait GameFieldUnitRepository {
     fn judge_death_of_unit(
         &mut self,
         account_unique_id: i32,
-        unit_card_index: i32) -> i32;
+        unit_card_index: i32) -> (i32, i32);
+    fn judge_death_of_every_unit(
+        &mut self,
+        account_unique_id: i32) -> Vec<(i32, i32)>;
     fn attach_special_energy_to_indexed_unit(
         &mut self,
         account_unique_id: i32,

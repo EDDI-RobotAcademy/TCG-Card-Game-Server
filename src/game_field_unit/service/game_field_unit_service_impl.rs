@@ -213,23 +213,13 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
     }
 
     async fn judge_death_of_every_field_unit(&mut self, judge_death_of_every_unit_request: JudgeDeathOfEveryUnitRequest) -> JudgeDeathOfEveryUnitResponse {
-        println!("GameFieldUnitServiceImpl: judge_death_of_unit()");
+        println!("GameFieldUnitServiceImpl: judge_death_of_every_field_unit()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        let mut dead_unit_id_list = Vec::new();
-        if let Some(game_field_unit) =
-            game_field_unit_repository_guard.get_game_field_unit_map()
-                .get_mut(&judge_death_of_every_unit_request.get_account_unique_id()) {
-            let field_unit_list = game_field_unit.get_all_field_unit_list_mut();
-            for index in 0..field_unit_list.len() {
-                let dead_unit_id = game_field_unit.judge_death_of_unit(index);
-                if dead_unit_id != -1 {
-                    dead_unit_id_list.push(dead_unit_id);
-                }
-            }
-        }
+        let response = game_field_unit_repository_guard.judge_death_of_every_unit(
+            judge_death_of_every_unit_request.get_account_unique_id());
 
-        JudgeDeathOfEveryUnitResponse::new(dead_unit_id_list)
+        JudgeDeathOfEveryUnitResponse::new(response)
     }
 
     async fn execute_turn_action(&mut self, execute_turn_action_request: ExecuteTurnActionRequest) -> ExecuteTurnActionResponse {
@@ -356,7 +346,8 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
         let passive_skill_list = apply_passive_skill_list_request.get_passive_skill_list();
 
-        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let mut game_field_unit_repository_guard =
+            self.game_field_unit_repository.lock().await;
 
         // TODO: Need to Refactor
         for passive_skill in passive_skill_list.iter() {
