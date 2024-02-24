@@ -2,7 +2,9 @@ use std::collections::HashMap;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 use crate::notify_player_action_info::entity::attached_energy_info::AttachedEnergyInfo;
 
-#[derive(Debug, Clone)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AttachedEnergyMap {
     energy_map: HashMap<RaceEnumValue, i32>,
 }

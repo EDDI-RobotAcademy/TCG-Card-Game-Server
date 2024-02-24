@@ -14,6 +14,7 @@ use crate::game_protocol_validation::service::request::is_this_your_turn_request
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_draw_support_card_request::NotifyToOpponentYouUseDrawSupportCardRequest;
 use crate::notify_player_action_info::service::request::notice_draw_card_by_using_hand_card_request::NoticeDrawCardByUsingHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -63,6 +64,12 @@ impl DrawSupportRequestForm {
     }
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
         FindOpponentByAccountIdRequest::new(account_unique_id)
+    }
+    pub fn to_notice_use_hand_card_request(&self,
+                                           opponent_unique_id: i32,
+                                           used_hand_card_id: i32) -> NoticeUseHandCardRequest {
+        NoticeUseHandCardRequest::new(
+            opponent_unique_id, used_hand_card_id)
     }
     pub fn to_notice_draw_card_by_using_hand_card_request(&self,
                                                           account_unique_id: i32,
