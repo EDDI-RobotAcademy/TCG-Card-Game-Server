@@ -35,6 +35,7 @@ mod remain_deck_card_count_request_generator;
 
 pub mod battle_match_cancel_request_generator;
 pub mod attack_game_main_character_request_form_generator;
+pub mod fake_battle_room_create_request_form_generator;
 
 
 

@@ -55,10 +55,19 @@ impl CreateFakeBattleRoomRequestForm {
         )
     }
 
-    pub fn to_create_fake_battle_room_request(&self) -> CreateFakeBattleRoomRequest {
+    pub fn to_session_validation_request(&self, session_id: &str) -> GetValueWithKeyRequest {
+        GetValueWithKeyRequest::new(session_id)
+    }
+
+    pub fn to_create_fake_battle_room_request(
+            &self,
+            first_fake_test_account_id_number: i32,
+            second_fake_test_account_id_number: i32)
+            -> CreateFakeBattleRoomRequest {
+
         CreateFakeBattleRoomRequest::new(
-            (&self.first_fake_test_account_id).parse().unwrap(),
-            (&self.second_fake_test_account_id).parse().unwrap()
+            first_fake_test_account_id_number,
+            second_fake_test_account_id_number
         )
     }
 }
