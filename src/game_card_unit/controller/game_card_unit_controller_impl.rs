@@ -393,6 +393,13 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         if attacker_unit_passive_status_list.contains(&PassiveStatus::PhysicalImmunity) {
             println!("공격한 유닛이 기본 공격 면역이 존재하여 반격이 적용되지 않습니다.");
 
+            // 액션 완료 설정
+            game_field_unit_service_guard.execute_turn_action(
+                attack_unit_request_form
+                    .to_execute_turn_action_request(
+                        account_unique_id,
+                        attacker_unit_card_index)).await;
+
             // 피격 유닛이 죽었는지 판정
             let maybe_dead_opponent_unit_id =
                 game_field_unit_service_guard.judge_death_of_unit(
@@ -505,10 +512,12 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
     async fn request_to_attack_game_main_character(
         &self, attack_game_main_character_request_form: AttackGameMainCharacterRequestForm) -> AttackGameMainCharacterResponseForm {
+
         println!("GameCardUnitControllerImpl: request_to_attack_game_main_character()");
+
         // 세션 아이디를 검증합니다.
-        let account_unique_id =
-            self.is_valid_session(attack_game_main_character_request_form.to_session_validation_request()).await;
+        let account_unique_id = self.is_valid_session(
+            attack_game_main_character_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
             return AttackGameMainCharacterResponseForm::new(false)
@@ -535,7 +544,6 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let mut game_field_unit_service_guard =
             self.game_field_unit_service.lock().await;
 
-
         let attacker_unit_id =
             game_field_unit_service_guard.find_target_unit_id_by_index(
                 attack_game_main_character_request_form
@@ -559,8 +567,11 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         let is_unit_basic_attack_possible_response =
             game_field_unit_action_possibility_validator_service_guard.is_unit_basic_attack_possible(
-                attack_game_main_character_request_form.to_is_unit_basic_attack_possible_request(
-                    account_unique_id, attacker_unit_card_index, attacker_unit_required_energy)).await;
+                attack_game_main_character_request_form
+                    .to_is_unit_basic_attack_possible_request(
+                        account_unique_id,
+                        attacker_unit_card_index,
+                        attacker_unit_required_energy)).await;
 
         if !is_unit_basic_attack_possible_response.is_possible() {
             return AttackGameMainCharacterResponseForm::new(false)
@@ -576,14 +587,14 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         account_unique_id,
                         attacker_unit_card_index)).await.get_attack_point();
 
-        // todo 메인캐릭터가 extra effect경우 추가해야한다
+        // todo 메인캐릭터가 extra effect 에 영향을 받는 경우 추가
         // extra effect 가지고 있는지 여부
-        let attacker_unit_extra_effect_list =
-            game_field_unit_service_guard.acquire_unit_extra_effect(
-                attack_game_main_character_request_form
-                    .to_acquire_unit_extra_effect_request(
-                        account_unique_id,
-                        attacker_unit_card_index)).await.get_extra_status_effect_list().clone();
+        // let attacker_unit_extra_effect_list =
+        //     game_field_unit_service_guard.acquire_unit_extra_effect(
+        //         attack_game_main_character_request_form
+        //             .to_acquire_unit_extra_effect_request(
+        //                 account_unique_id,
+        //                 attacker_unit_card_index)).await.get_extra_status_effect_list().clone();
 
         // 공격을 위해 상대방 고유값 획득
         let battle_room_service_guard =
@@ -602,14 +613,18 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
        let is_apply_damage_to_main_character_response =
            game_main_character_service_guard.apply_damage_to_main_character(
-               attack_game_main_character_request_form.to_apply_damage_to_main_character_request(
-                   opponent_unique_id, attacker_unit_attack_point)).await;
-
+               attack_game_main_character_request_form
+                   .to_apply_damage_to_main_character_request(
+                       opponent_unique_id,
+                       attacker_unit_attack_point)).await;
 
        let is_check_main_character_of_account_unique_id_response =
            game_main_character_service_guard.check_main_character_of_account_unique_id(
-               attack_game_main_character_request_form.to_check_main_character_of_account_unique_id_request(
-                   account_unique_id, )).await;
+               attack_game_main_character_request_form
+                   .to_check_main_character_of_account_unique_id_request(
+                       account_unique_id)).await;
+
+        // TODO: 메인 캐릭터가 사망한 경우의 서비스 추가 필요
 
        drop(game_main_character_service_guard);
 

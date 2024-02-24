@@ -204,21 +204,42 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         false
     }
-    fn judge_death_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> i32 {
+    fn judge_death_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> (i32, i32) {
         println!("GameFieldUnitRepositoryImpl: judge_death_of_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            let unit_card_index = unit_card_index as usize;
+            let unit_index = unit_card_index as usize;
 
-            if unit_card_index < game_field_unit.get_all_unit_list_in_game_field().len() {
-                let maybe_dead_unit_id = game_field_unit.judge_death_of_unit(unit_card_index);
-                if game_field_unit.check_unit_alive(unit_card_index) == false {
-                    return maybe_dead_unit_id;
+            if unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
+                let maybe_dead_unit_id = game_field_unit.judge_death_of_unit(unit_index);
+                if maybe_dead_unit_id != -1 {
+                    game_field_unit.check_unit_alive(unit_index);
                 }
+                return (unit_card_index, maybe_dead_unit_id);
             }
         }
 
-        -1
+        (unit_card_index, -1)
+    }
+
+    fn judge_death_of_every_unit(&mut self, account_unique_id: i32) -> Vec<(i32, i32)> {
+        println!("GameFieldUnitRepositoryImpl: judge_death_of_unit()");
+
+        let mut dead_unit_tuple_list = Vec::new();
+
+        if let Some(game_field_unit) = self.get_game_field_unit_map().get_mut(&account_unique_id) {
+            let field_unit_list = game_field_unit.get_all_field_unit_list_mut();
+            for unit_index in 0..field_unit_list.len() {
+                let dead_unit_id = game_field_unit.judge_death_of_unit(unit_index);
+                if dead_unit_id != -1 {
+                    game_field_unit.check_unit_alive(unit_index);
+                }
+                dead_unit_tuple_list.push((unit_index as i32, dead_unit_id));
+            }
+            return dead_unit_tuple_list
+        }
+
+        dead_unit_tuple_list
     }
 
     fn attach_special_energy_to_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: i32, race_enum: RaceEnum, quantity: i32, status_effect_list: Vec<StatusEffect>) -> bool {
@@ -462,6 +483,20 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
 
         return game_field_unit_card_list[unit_index as usize].get_unit_health_point()
+    }
+
+    fn acquire_current_health_point_of_all_unit(&mut self, account_unique_id: i32) -> Vec<i32> {
+        println!("GameFieldUnitRepositoryImpl: acquire_current_health_point_of_all_unit()");
+
+        let game_field_unit = self.game_field_unit_map.get_mut(&account_unique_id).unwrap();
+        let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
+
+        let mut current_health_point_of_all_unit = Vec::new();
+        for game_field_unit_card in game_field_unit_card_list {
+            current_health_point_of_all_unit.push(game_field_unit_card.get_unit_health_point().get_current_health_point());
+        }
+
+        current_health_point_of_all_unit
     }
 
     fn acquire_extra_effect_list_of_indexed_unit(&mut self, account_unique_id: i32, unit_index: i32) -> Vec<ExtraEffect> {
@@ -879,8 +914,6 @@ mod tests {
 
 
         let is_alive = game_field_unit_repository.judge_death_of_unit(opponent_unique_id, 1);
-
-        println!("{}", is_alive);
 
         let game_field_unit_map = game_field_unit_repository.get_game_field_unit_map();
         for (_, game_field_unit) in game_field_unit_map.iter() {
