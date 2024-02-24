@@ -197,7 +197,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                     NOTIFY_HAND_CARD_USE(player_hand_card_use_info)))).await;
 
         let player_deck_card_use_list_info =
-            self.get_player_deck_card_list_use_info(Opponent, found_energy_card_id_list_form_deck);
+            self.get_player_deck_card_list_use_info(Opponent, found_energy_card_id_list_form_deck.clone());
 
         // 상대에게 덱에서 추가적으로 사용한 카드 공지
         opponent_receiver_transmitter_channel.send(
@@ -207,13 +207,17 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
 
         let player_field_unit_energy_info =
-            self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info);
+            self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone());
 
         // 상대에게 내 필드 유닛의 에너지 정보 업데이트 공지
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
                     NOTIFY_FIELD_UNIT_ENERGY(player_field_unit_energy_info)))).await;
+
+        let return_info =
+            (self.get_player_deck_card_list_use_info(You, found_energy_card_id_list_form_deck.clone()),
+             self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone()));
 
         true
     }
@@ -249,12 +253,15 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         // 상대에게는 내가 몇 장을 드로우 했는지 공지
         let player_draw_count_info =
-            self.get_player_draw_count_info(Opponent, drawn_card_list);
+            self.get_player_draw_count_info(Opponent, drawn_card_list.clone());
 
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
                     NOTIFY_DRAW_COUNT(player_draw_count_info)))).await;
+
+        let return_value =
+            self.get_player_drawn_card_list_info(You, drawn_card_list.clone());
 
         true
     }
@@ -470,6 +477,47 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
             Arc::new(
                 AsyncMutex::new(
                     NOTIFY_FIELD_UNIT_ENERGY(player_field_unit_energy_info)))).await;
+
+        true
+    }
+
+    async fn notify_player_instant_death_of_specific_unit_by_using_hand_card(
+        &mut self,
+        opponent_unique_id: i32,
+        used_hand_card_id: i32,
+        used_hand_card_type: KindsEnum,
+        field_unit_survival_info: FieldUnitSurvivalInfo) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_instant_death_of_specific_unit_by_using_hand_card()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        // 상대에게 무슨 카드를 썼는지 공지
+        let player_hand_card_use_info =
+            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_type);
+
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_HAND_CARD_USE(player_hand_card_use_info)))).await;
+
+        let player_field_unit_survival_info =
+            self.get_player_field_unit_survival_info(Opponent, field_unit_survival_info);
+
+        // 상대에게 내 필드 유닛의 생존 정보 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_UNIT_SURVIVAL(player_field_unit_survival_info)))).await;
 
         true
     }
