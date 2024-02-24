@@ -781,27 +781,27 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         drop(card_race_service_guard);
 
-        let current_attached_race_energy_of_opponent_unit = game_field_unit_service_guard
-            .get_current_attached_energy_of_field_unit_by_index(
-                remove_opponent_field_unit_energy_item_request_form
-                    .to_get_current_attached_energy_of_unit_by_index(opponent_unique_id,
-                                                                     opponent_field_unit_index,
-                                                                     found_opponent_unit_race)).await.get_current_attached_energy();
-
-        if current_attached_race_energy_of_opponent_unit == -1 {
-            println!("붙은 에너지가 존재하지 않아 변환 데미지를 입힙니다.");
-            let apply_alternative_damage_response = game_field_unit_service_guard
-                .apply_damage_to_target_unit_index(
-                    remove_opponent_field_unit_energy_item_request_form
-                        .to_apply_damage_to_target_unit_request(opponent_unique_id,
-                                                                opponent_field_unit_index,
-                                                                alternative_damage)).await;
-            if !apply_alternative_damage_response.is_success() {
-                println!("변환 데미지를 주는 데에 실패했습니다!");
-                return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
-            }
-            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(true)
-        }
+        // let current_attached_race_energy_of_opponent_unit = game_field_unit_service_guard
+        //     .get_current_attached_energy_of_field_unit_by_index(
+        //         remove_opponent_field_unit_energy_item_request_form
+        //             .to_get_current_attached_energy_of_unit_by_index(opponent_unique_id,
+        //                                                              opponent_field_unit_index,
+        //                                                              found_opponent_unit_race)).await.get_current_attached_energy();
+        //
+        // if current_attached_race_energy_of_opponent_unit == -1 {
+        //     println!("붙은 에너지가 존재하지 않아 변환 데미지를 입힙니다.");
+        //     let apply_alternative_damage_response = game_field_unit_service_guard
+        //         .apply_damage_to_target_unit_index(
+        //             remove_opponent_field_unit_energy_item_request_form
+        //                 .to_apply_damage_to_target_unit_request(opponent_unique_id,
+        //                                                         opponent_field_unit_index,
+        //                                                         alternative_damage)).await;
+        //     if !apply_alternative_damage_response.is_success() {
+        //         println!("변환 데미지를 주는 데에 실패했습니다!");
+        //         return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
+        //     }
+        //     return RemoveOpponentFieldUnitEnergyItemResponseForm::new(true)
+        // }
 
         let detach_multiple_energy_form_field_unit_response = game_field_unit_service_guard
             .detach_multiple_energy_from_field_unit(

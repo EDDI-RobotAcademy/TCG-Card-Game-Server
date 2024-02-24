@@ -524,8 +524,8 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-                101=> {
-            // battle field info remain my deck card count
+            101=> {
+                // Battlefield info remain my deck card count
                 if let Some(request) = create_remain_deck_card_count_request(&data) {
                 let battle_field_info_service_mutex = BattleFieldInfoServiceImpl::get_instance();
                 let mut battle_field_info_service = battle_field_info_service_mutex.lock().await;

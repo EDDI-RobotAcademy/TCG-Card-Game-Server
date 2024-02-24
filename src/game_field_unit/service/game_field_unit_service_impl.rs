@@ -423,12 +423,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             get_current_attached_energy_of_field_unit_by_index_request.get_account_unique_id(),
             get_current_attached_energy_of_field_unit_by_index_request.get_field_unit_index());
 
-        let attached_energy_count =
-            *field_unit_energy_map.get_energy_quantity(
-                &RaceEnumValue::from(
-                    *get_current_attached_energy_of_field_unit_by_index_request.get_energy_race() as i32)).unwrap();
-
-        GetCurrentAttachedEnergyOfFieldUnitByIndexResponse::new(attached_energy_count)
+        GetCurrentAttachedEnergyOfFieldUnitByIndexResponse::new(field_unit_energy_map.clone())
     }
 
     // TODO: Need Refactor

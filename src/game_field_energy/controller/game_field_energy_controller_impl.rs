@@ -157,13 +157,15 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
         }
 
         // 5. 에너지를 부착한 유닛의 업데이트 된 에너지 정보를 가져옵니다.
-        let updated_energy_count =
-            game_field_unit_service_guard.get_current_attached_energy_of_field_unit_by_index(
-                attach_field_energy_to_field_unit_request_form
-                    .to_get_current_attached_energy_of_field_unit_by_index_request(
-                        account_unique_id,
-                        unit_card_index,
-                        energy_race_enum)).await.get_current_attached_energy();
+        // let updated_energy_map =
+        //     game_field_unit_service_guard.get_current_attached_energy_of_field_unit_by_index(
+        //         attach_field_energy_to_field_unit_request_form
+        //             .to_get_current_attached_energy_of_field_unit_by_index_request(
+        //                 account_unique_id,
+        //                 unit_card_index,
+        //                 energy_race_enum)).await.get_current_attached_energy_map().clone();
+        //
+        // let updated_energy_count = updated_energy_map.
 
         // 6. 사용된 필드 에너지를 제거합니다.
         game_field_energy_service_guard.remove_field_energy_with_amount(
@@ -195,20 +197,20 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
         drop(battle_room_service_guard);
 
         // 9. 필드 에너지 사용에 따른 변화를 상대방에게 알립니다.
-        let mut notify_player_action_service_guard =
-            self.notify_player_action_service.lock().await;
-
-        notify_player_action_service_guard.notify_opponent_you_attach_field_energy_to_field_unit(
-                attach_field_energy_to_field_unit_request_form
-                    .to_notify_you_attach_field_energy_to_field_unit_request(
-                        opponent_unique_id,
-                        unit_card_index,
-                        energy_race_enum,
-                        will_be_used_field_energy_quantity,
-                        updated_energy_count,
-                        remaining_field_energy_count)).await;
-
-        drop(notify_player_action_service_guard);
+        // let mut notify_player_action_service_guard =
+        //     self.notify_player_action_service.lock().await;
+        //
+        // notify_player_action_service_guard.notify_opponent_you_attach_field_energy_to_field_unit(
+        //         attach_field_energy_to_field_unit_request_form
+        //             .to_notify_you_attach_field_energy_to_field_unit_request(
+        //                 opponent_unique_id,
+        //                 unit_card_index,
+        //                 energy_race_enum,
+        //                 will_be_used_field_energy_quantity,
+        //                 updated_energy_count,
+        //                 remaining_field_energy_count)).await;
+        //
+        // drop(notify_player_action_service_guard);
 
         AttachFieldEnergyToFieldUnitResponseForm::new(true)
     }

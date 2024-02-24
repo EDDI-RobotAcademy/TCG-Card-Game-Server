@@ -99,15 +99,6 @@ impl RemoveOpponentFieldUnitEnergyItemRequestForm {
                                             field_unit_index)
     }
 
-    pub fn to_get_current_attached_energy_of_unit_by_index(&self,
-                                                           account_unique_id: i32,
-                                                           field_unit_index: i32,
-                                                           race_enum: RaceEnum) -> GetCurrentAttachedEnergyOfFieldUnitByIndexRequest {
-        GetCurrentAttachedEnergyOfFieldUnitByIndexRequest::new(account_unique_id,
-                                                               field_unit_index,
-                                                               race_enum)
-    }
-
     pub fn to_apply_damage_to_target_unit_request(&self,
                                                   opponent_unique_id: i32,
                                                   opponent_target_unit_index: i32,

@@ -75,15 +75,6 @@ impl AttachFieldEnergyToFieldUnitRequestForm {
                                                     quantity)
     }
 
-    pub fn to_get_current_attached_energy_of_field_unit_by_index_request(&self,
-                                                                         account_unique_id: i32,
-                                                                         unit_card_index: i32,
-                                                                         race_enum: RaceEnum) -> GetCurrentAttachedEnergyOfFieldUnitByIndexRequest {
-        GetCurrentAttachedEnergyOfFieldUnitByIndexRequest::new(account_unique_id,
-                                                               unit_card_index,
-                                                               race_enum)
-    }
-
     pub fn to_remove_field_energy_with_amount_request(&self,
                                                       account_unique_id: i32,
                                                       amount: i32) -> RemoveFieldEnergyWithAmountRequest {

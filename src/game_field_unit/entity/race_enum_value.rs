@@ -1,4 +1,5 @@
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+use serde::{Deserialize, Serialize};
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Deserialize, Serialize)]
 pub enum RaceEnumValue {
     Undead = 1,
     Human = 2,
