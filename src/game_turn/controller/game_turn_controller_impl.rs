@@ -173,7 +173,7 @@ impl GameTurnController for GameTurnControllerImpl {
             drop(game_tomb_service_guard);
         }
 
-        // 5. 자신 필드 유닛 Turn Action Value 초기화
+        // 자신 필드 유닛 Turn Action Value 초기화
         game_field_unit_service_guard.reset_turn_action_of_all_field_unit(
             turn_end_request_form
                 .to_reset_turn_action_of_all_field_unit_request(account_unique_id)).await;

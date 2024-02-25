@@ -22,7 +22,7 @@ use crate::notify_player_action_info::service::request::notice_attach_energy_to_
 use crate::notify_player_action_info::service::request::notice_draw_card_request::{NoticeDrawCardRequest};
 use crate::notify_player_action_info::service::request::notice_instant_death_of_specific_unit_by_using_hand_card_request::NoticeInstantDeathOfSpecificUnitByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_unit_by_using_hand_card_request::NoticeRemoveEnergyOfSpecificUnitByUsingHandCardRequest;
-use crate::notify_player_action_info::service::request::notice_remove_field_energy_by_using_hand_card_request::NoticeRemoveFieldEnergyByUsingHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_remove_field_energy_of_opponent_request::{NoticeRemoveFieldEnergyOfOpponentRequest};
 use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_unit_by_using_hand_card_response::NoticeApplyDamageToEveryUnitByUsingHandCardResponse;
@@ -32,7 +32,7 @@ use crate::notify_player_action_info::service::response::notice_attach_energy_to
 use crate::notify_player_action_info::service::response::notice_draw_card_response::{NoticeDrawCardResponse};
 use crate::notify_player_action_info::service::response::notice_instant_death_of_specific_unit_by_using_hand_card_response::NoticeInstantDeathOfSpecificUnitByUsingHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_remove_energy_of_specific_unit_by_using_hand_card_response::NoticeRemoveEnergyOfSpecificUnitByUsingHandCardResponse;
-use crate::notify_player_action_info::service::response::notice_remove_field_energy_by_using_hand_card_response::NoticeRemoveFieldEnergyByUsingHandCardResponse;
+use crate::notify_player_action_info::service::response::notice_remove_field_energy_of_opponent_response::{NoticeRemoveFieldEnergyOfOpponentResponse};
 use crate::notify_player_action_info::service::response::notice_search_card_response::{NoticeSearchCardResponse};
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
 
@@ -177,44 +177,24 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         NoticeSearchCardResponse::new(response)
     }
 
-    async fn notice_remove_field_energy_by_using_hand_card(
-        &mut self, notice_remove_field_energy_by_using_hand_card_request: NoticeRemoveFieldEnergyByUsingHandCardRequest)
-        -> NoticeRemoveFieldEnergyByUsingHandCardResponse {
+    async fn notice_remove_field_energy_of_opponent(
+        &mut self,
+        notice_remove_field_energy_of_opponent_request: NoticeRemoveFieldEnergyOfOpponentRequest)
+        -> NoticeRemoveFieldEnergyOfOpponentResponse {
 
-        println!("NotifyPlayerActionInfoServiceImpl: notice_remove_energy_of_specific_unit_by_using_hand_card()");
-
-        let mut card_kind_repository_guard =
-            self.card_kind_repository.lock().await;
-
-        let hand_card_kind_enum =
-            card_kind_repository_guard.get_card_kind(
-                &notice_remove_field_energy_by_using_hand_card_request.get_used_hand_card_id()).await;
-
-        drop(card_kind_repository_guard);
-
-        let mut game_field_energy_repository_guard =
-            self.game_field_energy_repository.lock().await;
-
-        let remaining_opponent_field_energy_count =
-            game_field_energy_repository_guard.get_game_field_energy_map()
-                .get_mut(&notice_remove_field_energy_by_using_hand_card_request.get_opponent_unique_id()).unwrap()
-                .get_energy_count();
-
-        drop(game_field_energy_repository_guard);
+        println!("NotifyPlayerActionInfoServiceImpl: notice_remove_field_energy_of_opponent()");
 
         let mut notify_player_action_info_repository_guard =
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notify_player_remove_field_energy_by_using_hand_card(
-                notice_remove_field_energy_by_using_hand_card_request.get_opponent_unique_id(),
-                notice_remove_field_energy_by_using_hand_card_request.get_used_hand_card_id(),
-                hand_card_kind_enum,
-                remaining_opponent_field_energy_count).await;
+            notify_player_action_info_repository_guard.notify_player_opponent_field_energy(
+                notice_remove_field_energy_of_opponent_request.get_opponent_unique_id(),
+                notice_remove_field_energy_of_opponent_request.get_remaining_field_energy()).await;
 
         drop(notify_player_action_info_repository_guard);
 
-        NoticeRemoveFieldEnergyByUsingHandCardResponse::new(response)
+        NoticeRemoveFieldEnergyOfOpponentResponse::new(response)
     }
 
     async fn notice_remove_energy_of_specific_unit_by_using_hand_card(

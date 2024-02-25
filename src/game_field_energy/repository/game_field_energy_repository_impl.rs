@@ -37,7 +37,7 @@ impl GameFieldEnergyRepository for GameFieldEnergyRepositoryImpl {
     fn create_field_energy_object(&mut self, account_unique_id: i32) -> bool {
         println!("FieldEnergyRepositoryImpl: create_field_energy_object()");
 
-        let new_game_field_energy_map = GameFieldEnergy::new(0);
+        let new_game_field_energy_map = GameFieldEnergy::new(4);
         self.game_field_energy_map.insert(account_unique_id, new_game_field_energy_map);
 
         true

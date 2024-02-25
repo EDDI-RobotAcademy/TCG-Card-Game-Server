@@ -670,9 +670,10 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         let account_unique_id = self.is_valid_session(
             remove_opponent_field_energy_support_request_form.to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             println!("Invalid session error");
-            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+            return RemoveOpponentFieldEnergySupportResponseForm::default()
         }
 
         let mut game_protocol_validation_service_guard =
@@ -680,17 +681,20 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         let is_this_your_turn_response =
             game_protocol_validation_service_guard.is_this_your_turn(
-                remove_opponent_field_energy_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+                remove_opponent_field_energy_support_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+            return RemoveOpponentFieldEnergySupportResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
 
-        let support_card_number_string = remove_opponent_field_energy_support_request_form.get_support_card_id().to_string();
-        let support_card_number = support_card_number_string.parse::<i32>().unwrap();
+        let support_card_number_string =
+            remove_opponent_field_energy_support_request_form.get_support_card_id().to_string();
+        let support_card_number =
+            support_card_number_string.parse::<i32>().unwrap();
 
         let check_hand_hacking_response = self.is_valid_protocol(
             remove_opponent_field_energy_support_request_form
@@ -698,7 +702,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !check_hand_hacking_response {
             println!("Hand hacking detected - account unique id : {}", account_unique_id);
-            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+            return RemoveOpponentFieldEnergySupportResponseForm::default()
         }
 
         let is_it_support_response = self.is_it_support_card(
@@ -707,7 +711,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !is_it_support_response {
             println!("Support card hacking detected - account unique id : {}", account_unique_id);
-            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+            return RemoveOpponentFieldEnergySupportResponseForm::default()
         }
 
         let can_use_card_response = self.is_able_to_use(
@@ -716,7 +720,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !can_use_card_response {
             println!("A mythical grade card can be used after round 4.");
-            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+            return RemoveOpponentFieldEnergySupportResponseForm::default()
         }
 
         let mut game_card_support_usage_counter_service =
@@ -729,7 +733,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if check_support_card_usage_count_response.get_used_count() > 0 {
             println!("Support card usage limit over");
-            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+            return RemoveOpponentFieldEnergySupportResponseForm::default()
         }
 
         let card_effect_summary = self.get_summary_of_support_card(
@@ -752,8 +756,14 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !remove_field_energy_with_amount_response.get_is_success() {
             println!("Failed to remove opponent's field energy.");
-            return RemoveOpponentFieldEnergySupportResponseForm::new(false)
+            return RemoveOpponentFieldEnergySupportResponseForm::default()
         }
+
+        let updated_field_energy_count_of_opponent =
+            game_field_energy_service_guard.get_current_field_energy(
+                remove_opponent_field_energy_support_request_form
+                    .to_get_current_field_energy_request(
+                        opponent_unique_id)).await.get_field_energy_count();
 
         drop(game_field_energy_service_guard);
 
@@ -774,15 +784,23 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        // notify_player_action_info_service_guard.notice_remove_field_energy_by_using_hand_card(
-        //     remove_opponent_field_energy_support_request_form
-        //         .to_notice_remove_energy_of_specific_unit_by_using_hand_card_request(
-        //             account_unique_id,
-        //             opponent_unique_id,
-        //             usage_hand_card)).await;
+        let notice_use_hand_card_response =
+            notify_player_action_info_service_guard.notice_use_hand_card(
+                remove_opponent_field_energy_support_request_form
+                    .to_notice_use_hand_card_request(
+                        opponent_unique_id,
+                        usage_hand_card)).await;
+
+        let notice_remove_field_energy_of_opponent_response =
+            notify_player_action_info_service_guard.notice_remove_field_energy_of_opponent(
+                remove_opponent_field_energy_support_request_form
+                    .to_notice_remove_field_energy_of_opponent_request(
+                        opponent_unique_id,
+                        updated_field_energy_count_of_opponent)).await;
 
         drop(notify_player_action_info_service_guard);
 
-        RemoveOpponentFieldEnergySupportResponseForm::new(true)
+        RemoveOpponentFieldEnergySupportResponseForm::from_response(
+            notice_use_hand_card_response, notice_remove_field_energy_of_opponent_response)
     }
 }

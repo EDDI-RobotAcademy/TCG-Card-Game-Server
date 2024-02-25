@@ -317,14 +317,12 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         return self.get_player_search_card_list_info(You, searched_card_list_from_deck.clone())
     }
 
-    async fn notify_player_remove_field_energy_by_using_hand_card(
+    async fn notify_player_opponent_field_energy(
         &mut self,
         opponent_unique_id: i32,
-        used_hand_card_id: i32,
-        used_hand_card_type: KindsEnum,
-        remaining_field_energy_count: i32) -> bool {
+        remaining_field_energy_count: i32) -> PlayerFieldEnergyInfo {
 
-        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_remove_field_energy_by_using_hand_card()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_opponent_field_energy()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -346,7 +344,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_FIELD_ENERGY(player_field_energy_info)))).await;
 
-        true
+        return self.get_player_field_energy_info(Opponent, remaining_field_energy_count)
     }
 
     async fn notify_player_remove_energy_of_specific_opponent_unit(
