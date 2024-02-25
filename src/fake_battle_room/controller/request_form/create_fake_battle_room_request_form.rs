@@ -50,8 +50,8 @@ impl CreateFakeBattleRoomRequestForm {
 
     pub fn to_second_fake_test_login_request(&self) -> AccountLoginRequest {
         AccountLoginRequest::new(
-            &self.first_fake_test_account_id,
-            self.first_fake_test_account_password.clone(),
+            &self.second_fake_test_account_id,
+            self.second_fake_test_account_password.clone(),
         )
     }
 
