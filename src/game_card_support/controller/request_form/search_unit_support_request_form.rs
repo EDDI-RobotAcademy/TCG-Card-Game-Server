@@ -4,6 +4,7 @@ use crate::game_card_support_usage_counter::service::request::check_support_card
 use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
 use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
 use crate::game_deck::service::request::search_specific_deck_card_request::SearchSpecificDeckCardRequest;
+use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
@@ -72,6 +73,9 @@ impl SearchUnitSupportRequestForm {
     }
     pub fn to_search_specific_deck_card_request(&self, account_unique_id: i32, target_card_id_list: Vec<i32>) -> SearchSpecificDeckCardRequest {
         SearchSpecificDeckCardRequest::new(account_unique_id, target_card_id_list)
+    }
+    pub fn to_add_card_list_to_hand_request(&self, account_unique_id: i32, card_list: Vec<i32>) -> AddCardListToHandRequest {
+        AddCardListToHandRequest::new(account_unique_id, card_list)
     }
     pub fn to_shuffle_deck_request(&self) -> GameDeckCardShuffleRequest {
         GameDeckCardShuffleRequest::new(self.session_id.clone())
