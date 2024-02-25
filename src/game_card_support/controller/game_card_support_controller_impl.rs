@@ -608,6 +608,17 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return SearchUnitSupportResponseForm::default()
         }
 
+        let mut game_hand_service_guard =
+            self.game_hand_service.lock().await;
+
+        game_hand_service_guard.add_card_list_to_hand(
+            search_unit_support_request_form
+                .to_add_card_list_to_hand_request(
+                    account_unique_id,
+                    search_specific_deck_card_response.get_found_card_list().clone())).await;
+
+        drop(game_hand_service_guard);
+
         game_deck_service_guard.shuffle_deck(
             search_unit_support_request_form.to_shuffle_deck_request()).await;
 
