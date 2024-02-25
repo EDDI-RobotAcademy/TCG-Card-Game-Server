@@ -14,6 +14,14 @@ impl CreateFakeBattleRoomResponseForm {
         Self { first_fake_session, second_fake_session }
     }
 
+    pub fn get_first_fake_session(&self) -> &str {
+        &self.first_fake_session
+    }
+
+    pub fn get_second_fake_session(&self) -> &str {
+        &self.second_fake_session
+    }
+
     pub fn from_login_response(
         first_login_response: AccountLoginResponse,
         second_login_response: AccountLoginResponse) -> CreateFakeBattleRoomResponseForm {
