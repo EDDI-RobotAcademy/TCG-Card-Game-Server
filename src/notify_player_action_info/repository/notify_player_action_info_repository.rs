@@ -1,12 +1,16 @@
 use async_trait::async_trait;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
+use crate::notify_player_action_info::entity::field_unit_damage_info::FieldUnitDamageInfo;
 use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
-use crate::notify_player_action_info::entity::field_unit_survival_info::FieldUnitSurvivalInfo;
+use crate::notify_player_action_info::entity::field_unit_death_info::{FieldUnitDeathInfo};
 use crate::notify_player_action_info::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
+use crate::notify_player_action_info::entity::player_field_unit_damage_info::PlayerFieldUnitDamageInfo;
+use crate::notify_player_action_info::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
 use crate::notify_player_action_info::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
+use crate::notify_player_action_info::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
 use crate::notify_player_action_info::entity::player_search_card_list_info::PlayerSearchCardListInfo;
 
 #[async_trait]
@@ -39,12 +43,14 @@ pub trait NotifyPlayerActionInfoRepository {
     async fn notify_player_remove_energy_of_specific_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
-        field_unit_energy_info: FieldUnitEnergyInfo) -> bool;
+        field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo;
     async fn notify_player_apply_damage_to_specific_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
+        field_unit_damage_info: FieldUnitDamageInfo,
         field_unit_health_point_info: FieldUnitHealthPointInfo,
-        field_unit_survival_info: FieldUnitSurvivalInfo) -> bool;
+        field_unit_death_info: FieldUnitDeathInfo
+    ) -> (PlayerFieldUnitDamageInfo, PlayerFieldUnitHealthPointInfo, PlayerFieldUnitDeathInfo);
     async fn notify_player_attach_energy_to_specific_unit(
         &mut self,
         opponent_unique_id: i32,
@@ -52,5 +58,5 @@ pub trait NotifyPlayerActionInfoRepository {
     async fn notify_player_instant_death_of_specific_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
-        field_unit_survival_info: FieldUnitSurvivalInfo) -> bool;
+        field_unit_death_info: FieldUnitDeathInfo) -> bool;
 }

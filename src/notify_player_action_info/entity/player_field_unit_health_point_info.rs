@@ -14,4 +14,7 @@ impl PlayerFieldUnitHealthPointInfo {
             player_field_unit_health_point_map
         }
     }
+    pub fn get_player_field_unit_health_point_map(&self) -> &HashMap<PlayerIndex, FieldUnitHealthPointInfo> {
+        &self.player_field_unit_health_point_map
+    }
 }

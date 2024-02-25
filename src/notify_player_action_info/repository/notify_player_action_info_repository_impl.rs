@@ -6,17 +6,18 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::connection_context::repository::connection_context_repository_impl::ConnectionContextRepositoryImpl;
-use crate::notify_player_action_info::entity::attached_energy_info::{AttachedEnergyInfo};
+use crate::notify_player_action_info::entity::field_unit_damage_info::FieldUnitDamageInfo;
 use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
-use crate::notify_player_action_info::entity::field_unit_survival_info::FieldUnitSurvivalInfo;
+use crate::notify_player_action_info::entity::field_unit_death_info::{FieldUnitDeathInfo};
 use crate::notify_player_action_info::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::notify_player_action_info::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
+use crate::notify_player_action_info::entity::player_field_unit_damage_info::PlayerFieldUnitDamageInfo;
 use crate::notify_player_action_info::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
-use crate::notify_player_action_info::entity::player_field_unit_survival_info::PlayerFieldUnitSurvivalInfo;
+use crate::notify_player_action_info::entity::player_field_unit_death_info::{PlayerFieldUnitDeathInfo};
 use crate::notify_player_action_info::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
 use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex::{Opponent, You};
@@ -24,7 +25,7 @@ use crate::notify_player_action_info::entity::player_search_card_list_info::Play
 use crate::notify_player_action_info::entity::player_search_count_info::PlayerSearchCountInfo;
 use crate::notify_player_action_info::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
-use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_DRAWN_CARD_LIST, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_FIELD_UNIT_SURVIVAL, NOTIFY_HAND_CARD_USE, NOTIFY_SEARCH_CARD_LIST, NOTIFY_SEARCH_COUNT};
+use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_DAMAGE, NOTIFY_FIELD_UNIT_DEATH, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_HAND_CARD_USE, NOTIFY_SEARCH_COUNT};
 
 pub struct NotifyPlayerActionInfoRepositoryImpl;
 
@@ -141,6 +142,17 @@ impl NotifyPlayerActionInfoRepositoryImpl {
         PlayerFieldEnergyInfo::new(player_field_energy_map)
     }
 
+    fn get_player_field_unit_damage_info(&self,
+                                         notify_player_index: PlayerIndex,
+                                         field_unit_damage_info: FieldUnitDamageInfo
+    ) -> PlayerFieldUnitDamageInfo {
+
+        let mut player_field_unit_damage_map = HashMap::new();
+        player_field_unit_damage_map.insert(notify_player_index, field_unit_damage_info);
+
+        PlayerFieldUnitDamageInfo::new(player_field_unit_damage_map)
+    }
+
     fn get_player_field_unit_health_point_info(&self,
                                                notify_player_index: PlayerIndex,
                                                field_unit_health_point_info: FieldUnitHealthPointInfo
@@ -152,15 +164,15 @@ impl NotifyPlayerActionInfoRepositoryImpl {
         PlayerFieldUnitHealthPointInfo::new(player_field_unit_health_point_info)
     }
 
-    fn get_player_field_unit_survival_info(&self,
+    fn get_player_field_unit_death_info(&self,
                                            notify_player_index: PlayerIndex,
-                                           field_unit_survival_info: FieldUnitSurvivalInfo
-    ) -> PlayerFieldUnitSurvivalInfo {
+                                           field_unit_death_info: FieldUnitDeathInfo
+    ) -> PlayerFieldUnitDeathInfo {
 
         let mut player_field_unit_survival_info = HashMap::new();
-        player_field_unit_survival_info.insert(notify_player_index, field_unit_survival_info);
+        player_field_unit_survival_info.insert(notify_player_index, field_unit_death_info);
 
-        PlayerFieldUnitSurvivalInfo::new(player_field_unit_survival_info)
+        PlayerFieldUnitDeathInfo::new(player_field_unit_survival_info)
     }
 }
 
@@ -350,7 +362,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notify_player_remove_energy_of_specific_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
-        field_unit_energy_info: FieldUnitEnergyInfo) -> bool {
+        field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_remove_energy_of_specific_opponent_unit()");
 
@@ -366,7 +378,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
         let player_field_unit_energy_info =
-            self.get_player_field_unit_energy_info(You, field_unit_energy_info);
+            self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone());
 
         // 상대에게 내 필드 유닛의 에너지 정보 업데이트 공지
         opponent_receiver_transmitter_channel.send(
@@ -374,14 +386,16 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_FIELD_UNIT_ENERGY(player_field_unit_energy_info)))).await;
 
-        true
+        return self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone())
     }
 
     async fn notify_player_apply_damage_to_specific_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
+        field_unit_damage_info: FieldUnitDamageInfo,
         field_unit_health_point_info: FieldUnitHealthPointInfo,
-        field_unit_survival_info: FieldUnitSurvivalInfo) -> bool {
+        field_unit_death_info: FieldUnitDeathInfo
+    ) -> (PlayerFieldUnitDamageInfo, PlayerFieldUnitHealthPointInfo, PlayerFieldUnitDeathInfo) {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_apply_damage_to_specific_opponent_unit()");
 
@@ -396,8 +410,17 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
+        let player_field_unit_damage_info =
+            self.get_player_field_unit_damage_info(You, field_unit_damage_info.clone());
+
+        // 상대에게 유닛이 입은 데미지 전송
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_UNIT_DAMAGE(player_field_unit_damage_info)))).await;
+
         let player_field_unit_health_point_info =
-            self.get_player_field_unit_health_point_info(You, field_unit_health_point_info);
+            self.get_player_field_unit_health_point_info(You, field_unit_health_point_info.clone());
 
         // 상대에게 데미지 적용 후 남은 체력 전송
         opponent_receiver_transmitter_channel.send(
@@ -405,16 +428,19 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_FIELD_UNIT_HEALTH_POINT(player_field_unit_health_point_info)))).await;
 
-        let player_field_unit_survival_info =
-            self.get_player_field_unit_survival_info(You, field_unit_survival_info);
+        let player_field_unit_death_info =
+            self.get_player_field_unit_death_info(You, field_unit_death_info.clone());
 
         // 상대가 죽은 유닛들을 삭제할 수 있도록 생사 여부 전송
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_FIELD_UNIT_SURVIVAL(player_field_unit_survival_info)))).await;
+                    NOTIFY_FIELD_UNIT_DEATH(player_field_unit_death_info)))).await;
 
-        true
+        return (self.get_player_field_unit_damage_info(Opponent, field_unit_damage_info.clone()),
+                self.get_player_field_unit_health_point_info(Opponent, field_unit_health_point_info.clone()),
+                self.get_player_field_unit_death_info(Opponent, field_unit_death_info.clone()))
+
     }
 
     async fn notify_player_attach_energy_to_specific_unit(
@@ -450,7 +476,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notify_player_instant_death_of_specific_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
-        field_unit_survival_info: FieldUnitSurvivalInfo) -> bool {
+        field_unit_death_info: FieldUnitDeathInfo) -> bool {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_instant_death_of_specific_opponent_unit()");
 
@@ -465,14 +491,14 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
-        let player_field_unit_survival_info =
-            self.get_player_field_unit_survival_info(Opponent, field_unit_survival_info);
-
-        // 상대에게 즉사 유닛의 생존 정보 공지
-        opponent_receiver_transmitter_channel.send(
-            Arc::new(
-                AsyncMutex::new(
-                    NOTIFY_FIELD_UNIT_SURVIVAL(player_field_unit_survival_info)))).await;
+        // let player_field_unit_survival_info =
+        //     self.get_player_field_unit_survival_info(Opponent, field_unit_survival_info);
+        //
+        // // 상대에게 즉사 유닛의 생존 정보 공지
+        // opponent_receiver_transmitter_channel.send(
+        //     Arc::new(
+        //         AsyncMutex::new(
+        //             NOTIFY_FIELD_UNIT_SURVIVAL(player_field_unit_survival_info)))).await;
 
         true
     }
