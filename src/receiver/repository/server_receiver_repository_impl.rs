@@ -165,7 +165,8 @@ async fn read_from_stream(stream: Arc<Mutex<TcpStream>>, buffer: &mut Vec<u8>) -
     match timeout(Duration::from_secs(1), stream.lock().await.read(buffer)).await {
         Ok(result) => Ok(result.unwrap_or_else(|_| 0)),
         Err(e) => {
-            println!("Socket receive timed out!");
+            // TODO: 당장 여기서 처리 할 일이 아직은 없음
+            // println!("Socket receive timed out!");
             Err(e)
         }
     }
@@ -219,7 +220,8 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: A
             }
             Err(err) => {
                 // Handle read error
-                println!("Can't receive from socket stream: {:?}", err);
+                // TODO: 당장 여기서 처리 할 일이 아직은 없음
+                // println!("Can't receive from socket stream: {:?}", err);
                 // break;
             }
         }

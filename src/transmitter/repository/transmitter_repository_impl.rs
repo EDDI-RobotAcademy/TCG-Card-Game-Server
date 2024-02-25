@@ -174,7 +174,8 @@ impl TransmitterRepository for TransmitterRepositoryImpl {
                             }
                             Err(_) => {
                                 // 타임아웃이 발생한 경우 처리
-                                println!("Transmitter receive channel data timed out");
+                                // TODO: 당장 여기서 처리할 일이 아직은 없음
+                                // println!("Transmitter receive channel data timed out");
                             }
                         }
 
