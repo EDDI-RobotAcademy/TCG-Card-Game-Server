@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use async_trait::async_trait;
+use diesel::IntoSql;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
@@ -34,6 +35,7 @@ use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
 
 use crate::game_field_energy::service::game_field_energy_service::GameFieldEnergyService;
 use crate::game_field_energy::service::game_field_energy_service_impl::GameFieldEnergyServiceImpl;
+use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_hand::service::game_hand_service::GameHandService;
@@ -56,6 +58,8 @@ use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombReques
 use crate::game_turn::controller::response_form::turn_end_response_form::TurnEndResponseForm;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
+use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
+use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
@@ -75,7 +79,7 @@ pub struct GameCardItemControllerImpl {
     game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
     game_lost_zone_service: Arc<AsyncMutex<GameLostZoneServiceImpl>>,
     card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>,
-
+    notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
 }
 
 impl GameCardItemControllerImpl {
@@ -92,7 +96,8 @@ impl GameCardItemControllerImpl {
                game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
                game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
                game_lost_zone_service: Arc<AsyncMutex<GameLostZoneServiceImpl>>,
-               card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>,) -> Self {
+               card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>,
+               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,) -> Self {
 
         GameCardItemControllerImpl {
             game_hand_service,
@@ -109,6 +114,7 @@ impl GameCardItemControllerImpl {
             game_deck_service,
             game_lost_zone_service,
             card_race_service,
+            notify_player_action_info_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardItemControllerImpl>> {
@@ -130,7 +136,8 @@ impl GameCardItemControllerImpl {
                             GameMainCharacterServiceImpl::get_instance(),
                             GameDeckServiceImpl::get_instance(),
                             GameLostZoneServiceImpl::get_instance(),
-                            CardRaceServiceImpl::get_instance())));
+                            CardRaceServiceImpl::get_instance(),
+                            NotifyPlayerActionInfoServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -723,7 +730,9 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         println!("GameCardItemControllerImpl: request_to_use_opponent_field_unit_energy_removal_item()");
 
-        let account_unique_id = self.is_valid_session(remove_opponent_field_unit_energy_item_request_form.to_session_validation_request()).await;
+        let account_unique_id = self.is_valid_session(
+            remove_opponent_field_unit_energy_item_request_form.to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             println!("유효하지 않은 세션입니다.");
             return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
@@ -747,11 +756,45 @@ impl GameCardItemController for GameCardItemControllerImpl {
         // TODO: 프로토콜 검증은 추후 추가
 
         // 사용할 변수들 사전 parsing
-        let item_card_id_string = remove_opponent_field_unit_energy_item_request_form.get_item_card_id();
-        let item_card_id = item_card_id_string.parse::<i32>().unwrap();
+        let item_card_id_string =
+            remove_opponent_field_unit_energy_item_request_form.get_item_card_id();
+        let item_card_id =
+            item_card_id_string.parse::<i32>().unwrap();
 
-        let opponent_field_unit_index_string = remove_opponent_field_unit_energy_item_request_form.get_opponent_target_unit_index();
-        let opponent_field_unit_index = opponent_field_unit_index_string.parse::<i32>().unwrap();
+        // 2. Hand 에 있는지 확인하여 해킹 여부 검증
+        let check_protocol_hacking_response = self.is_valid_protocol(
+            remove_opponent_field_unit_energy_item_request_form
+                .to_check_protocol_hacking_request(account_unique_id, item_card_id)).await;
+
+        if !check_protocol_hacking_response {
+            println!("해킹범을 검거합니다!");
+            // return TargetDeathItemResponseForm::new(false)
+        }
+
+        // 3. 실제 아이템 카드가 맞는지 확인
+        let is_it_item_response = self.is_it_item_card(
+            remove_opponent_field_unit_energy_item_request_form
+                .to_is_it_item_card_request(item_card_id)).await;
+
+        if !is_it_item_response {
+            println!("아이템 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
+            // return TargetDeathItemResponseForm::new(false)
+        }
+
+        // 4. GameProtocolValidation Service 호출하여 사용 가능한지 조건 검사 (신화 > 4라운드 제약)
+        let can_use_card_response = self.is_able_to_use(
+            remove_opponent_field_unit_energy_item_request_form
+                .to_can_use_card_request(account_unique_id, item_card_id)).await;
+
+        if !can_use_card_response {
+            println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
+            // return TargetDeathItemResponseForm::new(false)
+        }
+
+        let opponent_field_unit_index_string =
+            remove_opponent_field_unit_energy_item_request_form.get_opponent_target_unit_index();
+        let opponent_field_unit_index =
+            opponent_field_unit_index_string.parse::<i32>().unwrap();
 
         // 사용할 아이템 카드 요약 정보
         let mut summarized_item_effect_response = self.get_summary_of_item_card(
@@ -761,75 +804,158 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let energy_quantity = summarized_item_effect_response.get_will_be_removed_energy_count();
         let alternative_damage = summarized_item_effect_response.get_alternatives_damage();
 
-        let mut battle_room_service_guard = self.battle_room_service.lock().await;
-        let opponent_unique_id = battle_room_service_guard
-            .find_opponent_by_account_unique_id(
+        let mut battle_room_service_guard =
+            self.battle_room_service.lock().await;
+
+        let opponent_unique_id =
+            battle_room_service_guard.find_opponent_by_account_unique_id(
                 remove_opponent_field_unit_energy_item_request_form
-                    .to_find_opponent_by_account_id_request(account_unique_id)).await.get_opponent_unique_id();
+                    .to_find_opponent_by_account_id_request(
+                        account_unique_id)).await.get_opponent_unique_id();
 
         drop(battle_room_service_guard);
 
-        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
 
-        let found_opponent_unit_id = game_field_unit_service_guard
-            .find_target_unit_id_by_index(
+        let found_opponent_unit_id =
+            game_field_unit_service_guard.find_target_unit_id_by_index(
                 remove_opponent_field_unit_energy_item_request_form
-                    .to_find_target_unit_id_by_index_request(opponent_unique_id, opponent_field_unit_index)).await.get_found_opponent_unit_id();
+                    .to_find_target_unit_id_by_index_request(
+                        opponent_unique_id,
+                        opponent_field_unit_index)).await.get_found_opponent_unit_id();
 
-        let mut card_race_service_guard = self.card_race_service.lock().await;
-        let found_opponent_unit_race = card_race_service_guard.get_card_race(&found_opponent_unit_id).await;
+        let mut card_race_service_guard =
+            self.card_race_service.lock().await;
+
+        let found_opponent_unit_race =
+            card_race_service_guard.get_card_race(&found_opponent_unit_id).await;
 
         drop(card_race_service_guard);
 
-        // let current_attached_race_energy_of_opponent_unit = game_field_unit_service_guard
-        //     .get_current_attached_energy_of_field_unit_by_index(
-        //         remove_opponent_field_unit_energy_item_request_form
-        //             .to_get_current_attached_energy_of_unit_by_index(opponent_unique_id,
-        //                                                              opponent_field_unit_index,
-        //                                                              found_opponent_unit_race)).await.get_current_attached_energy();
-        //
-        // if current_attached_race_energy_of_opponent_unit == -1 {
-        //     println!("붙은 에너지가 존재하지 않아 변환 데미지를 입힙니다.");
-        //     let apply_alternative_damage_response = game_field_unit_service_guard
-        //         .apply_damage_to_target_unit_index(
-        //             remove_opponent_field_unit_energy_item_request_form
-        //                 .to_apply_damage_to_target_unit_request(opponent_unique_id,
-        //                                                         opponent_field_unit_index,
-        //                                                         alternative_damage)).await;
-        //     if !apply_alternative_damage_response.is_success() {
-        //         println!("변환 데미지를 주는 데에 실패했습니다!");
-        //         return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
-        //     }
-        //     return RemoveOpponentFieldUnitEnergyItemResponseForm::new(true)
-        // }
-
-        let detach_multiple_energy_form_field_unit_response = game_field_unit_service_guard
-            .detach_multiple_energy_from_field_unit(
+        let current_attached_energy_of_opponent_unit =
+            game_field_unit_service_guard.get_current_attached_energy_of_field_unit_by_index(
                 remove_opponent_field_unit_energy_item_request_form
-                    .to_detach_energy_from_field_unit_request(opponent_unique_id,
-                                                              opponent_field_unit_index,
-                                                              found_opponent_unit_race,
-                                                              energy_quantity)).await;
+                    .to_get_current_attached_energy_of_unit_by_index_request(
+                        opponent_unique_id,
+                        opponent_field_unit_index)).await.get_current_attached_energy_map().clone();
+
+        if current_attached_energy_of_opponent_unit
+            .get_energy_quantity(&RaceEnumValue::from(found_opponent_unit_race as i32)).is_none() {
+
+            println!("붙은 에너지가 존재하지 않아 변환 데미지를 입힙니다.");
+
+            let apply_alternative_damage_response =
+                game_field_unit_service_guard.apply_damage_to_target_unit_index(
+                    remove_opponent_field_unit_energy_item_request_form
+                        .to_apply_damage_to_target_unit_request(
+                            opponent_unique_id,
+                            opponent_field_unit_index,
+                            alternative_damage)).await;
+
+            if !apply_alternative_damage_response.is_success() {
+                println!("변환 데미지를 주는 데에 실패했습니다!");
+                return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
+            }
+
+            let updated_health_point_of_damaged_unit =
+                game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
+                    remove_opponent_field_unit_energy_item_request_form
+                        .to_get_current_health_point_of_field_unit_by_index_request(
+                            opponent_unique_id,
+                            opponent_field_unit_index)).await.get_current_unit_health_point();
+
+            let maybe_dead_unit_index =
+                game_field_unit_service_guard.judge_death_of_unit(
+                    remove_opponent_field_unit_energy_item_request_form
+                        .to_judge_death_of_unit_request(
+                            opponent_unique_id,
+                            opponent_field_unit_index)).await.get_dead_unit_index();
+
+            drop(game_field_unit_service_guard);
+
+            let used_hand_card_id = self.use_item_card(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
+
+            self.place_used_card_to_tomb(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_place_to_tomb_request(account_unique_id, used_hand_card_id)).await;
+
+
+            let mut notify_player_action_info_service_guard =
+                self.notify_player_action_info_service.lock().await;
+
+            let notice_use_hand_card_response =
+                notify_player_action_info_service_guard.notice_use_hand_card(
+                    remove_opponent_field_unit_energy_item_request_form
+                        .to_notice_use_hand_card_request(
+                            opponent_unique_id,
+                            used_hand_card_id)).await;
+
+            let notice_apply_damage_response =
+                notify_player_action_info_service_guard.notice_apply_damage_to_specific_opponent_unit(
+                    remove_opponent_field_unit_energy_item_request_form
+                        .to_notice_apply_damage_to_specific_opponent_unit_request(
+                            opponent_unique_id,
+                            opponent_field_unit_index,
+                            alternative_damage,
+                            updated_health_point_of_damaged_unit,
+                            maybe_dead_unit_index)).await;
+
+            drop(notify_player_action_info_service_guard);
+
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(true)
+        }
+
+        let detach_multiple_energy_form_field_unit_response =
+            game_field_unit_service_guard.detach_multiple_energy_from_field_unit(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_detach_energy_from_field_unit_request(
+                        opponent_unique_id,
+                        opponent_field_unit_index,
+                        found_opponent_unit_race,
+                        energy_quantity)).await;
 
         if !detach_multiple_energy_form_field_unit_response.is_success() {
             println!("유닛 에너지 제거에 실패했습니다!");
-            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
+            // return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
         }
 
-        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_item_card_response = notify_player_action_service_guard
-            .notify_to_opponent_you_use_field_unit_energy_removal_item_card(
+        let updated_attached_energy_map =
+            game_field_unit_service_guard.get_current_attached_energy_of_field_unit_by_index(
                 remove_opponent_field_unit_energy_item_request_form
-                    .to_notify_opponent_you_use_field_unit_energy_removal_item_card_request(
+                    .to_get_current_attached_energy_of_unit_by_index_request(
                         opponent_unique_id,
-                        item_card_id,
-                        energy_quantity)).await;
+                        opponent_field_unit_index)).await.get_current_attached_energy_map().clone();
 
-        if !notify_item_card_response.is_success() {
-            println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
-            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
-        }
-        drop(notify_player_action_service_guard);
+        drop(game_field_unit_service_guard);
+
+        let used_hand_card_id = self.use_item_card(
+            remove_opponent_field_unit_energy_item_request_form
+                .to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
+
+        self.place_used_card_to_tomb(
+            remove_opponent_field_unit_energy_item_request_form
+                .to_place_to_tomb_request(account_unique_id, used_hand_card_id)).await;
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        let notice_use_hand_card_response =
+            notify_player_action_info_service_guard.notice_use_hand_card(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_notice_use_hand_card_request(opponent_unique_id, used_hand_card_id)).await;
+
+        let notice_remove_energy_of_specific_opponent_unit_response =
+            notify_player_action_info_service_guard.notice_remove_energy_of_specific_opponent_unit(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_notice_remove_energy_of_specific_opponent_unit_request(
+                        opponent_unique_id,
+                        opponent_field_unit_index,
+                        updated_attached_energy_map)).await;
+
+        drop(notify_player_action_info_service_guard);
 
         RemoveOpponentFieldUnitEnergyItemResponseForm::new(true)
     }
