@@ -1,10 +1,14 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_item::service::request::summary_item_card_effect_request::SummaryItemCardEffectRequest;
+use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::detach_multiple_energy_from_field_unit_request::DetachMultipleEnergyFromFieldUnitRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
+use crate::game_field_unit::service::request::get_current_health_point_of_all_field_unit_request::GetCurrentHealthPointOfAllFieldUnitRequest;
+use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
+use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
 use crate::game_hand::service::request::use_game_hand_item_card_request::UseGameHandItemCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
@@ -13,6 +17,9 @@ use crate::game_protocol_validation::service::request::is_this_your_turn_request
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_field_unit_energy_removal_item_card_request::NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardRequest;
+use crate::notify_player_action_info::service::request::notice_apply_damage_to_specific_opponent_unit_request::NoticeApplyDamageToSpecificOpponentUnitRequest;
+use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_opponent_unit_request::NoticeRemoveEnergyOfSpecificOpponentUnitRequest;
+use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 
 #[derive(Debug)]
 pub struct RemoveOpponentFieldUnitEnergyItemRequestForm {
@@ -108,16 +115,83 @@ impl RemoveOpponentFieldUnitEnergyItemRequestForm {
                                                  damage)
     }
 
+    pub fn to_get_current_health_point_of_field_unit_by_index_request(
+        &self,
+        account_unique_id: i32,
+        unit_index: i32) -> GetCurrentHealthPointOfFieldUnitByIndexRequest {
+
+        GetCurrentHealthPointOfFieldUnitByIndexRequest::new(
+            account_unique_id,
+            unit_index)
+    }
+    pub fn to_judge_death_of_unit_request(
+        &self,
+        account_unique_id: i32,
+        unit_index: i32) -> JudgeDeathOfUnitRequest {
+
+        JudgeDeathOfUnitRequest::new(
+            account_unique_id,
+            unit_index)
+    }
+
+    pub fn to_get_current_attached_energy_of_unit_by_index_request(&self,
+                                                                   account_unique_id: i32,
+                                                                   unit_index: i32,) -> GetCurrentAttachedEnergyOfFieldUnitByIndexRequest {
+        GetCurrentAttachedEnergyOfFieldUnitByIndexRequest::new(
+            account_unique_id, unit_index)
+    }
+
     pub fn to_detach_energy_from_field_unit_request(&self,
                                                     opponent_unique_id: i32,
                                                     opponent_target_unit_index: i32,
                                                     race_enum: RaceEnum,
                                                     quantity: i32) -> DetachMultipleEnergyFromFieldUnitRequest {
-        DetachMultipleEnergyFromFieldUnitRequest::new(opponent_unique_id,
-                                                      opponent_target_unit_index,
-                                                      race_enum,
-                                                      quantity)
+        DetachMultipleEnergyFromFieldUnitRequest::new(
+            opponent_unique_id,
+            opponent_target_unit_index,
+            race_enum,
+            quantity)
     }
+
+    pub fn to_notice_use_hand_card_request(
+        &self,
+        opponent_unique_id: i32,
+        used_hand_card_id: i32,) -> NoticeUseHandCardRequest {
+
+        NoticeUseHandCardRequest::new(
+            opponent_unique_id,
+            used_hand_card_id)
+    }
+
+    pub fn to_notice_apply_damage_to_specific_opponent_unit_request(
+        &self,
+        opponent_unique_id: i32,
+        opponent_unit_index: i32,
+        damage: i32,
+        updated_health_point: i32,
+        dead_unit_index: i32,) -> NoticeApplyDamageToSpecificOpponentUnitRequest {
+
+        NoticeApplyDamageToSpecificOpponentUnitRequest::new(
+            opponent_unique_id,
+            opponent_unit_index,
+            damage,
+            updated_health_point,
+            dead_unit_index)
+    }
+
+    pub fn to_notice_remove_energy_of_specific_opponent_unit_request(
+        &self,
+        opponent_unique_id: i32,
+        opponent_unit_index: i32,
+        updated_opponent_unit_energy_map: AttachedEnergyMap
+    ) -> NoticeRemoveEnergyOfSpecificOpponentUnitRequest {
+
+        NoticeRemoveEnergyOfSpecificOpponentUnitRequest::new(
+            opponent_unique_id,
+            opponent_unit_index,
+            updated_opponent_unit_energy_map)
+    }
+
     pub fn to_notify_opponent_you_use_field_unit_energy_removal_item_card_request(&self,
                                                                                   opponent_unique_id: i32,
                                                                                   item_card_id: i32,
