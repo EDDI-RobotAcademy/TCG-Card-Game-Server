@@ -196,14 +196,14 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let mut game_protocol_validation_service_guard =
             self.game_protocol_validation_service.lock().await;
 
-        // let is_this_your_turn_response =
-        //     game_protocol_validation_service_guard.is_this_your_turn(
-        //         energy_boost_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
-        //
-        // if !is_this_your_turn_response.is_success() {
-        //     println!("당신의 턴이 아닙니다.");
-        //     return EnergyBoostSupportResponseForm::default()
-        // }
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                energy_boost_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return EnergyBoostSupportResponseForm::default()
+        }
 
         drop(game_protocol_validation_service_guard);
 
@@ -358,22 +358,22 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if account_unique_id == -1 {
             println!("Invalid session error");
-            return DrawSupportResponseForm::new(false)
+            return DrawSupportResponseForm::default()
         }
 
-        let mut game_protocol_validation_service_guard =
-            self.game_protocol_validation_service.lock().await;
-
-        let is_this_your_turn_response =
-            game_protocol_validation_service_guard.is_this_your_turn(
-                draw_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
-
-        if !is_this_your_turn_response.is_success() {
-            println!("당신의 턴이 아닙니다.");
-            return DrawSupportResponseForm::new(false)
-        }
-
-        drop(game_protocol_validation_service_guard);
+        // let mut game_protocol_validation_service_guard =
+        //     self.game_protocol_validation_service.lock().await;
+        //
+        // let is_this_your_turn_response =
+        //     game_protocol_validation_service_guard.is_this_your_turn(
+        //         draw_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+        //
+        // if !is_this_your_turn_response.is_success() {
+        //     println!("당신의 턴이 아닙니다.");
+        //     return DrawSupportResponseForm::new(false)
+        // }
+        //
+        // drop(game_protocol_validation_service_guard);
 
         let support_card_number_string = draw_support_request_form.get_support_card_id().to_string();
         let support_card_number = support_card_number_string.parse::<i32>().unwrap();
@@ -384,7 +384,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !check_hand_hacking_response {
             println!("Hand hacking detected - account unique id : {}", account_unique_id);
-            return DrawSupportResponseForm::new(false)
+            return DrawSupportResponseForm::default()
         }
 
         let is_it_support_response = self.is_it_support_card(
@@ -393,14 +393,14 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !is_it_support_response {
             println!("Support card hacking detected - account unique id : {}", account_unique_id);
-            return DrawSupportResponseForm::new(false)
+            return DrawSupportResponseForm::default()
         }
 
         let can_use_card_response = self.is_able_to_use(
             draw_support_request_form.to_can_use_card_request(account_unique_id, support_card_number)).await;
         if !can_use_card_response {
             println!("A mythical grade card can be used after round 4.");
-            return DrawSupportResponseForm::new(false)
+            return DrawSupportResponseForm::default()
         }
 
         let mut game_card_support_usage_counter_service =
@@ -412,7 +412,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if check_support_card_usage_count_response.get_used_count() > 0 {
             println!("Support card usage limit over");
-            return DrawSupportResponseForm::new(false)
+            return DrawSupportResponseForm::default()
         }
 
         let support_card_effect_summary = self.get_summary_of_support_card(
@@ -464,17 +464,24 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        // notify_player_action_info_service_guard.notice_draw_card_by_using_hand_card(
-        //     draw_support_request_form
-        //         .to_notice_draw_card_by_using_hand_card_request(
-        //             account_unique_id,
-        //             opponent_unique_id,
-        //             support_card_number,
-        //             drawn_cards.clone())).await;
+        let notice_use_hand_card_response =
+            notify_player_action_info_service_guard.notice_use_hand_card(
+                draw_support_request_form
+                    .to_notice_use_hand_card_request(
+                        opponent_unique_id,
+                        usage_hand_card)).await;
+
+        let notice_draw_card_response =
+            notify_player_action_info_service_guard.notice_draw_card(
+                draw_support_request_form
+                    .to_notice_draw_card_request(
+                        opponent_unique_id,
+                        drawn_cards.clone())).await;
 
         drop(notify_player_action_info_service_guard);
 
-        DrawSupportResponseForm::new(true)
+        DrawSupportResponseForm::from_response(
+            notice_use_hand_card_response, notice_draw_card_response)
     }
 
     async fn request_to_use_search_unit_support(&self, search_unit_support_request_form: SearchUnitSupportRequestForm) -> SearchUnitSupportResponseForm {

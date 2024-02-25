@@ -4,6 +4,7 @@ use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitE
 use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::notify_player_action_info::entity::field_unit_survival_info::FieldUnitSurvivalInfo;
 use crate::notify_player_action_info::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
+use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
 use crate::notify_player_action_info::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 
@@ -22,12 +23,10 @@ pub trait NotifyPlayerActionInfoRepository {
         &mut self,
         opponent_unique_id: i32,
         field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo;
-    async fn notify_player_draw_card_by_using_hand_card(
+    async fn notify_player_draw_card(
         &mut self,
         opponent_unique_id: i32,
-        used_hand_card_id: i32,
-        used_hand_card_type: KindsEnum,
-        drawn_card_list: Vec<i32>) -> bool;
+        drawn_card_list: Vec<i32>) -> PlayerDrawnCardListInfo;
     async fn notify_player_search_card_by_using_hand_card(
         &mut self,
         opponent_unique_id: i32,

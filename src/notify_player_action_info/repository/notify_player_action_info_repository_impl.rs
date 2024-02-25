@@ -194,7 +194,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_HAND_CARD_USE(player_hand_card_use_info)))).await;
 
-        true
+        return true
     }
 
     async fn notify_player_use_deck_card_list(
@@ -232,7 +232,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         opponent_unique_id: i32,
         field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo {
 
-        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_boost_energy_to_specific_unit()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_energy_of_unit()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -257,14 +257,12 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         return self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone())
     }
 
-    async fn notify_player_draw_card_by_using_hand_card(
+    async fn notify_player_draw_card(
         &mut self,
         opponent_unique_id: i32,
-        used_hand_card_id: i32,
-        used_hand_card_type: KindsEnum,
-        drawn_card_list: Vec<i32>) -> bool {
+        drawn_card_list: Vec<i32>) -> PlayerDrawnCardListInfo {
 
-        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_draw_card_with_using_hand_card()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_draw_card()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -286,10 +284,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_DRAW_COUNT(player_draw_count_info)))).await;
 
-        let return_value =
-            self.get_player_drawn_card_list_info(You, drawn_card_list.clone());
-
-        true
+        return self.get_player_drawn_card_list_info(You, drawn_card_list.clone());
     }
 
     async fn notify_player_search_card_by_using_hand_card(
