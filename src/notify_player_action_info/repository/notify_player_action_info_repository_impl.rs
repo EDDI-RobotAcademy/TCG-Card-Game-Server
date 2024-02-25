@@ -287,14 +287,12 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         return self.get_player_drawn_card_list_info(You, drawn_card_list.clone());
     }
 
-    async fn notify_player_search_card_by_using_hand_card(
+    async fn notify_player_search_card(
         &mut self,
         opponent_unique_id: i32,
-        used_hand_card_id: i32,
-        used_hand_card_type: KindsEnum,
-        found_card_id_list_from_deck: Vec<i32>) -> bool {
+        searched_card_list_from_deck: Vec<i32>) -> PlayerSearchCardListInfo {
 
-        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_search_card_by_using_hand_card()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_search_card()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -309,14 +307,14 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         // 상대에게 몇 장을 검색하여 가져왔는지 공지
         let player_search_count_info =
-            self.get_player_search_count_info(Opponent, found_card_id_list_from_deck.clone());
+            self.get_player_search_count_info(Opponent, searched_card_list_from_deck.clone());
 
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
                     NOTIFY_SEARCH_COUNT(player_search_count_info)))).await;
 
-        true
+        return self.get_player_search_card_list_info(You, searched_card_list_from_deck.clone())
     }
 
     async fn notify_player_remove_field_energy_by_using_hand_card(

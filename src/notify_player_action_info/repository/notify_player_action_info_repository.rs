@@ -7,6 +7,7 @@ use crate::notify_player_action_info::entity::player_deck_card_use_list_info::Pl
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
 use crate::notify_player_action_info::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
+use crate::notify_player_action_info::entity::player_search_card_list_info::PlayerSearchCardListInfo;
 
 #[async_trait]
 pub trait NotifyPlayerActionInfoRepository {
@@ -27,12 +28,10 @@ pub trait NotifyPlayerActionInfoRepository {
         &mut self,
         opponent_unique_id: i32,
         drawn_card_list: Vec<i32>) -> PlayerDrawnCardListInfo;
-    async fn notify_player_search_card_by_using_hand_card(
+    async fn notify_player_search_card(
         &mut self,
         opponent_unique_id: i32,
-        used_hand_card_id: i32,
-        used_hand_card_type: KindsEnum,
-        found_card_id_list_from_deck: Vec<i32>) -> bool;
+        searched_card_list_from_deck: Vec<i32>) -> PlayerSearchCardListInfo;
     async fn notify_player_remove_field_energy_by_using_hand_card(
         &mut self,
         opponent_unique_id: i32,

@@ -7,7 +7,7 @@ use crate::notify_player_action_info::service::request::notice_draw_card_request
 use crate::notify_player_action_info::service::request::notice_instant_death_of_specific_unit_by_using_hand_card_request::NoticeInstantDeathOfSpecificUnitByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_unit_by_using_hand_card_request::NoticeRemoveEnergyOfSpecificUnitByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_remove_field_energy_by_using_hand_card_request::NoticeRemoveFieldEnergyByUsingHandCardRequest;
-use crate::notify_player_action_info::service::request::notice_search_card_by_using_hand_card_request::NoticeSearchCardByUsingHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_unit_by_using_hand_card_response::NoticeApplyDamageToEveryUnitByUsingHandCardResponse;
 
@@ -18,7 +18,7 @@ use crate::notify_player_action_info::service::response::notice_draw_card_respon
 use crate::notify_player_action_info::service::response::notice_instant_death_of_specific_unit_by_using_hand_card_response::NoticeInstantDeathOfSpecificUnitByUsingHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_remove_energy_of_specific_unit_by_using_hand_card_response::NoticeRemoveEnergyOfSpecificUnitByUsingHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_remove_field_energy_by_using_hand_card_response::NoticeRemoveFieldEnergyByUsingHandCardResponse;
-use crate::notify_player_action_info::service::response::notice_search_card_by_using_hand_card_response::NoticeSearchCardByUsingHandCardResponse;
+use crate::notify_player_action_info::service::response::notice_search_card_response::{NoticeSearchCardResponse};
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
 
 #[async_trait]
@@ -34,10 +34,10 @@ pub trait NotifyPlayerActionInfoService {
         &mut self,
         notice_draw_card_request: NoticeDrawCardRequest)
         -> NoticeDrawCardResponse;
-    async fn notice_search_card_by_using_hand_card(
+    async fn notice_search_card(
         &mut self,
-        notice_search_card_by_using_hand_card_request: NoticeSearchCardByUsingHandCardRequest)
-        -> NoticeSearchCardByUsingHandCardResponse;
+        notice_search_card_request: NoticeSearchCardRequest)
+        -> NoticeSearchCardResponse;
     async fn notice_remove_field_energy_by_using_hand_card(
         &mut self,
         notice_remove_field_energy_by_using_hand_card_request: NoticeRemoveFieldEnergyByUsingHandCardRequest)
