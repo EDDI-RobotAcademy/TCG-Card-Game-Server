@@ -1,4 +1,5 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
+use crate::game_card_support_usage_counter::service::request::reset_support_card_usage_count_request::ResetSupportCardUsageCountRequest;
 use crate::game_deck::service::request::draw_cards_from_deck_request::DrawCardsFromDeckRequest;
 use crate::game_field_unit::service::request::apply_status_effect_damage_iteratively_request::ApplyStatusEffectDamageIterativelyRequest;
 use crate::game_round::service::request::next_game_turn_request::NextGameRoundRequest;
@@ -60,6 +61,10 @@ impl TurnEndRequestForm {
 
     pub fn to_reset_turn_action_of_all_field_unit_request(&self, account_unique_id: i32) -> ResetTurnActionOfAllFieldUnitRequest {
         ResetTurnActionOfAllFieldUnitRequest::new(account_unique_id)
+    }
+
+    pub fn to_reset_support_card_usage_count_request(&self, account_unique_id: i32) -> ResetSupportCardUsageCountRequest {
+        ResetSupportCardUsageCountRequest::new(account_unique_id)
     }
 
     pub fn to_next_turn_request(&self, account_unique_id: i32) -> NextTurnRequest {
