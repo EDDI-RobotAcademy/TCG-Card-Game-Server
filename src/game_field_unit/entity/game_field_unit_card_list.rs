@@ -86,6 +86,7 @@ impl GameFieldUnitCardList {
         }
     }
 
+    // TODO: 불퇴전 특성에 대한 예외 처리 필요
     pub fn judge_death_of_unit(&mut self, unit_card_index: usize) -> i32 {
         if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
             let unit_health_point = unit.get_unit_health_point().get_current_health_point();

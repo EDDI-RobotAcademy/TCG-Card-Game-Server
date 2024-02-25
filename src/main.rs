@@ -95,6 +95,7 @@ mod game_winner_check;
 mod battle_finish;
 mod notify_player_action_info;
 mod battle_field_info;
+mod fake_battle_room;
 
 #[tokio::main]
 async fn main() {
@@ -161,17 +162,17 @@ async fn main() {
     thread_worker_service_guard.save_async_thread_worker("Transmitter", Box::new(receiver_function.clone()));
     thread_worker_service_guard.start_thread_worker("Transmitter").await;
 
-    let battle_match_monitor_function = || -> Pin<Box<dyn Future<Output = ()> + Send>> {
-        Box::pin(async {
-            let battle_match_monitor_service_mutex = BattleMatchMonitorServiceImpl::get_instance();
-            let mut battle_match_monitor_service_guard = battle_match_monitor_service_mutex.lock().await;
-            println!("Battle Match Monitor instance found. Executing check_battle_match().");
-            let _ = battle_match_monitor_service_guard.check_battle_match().await;
-        })
-    };
-
-    thread_worker_service_guard.save_async_thread_worker("BattleMatchMonitor", Box::new(battle_match_monitor_function.clone()));
-    thread_worker_service_guard.start_thread_worker("BattleMatchMonitor").await;
+    // let battle_match_monitor_function = || -> Pin<Box<dyn Future<Output = ()> + Send>> {
+    //     Box::pin(async {
+    //         let battle_match_monitor_service_mutex = BattleMatchMonitorServiceImpl::get_instance();
+    //         let mut battle_match_monitor_service_guard = battle_match_monitor_service_mutex.lock().await;
+    //         println!("Battle Match Monitor instance found. Executing check_battle_match().");
+    //         let _ = battle_match_monitor_service_guard.check_battle_match().await;
+    //     })
+    // };
+    //
+    // thread_worker_service_guard.save_async_thread_worker("BattleMatchMonitor", Box::new(battle_match_monitor_function.clone()));
+    // thread_worker_service_guard.start_thread_worker("BattleMatchMonitor").await;
 
     let battle_prepare_task_function = || -> Pin<Box<dyn Future<Output = ()> + Send>> {
         Box::pin(async {

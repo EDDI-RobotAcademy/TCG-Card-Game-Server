@@ -8,13 +8,14 @@ use crate::game_deck::service::request::found_card_from_deck_request::FoundCardF
 use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
+use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_boost_card_request::NotifyToOpponentYouUseEnergyBoostCardRequest;
-use crate::notify_player_action_info::service::request::notice_boost_energy_to_specific_unit_by_using_hand_card_request::NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_boost_energy_to_specific_unit_request::{NoticeBoostEnergyToSpecificUnitRequest};
+use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -84,16 +85,28 @@ impl EnergyBoostSupportRequestForm {
         SummarizeSupportCardEffectRequest::new(support_card_number)
     }
 
-    pub fn to_found_card_from_deck_request(&self, account_unique_id: i32, need_to_find_card_id: i32, energy_count: i32) -> FoundCardFromDeckRequest {
-        FoundCardFromDeckRequest::new(account_unique_id, need_to_find_card_id, energy_count)
+    pub fn to_found_card_from_deck_request(&self,
+                                           account_unique_id: i32,
+                                           need_to_find_card_id: i32,
+                                           energy_count: i32) -> FoundCardFromDeckRequest {
+        FoundCardFromDeckRequest::new(
+            account_unique_id, need_to_find_card_id, energy_count)
     }
 
-    pub fn to_attach_multiple_energy_to_unit_index_request(&self, account_unique_id: i32,
+    pub fn to_attach_multiple_energy_to_unit_index_request(&self,
+                                                           account_unique_id: i32,
                                                            unit_number: i32,
                                                            boost_race: RaceEnum,
                                                            energy_count: i32) -> AttachMultipleEnergyToUnitIndexRequest {
+        AttachMultipleEnergyToUnitIndexRequest::new(
+            account_unique_id, unit_number, boost_race, energy_count)
+    }
 
-        AttachMultipleEnergyToUnitIndexRequest::new(account_unique_id, unit_number, boost_race, energy_count)
+    pub fn to_get_current_attached_energy_of_field_unit_by_index_request(&self,
+                                                                         account_unique_id: i32,
+                                                                         field_unit_index: i32) -> GetCurrentAttachedEnergyOfFieldUnitByIndexRequest {
+        GetCurrentAttachedEnergyOfFieldUnitByIndexRequest::new(
+            account_unique_id, field_unit_index)
     }
 
     pub fn to_shuffle_deck_request(&self) -> GameDeckCardShuffleRequest {
@@ -106,18 +119,24 @@ impl EnergyBoostSupportRequestForm {
             account_unique_id)
     }
 
-    pub fn to_notice_boost_energy_to_specific_unit_by_using_hand_card_request(
+    pub fn to_notice_use_hand_card_request(&self,
+                                           opponent_unique_id: i32,
+                                           used_hand_card_id: i32) -> NoticeUseHandCardRequest {
+        NoticeUseHandCardRequest::new(
+            opponent_unique_id, used_hand_card_id)
+    }
+
+    pub fn to_notice_boost_energy_to_specific_unit_request(
         &self,
-        account_unique_id: i32,
         opponent_unique_id: i32,
-        used_hand_card_id: i32,
         found_energy_card_id_list: Vec<i32>,
-        unit_index: i32) -> NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest {
-        NoticeBoostEnergyToSpecificUnitByUsingHandCardRequest::new(
-            account_unique_id,
+        unit_index: i32,
+        attached_energy_map: AttachedEnergyMap) -> NoticeBoostEnergyToSpecificUnitRequest {
+
+        NoticeBoostEnergyToSpecificUnitRequest::new(
             opponent_unique_id,
-            used_hand_card_id,
             found_energy_card_id_list,
-            unit_index)
+            unit_index,
+            attached_energy_map)
     }
 }

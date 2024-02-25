@@ -13,4 +13,8 @@ impl PlayerFieldEnergyInfo {
             player_field_energy_map
         }
     }
+
+    pub fn get_player_field_energy_map(&self) -> &HashMap<PlayerIndex, i32> {
+        &self.player_field_energy_map
+    }
 }

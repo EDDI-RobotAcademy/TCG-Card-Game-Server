@@ -15,6 +15,10 @@ impl PlayerFieldUnitEnergyInfo {
             player_field_unit_energy_map
         }
     }
+
+    pub fn get_player_field_unit_energy_map(&self) -> &HashMap<PlayerIndex, FieldUnitEnergyInfo> {
+        &self.player_field_unit_energy_map
+    }
 }
 
 #[cfg(test)]

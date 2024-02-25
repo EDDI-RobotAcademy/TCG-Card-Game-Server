@@ -4,6 +4,7 @@ use crate::game_card_support_usage_counter::service::request::check_support_card
 use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
 use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
 use crate::game_deck::service::request::search_specific_deck_card_request::SearchSpecificDeckCardRequest;
+use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
@@ -11,8 +12,8 @@ use crate::game_protocol_validation::service::request::is_it_support_card_reques
 use crate::game_protocol_validation::service::request::is_it_unit_card_request::IsItUnitCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_search_support_card_request::NotifyOpponentYouUseSearchSupportRequest;
-use crate::notify_player_action_info::service::request::notice_search_card_by_using_hand_card_request::NoticeSearchCardByUsingHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
+use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -70,21 +71,25 @@ impl SearchUnitSupportRequestForm {
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
         FindOpponentByAccountIdRequest::new(account_unique_id)
     }
-    pub fn to_search_specific_deck_card_request(&self, account_unique_id: i32, target_card_id: i32) -> SearchSpecificDeckCardRequest {
-        SearchSpecificDeckCardRequest::new(account_unique_id, target_card_id)
+    pub fn to_search_specific_deck_card_request(&self, account_unique_id: i32, target_card_id_list: Vec<i32>) -> SearchSpecificDeckCardRequest {
+        SearchSpecificDeckCardRequest::new(account_unique_id, target_card_id_list)
+    }
+    pub fn to_add_card_list_to_hand_request(&self, account_unique_id: i32, card_list: Vec<i32>) -> AddCardListToHandRequest {
+        AddCardListToHandRequest::new(account_unique_id, card_list)
     }
     pub fn to_shuffle_deck_request(&self) -> GameDeckCardShuffleRequest {
         GameDeckCardShuffleRequest::new(self.session_id.clone())
     }
-    pub fn to_notice_search_card_by_using_hand_card_request(
-        &self,
-        account_unique_id: i32,
-        opponent_unique_id: i32,
-        used_hand_card_id: i32,
-        found_card_list: Vec<i32>) -> NoticeSearchCardByUsingHandCardRequest {
-        NoticeSearchCardByUsingHandCardRequest::new(account_unique_id,
-                                                    opponent_unique_id,
-                                                    used_hand_card_id,
-                                                    found_card_list)
+    pub fn to_notice_use_hand_card_request(&self,
+                                           opponent_unique_id: i32,
+                                           used_hand_card_id: i32) -> NoticeUseHandCardRequest {
+        NoticeUseHandCardRequest::new(
+            opponent_unique_id, used_hand_card_id)
+    }
+    pub fn to_notice_search_card_request(&self,
+                                         opponent_unique_id: i32,
+                                         found_card_list: Vec<i32>) -> NoticeSearchCardRequest {
+        NoticeSearchCardRequest::new(
+            opponent_unique_id, found_card_list)
     }
 }

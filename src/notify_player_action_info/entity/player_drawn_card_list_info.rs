@@ -13,15 +13,8 @@ impl PlayerDrawnCardListInfo {
             player_drawn_card_list_map
         }
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use serde_json::json;
-    use super::*;
-
-    #[test]
-    fn test_data() {
-        todo!()
+    pub fn get_player_drawn_card_list_map(&self) -> &HashMap<PlayerIndex, Vec<i32>> {
+        &self.player_drawn_card_list_map
     }
 }

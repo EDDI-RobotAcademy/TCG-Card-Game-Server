@@ -79,7 +79,10 @@ pub trait GameFieldUnitRepository {
     fn judge_death_of_unit(
         &mut self,
         account_unique_id: i32,
-        unit_card_index: i32) -> i32;
+        unit_card_index: i32) -> (i32, i32);
+    fn judge_death_of_every_unit(
+        &mut self,
+        account_unique_id: i32) -> Vec<(i32, i32)>;
     fn attach_special_energy_to_indexed_unit(
         &mut self,
         account_unique_id: i32,
@@ -166,6 +169,10 @@ pub trait GameFieldUnitRepository {
         &mut self,
         account_unique_id: i32,
         unit_index: i32) -> &UnitHealthPoint;
+
+    fn acquire_current_health_point_of_all_unit(
+        &mut self,
+        account_unique_id: i32) -> Vec<i32>;
 
     fn acquire_extra_effect_list_of_indexed_unit(
         &mut self,

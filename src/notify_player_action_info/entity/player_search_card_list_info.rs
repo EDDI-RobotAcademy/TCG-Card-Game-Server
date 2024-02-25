@@ -13,15 +13,8 @@ impl PlayerSearchCardListInfo {
             player_search_card_list_map
         }
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use serde_json::json;
-    use super::*;
-
-    #[test]
-    fn test_data() {
-        todo!()
+    pub fn get_player_search_card_list_map(&self) -> &HashMap<PlayerIndex, Vec<i32>> {
+        &self.player_search_card_list_map
     }
 }

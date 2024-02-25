@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NoticeRemoveFieldEnergyByUsingHandCardResponse {
+pub struct NoticeInstantDeathOfSpecificUnitByUsingHandCardResponse {
     is_success: bool,
 }
 
-impl NoticeRemoveFieldEnergyByUsingHandCardResponse {
+impl NoticeInstantDeathOfSpecificUnitByUsingHandCardResponse {
     pub fn new(is_success: bool) -> Self {
-        NoticeRemoveFieldEnergyByUsingHandCardResponse {
+        NoticeInstantDeathOfSpecificUnitByUsingHandCardResponse {
             is_success
         }
     }

@@ -2,6 +2,7 @@ use crate::battle_room::service::request::find_opponent_by_account_id_request::F
 use crate::game_card_support::service::request::summarize_support_card_effect_request::SummarizeSupportCardEffectRequest;
 use crate::game_card_support_usage_counter::service::request::check_support_card_usage_count_request::CheckSupportCardUsageCountRequest;
 use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
+use crate::game_field_energy::service::request::get_current_field_energy_request::GetCurrentFieldEnergyRequest;
 use crate::game_field_energy::service::request::remove_field_energy_with_amount_request::RemoveFieldEnergyWithAmountRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
@@ -10,7 +11,8 @@ use crate::game_protocol_validation::service::request::is_it_support_card_reques
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_field_energy_remove_support_card_request::NotifyToOpponentYouUseFieldEnergyRemoveSupportCardRequest;
-use crate::notify_player_action_info::service::request::notice_remove_field_energy_by_using_hand_card_request::NoticeRemoveFieldEnergyByUsingHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_remove_field_energy_of_opponent_request::{NoticeRemoveFieldEnergyOfOpponentRequest};
+use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -64,17 +66,24 @@ impl RemoveOpponentFieldEnergySupportRequestForm {
     pub fn to_remove_field_energy_with_amount_request(&self, account_unique_id: i32, amount_to_remove: i32) -> RemoveFieldEnergyWithAmountRequest {
         RemoveFieldEnergyWithAmountRequest::new(account_unique_id, amount_to_remove)
     }
+    pub fn to_get_current_field_energy_request(&self, account_unique_id: i32) -> GetCurrentFieldEnergyRequest {
+        GetCurrentFieldEnergyRequest::new(account_unique_id)
+    }
     pub fn to_notify_to_opponent_you_use_field_energy_remove_support_card_request(&self, opponent_unique_id: i32, usage_support_card_id: i32, field_energy_removed: i32) -> NotifyToOpponentYouUseFieldEnergyRemoveSupportCardRequest {
         NotifyToOpponentYouUseFieldEnergyRemoveSupportCardRequest::new(opponent_unique_id, usage_support_card_id, field_energy_removed)
     }
-    pub fn to_notice_remove_energy_of_specific_unit_by_using_hand_card_request(
+    pub fn to_notice_use_hand_card_request(&self,
+                                           opponent_unique_id: i32,
+                                           used_hand_card_id: i32) -> NoticeUseHandCardRequest {
+        NoticeUseHandCardRequest::new(
+            opponent_unique_id, used_hand_card_id)
+    }
+    pub fn to_notice_remove_field_energy_of_opponent_request(
         &self,
-        account_unique_id: i32,
         opponent_unique_id: i32,
-        used_hand_card_id: i32) -> NoticeRemoveFieldEnergyByUsingHandCardRequest {
-        NoticeRemoveFieldEnergyByUsingHandCardRequest::new(
-            account_unique_id,
+        remaining_field_energy: i32) -> NoticeRemoveFieldEnergyOfOpponentRequest {
+        NoticeRemoveFieldEnergyOfOpponentRequest::new(
             opponent_unique_id,
-            used_hand_card_id)
+            remaining_field_energy)
     }
 }
