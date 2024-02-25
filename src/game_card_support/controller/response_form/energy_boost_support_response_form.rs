@@ -25,9 +25,8 @@ impl EnergyBoostSupportResponseForm {
         }
     }
 
-    pub fn from_response(
-        notice_use_hand_card_response: NoticeUseHandCardResponse,
-        notice_boost_energy_to_specific_unit_response: NoticeBoostEnergyToSpecificUnitResponse)
+    pub fn from_response(notice_use_hand_card_response: NoticeUseHandCardResponse,
+                         notice_boost_energy_to_specific_unit_response: NoticeBoostEnergyToSpecificUnitResponse)
         -> EnergyBoostSupportResponseForm {
 
         EnergyBoostSupportResponseForm::new(
