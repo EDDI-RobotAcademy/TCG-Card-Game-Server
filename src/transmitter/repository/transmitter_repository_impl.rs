@@ -164,6 +164,36 @@ impl TransmitterRepository for TransmitterRepositoryImpl {
                                         }
                                     }
 
+                                    if let ResponseType::FAKE_BATTLE_ROOM_CREATION(create_fake_battle_room_response_form) = &*response_data {
+                                        let fake_your_session = create_fake_battle_room_response_form.get_first_fake_session();
+                                        let fake_opponent_session = create_fake_battle_room_response_form.get_second_fake_session();
+
+                                        if fake_your_session != "" && fake_opponent_session != "" {
+                                            println!("Fake Battle Room 생성 성공: Fake Connection Context 생성");
+
+                                            let mut redis_in_memory_repository_guard = redis_in_memory_repository_clone.lock().await;
+                                            let fake_your_unique_id_option_string = redis_in_memory_repository_guard.get(fake_your_session).await;
+                                            let fake_your_unique_id_string = fake_your_unique_id_option_string.unwrap();
+                                            let fake_your_unique_id: i32 = fake_your_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32");
+
+                                            let fake_opponent_unique_id_option_string = redis_in_memory_repository_guard.get(fake_opponent_session).await;
+                                            let fake_opponent_unique_id_string = fake_opponent_unique_id_option_string.unwrap();
+                                            let fake_opponent_unique_id: i32 = fake_opponent_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32");
+                                            drop(redis_in_memory_repository_guard);
+
+                                            let mut connection_context_repository = connection_context_repository_clone.lock().await;
+                                            // connection_context_repository.add_connection_context(account_unique_id,
+                                            //                                                      client_socket.stream(),
+                                            //                                                      client_socket.each_client_receiver_transmitter_channel()).await;
+                                            connection_context_repository.add_connection_context(fake_your_unique_id,
+                                                                                                 Arc::new(AsyncMutex::new(client_socket.clone()))).await;
+
+                                            connection_context_repository.add_connection_context(fake_opponent_unique_id,
+                                                                                                 Arc::new(AsyncMutex::new(client_socket.clone()))).await;
+                                            drop(connection_context_repository);
+                                        }
+                                    }
+
                                     if let ResponseType::PROGRAM_EXIT(exit_response) = &*response_data {
                                         if exit_response.does_client_exit_success() {
                                             println!("종료 요청 수신: 전용 Transmitter 종료");
