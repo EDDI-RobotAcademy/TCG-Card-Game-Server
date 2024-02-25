@@ -23,7 +23,7 @@ use crate::notify_player_action_info::service::request::notice_draw_card_request
 use crate::notify_player_action_info::service::request::notice_instant_death_of_specific_unit_by_using_hand_card_request::NoticeInstantDeathOfSpecificUnitByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_unit_by_using_hand_card_request::NoticeRemoveEnergyOfSpecificUnitByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_remove_field_energy_by_using_hand_card_request::NoticeRemoveFieldEnergyByUsingHandCardRequest;
-use crate::notify_player_action_info::service::request::notice_search_card_by_using_hand_card_request::NoticeSearchCardByUsingHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_unit_by_using_hand_card_response::NoticeApplyDamageToEveryUnitByUsingHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_boost_energy_to_specific_unit_response::{NoticeBoostEnergyToSpecificUnitResponse};
@@ -33,7 +33,7 @@ use crate::notify_player_action_info::service::response::notice_draw_card_respon
 use crate::notify_player_action_info::service::response::notice_instant_death_of_specific_unit_by_using_hand_card_response::NoticeInstantDeathOfSpecificUnitByUsingHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_remove_energy_of_specific_unit_by_using_hand_card_response::NoticeRemoveEnergyOfSpecificUnitByUsingHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_remove_field_energy_by_using_hand_card_response::NoticeRemoveFieldEnergyByUsingHandCardResponse;
-use crate::notify_player_action_info::service::response::notice_search_card_by_using_hand_card_response::NoticeSearchCardByUsingHandCardResponse;
+use crate::notify_player_action_info::service::response::notice_search_card_response::{NoticeSearchCardResponse};
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
 
 pub struct NotifyPlayerActionInfoServiceImpl {
@@ -157,34 +157,24 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         NoticeDrawCardResponse::new(player_drawn_card_list_info)
     }
 
-    async fn notice_search_card_by_using_hand_card(
-        &mut self, notice_search_card_by_using_hand_card_request: NoticeSearchCardByUsingHandCardRequest)
-        -> NoticeSearchCardByUsingHandCardResponse {
+    async fn notice_search_card(
+        &mut self,
+        notice_search_card_request: NoticeSearchCardRequest)
+        -> NoticeSearchCardResponse {
 
-        println!("NotifyPlayerActionInfoServiceImpl: notice_search_card_by_using_hand_card()");
-
-        let mut card_kind_repository_guard =
-            self.card_kind_repository.lock().await;
-
-        let hand_card_kind_enum =
-            card_kind_repository_guard.get_card_kind(
-                &notice_search_card_by_using_hand_card_request.get_used_hand_card_id()).await;
-
-        drop(card_kind_repository_guard);
+        println!("NotifyPlayerActionInfoServiceImpl: notice_search_card()");
 
         let mut notify_player_action_info_repository_guard =
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notify_player_search_card_by_using_hand_card(
-                notice_search_card_by_using_hand_card_request.get_opponent_unique_id(),
-                notice_search_card_by_using_hand_card_request.get_used_hand_card_id(),
-                hand_card_kind_enum,
-                notice_search_card_by_using_hand_card_request.get_found_card_list().clone()).await;
+            notify_player_action_info_repository_guard.notify_player_search_card(
+                notice_search_card_request.get_opponent_unique_id(),
+                notice_search_card_request.get_found_card_list().clone()).await;
 
         drop(notify_player_action_info_repository_guard);
 
-        NoticeSearchCardByUsingHandCardResponse::new(response)
+        NoticeSearchCardResponse::new(response)
     }
 
     async fn notice_remove_field_energy_by_using_hand_card(
