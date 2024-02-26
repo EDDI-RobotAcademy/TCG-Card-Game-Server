@@ -20,6 +20,6 @@ pub mod field_unit_extra_effect_info;
 pub mod field_unit_harmful_status_info;
 pub mod field_unit_death_info;
 pub mod player_field_unit_death_info;
-pub mod player_deck_card_lost_info;
+pub mod player_deck_card_lost_list_info;
 pub mod field_unit_damage_info;
 pub mod player_field_unit_damage_info;

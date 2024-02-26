@@ -4,6 +4,7 @@ use crate::notify_player_action_info::entity::field_unit_damage_info::FieldUnitD
 use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::notify_player_action_info::entity::field_unit_death_info::{FieldUnitDeathInfo};
+use crate::notify_player_action_info::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::notify_player_action_info::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
@@ -44,7 +45,7 @@ pub trait NotifyPlayerActionInfoRepository {
         &mut self,
         opponent_unique_id: i32,
         field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo;
-    async fn notify_player_apply_damage_to_specific_opponent_unit(
+    async fn notify_player_apply_damage_to_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
         field_unit_damage_info: FieldUnitDamageInfo,
@@ -55,8 +56,12 @@ pub trait NotifyPlayerActionInfoRepository {
         &mut self,
         opponent_unique_id: i32,
         field_unit_energy_info: FieldUnitEnergyInfo)-> PlayerFieldUnitEnergyInfo;
-    async fn notify_player_death_of_specific_opponent_unit(
+    async fn notify_player_death_of_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
         field_unit_death_info: FieldUnitDeathInfo) -> PlayerFieldUnitDeathInfo;
+    async fn notify_player_lost_deck_card(
+        &mut self,
+        opponent_unique_id: i32,
+        lost_deck_card_list: Vec<i32>) -> PlayerDeckCardLostListInfo;
 }

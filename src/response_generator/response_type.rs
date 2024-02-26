@@ -58,6 +58,7 @@ use crate::notify_player_action::entity::notify_opponent_to_damage_main_characte
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
+use crate::notify_player_action_info::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::notify_player_action_info::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::notify_player_action_info::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
@@ -173,6 +174,7 @@ pub enum ResponseType {
     NOTIFY_FIELD_UNIT_HEALTH_POINT(PlayerFieldUnitHealthPointInfo),
     NOTIFY_FIELD_UNIT_DEATH(PlayerFieldUnitDeathInfo),
     NOTIFY_FIELD_UNIT_DAMAGE(PlayerFieldUnitDamageInfo),
+    NOTIFY_DECK_CARD_LOST_LIST(PlayerDeckCardLostListInfo),
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),
