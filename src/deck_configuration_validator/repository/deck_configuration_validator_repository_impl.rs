@@ -36,7 +36,7 @@ impl DeckConfigurationValidatorRepository for DeckConfigurationValidatorReposito
             }
         }
     }
-    async fn duplication_checker(&self, deck: &Vec<i32>) -> Result<(), String> {
+    async fn duplication_checker(&self, deck: &Vec<i32>, energy_card_list: Vec<&i32>) -> Result<(), String> {
         let mut card_count_map = HashMap::new();
 
         for card_id in deck.iter() {
@@ -44,10 +44,13 @@ impl DeckConfigurationValidatorRepository for DeckConfigurationValidatorReposito
             *card_counts += 1;
 
             if *card_counts > 3 {
-                let error_string =
-                    format!("{}번 카드가 3장이 넘습니다. 같은 카드는 덱에 3장 이하여야 합니다!", card_id);
+                if !energy_card_list.iter().find(|x| x == &&card_id).is_some() {
+                    let error_string =
+                        format!("{}번 카드가 3장이 넘습니다. 같은 카드는 덱에 3장 이하여야 합니다!", card_id);
 
-                return Err(error_string);
+                    return Err(error_string);
+                }
+
             }
         }
         Ok(())
