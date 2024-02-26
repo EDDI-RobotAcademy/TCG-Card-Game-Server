@@ -9,8 +9,10 @@ use crate::game_main_character::repository::game_main_character_repository_impl:
 use crate::game_main_character::service::game_main_character_service::GameMainCharacterService;
 use crate::game_main_character::service::request::apply_damage_to_main_character_request::ApplyDamageToMainCharacterRequest;
 use crate::game_main_character::service::request::check_main_character_of_account_unique_id_request::CheckMainCharacterOfAccountUniqueIdRequest;
+use crate::game_main_character::service::request::get_current_main_character_health_point_request::GetCurrentMainCharacterHealthPointRequest;
 use crate::game_main_character::service::response::apply_damage_to_main_character_response::ApplyDamageToMainCharacterResponse;
 use crate::game_main_character::service::response::check_main_character_of_account_unique_id_response::CheckMainCharacterOfAccountUniqueIdResponse;
+use crate::game_main_character::service::response::get_current_main_character_health_point_response::GetCurrentMainCharacterHealthPointResponse;
 
 pub struct GameMainCharacterServiceImpl {
     game_main_character_repository: Arc<AsyncMutex<GameMainCharacterRepositoryImpl>>,
@@ -63,5 +65,21 @@ impl GameMainCharacterService for GameMainCharacterServiceImpl {
             return CheckMainCharacterOfAccountUniqueIdResponse::new(Death);
         }
         return CheckMainCharacterOfAccountUniqueIdResponse::new(Survival);
+    }
+
+    async fn get_current_main_character_health_point(
+        &mut self, get_current_main_character_health_point_request: GetCurrentMainCharacterHealthPointRequest)
+        -> GetCurrentMainCharacterHealthPointResponse {
+
+        println!("GameFieldUnitServiceImpl: check_main_character_of_account_unique_id()");
+
+        let mut game_main_character_repository_guard =
+            self.game_main_character_repository.lock().await;
+
+        let health_point =
+            game_main_character_repository_guard.get_health_point_of_main_character_by_account_unique_id(
+                get_current_main_character_health_point_request.get_account_unique_id());
+
+        GetCurrentMainCharacterHealthPointResponse::new(health_point)
     }
 }
