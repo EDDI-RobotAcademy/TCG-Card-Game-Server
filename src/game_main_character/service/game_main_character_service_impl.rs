@@ -71,7 +71,7 @@ impl GameMainCharacterService for GameMainCharacterServiceImpl {
         &mut self, get_current_main_character_health_point_request: GetCurrentMainCharacterHealthPointRequest)
         -> GetCurrentMainCharacterHealthPointResponse {
 
-        println!("GameFieldUnitServiceImpl: check_main_character_of_account_unique_id()");
+        println!("GameMainCharacterServiceImpl: get_current_main_character_health_point()");
 
         let mut game_main_character_repository_guard =
             self.game_main_character_repository.lock().await;
@@ -79,6 +79,8 @@ impl GameMainCharacterService for GameMainCharacterServiceImpl {
         let health_point =
             game_main_character_repository_guard.get_health_point_of_main_character_by_account_unique_id(
                 get_current_main_character_health_point_request.get_account_unique_id());
+
+        drop(game_main_character_repository_guard);
 
         GetCurrentMainCharacterHealthPointResponse::new(health_point)
     }

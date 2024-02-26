@@ -238,7 +238,7 @@ impl GameProtocolValidationService for GameProtocolValidationServiceImpl {
     }
 
     async fn is_it_item_card(&self, is_it_item_card_request: IsItItemCardRequest) -> IsItItemCardResponse {
-        println!("GameProtocolValidationServiceImpl: to_is_it_energy_card_request()");
+        println!("GameProtocolValidationServiceImpl: is_it_item_card()");
 
         let item_card_id = is_it_item_card_request.get_item_card_id();
 
