@@ -86,6 +86,10 @@ impl GameFieldUnitCard {
         &self.extra_status_effect_list
     }
 
+    pub fn get_harmful_status_effect_list(&self) -> &Vec<HarmfulStatusEffect> {
+        &self.harmful_status_effect_list
+    }
+
     pub fn is_alive(&self) -> bool {
         self.is_alive
     }

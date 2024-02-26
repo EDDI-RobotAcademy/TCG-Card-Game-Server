@@ -36,6 +36,7 @@ use crate::game_field_unit::service::request::get_current_health_point_of_field_
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
 use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
+use crate::game_field_unit::service::request::acquire_unit_harmful_status_effect_request::AcquireUnitHarmfulStatusEffectRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
 use crate::game_field_unit::service::response::acquire_unit_passive_status_list_response::AcquireUnitPassiveStatusListResponse;
@@ -59,9 +60,10 @@ use crate::game_field_unit::service::response::find_target_unit_id_by_index_resp
 use crate::game_field_unit::service::response::get_current_attached_energy_of_field_unit_by_index_response::GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_all_field_unit_response::GetCurrentHealthPointOfAllFieldUnitResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
-use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_uique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
+use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_unique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
 use crate::game_field_unit::service::response::judge_death_of_every_unit_response::JudgeDeathOfEveryUnitResponse;
 use crate::game_field_unit::service::response::reset_turn_action_of_all_field_unit_response::ResetTurnActionOfAllFieldUnitResponse;
+use crate::game_field_unit::service::response::acquire_unit_harmful_status_effect_response::AcquireUnitHarmfulStatusEffectResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 
 
@@ -324,6 +326,17 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             acquire_unit_extra_effect_request.get_attacker_unit_index());
 
         AcquireUnitExtraEffectResponse::new(extra_effect_list.clone())
+    }
+
+    async fn acquire_unit_harmful_status_effect(&mut self, acquire_unit_harmful_status_effect_request: AcquireUnitHarmfulStatusEffectRequest) -> AcquireUnitHarmfulStatusEffectResponse {
+        println!("GameFieldUnitServiceImpl: acquire_unit_harmful_status_effect()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let harmful_effect_list = game_field_unit_repository_guard.acquire_unit_harmful_status_effect_list_by_index(
+            acquire_unit_harmful_status_effect_request.get_opponent_unique_id(),
+            acquire_unit_harmful_status_effect_request.get_opponent_unit_index());
+
+        AcquireUnitHarmfulStatusEffectResponse::new(harmful_effect_list.clone())
     }
 
     async fn attack_target_unit_with_extra_effect(&mut self, attack_target_unit_with_extra_effect_request: AttackTargetUnitWithExtraEffectRequest) -> AttackTargetUnitWithExtraEffectResponse {

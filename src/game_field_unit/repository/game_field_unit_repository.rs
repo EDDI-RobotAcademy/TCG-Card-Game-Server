@@ -8,6 +8,7 @@ use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::unit_health_point::UnitHealthPoint;
+use crate::game_field_unit::entity::harmful_status_effect::HarmfulStatusEffect;
 
 pub trait GameFieldUnitRepository {
     fn create_game_field_unit_object(
@@ -183,4 +184,9 @@ pub trait GameFieldUnitRepository {
         &mut self,
         account_unique_id: i32,
         unit_index: i32) -> bool;
+
+    fn acquire_unit_harmful_status_effect_list_by_index(
+        &mut self,
+        opponent_unique_id: i32,
+        opponent_unit_index: i32) -> &Vec<HarmfulStatusEffect>;
 }

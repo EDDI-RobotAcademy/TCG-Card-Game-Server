@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use crate::game_field_unit::service::request::acquire_unit_attack_point_request::AcquireUnitAttackPointRequest;
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
+use crate::game_field_unit::service::request::acquire_unit_harmful_status_effect_request::AcquireUnitHarmfulStatusEffectRequest;
 use crate::game_field_unit::service::request::acquire_unit_passive_status_list_request::AcquireUnitPassiveStatusListRequest;
 
 use crate::game_field_unit::service::request::add_unit_to_game_field_request::AddUnitToGameFieldRequest;
@@ -27,6 +28,7 @@ use crate::game_field_unit::service::request::judge_death_of_every_unit_request:
 use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
+use crate::game_field_unit::service::response::acquire_unit_harmful_status_effect_response::AcquireUnitHarmfulStatusEffectResponse;
 use crate::game_field_unit::service::response::acquire_unit_passive_status_list_response::AcquireUnitPassiveStatusListResponse;
 
 use crate::game_field_unit::service::response::add_unit_to_game_field_response::AddUnitToGameFieldResponse;
@@ -48,7 +50,7 @@ use crate::game_field_unit::service::response::find_target_unit_id_by_index_resp
 use crate::game_field_unit::service::response::get_current_attached_energy_of_field_unit_by_index_response::GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_all_field_unit_response::GetCurrentHealthPointOfAllFieldUnitResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
-use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_uique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
+use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_unique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
 use crate::game_field_unit::service::response::judge_death_of_every_unit_response::JudgeDeathOfEveryUnitResponse;
 use crate::game_field_unit::service::response::reset_turn_action_of_all_field_unit_response::ResetTurnActionOfAllFieldUnitResponse;
 
@@ -79,4 +81,5 @@ pub trait GameFieldUnitService {
     async fn get_current_attached_energy_of_field_unit_by_index(&mut self, get_current_attached_energy_of_field_unit_by_index_request: GetCurrentAttachedEnergyOfFieldUnitByIndexRequest) -> GetCurrentAttachedEnergyOfFieldUnitByIndexResponse;
     async fn get_game_field_unit_card_of_account_unique_id(&mut self, get_game_field_unit_map_to_service_request: GetGameFieldUnitCardOfAccountUniqueIdRequest) -> GetGameFieldUnitCardOfAccountUniqueIdResponse;
     async fn acquire_unit_passive_status_list(&mut self, acquire_unit_passive_status_list_request: AcquireUnitPassiveStatusListRequest) -> AcquireUnitPassiveStatusListResponse;
+    async fn acquire_unit_harmful_status_effect(&mut self, acquire_unit_harmful_status_effect_request: AcquireUnitHarmfulStatusEffectRequest) -> AcquireUnitHarmfulStatusEffectResponse;
 }

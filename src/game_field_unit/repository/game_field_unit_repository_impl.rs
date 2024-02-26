@@ -15,6 +15,7 @@ use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
+use crate::game_field_unit::entity::harmful_status_effect::HarmfulStatusEffect;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 use crate::game_field_unit::entity::unit_health_point::UnitHealthPoint;
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
@@ -298,6 +299,11 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
     ) -> &Vec<ExtraStatusEffect> {
         let indexed_unit_reference = self.find_indexed_unit(account_unique_id, attacker_unit_index).unwrap();
         return indexed_unit_reference.get_extra_status_effect_list();
+    }
+
+    fn acquire_unit_harmful_status_effect_list_by_index(&mut self, opponent_unique_id: i32, opponent_unit_index: i32) -> &Vec<HarmfulStatusEffect> {
+        let indexed_unit_reference = self.find_indexed_unit(opponent_unique_id, opponent_unit_index).unwrap();
+        return indexed_unit_reference.get_harmful_status_effect_list();
     }
 
     fn attack_target_unit_with_extra_effect(
