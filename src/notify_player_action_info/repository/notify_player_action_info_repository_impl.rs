@@ -10,6 +10,7 @@ use crate::notify_player_action_info::entity::field_unit_damage_info::FieldUnitD
 use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::notify_player_action_info::entity::field_unit_death_info::{FieldUnitDeathInfo};
+use crate::notify_player_action_info::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::notify_player_action_info::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::notify_player_action_info::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
@@ -25,7 +26,7 @@ use crate::notify_player_action_info::entity::player_search_card_list_info::Play
 use crate::notify_player_action_info::entity::player_search_count_info::PlayerSearchCountInfo;
 use crate::notify_player_action_info::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
-use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_DAMAGE, NOTIFY_FIELD_UNIT_DEATH, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_HAND_CARD_USE, NOTIFY_SEARCH_COUNT};
+use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LOST_LIST, NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_DAMAGE, NOTIFY_FIELD_UNIT_DEATH, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_HAND_CARD_USE, NOTIFY_SEARCH_COUNT};
 
 pub struct NotifyPlayerActionInfoRepositoryImpl;
 
@@ -158,21 +159,32 @@ impl NotifyPlayerActionInfoRepositoryImpl {
                                                field_unit_health_point_info: FieldUnitHealthPointInfo
     ) -> PlayerFieldUnitHealthPointInfo {
 
-        let mut player_field_unit_health_point_info = HashMap::new();
-        player_field_unit_health_point_info.insert(notify_player_index, field_unit_health_point_info);
+        let mut player_field_unit_health_point_map = HashMap::new();
+        player_field_unit_health_point_map.insert(notify_player_index, field_unit_health_point_info);
 
-        PlayerFieldUnitHealthPointInfo::new(player_field_unit_health_point_info)
+        PlayerFieldUnitHealthPointInfo::new(player_field_unit_health_point_map)
     }
 
     fn get_player_field_unit_death_info(&self,
-                                           notify_player_index: PlayerIndex,
-                                           field_unit_death_info: FieldUnitDeathInfo
+                                        notify_player_index: PlayerIndex,
+                                        field_unit_death_info: FieldUnitDeathInfo
     ) -> PlayerFieldUnitDeathInfo {
 
-        let mut player_field_unit_survival_info = HashMap::new();
-        player_field_unit_survival_info.insert(notify_player_index, field_unit_death_info);
+        let mut player_field_unit_death_map = HashMap::new();
+        player_field_unit_death_map.insert(notify_player_index, field_unit_death_info);
 
-        PlayerFieldUnitDeathInfo::new(player_field_unit_survival_info)
+        PlayerFieldUnitDeathInfo::new(player_field_unit_death_map)
+    }
+
+    fn get_player_deck_card_lost_list_info(&self,
+                                           notify_player_index: PlayerIndex,
+                                           lost_deck_card_list: Vec<i32>
+    ) -> PlayerDeckCardLostListInfo {
+
+        let mut player_deck_card_lost_list_info = HashMap::new();
+        player_deck_card_lost_list_info.insert(notify_player_index, lost_deck_card_list);
+
+        PlayerDeckCardLostListInfo::new(player_deck_card_lost_list_info)
     }
 }
 
@@ -389,7 +401,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         return self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone())
     }
 
-    async fn notify_player_apply_damage_to_specific_opponent_unit(
+    async fn notify_player_apply_damage_to_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
         field_unit_damage_info: FieldUnitDamageInfo,
@@ -446,7 +458,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notify_player_attach_energy_to_specific_unit(
         &mut self,
         opponent_unique_id: i32,
-        field_unit_energy_info: FieldUnitEnergyInfo) -> bool {
+        field_unit_energy_info: FieldUnitEnergyInfo)-> PlayerFieldUnitEnergyInfo {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_attach_energy_to_specific_unit()");
 
@@ -470,13 +482,13 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_FIELD_UNIT_ENERGY(player_field_unit_energy_info)))).await;
 
-        true
+        return self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone())
     }
 
-    async fn notify_player_instant_death_of_specific_opponent_unit(
+    async fn notify_player_death_of_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
-        field_unit_death_info: FieldUnitDeathInfo) -> bool {
+        field_unit_death_info: FieldUnitDeathInfo) -> PlayerFieldUnitDeathInfo {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_instant_death_of_specific_opponent_unit()");
 
@@ -491,15 +503,45 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
-        // let player_field_unit_survival_info =
-        //     self.get_player_field_unit_survival_info(Opponent, field_unit_survival_info);
-        //
-        // // 상대에게 즉사 유닛의 생존 정보 공지
-        // opponent_receiver_transmitter_channel.send(
-        //     Arc::new(
-        //         AsyncMutex::new(
-        //             NOTIFY_FIELD_UNIT_SURVIVAL(player_field_unit_survival_info)))).await;
+        let player_field_unit_death_info =
+            self.get_player_field_unit_death_info(You, field_unit_death_info.clone());
 
-        true
+        // 상대에게 즉사 유닛의 생존 정보 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_UNIT_DEATH(player_field_unit_death_info)))).await;
+
+        return self.get_player_field_unit_death_info(Opponent, field_unit_death_info.clone())
+    }
+
+    async fn notify_player_lost_deck_card(
+        &mut self,
+        opponent_unique_id: i32,
+        lost_deck_card_list: Vec<i32>) -> PlayerDeckCardLostListInfo {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_lost_deck_card()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let player_deck_card_lost_list_info =
+            self.get_player_deck_card_lost_list_info(You, lost_deck_card_list.clone());
+
+        // 상대에게 로스트 존으로 이동시킬 덱 카드 리스트 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_DECK_CARD_LOST_LIST(player_deck_card_lost_list_info)))).await;
+
+        return self.get_player_deck_card_lost_list_info(Opponent, lost_deck_card_list.clone());
     }
 }

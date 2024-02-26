@@ -4,6 +4,7 @@ use crate::game_card_unit::service::request::summary_unit_card_info_request::Sum
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::service::request::acquire_unit_attack_point_request::AcquireUnitAttackPointRequest;
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
+use crate::game_field_unit::service::request::acquire_unit_harmful_status_effect_request::AcquireUnitHarmfulStatusEffectRequest;
 use crate::game_field_unit::service::request::acquire_unit_passive_status_list_request::AcquireUnitPassiveStatusListRequest;
 use crate::game_field_unit::service::request::attack_target_unit_with_extra_effect_request::AttackTargetUnitWithExtraEffectRequest;
 use crate::game_field_unit::service::request::execute_turn_action_request::ExecuteTurnActionRequest;
@@ -82,6 +83,13 @@ impl AttackUnitRequestForm {
                                                 attacker_unit_card_index: i32) -> AcquireUnitExtraEffectRequest {
         AcquireUnitExtraEffectRequest::new(
             account_unique_id, attacker_unit_card_index)
+    }
+
+    pub fn to_acquire_unit_harmful_status_effect_request(&self,
+                                                opponent_unique_id: i32,
+                                                opponent_unit_index: i32) -> AcquireUnitHarmfulStatusEffectRequest {
+        AcquireUnitHarmfulStatusEffectRequest::new(
+            opponent_unique_id, opponent_unit_index)
     }
 
     pub fn to_acquire_unit_passive_status_list_request(&self,
