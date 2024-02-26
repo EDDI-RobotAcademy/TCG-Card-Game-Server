@@ -21,7 +21,7 @@ impl GameMainCharacter {
         self.health_point.get_health()
     }
 
-    pub fn get_status(&self) -> StatusMainCharacterEnum { self.status }
+    pub fn get_status(&self) -> &StatusMainCharacterEnum { &self.status }
 
     pub fn set_status(&mut self, status_update: StatusMainCharacterEnum) {
         self.status = status_update

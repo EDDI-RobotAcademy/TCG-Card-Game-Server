@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
+use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
 use crate::notify_player_action_info::entity::field_unit_damage_info::FieldUnitDamageInfo;
 use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
@@ -12,6 +13,9 @@ use crate::notify_player_action_info::entity::player_field_unit_damage_info::Pla
 use crate::notify_player_action_info::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
 use crate::notify_player_action_info::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
+use crate::notify_player_action_info::entity::player_main_character_damage_info::PlayerMainCharacterDamageInfo;
+use crate::notify_player_action_info::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
+use crate::notify_player_action_info::entity::player_main_character_survival_info::PlayerMainCharacterSurvivalInfo;
 use crate::notify_player_action_info::entity::player_search_card_list_info::PlayerSearchCardListInfo;
 
 #[async_trait]
@@ -52,6 +56,13 @@ pub trait NotifyPlayerActionInfoRepository {
         field_unit_health_point_info: FieldUnitHealthPointInfo,
         field_unit_death_info: FieldUnitDeathInfo
     ) -> (PlayerFieldUnitDamageInfo, PlayerFieldUnitHealthPointInfo, PlayerFieldUnitDeathInfo);
+    async fn notify_player_apply_damage_to_opponent_main_character(
+        &mut self,
+        opponent_unique_id: i32,
+        opponent_main_character_damage: i32,
+        opponent_health_point: i32,
+        opponent_survival: StatusMainCharacterEnum
+    ) -> (PlayerMainCharacterDamageInfo, PlayerMainCharacterHealthPointInfo, PlayerMainCharacterSurvivalInfo);
     async fn notify_player_attach_energy_to_specific_unit(
         &mut self,
         opponent_unique_id: i32,
