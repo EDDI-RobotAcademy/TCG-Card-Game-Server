@@ -391,19 +391,12 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         }
 
 
-        // 피격 유닛에게 DarkFire 효과가 있고, 공격 유닛에게도 DarkFire 가 있다면, attacker_extra_effect 에서 DarkFire 의 effect_damage 제거
+        // 피격 유닛에게 DarkFire 효과가 있고, 공격 유닛에게도 DarkFire 가 있다면, opponent_target_unit_harmful_status_effect_list 에서 DarkFire 제거
         for harmful_effect_index in (0..opponent_target_unit_harmful_status_effect_list.len()).rev() {
             if *opponent_target_unit_harmful_status_effect_list[harmful_effect_index].get_harmful_effect() == DarkFire {
                 for attacker_index in (0..attacker_unit_extra_effect_list.len()).rev() {
                     if *attacker_unit_extra_effect_list[attacker_index].get_extra_effect() == DarkFire {
-                        let non_damage_darkfire: ExtraStatusEffect = ExtraStatusEffect::new(
-                            DarkFire,
-                            attacker_unit_extra_effect_list[attacker_index].get_status_duration_turn(),
-                            0,
-                            attacker_unit_extra_effect_list[attacker_index].get_reuse_turn());
                         opponent_target_unit_harmful_status_effect_list.swap_remove(harmful_effect_index);
-                        attacker_unit_extra_effect_list.swap_remove(attacker_index);
-                        attacker_unit_extra_effect_list.push(non_damage_darkfire);
                     }
                 }
             }
@@ -716,14 +709,7 @@ mod tests {
             if *harmful_effect_list[harmful_effect_index].get_harmful_effect() == DarkFire {
                 for attacker_index in (0..extra_effect_list.len()).rev() {
                     if *extra_effect_list[attacker_index].get_extra_effect() == DarkFire {
-                        let non_damage_darkfire: ExtraStatusEffect = ExtraStatusEffect::new(
-                            DarkFire,
-                            extra_effect_list[attacker_index].get_status_duration_turn(),
-                            0,
-                            extra_effect_list[attacker_index].get_reuse_turn());
                         harmful_effect_list.swap_remove(harmful_effect_index);
-                        extra_effect_list.swap_remove(attacker_index);
-                        extra_effect_list.push(non_damage_darkfire);
                     }
                 }
             }
