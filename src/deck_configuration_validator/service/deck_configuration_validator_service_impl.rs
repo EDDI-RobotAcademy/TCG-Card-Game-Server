@@ -7,7 +7,10 @@ use crate::account_card::repository::account_card_repository_impl::AccountCardRe
 use crate::card_grade::repository::card_grade_repository::CardGradeRepository;
 
 use crate::card_grade::repository::card_grade_repository_impl::CardGradeRepositoryImpl;
+use crate::card_kinds::repository::card_kinds_repository::CardKindsRepository;
+use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
+use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::common::converter::vector_to_hash_converter::VectorToHashConverter;
 use crate::deck_configuration_validator::repository::deck_configuration_validator_repository::DeckConfigurationValidatorRepository;
 use crate::deck_configuration_validator::repository::deck_configuration_validator_repository_impl::DeckConfigurationValidatorRepositoryImpl;
@@ -21,6 +24,7 @@ pub struct DeckConfigurationValidatorServiceImpl {
     card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
     accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+    card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
 }
 
 impl DeckConfigurationValidatorServiceImpl {
@@ -28,6 +32,8 @@ impl DeckConfigurationValidatorServiceImpl {
                card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
                accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+               card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
+
 
     ) -> Self {
         DeckConfigurationValidatorServiceImpl {
@@ -35,6 +41,7 @@ impl DeckConfigurationValidatorServiceImpl {
             card_grade_repository,
             accuont_card_repository,
             redis_in_memory_repository,
+            card_kinds_repository,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<DeckConfigurationValidatorServiceImpl>> {
@@ -46,7 +53,8 @@ impl DeckConfigurationValidatorServiceImpl {
                             DeckConfigurationValidatorRepositoryImpl::get_instance(),
                             CardGradeRepositoryImpl::get_instance(),
                             AccountCardRepositoryImpl::get_instance(),
-                            RedisInMemoryRepositoryImpl::get_instance())));
+                            RedisInMemoryRepositoryImpl::get_instance(),
+                            CardKindsRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -73,14 +81,31 @@ impl DeckConfigurationValidatorService for DeckConfigurationValidatorServiceImpl
         }
 
         // 2. check duplication
+
+        // get energy card list
+        let card_kinds_repository_guard
+            = self.card_kinds_repository.lock().await;
+        let card_grade_repository_guard
+            = self.card_grade_repository.lock().await;
+
+        let mut energy_card_list = Vec::new();
+        for card in deck {
+            let kind_result = card_kinds_repository_guard.get_card_kind(card).await;
+            let grade_result = card_grade_repository_guard.get_card_grade(card).await;
+
+            if kind_result == KindsEnum::Energy {
+                if grade_result == GradeEnum::Common {
+                    energy_card_list.push(card);
+                }
+            }
+        }
+
         if let Err(duplication_error_message) =
-            deck_configuration_repository_guard.duplication_checker(deck).await {
+            deck_configuration_repository_guard.duplication_checker(deck, energy_card_list).await {
             return Err(duplication_error_message)
         }
 
         // 3. check grade limit
-        let card_grade_repository_guard
-            = self.card_grade_repository.lock().await;
 
         // let mut normal_card_count = 0;
         let mut uncommon_card_count = 0;
@@ -173,7 +198,7 @@ mod tests {
         let sample_deck = [19, 8, 8, 8, 9, 25, 25, 25, 27, 100,
                                     27, 27, 151, 20, 20, 20, 2, 2, 2, 26,
                                     26, 26, 30, 31, 31, 31, 32, 32, 32, 33,
-                                    33, 35, 35, 36, 36, 93, 93, 93, 100, 100].to_vec();
+                                    33, 35, 93, 93, 93, 93, 93, 93, 93, 93].to_vec();
 
         let validation_result = deck_configuration_validator_service_guard.validate_deck(&sample_deck).await;
         if validation_result.is_ok() {
