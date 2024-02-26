@@ -22,7 +22,9 @@ use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_card_unit::service::game_card_unit_service::GameCardUnitService;
 
 use crate::game_card_unit::service::game_card_unit_service_impl::GameCardUnitServiceImpl;
-use crate::game_field_unit::entity::extra_effect::ExtraEffect::Freeze;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect::{DarkFire, Freeze};
+use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
+use crate::game_field_unit::entity::harmful_status_effect::HarmfulStatusEffect;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionPossibilityValidatorService;
@@ -367,9 +369,9 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             return AttackUnitResponseForm::new(false)
         }
 
-        // 공격 유닛과 피격 유닛에게 빙결 효과 존재 유무 판정 (공격유닛:존재, 피격유닛:부재 시 빙결 공격 가능)
+        // 공격 유닛과 피격 유닛에게 효과 존재 유무 판정
         // 공격받는 unit 의 harmful_status_effect 호출
-        let opponent_target_unit_harmful_status_effect_list =
+        let mut opponent_target_unit_harmful_status_effect_list =
             game_field_unit_service_guard.acquire_unit_harmful_status_effect(
                 attack_unit_request_form
                     .to_acquire_unit_harmful_status_effect_request(
@@ -377,11 +379,31 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         opponent_target_unit_card_index)).await.get_harmful_status_effect_list().clone();
 
         // 피격 유닛에게 Freeze 효과가 있고, 공격 유닛에게도 Freeze 가 있다면, attacker_extra_effect 에서 Freeze 제거
+        // (공격유닛:존재, 피격유닛:부재 시 빙결 공격 가능)
         for harmful_effect_index in (0..opponent_target_unit_harmful_status_effect_list.len()).rev() {
             if *opponent_target_unit_harmful_status_effect_list[harmful_effect_index].get_harmful_effect() == Freeze {
                 for attacker_index in (0..attacker_unit_extra_effect_list.len()).rev() {
                     if *attacker_unit_extra_effect_list[attacker_index].get_extra_effect() == Freeze {
                         attacker_unit_extra_effect_list.swap_remove(attacker_index);
+                    }
+                }
+            }
+        }
+
+
+        // 피격 유닛에게 DarkFire 효과가 있고, 공격 유닛에게도 DarkFire 가 있다면, attacker_extra_effect 에서 DarkFire 의 effect_damage 제거
+        for harmful_effect_index in (0..opponent_target_unit_harmful_status_effect_list.len()).rev() {
+            if *opponent_target_unit_harmful_status_effect_list[harmful_effect_index].get_harmful_effect() == DarkFire {
+                for attacker_index in (0..attacker_unit_extra_effect_list.len()).rev() {
+                    if *attacker_unit_extra_effect_list[attacker_index].get_extra_effect() == DarkFire {
+                        let non_damage_darkfire: ExtraStatusEffect = ExtraStatusEffect::new(
+                            DarkFire,
+                            attacker_unit_extra_effect_list[attacker_index].get_status_duration_turn(),
+                            0,
+                            attacker_unit_extra_effect_list[attacker_index].get_reuse_turn());
+                        opponent_target_unit_harmful_status_effect_list.swap_remove(harmful_effect_index);
+                        attacker_unit_extra_effect_list.swap_remove(attacker_index);
+                        attacker_unit_extra_effect_list.push(non_damage_darkfire);
                     }
                 }
             }
@@ -689,6 +711,24 @@ mod tests {
                 }
             }
         }
+
+        for harmful_effect_index in (0..harmful_effect_list.len()).rev() {
+            if *harmful_effect_list[harmful_effect_index].get_harmful_effect() == DarkFire {
+                for attacker_index in (0..extra_effect_list.len()).rev() {
+                    if *extra_effect_list[attacker_index].get_extra_effect() == DarkFire {
+                        let non_damage_darkfire: ExtraStatusEffect = ExtraStatusEffect::new(
+                            DarkFire,
+                            extra_effect_list[attacker_index].get_status_duration_turn(),
+                            0,
+                            extra_effect_list[attacker_index].get_reuse_turn());
+                        harmful_effect_list.swap_remove(harmful_effect_index);
+                        extra_effect_list.swap_remove(attacker_index);
+                        extra_effect_list.push(non_damage_darkfire);
+                    }
+                }
+            }
+        }
+
         println!("extra_effect_list after test: {:?}", extra_effect_list);
         println!("harmful_effect_list after test: {:?}", harmful_effect_list);
     }
