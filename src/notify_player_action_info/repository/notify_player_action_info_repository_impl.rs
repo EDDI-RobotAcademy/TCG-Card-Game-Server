@@ -473,10 +473,10 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         return self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone())
     }
 
-    async fn notify_player_instant_death_of_specific_opponent_unit(
+    async fn notify_player_death_of_specific_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
-        field_unit_death_info: FieldUnitDeathInfo) -> bool {
+        field_unit_death_info: FieldUnitDeathInfo) -> PlayerFieldUnitDeathInfo {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_instant_death_of_specific_opponent_unit()");
 
@@ -491,15 +491,15 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
-        // let player_field_unit_survival_info =
-        //     self.get_player_field_unit_survival_info(Opponent, field_unit_survival_info);
-        //
-        // // 상대에게 즉사 유닛의 생존 정보 공지
-        // opponent_receiver_transmitter_channel.send(
-        //     Arc::new(
-        //         AsyncMutex::new(
-        //             NOTIFY_FIELD_UNIT_SURVIVAL(player_field_unit_survival_info)))).await;
+        let player_field_unit_death_info =
+            self.get_player_field_unit_death_info(You, field_unit_death_info.clone());
 
-        true
+        // 상대에게 즉사 유닛의 생존 정보 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_UNIT_DEATH(player_field_unit_death_info)))).await;
+
+        return self.get_player_field_unit_death_info(Opponent, field_unit_death_info.clone())
     }
 }
