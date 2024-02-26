@@ -218,6 +218,23 @@ impl GameDeckService for GameDeckServiceImpl {
 
         SearchSpecificDeckCardResponse::new(searched_card_list)
     }
+    async fn fake_create_and_shuffle_deck(&self, game_deck_card_list_request: GameDeckStartCardListRequest) -> GameDeckStartCardListResponse {
+        println!("GameDeckServiceImpl: create_and_shuffle_deck()");
+
+        let session_id = game_deck_card_list_request.get_session_id();
+        let account_unique_id = self.parse_account_unique_id(session_id).await;
+        let deck_id = game_deck_card_list_request.get_deck_id();
+
+        self.initialize_game_deck(account_unique_id, deck_id).await;
+        self.shuffle_game_deck(account_unique_id).await;
+
+        let drawn_card_list = self.draw_deck_cards(account_unique_id, 20).await;
+        let drawn_card_list_clone = drawn_card_list.clone();
+
+        self.add_drawn_cards_to_hand(account_unique_id, drawn_card_list).await;
+
+        GameDeckStartCardListResponse::new(drawn_card_list_clone)
+    }
 }
 
 #[cfg(test)]
