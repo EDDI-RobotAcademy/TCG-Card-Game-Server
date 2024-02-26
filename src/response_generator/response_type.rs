@@ -68,6 +68,9 @@ use crate::notify_player_action_info::entity::player_field_unit_energy_info::Pla
 use crate::notify_player_action_info::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
 use crate::notify_player_action_info::entity::player_field_unit_death_info::{PlayerFieldUnitDeathInfo};
 use crate::notify_player_action_info::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
+use crate::notify_player_action_info::entity::player_main_character_damage_info::PlayerMainCharacterDamageInfo;
+use crate::notify_player_action_info::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
+use crate::notify_player_action_info::entity::player_main_character_survival_info::PlayerMainCharacterSurvivalInfo;
 use crate::notify_player_action_info::entity::player_search_card_list_info::PlayerSearchCardListInfo;
 use crate::notify_player_action_info::entity::player_search_count_info::PlayerSearchCountInfo;
 use crate::rockpaperscissors::controller::response_form::check_rockpaperscissors_winner_response_form::CheckRockpaperscissorsWinnerResponseForm;
@@ -175,6 +178,9 @@ pub enum ResponseType {
     NOTIFY_FIELD_UNIT_DEATH(PlayerFieldUnitDeathInfo),
     NOTIFY_FIELD_UNIT_DAMAGE(PlayerFieldUnitDamageInfo),
     NOTIFY_DECK_CARD_LOST_LIST(PlayerDeckCardLostListInfo),
+    NOTIFY_MAIN_CHARACTER_DAMAGE(PlayerMainCharacterDamageInfo),
+    NOTIFY_MAIN_CHARACTER_HEALTH_POINT(PlayerMainCharacterHealthPointInfo),
+    NOTIFY_MAIN_CHARACTER_SURVIVAL(PlayerMainCharacterSurvivalInfo),
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),

@@ -23,3 +23,6 @@ pub mod player_field_unit_death_info;
 pub mod player_deck_card_lost_list_info;
 pub mod field_unit_damage_info;
 pub mod player_field_unit_damage_info;
+pub mod player_main_character_health_point_info;
+pub mod player_main_character_damage_info;
+pub mod player_main_character_survival_info;

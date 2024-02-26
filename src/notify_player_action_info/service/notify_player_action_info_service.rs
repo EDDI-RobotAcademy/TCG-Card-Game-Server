@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_every_opponent_unit_request::{NoticeApplyDamageToEveryOpponentUnitRequest};
+use crate::notify_player_action_info::service::request::notice_apply_damage_to_opponent_main_character_request::NoticeApplyDamageToOpponentMainCharacterRequest;
 use crate::notify_player_action_info::service::request::notice_boost_energy_to_specific_unit_request::{NoticeBoostEnergyToSpecificUnitRequest};
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_specific_opponent_unit_request::{NoticeApplyDamageToSpecificOpponentUnitRequest};
 use crate::notify_player_action_info::service::request::notice_attach_energy_to_specific_unit_request::{NoticeAttachEnergyToSpecificUnitRequest};
@@ -11,6 +12,7 @@ use crate::notify_player_action_info::service::request::notice_remove_field_ener
 use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
+use crate::notify_player_action_info::service::response::notice_apply_damage_to_opponent_main_character_response::NoticeApplyDamageToOpponentMainCharacterResponse;
 
 use crate::notify_player_action_info::service::response::notice_boost_energy_to_specific_unit_response::{NoticeBoostEnergyToSpecificUnitResponse};
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_specific_opponent_unit_response::{NoticeApplyDamageToSpecificOpponentUnitResponse};
@@ -56,6 +58,10 @@ pub trait NotifyPlayerActionInfoService {
         &mut self,
         notice_apply_damage_to_every_opponent_unit_request: NoticeApplyDamageToEveryOpponentUnitRequest)
         -> NoticeApplyDamageToEveryOpponentUnitResponse;
+    async fn notice_apply_damage_to_opponent_main_character(
+        &mut self,
+        notice_apply_damage_to_opponent_main_character_request: NoticeApplyDamageToOpponentMainCharacterRequest)
+        -> NoticeApplyDamageToOpponentMainCharacterResponse;
     async fn notice_lost_deck_card_of_opponent(
         &mut self,
         notice_lost_deck_card_of_opponent_request: NoticeLostDeckCardOfOpponentRequest)

@@ -6,6 +6,7 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::connection_context::repository::connection_context_repository_impl::ConnectionContextRepositoryImpl;
+use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
 use crate::notify_player_action_info::entity::field_unit_damage_info::FieldUnitDamageInfo;
 use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
@@ -22,11 +23,14 @@ use crate::notify_player_action_info::entity::player_field_unit_death_info::{Pla
 use crate::notify_player_action_info::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
 use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex::{Opponent, You};
+use crate::notify_player_action_info::entity::player_main_character_damage_info::PlayerMainCharacterDamageInfo;
+use crate::notify_player_action_info::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
+use crate::notify_player_action_info::entity::player_main_character_survival_info::PlayerMainCharacterSurvivalInfo;
 use crate::notify_player_action_info::entity::player_search_card_list_info::PlayerSearchCardListInfo;
 use crate::notify_player_action_info::entity::player_search_count_info::PlayerSearchCountInfo;
 use crate::notify_player_action_info::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
-use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LOST_LIST, NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_DAMAGE, NOTIFY_FIELD_UNIT_DEATH, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_HAND_CARD_USE, NOTIFY_SEARCH_COUNT};
+use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LOST_LIST, NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_DAMAGE, NOTIFY_FIELD_UNIT_DEATH, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_HAND_CARD_USE, NOTIFY_MAIN_CHARACTER_DAMAGE, NOTIFY_MAIN_CHARACTER_HEALTH_POINT, NOTIFY_MAIN_CHARACTER_SURVIVAL, NOTIFY_SEARCH_COUNT};
 
 pub struct NotifyPlayerActionInfoRepositoryImpl;
 
@@ -181,10 +185,43 @@ impl NotifyPlayerActionInfoRepositoryImpl {
                                            lost_deck_card_list: Vec<i32>
     ) -> PlayerDeckCardLostListInfo {
 
-        let mut player_deck_card_lost_list_info = HashMap::new();
-        player_deck_card_lost_list_info.insert(notify_player_index, lost_deck_card_list);
+        let mut player_deck_card_lost_list_map = HashMap::new();
+        player_deck_card_lost_list_map.insert(notify_player_index, lost_deck_card_list);
 
-        PlayerDeckCardLostListInfo::new(player_deck_card_lost_list_info)
+        PlayerDeckCardLostListInfo::new(player_deck_card_lost_list_map)
+    }
+
+    fn get_player_main_character_damage_info(&self,
+                                             notify_player_index: PlayerIndex,
+                                             damage: i32
+    ) -> PlayerMainCharacterDamageInfo {
+
+        let mut player_main_character_damage_map = HashMap::new();
+        player_main_character_damage_map.insert(notify_player_index, damage);
+
+        PlayerMainCharacterDamageInfo::new(player_main_character_damage_map)
+    }
+
+    fn get_player_main_character_health_point_info(&self,
+                                                   notify_player_index: PlayerIndex,
+                                                   health_point: i32
+    ) -> PlayerMainCharacterHealthPointInfo {
+
+        let mut player_main_character_health_point_map = HashMap::new();
+        player_main_character_health_point_map.insert(notify_player_index, health_point);
+
+        PlayerMainCharacterHealthPointInfo::new(player_main_character_health_point_map)
+    }
+
+    fn get_player_main_character_survival_info(&self,
+                                                   notify_player_index: PlayerIndex,
+                                                   survival_status: StatusMainCharacterEnum
+    ) -> PlayerMainCharacterSurvivalInfo {
+
+        let mut player_main_character_survival_map = HashMap::new();
+        player_main_character_survival_map.insert(notify_player_index, survival_status);
+
+        PlayerMainCharacterSurvivalInfo::new(player_main_character_survival_map)
     }
 }
 
@@ -453,6 +490,58 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 self.get_player_field_unit_health_point_info(Opponent, field_unit_health_point_info.clone()),
                 self.get_player_field_unit_death_info(Opponent, field_unit_death_info.clone()))
 
+    }
+
+    async fn notify_player_apply_damage_to_opponent_main_character(
+        &mut self,
+        opponent_unique_id: i32,
+        opponent_main_character_damage: i32,
+        opponent_health_point: i32,
+        opponent_survival: StatusMainCharacterEnum) -> (PlayerMainCharacterDamageInfo, PlayerMainCharacterHealthPointInfo, PlayerMainCharacterSurvivalInfo) {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_apply_damage_to_opponent_main_character()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let player_main_character_damage_info =
+            self.get_player_main_character_damage_info(You, opponent_main_character_damage);
+
+        // 상대 본체가 입은 데미지 전송
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_MAIN_CHARACTER_DAMAGE(player_main_character_damage_info)))).await;
+
+        let player_main_character_health_point_info =
+            self.get_player_main_character_health_point_info(You, opponent_health_point);
+
+        // 상대 본체에게 데미지 적용 후 남은 체력 전송
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_MAIN_CHARACTER_HEALTH_POINT(player_main_character_health_point_info)))).await;
+
+        let player_main_character_survival_info =
+            self.get_player_main_character_survival_info(You, opponent_survival.clone());
+
+        // 상대가 죽은 유닛들을 삭제할 수 있도록 생사 여부 전송
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_MAIN_CHARACTER_SURVIVAL(player_main_character_survival_info)))).await;
+
+        return (self.get_player_main_character_damage_info(You, opponent_main_character_damage),
+                self.get_player_main_character_health_point_info(You, opponent_health_point),
+                self.get_player_main_character_survival_info(You, opponent_survival.clone()))
     }
 
     async fn notify_player_attach_energy_to_specific_unit(
