@@ -1,8 +1,8 @@
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum RaceEnum {
     Dummy = 0,
-    Undead = 1,
-    Human = 2,
+    Human = 1,
+    Undead = 2,
     Trent = 3,
     Angel = 4,
     Machine = 5,
@@ -12,8 +12,8 @@ pub enum RaceEnum {
 impl From<i32> for RaceEnum {
     fn from(value: i32) -> Self {
         match value {
-            1 => RaceEnum::Undead,
-            2 => RaceEnum::Human,
+            1 => RaceEnum::Human,
+            2 => RaceEnum::Undead,
             3 => RaceEnum::Trent,
             4 => RaceEnum::Angel,
             5 => RaceEnum::Machine,
