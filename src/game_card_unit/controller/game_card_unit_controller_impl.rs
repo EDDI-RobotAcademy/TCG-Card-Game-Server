@@ -669,7 +669,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         // TODO: 메인 캐릭터가 사망한 경우의 서비스 추가 필요
         // 사망하면 상대 패배 결정
-        if is_check_main_character_of_account_unique_id_response.get_status_main_character() == StatusMainCharacterEnum::Death {
+        if is_check_main_character_of_account_unique_id_response.get_status_main_character() == &StatusMainCharacterEnum::Death {
             let mut game_winner_check_service_guard = self.game_winner_check_service.lock().await;
             let _set_game_winner = game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
                 attack_game_main_character_request_form.to_check_health_of_main_character_for_setting_game_winner_request(
