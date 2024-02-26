@@ -77,7 +77,7 @@ impl GameCardItemRepositoryImpl {
 
 impl GameCardItemRepository for GameCardItemRepositoryImpl {
     unsafe fn call_item_card_repository_handler(&self, item_card_id: i32) -> GameCardItemEffect {
-        println!("GameCardSupportRepositoryImpl: call_support_card_repository_table()");
+        println!("GameCardItemRepositoryImpl: call_item_card_repository_handler()");
 
         let item_card_summary_handler = self.item_card_functions.get(&item_card_id);
         item_card_summary_handler.unwrap().summary_item_card()

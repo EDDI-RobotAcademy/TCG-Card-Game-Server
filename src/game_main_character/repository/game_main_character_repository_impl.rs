@@ -59,6 +59,7 @@ impl GameMainCharacterRepository for GameMainCharacterRepositoryImpl {
 
         let main_character_of_account_unique_id = self.game_main_character_map.get_mut(&account_unique_id).unwrap();
         let health_point_main_character = main_character_of_account_unique_id.get_health_point();
+
         return health_point_main_character;
     }
 
