@@ -448,10 +448,15 @@ impl GameCardItemController for GameCardItemControllerImpl {
         AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(true)
     }
 
-    async fn request_to_use_catastrophic_damage_item(&self, catastrophic_damage_item_request_form: CatastrophicDamageItemRequestForm) -> CatastrophicDamageItemResponseForm {
+    async fn request_to_use_catastrophic_damage_item(
+        &self, catastrophic_damage_item_request_form: CatastrophicDamageItemRequestForm)
+        -> CatastrophicDamageItemResponseForm {
+
         println!("GameCardItemControllerImpl: request_to_use_catastrophic_damage_item()");
 
-        let account_unique_id = self.is_valid_session(catastrophic_damage_item_request_form.to_session_validation_request()).await;
+        let account_unique_id = self.is_valid_session(
+            catastrophic_damage_item_request_form.to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             println!("유효하지 않은 세션입니다.");
             return CatastrophicDamageItemResponseForm::new(false)
@@ -462,7 +467,8 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         let is_this_your_turn_response =
             game_protocol_validation_service_guard.is_this_your_turn(
-                catastrophic_damage_item_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+                catastrophic_damage_item_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
@@ -470,13 +476,25 @@ impl GameCardItemController for GameCardItemControllerImpl {
         }
 
         drop(game_protocol_validation_service_guard);
+
         // TODO: 프로토콜 검증은 추후 추가
 
         let item_card_id_string = catastrophic_damage_item_request_form.get_item_card_id();
         let item_card_id = item_card_id_string.parse::<i32>().unwrap();
 
+        let is_it_item_response = self.is_it_item_card(
+            catastrophic_damage_item_request_form
+                .to_is_it_item_card_request(item_card_id)).await;
+
+        if !is_it_item_response {
+            println!("아이템 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
+            return CatastrophicDamageItemResponseForm::new(false)
+        }
+
         let can_use_card_response = self.is_able_to_use(
-            catastrophic_damage_item_request_form.to_can_use_card_request(account_unique_id, item_card_id)).await;
+            catastrophic_damage_item_request_form
+                .to_can_use_card_request(account_unique_id, item_card_id)).await;
+
         if !can_use_card_response {
             println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
             return CatastrophicDamageItemResponseForm::new(false)
@@ -488,118 +506,108 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let damage_for_field_unit = summarized_item_effect_response.get_catastrophic_damage_for_field_unit();
         let damage_for_main_character = summarized_item_effect_response.get_catastrophic_damage_for_main_character();
 
-        let mut battle_room_service_guard = self.battle_room_service.lock().await;
+        let mut battle_room_service_guard =
+            self.battle_room_service.lock().await;
+
         let opponent_unique_id = battle_room_service_guard
             .find_opponent_by_account_unique_id(
                 catastrophic_damage_item_request_form
-                    .to_find_opponent_by_account_id_request(account_unique_id)).await.get_opponent_unique_id();
+                    .to_find_opponent_by_account_id_request(
+                        account_unique_id)).await.get_opponent_unique_id();
 
         drop(battle_room_service_guard);
 
-        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let apply_catastrophic_damage_to_opponent_field_unit_response = game_field_unit_service_guard
-            .apply_catastrophic_damage_to_field_unit(
-                catastrophic_damage_item_request_form
-                    .to_apply_catastrophic_damage_to_field_unit_request(opponent_unique_id, damage_for_field_unit)).await;
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
 
-        if !apply_catastrophic_damage_to_opponent_field_unit_response.is_success() {
-            println!("상대 유닛 전체에 피해를 주는 데에 실패하였습니다.");
-            return CatastrophicDamageItemResponseForm::new(false)
-        }
+       game_field_unit_service_guard.apply_catastrophic_damage_to_field_unit(
+           catastrophic_damage_item_request_form
+               .to_apply_catastrophic_damage_to_field_unit_request(
+                   opponent_unique_id,
+                   damage_for_field_unit)).await;
 
         drop(game_field_unit_service_guard);
 
+        let usage_hand_card = self.use_item_card(
+            catastrophic_damage_item_request_form
+                .to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
+
+        self.place_used_card_to_tomb(
+            catastrophic_damage_item_request_form
+                .to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+
+        // TODO: 여기서 먼저 hand use & 광역 대미지 notify
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        let notice_use_hand_card_response =
+            notify_player_action_info_service_guard.notice_use_hand_card(
+                catastrophic_damage_item_request_form
+                    .to_notice_use_hand_card_request(
+                        opponent_unique_id,
+                        usage_hand_card)).await;
+        //
+        // let response =
+        //     notify_player_action_info_service_guard.notice_apply_damage_to_every_opponent_unit(
+        //         catastrophic_damage_item_request_form
+        //             .to_notice_apply_damage_to_every_opponent_unit_request(
+        //                 opponent_unique_id,
+        //                 damage_for_field_unit)).await;
+
         // 상대 본체에는 피해를 가하지 않는 경우가 있을 수 있으므로 다음과 같이 처리
         if damage_for_main_character != -1 {
-            let mut game_main_character_service_guard = self.game_main_character_service.lock().await;
-            let apply_damage_to_main_character_response = game_main_character_service_guard
-                .apply_damage_to_main_character(
-                    catastrophic_damage_item_request_form
-                        .to_apply_damage_to_main_character(opponent_unique_id, damage_for_main_character)).await;
+            let mut game_main_character_service_guard =
+                self.game_main_character_service.lock().await;
 
-            if !apply_damage_to_main_character_response.is_success() {
-                println!("상대 본체에 피해를 주는 데에 실패하였습니다.");
-                return CatastrophicDamageItemResponseForm::new(false)
-            }
-            let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-            let notify_item_card_response = notify_player_action_service_guard
-                .notify_to_opponent_you_use_damage_main_character_item_card(
-                    catastrophic_damage_item_request_form
-                        .to_notify_opponent_you_use_damage_main_character_item_card_request(
-                            opponent_unique_id,
-                            item_card_id,
-                            damage_for_main_character)).await;
-
-            if !notify_item_card_response.is_success() {
-                println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
-                return CatastrophicDamageItemResponseForm::new(false)
-            }
+            game_main_character_service_guard.apply_damage_to_main_character(
+                catastrophic_damage_item_request_form
+                    .to_apply_damage_to_main_character(
+                        opponent_unique_id,
+                        damage_for_main_character)).await;
 
             drop(game_main_character_service_guard);
+
+            // TODO: 메인 캐릭터 대미지 notify
         }
 
-        let will_be_lost_deck_card_count = summarized_item_effect_response.get_will_be_lost_deck_card_count();
+        let will_be_lost_deck_card_count =
+            summarized_item_effect_response.get_will_be_lost_deck_card_count();
 
         // 다른 광역기의 경우 로스트 존으로 이동시키는 기능이 없을 수 있으므로 다음과 같이 처리
         if will_be_lost_deck_card_count != -1 {
-            let mut game_deck_service_guard = self.game_deck_service.lock().await;
-            let draw_cards_from_deck_response = game_deck_service_guard
-                .draw_cards_from_deck(
+            let mut game_deck_service_guard =
+                self.game_deck_service.lock().await;
+
+            let draw_cards_from_deck_response =
+                game_deck_service_guard.draw_cards_from_deck(
                     catastrophic_damage_item_request_form
-                        .to_draw_cards_from_deck_request(opponent_unique_id, will_be_lost_deck_card_count)).await;
+                        .to_draw_cards_from_deck_request(
+                            opponent_unique_id,
+                            will_be_lost_deck_card_count)).await;
 
             drop(game_deck_service_guard);
 
-            let mut will_be_lost_deck_card_list = draw_cards_from_deck_response.get_drawn_card_list().clone();
-            let mut game_lost_zone_service_guard = self.game_lost_zone_service.lock().await;
-            for will_be_lost_card in will_be_lost_deck_card_list {
-                let place_card_to_lost_zone_response = game_lost_zone_service_guard
-                    .place_card_to_lost_zone(
-                        catastrophic_damage_item_request_form
-                            .to_place_card_to_lost_zone_request(opponent_unique_id, will_be_lost_card)).await;
-                if !place_card_to_lost_zone_response.is_success() {
-                    println!("상대 카드를 로스트 존으로 이동하는데에 실패했습니다.");
-                    return CatastrophicDamageItemResponseForm::new(false)
-                }
-                let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-                let notify_item_card_response = notify_player_action_service_guard
-                    .notify_to_opponent_you_use_destroy_deck_item_card(
-                        catastrophic_damage_item_request_form
-                            .to_notify_opponent_you_use_destroy_deck_item_card_request(
-                                opponent_unique_id,
-                                item_card_id,
-                                will_be_lost_card)).await;
+            let mut will_be_lost_deck_card_list =
+                draw_cards_from_deck_response.get_drawn_card_list().clone();
 
-                if !notify_item_card_response.is_success() {
-                    println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
-                    return CatastrophicDamageItemResponseForm::new(false)
-                }
+            let mut game_lost_zone_service_guard =
+                self.game_lost_zone_service.lock().await;
+
+            for will_be_lost_card in will_be_lost_deck_card_list {
+
+                game_lost_zone_service_guard.place_card_to_lost_zone(
+                    catastrophic_damage_item_request_form
+                        .to_place_card_to_lost_zone_request(
+                            opponent_unique_id,
+                            will_be_lost_card)).await;
+
+                // TODO: 덱 카드 로스트 존으로 이동시킨 것 notify
             }
 
             drop(game_lost_zone_service_guard);
         }
 
-        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_item_card_response = notify_player_action_service_guard
-            .notify_to_opponent_you_use_catastrophic_damage_item_card(
-                catastrophic_damage_item_request_form
-                    .to_notify_opponent_you_use_catastrophic_damage_item_card_request(
-                        opponent_unique_id,
-                        item_card_id,
-                        damage_for_field_unit)).await;
-
-        if !notify_item_card_response.is_success() {
-            println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
-            return CatastrophicDamageItemResponseForm::new(false)
-        }
-        drop(notify_player_action_service_guard);
-
-
-        let usage_hand_card = self.use_item_card(
-            catastrophic_damage_item_request_form.to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
-
-        self.place_used_card_to_tomb(
-            catastrophic_damage_item_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+        // TODO: notify 한 정보들 토대로 return 할 것
 
         CatastrophicDamageItemResponseForm::new(true)
     }

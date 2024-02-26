@@ -124,6 +124,7 @@ impl RemoveOpponentFieldUnitEnergyItemRequestForm {
             account_unique_id,
             unit_index)
     }
+
     pub fn to_judge_death_of_unit_request(
         &self,
         account_unique_id: i32,
