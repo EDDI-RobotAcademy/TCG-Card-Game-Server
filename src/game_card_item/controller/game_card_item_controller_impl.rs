@@ -726,7 +726,8 @@ impl GameCardItemController for GameCardItemControllerImpl {
     }
 
     async fn request_to_use_opponent_field_unit_energy_removal_item(
-        &self, remove_opponent_field_unit_energy_item_request_form: RemoveOpponentFieldUnitEnergyItemRequestForm) -> RemoveOpponentFieldUnitEnergyItemResponseForm {
+        &self, remove_opponent_field_unit_energy_item_request_form: RemoveOpponentFieldUnitEnergyItemRequestForm)
+        -> RemoveOpponentFieldUnitEnergyItemResponseForm {
 
         println!("GameCardItemControllerImpl: request_to_use_opponent_field_unit_energy_removal_item()");
 
@@ -735,7 +736,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if account_unique_id == -1 {
             println!("유효하지 않은 세션입니다.");
-            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::default()
         }
 
         let mut game_protocol_validation_service_guard =
@@ -748,47 +749,43 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
 
         // TODO: 프로토콜 검증은 추후 추가
 
-        // 사용할 변수들 사전 parsing
         let item_card_id_string =
             remove_opponent_field_unit_energy_item_request_form.get_item_card_id();
         let item_card_id =
             item_card_id_string.parse::<i32>().unwrap();
 
-        // 2. Hand 에 있는지 확인하여 해킹 여부 검증
         let check_protocol_hacking_response = self.is_valid_protocol(
             remove_opponent_field_unit_energy_item_request_form
                 .to_check_protocol_hacking_request(account_unique_id, item_card_id)).await;
 
         if !check_protocol_hacking_response {
             println!("해킹범을 검거합니다!");
-            // return TargetDeathItemResponseForm::new(false)
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::default()
         }
 
-        // 3. 실제 아이템 카드가 맞는지 확인
         let is_it_item_response = self.is_it_item_card(
             remove_opponent_field_unit_energy_item_request_form
                 .to_is_it_item_card_request(item_card_id)).await;
 
         if !is_it_item_response {
             println!("아이템 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
-            // return TargetDeathItemResponseForm::new(false)
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::default()
         }
 
-        // 4. GameProtocolValidation Service 호출하여 사용 가능한지 조건 검사 (신화 > 4라운드 제약)
         let can_use_card_response = self.is_able_to_use(
             remove_opponent_field_unit_energy_item_request_form
                 .to_can_use_card_request(account_unique_id, item_card_id)).await;
 
         if !can_use_card_response {
             println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
-            // return TargetDeathItemResponseForm::new(false)
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::default()
         }
 
         let opponent_field_unit_index_string =
@@ -796,7 +793,6 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let opponent_field_unit_index =
             opponent_field_unit_index_string.parse::<i32>().unwrap();
 
-        // 사용할 아이템 카드 요약 정보
         let mut summarized_item_effect_response = self.get_summary_of_item_card(
             remove_opponent_field_unit_energy_item_request_form
                 .to_summary_item_effect_request(item_card_id)).await;
@@ -845,18 +841,12 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
             println!("붙은 에너지가 존재하지 않아 변환 데미지를 입힙니다.");
 
-            let apply_alternative_damage_response =
-                game_field_unit_service_guard.apply_damage_to_target_unit_index(
-                    remove_opponent_field_unit_energy_item_request_form
-                        .to_apply_damage_to_target_unit_request(
-                            opponent_unique_id,
-                            opponent_field_unit_index,
-                            alternative_damage)).await;
-
-            if !apply_alternative_damage_response.is_success() {
-                println!("변환 데미지를 주는 데에 실패했습니다!");
-                return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
-            }
+            game_field_unit_service_guard.apply_damage_to_target_unit_index(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_apply_damage_to_target_unit_request(
+                        opponent_unique_id,
+                        opponent_field_unit_index,
+                        alternative_damage)).await;
 
             let updated_health_point_of_damaged_unit =
                 game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
@@ -905,22 +895,17 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
             drop(notify_player_action_info_service_guard);
 
-            return RemoveOpponentFieldUnitEnergyItemResponseForm::new(true)
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::from_alternative_response(
+                notice_use_hand_card_response, notice_apply_damage_response)
         }
 
-        let detach_multiple_energy_form_field_unit_response =
-            game_field_unit_service_guard.detach_multiple_energy_from_field_unit(
-                remove_opponent_field_unit_energy_item_request_form
-                    .to_detach_energy_from_field_unit_request(
-                        opponent_unique_id,
-                        opponent_field_unit_index,
-                        found_opponent_unit_race,
-                        energy_quantity)).await;
-
-        if !detach_multiple_energy_form_field_unit_response.is_success() {
-            println!("유닛 에너지 제거에 실패했습니다!");
-            // return RemoveOpponentFieldUnitEnergyItemResponseForm::new(false)
-        }
+        game_field_unit_service_guard.detach_multiple_energy_from_field_unit(
+            remove_opponent_field_unit_energy_item_request_form
+                .to_detach_energy_from_field_unit_request(
+                    opponent_unique_id,
+                    opponent_field_unit_index,
+                    found_opponent_unit_race,
+                    energy_quantity)).await;
 
         let updated_attached_energy_map =
             game_field_unit_service_guard.get_current_attached_energy_of_field_unit_by_index(
@@ -957,6 +942,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         drop(notify_player_action_info_service_guard);
 
-        RemoveOpponentFieldUnitEnergyItemResponseForm::new(true)
+        RemoveOpponentFieldUnitEnergyItemResponseForm::from_response(
+            notice_use_hand_card_response, notice_remove_energy_of_specific_opponent_unit_response)
     }
 }
