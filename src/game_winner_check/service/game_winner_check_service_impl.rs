@@ -62,22 +62,22 @@ impl GameWinnerCheckService for GameWinnerCheckServiceImpl {
         println!("GameWinnerCheckServiceImpl: check_health_of_main_character_for_setting_game_winner()");
 
         let account_unique_id = check_main_character_request.get_account_unique_id();
+        let opponent_unique_id = check_main_character_request.get_opponent_unique_id();
 
-        let mut game_main_character_guard = self.game_main_character_repository.lock().await;
-        let mut main_character_health = game_main_character_guard.get_health_point_of_main_character_by_account_unique_id(account_unique_id);
-        drop(game_main_character_guard);
+        // let mut game_main_character_guard = self.game_main_character_repository.lock().await;
+        // let mut main_character_health = game_main_character_guard.get_health_point_of_main_character_by_account_unique_id(account_unique_id);
+        // drop(game_main_character_guard);
+        //
+        //
+        // let battle_room_repository_guard = self.battle_room_repository.lock().await;
+        // let opponent_unique_id = battle_room_repository_guard.find_opponent_unique_id(account_unique_id).await.unwrap();
+        // drop(battle_room_repository_guard);
 
-        if main_character_health <= 0 {
+        let mut game_winner_check_guard = self.game_winner_check_repository.lock().await;
+        game_winner_check_guard.create_finish_position_object(account_unique_id, Winner);
+        game_winner_check_guard.add_finish_position_object(opponent_unique_id, Loser);
+        drop(game_winner_check_guard);
 
-            let battle_room_repository_guard = self.battle_room_repository.lock().await;
-            let opponent_unique_id = battle_room_repository_guard.find_opponent_unique_id(account_unique_id).await.unwrap();
-            drop(battle_room_repository_guard);
-
-            let mut game_winner_check_guard = self.game_winner_check_repository.lock().await;
-            game_winner_check_guard.create_finish_position_object(account_unique_id, Loser);
-            game_winner_check_guard.add_finish_position_object(opponent_unique_id, Winner);
-            drop(game_winner_check_guard);
-        }
     }
 
      async fn set_game_winner_by_surrender(&mut self, surrender_request: SurrenderRequest) -> SurrenderResponse {

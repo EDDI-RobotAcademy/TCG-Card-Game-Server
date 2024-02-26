@@ -4,6 +4,7 @@ use diesel::IntoSql;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::battle_finish::service::battle_finish_service_impl::BattleFinishServiceImpl;
 
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
@@ -41,6 +42,8 @@ use crate::game_protocol_validation::service::request::can_use_card_request::Can
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::game_turn::controller::response_form::turn_end_response_form::TurnEndResponseForm;
+use crate::game_winner_check::service::game_winner_check_service::GameWinnerCheckService;
+use crate::game_winner_check::service::game_winner_check_service_impl::GameWinnerCheckServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
@@ -58,7 +61,8 @@ pub struct GameCardUnitControllerImpl {
     game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
     game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
-    game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>> ,
+    game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
+    game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,
 }
 
 impl GameCardUnitControllerImpl {
@@ -72,7 +76,8 @@ impl GameCardUnitControllerImpl {
                game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
                game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
-               game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,) -> Self {
+               game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
+               game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,) -> Self {
 
         GameCardUnitControllerImpl {
             game_hand_service,
@@ -85,7 +90,8 @@ impl GameCardUnitControllerImpl {
             game_card_passive_skill_service,
             game_protocol_validation_service,
             game_field_unit_action_possibility_validator_service,
-            game_main_character_service
+            game_main_character_service,
+            game_winner_check_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardUnitControllerImpl>> {
@@ -104,7 +110,8 @@ impl GameCardUnitControllerImpl {
                             GameCardPassiveSkillServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance(),
                             GameFieldUnitActionPossibilityValidatorServiceImpl::get_instance(),
-                            GameMainCharacterServiceImpl::get_instance())));
+                            GameMainCharacterServiceImpl::get_instance(),
+                            GameWinnerCheckServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -658,9 +665,20 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
            game_main_character_service_guard.check_main_character_of_account_unique_id(
                attack_game_main_character_request_form
                    .to_check_main_character_of_account_unique_id_request(
-                       account_unique_id)).await;
+                       opponent_unique_id)).await;
 
         // TODO: 메인 캐릭터가 사망한 경우의 서비스 추가 필요
+        // 사망하면 상대 패배 결정
+        if is_check_main_character_of_account_unique_id_response.get_status_main_character() == &StatusMainCharacterEnum::Death {
+            let mut game_winner_check_service_guard = self.game_winner_check_service.lock().await;
+            let _set_game_winner = game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
+                attack_game_main_character_request_form.to_check_health_of_main_character_for_setting_game_winner_request(
+                    account_unique_id,
+                    opponent_unique_id)).await;
+            // 승패가 결정됐으니 양쪽에 알리고 마무리
+        }
+
+        // 사망 안하면 체력 notify
 
        drop(game_main_character_service_guard);
 
