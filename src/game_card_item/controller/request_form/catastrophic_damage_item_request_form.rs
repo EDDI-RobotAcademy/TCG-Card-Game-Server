@@ -16,6 +16,8 @@ use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombReques
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_catastrophic_damage_item_card_request::NotifyToOpponentYouUseCatastrophicDamageItemCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_damage_main_character_item_card_request::NotifyToOpponentYouUseDamageMainCharacterItemCardRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_destroy_deck_item_card_request::NotifyToOpponentYouUseDestroyDeckItemCardRequest;
+use crate::notify_player_action_info::service::request::notice_apply_damage_to_every_opponent_unit_request::NoticeApplyDamageToEveryOpponentUnitRequest;
+use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -84,11 +86,6 @@ impl CatastrophicDamageItemRequestForm {
             opponent_unique_id, opponent_target_unit_index)
     }
 
-    pub fn to_apply_damage_to_target_unit_index(&self, opponent_unique_id: i32, opponent_target_unit_index: i32, damage: i32) -> ApplyDamageToTargetUnitIndexRequest {
-        ApplyDamageToTargetUnitIndexRequest::new(
-            opponent_unique_id, opponent_target_unit_index, damage)
-    }
-
     pub fn to_draw_cards_from_deck_request(&self, opponent_unique_id: i32, draw_count: i32) -> DrawCardsFromDeckRequest {
         DrawCardsFromDeckRequest::new(opponent_unique_id, draw_count)
     }
@@ -103,6 +100,32 @@ impl CatastrophicDamageItemRequestForm {
 
     pub fn to_place_card_to_lost_zone_request(&self, opponent_unique_id: i32, will_be_lost_card: i32) -> PlaceCardToLostZoneRequest {
         PlaceCardToLostZoneRequest::new(opponent_unique_id, will_be_lost_card)
+    }
+
+    pub fn to_notice_use_hand_card_request(
+        &self,
+        opponent_unique_id: i32,
+        used_hand_card_id: i32
+    ) -> NoticeUseHandCardRequest {
+
+        NoticeUseHandCardRequest::new(
+            opponent_unique_id,
+            used_hand_card_id)
+    }
+
+    pub fn to_notice_apply_damage_to_every_opponent_unit_request(
+        &self,
+        opponent_unique_id: i32,
+        damage: i32,
+        updated_health_point_list: Vec<i32>,
+        dead_unit_index_list: Vec<i32>
+    ) -> NoticeApplyDamageToEveryOpponentUnitRequest {
+
+        NoticeApplyDamageToEveryOpponentUnitRequest::new(
+            opponent_unique_id,
+            damage,
+            updated_health_point_list,
+            dead_unit_index_list)
     }
 
     pub fn to_notify_opponent_you_use_catastrophic_damage_item_card_request(&self, opponent_unique_id: i32, item_card_id: i32, damage_for_field_unit: i32) -> NotifyToOpponentYouUseCatastrophicDamageItemCardRequest {
