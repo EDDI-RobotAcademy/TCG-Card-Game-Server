@@ -10,6 +10,7 @@ use crate::game_main_character::service::request::apply_damage_to_main_character
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit_action_possibility_validator::service::request::is_unit_basic_attack_possible_request::IsUnitBasicAttackPossibleRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
+use crate::game_winner_check::service::request::check_main_character_request::CheckMainCharacterRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 pub struct AttackGameMainCharacterRequestForm {
@@ -108,5 +109,10 @@ impl AttackGameMainCharacterRequestForm {
                                                      damage: i32) -> ApplyDamageToMainCharacterRequest {
         ApplyDamageToMainCharacterRequest::new(
             account_unique_id, damage)
+    }
+    pub fn to_check_health_of_main_character_for_setting_game_winner_request(&self,
+                                                                            account_unique_id: i32,
+                                                                            opponent_unique_id: i32) -> CheckMainCharacterRequest {
+        CheckMainCharacterRequest::new(account_unique_id, opponent_unique_id)
     }
 }
