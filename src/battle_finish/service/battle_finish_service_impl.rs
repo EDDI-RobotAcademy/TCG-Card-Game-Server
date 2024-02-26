@@ -44,6 +44,8 @@ use crate::game_round::repository::game_round_repository_impl::GameRoundReposito
 use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
 use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
 use crate::game_winner_check::entity::finish_position_enum::FinishPositionEnum::{Draw, Loser, Winner};
+use crate::game_winner_check::repository::game_winner_check_repository::GameWinnerCheckRepository;
+use crate::game_winner_check::repository::game_winner_check_repository_impl::GameWinnerCheckRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
@@ -60,6 +62,7 @@ pub struct BattleFinishServiceImpl {
     game_card_support_usage_counter_repository: Arc<AsyncMutex<GameCardSupportUsageCounterRepositoryImpl>>,
     account_point_repository: Arc<AsyncMutex<AccountPointRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+    game_winner_check_repository: Arc<AsyncMutex<GameWinnerCheckRepositoryImpl>>,
 }
 
 impl BattleFinishServiceImpl {
@@ -74,7 +77,8 @@ impl BattleFinishServiceImpl {
                game_round_repository: Arc<AsyncMutex<GameRoundRepositoryImpl>>,
                game_card_support_usage_counter_repository: Arc<AsyncMutex<GameCardSupportUsageCounterRepositoryImpl>>,
                account_point_repository: Arc<AsyncMutex<AccountPointRepositoryImpl>>,
-               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>) -> Self {
+               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+               game_winner_check_repository: Arc<AsyncMutex<GameWinnerCheckRepositoryImpl>>, ) -> Self {
         BattleFinishServiceImpl {
             battle_ready_account_hash_repository,
             game_deck_repository,
@@ -88,6 +92,7 @@ impl BattleFinishServiceImpl {
             game_card_support_usage_counter_repository,
             account_point_repository,
             redis_in_memory_repository,
+            game_winner_check_repository,
         }
     }
 
@@ -108,7 +113,8 @@ impl BattleFinishServiceImpl {
                             GameRoundRepositoryImpl::get_instance(),
                             GameCardSupportUsageCounterRepositoryImpl::get_instance(),
                             AccountPointRepositoryImpl::get_instance(),
-                            RedisInMemoryRepositoryImpl::get_instance())));
+                            RedisInMemoryRepositoryImpl::get_instance(),
+                            GameWinnerCheckRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -277,14 +283,16 @@ impl BattleFinishService for BattleFinishServiceImpl {
         drop(redis_repository_guard);
 
         let mut reward_gold: i32 = 0;
-        let mut finish_position_user_id = battle_finish_request.get_finish_position().clone();
-        if *finish_position_user_id == Winner {
+        // let mut finish_position_user_id = battle_finish_request.get_finish_position().clone();
+        let mut game_winner_check_repository_guard = self.game_winner_check_repository.lock().await;
+        let mut user_finish_position = game_winner_check_repository_guard.get_finish_position_enum(user_id).unwrap();
+        if *user_finish_position == Winner {
             println!("Winner 보상 100 gold");
             reward_gold = 100;
-        } else if *finish_position_user_id == Loser {
+        } else if *user_finish_position == Loser {
             println!("Loser 보상 50 gold");
             reward_gold = 50;
-        } else if *finish_position_user_id == Draw {
+        } else if *user_finish_position == Draw {
             println!("Draw 보상 70 gold");
             reward_gold = 70;
         } else {
