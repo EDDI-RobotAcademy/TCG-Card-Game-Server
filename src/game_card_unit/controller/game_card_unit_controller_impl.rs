@@ -22,6 +22,7 @@ use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_card_unit::service::game_card_unit_service::GameCardUnitService;
 
 use crate::game_card_unit::service::game_card_unit_service_impl::GameCardUnitServiceImpl;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect::Freeze;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionPossibilityValidatorService;
@@ -331,7 +332,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         attacker_unit_card_index)).await;
 
         // extra effect 가지고 있는지 여부
-        let attacker_unit_extra_effect_list =
+        let mut attacker_unit_extra_effect_list =
             game_field_unit_service_guard.acquire_unit_extra_effect(
                 attack_unit_request_form
                     .to_acquire_unit_extra_effect_request(
@@ -364,6 +365,26 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         if opponent_target_unit_passive_status_list.contains(&PassiveStatus::PhysicalImmunity) {
             println!("기본 공격 면역 패시브로 인해 공격을 가할 수 없습니다.");
             return AttackUnitResponseForm::new(false)
+        }
+
+        // 공격 유닛과 피격 유닛에게 빙결 효과 존재 유무 판정 (공격유닛:존재, 피격유닛:부재 시 빙결 공격 가능)
+        // 공격받는 unit 의 harmful_status_effect 호출
+        let opponent_target_unit_harmful_status_effect_list =
+            game_field_unit_service_guard.acquire_unit_harmful_status_effect(
+                attack_unit_request_form
+                    .to_acquire_unit_harmful_status_effect_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await.get_harmful_status_effect_list().clone();
+
+        // 피격 유닛에게 Freeze 효과가 있고, 공격 유닛에게도 Freeze 가 있다면, attacker_extra_effect 에서 Freeze 제거
+        for harmful_effect_index in (0..opponent_target_unit_harmful_status_effect_list.len()).rev() {
+            if *opponent_target_unit_harmful_status_effect_list[harmful_effect_index].get_harmful_effect() == Freeze {
+                for attacker_index in (0..attacker_unit_extra_effect_list.len()).rev() {
+                    if *attacker_unit_extra_effect_list[attacker_index].get_extra_effect() == Freeze {
+                        attacker_unit_extra_effect_list.swap_remove(attacker_index);
+                    }
+                }
+            }
         }
 
         // 적 타겟 유닛을 효과를 가지고 공격
@@ -632,5 +653,43 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use crate::game_field_unit::entity::extra_effect::ExtraEffect::DarkFire;
+    use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
+    use crate::game_field_unit::entity::harmful_status_effect::HarmfulStatusEffect;
+    use super::*;
 
+    #[tokio::test]
+    async fn test_attack_with_extra_effect_freeze_to_frozen_unit() {
 
+        // Vec<ExtraStatusEffect> 생성
+        let mut extra_effect_list: Vec<ExtraStatusEffect> = Vec::new();
+        let extra_effect_list_01: ExtraStatusEffect = ExtraStatusEffect::new(DarkFire, 10, 9, 8);
+        let extra_effect_list_02: ExtraStatusEffect = ExtraStatusEffect::new(Freeze, 7,6, 5);
+        extra_effect_list.push(extra_effect_list_01);
+        extra_effect_list.push(extra_effect_list_02);
+        println!("extra_effect_list: {:?}", extra_effect_list);
+
+        // Vec<HarmfulStatusEffect> 생성
+        let mut harmful_effect_list: Vec<HarmfulStatusEffect> = Vec::new();
+        let harmful_status_effect_01: HarmfulStatusEffect = HarmfulStatusEffect::new(Freeze, 6,5,4);
+        let harmful_status_effect_02: HarmfulStatusEffect = HarmfulStatusEffect::new(DarkFire, 3,2,1);
+        harmful_effect_list.push(harmful_status_effect_01);
+        harmful_effect_list.push(harmful_status_effect_02);
+        println!("harmful_effect_list: {:?}", harmful_effect_list);
+
+        // 피격 유닛에게 Freeze 효과가 있고, 공격 유닛에게도 Freeze 가 있다면, attacker_extra_effect 에서 Freeze 제거
+        for harmful_effect_index in (0..harmful_effect_list.len()).rev() {
+            if *harmful_effect_list[harmful_effect_index].get_harmful_effect() == Freeze {
+                for attacker_index in (0..extra_effect_list.len()).rev() {
+                    if *extra_effect_list[attacker_index].get_extra_effect() == Freeze {
+                        extra_effect_list.swap_remove(attacker_index);
+                    }
+                }
+            }
+        }
+        println!("extra_effect_list after test: {:?}", extra_effect_list);
+        println!("harmful_effect_list after test: {:?}", harmful_effect_list);
+    }
+}
