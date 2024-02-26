@@ -16,6 +16,8 @@ use rand::seq::index::sample;
 
 
 use crate::account_card::entity::account_card::account_cards::account_id;
+use crate::game_field_energy::repository::game_field_energy_repository::GameFieldEnergyRepository;
+use crate::game_field_energy::repository::game_field_energy_repository_impl::GameFieldEnergyRepositoryImpl;
 use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
 use crate::game_turn::repository::game_turn_repository_impl::GameTurnRepositoryImpl;
 use crate::match_waiting_timer::entity::match_waiting_timer::MatchWaitingTimer;
@@ -41,6 +43,7 @@ pub struct RockpaperscissorsServiceImpl {
     rockpaperscissors_repository: Arc<AsyncMutex<RockpaperscissorsRepositoryImpl>>,
     match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
     game_turn_repository:Arc<AsyncMutex<GameTurnRepositoryImpl>>,
+    game_field_energy_repository: Arc<AsyncMutex<GameFieldEnergyRepositoryImpl>>,
 }
 
 impl RockpaperscissorsServiceImpl {
@@ -48,6 +51,7 @@ impl RockpaperscissorsServiceImpl {
                rockpaperscissors_repository: Arc<AsyncMutex<RockpaperscissorsRepositoryImpl>>,
                match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
                game_turn_repository:Arc<AsyncMutex<GameTurnRepositoryImpl>>,
+               game_field_energy_repository: Arc<AsyncMutex<GameFieldEnergyRepositoryImpl>>,
 
     ) -> Self {
 
@@ -55,7 +59,8 @@ impl RockpaperscissorsServiceImpl {
             redis_in_memory_repository,
             rockpaperscissors_repository,
             match_waiting_timer_repository,
-            game_turn_repository
+            game_turn_repository,
+            game_field_energy_repository
         }
     }
 
@@ -68,7 +73,8 @@ impl RockpaperscissorsServiceImpl {
                             RedisInMemoryRepositoryImpl::get_instance(),
                             RockpaperscissorsRepositoryImpl::get_instance(),
                             MatchWaitingTimerRepositoryImpl::get_instance(),
-                            GameTurnRepositoryImpl::get_instance())));
+                            GameTurnRepositoryImpl::get_instance(),
+                            GameFieldEnergyRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -146,11 +152,14 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
         };
         drop(rockpaperscissors_repository_guard);
         let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
+        let mut game_field_energy_repository_guard = self.game_field_energy_repository.lock().await;
 
         if am_i_win==true
         {
             game_turn_repository_guard.next_game_turn(account_unique_id);
             drop(game_turn_repository_guard);
+            game_field_energy_repository_guard.add_field_energy_with_amount(account_unique_id,1);
+            drop(game_field_energy_repository_guard);
             return CheckRockpaperscissorsWinnerResponse::new("WIN".to_string())
         }
 
