@@ -6,6 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::battle_field_info::service::battle_field_info_service::BattleFieldInfoService;
 use crate::battle_field_info::service::request::remain_deck_card_count_request::{RemainDeckCardCountRequest};
 use crate::battle_field_info::service::response::remain_deck_card_count_response::{RemainDeckCardCountResponse};
+use crate::battle_room::repository::battle_room_repository::BattleRoomRepository;
 use crate::battle_room::repository::battle_room_repository_impl::BattleRoomRepositoryImpl;
 use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
 use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
@@ -53,11 +54,22 @@ impl BattleFieldInfoServiceImpl {
 #[async_trait]
 impl BattleFieldInfoService for BattleFieldInfoServiceImpl {
     async fn get_remain_deck_card_count(&mut self, get_my_remain_deck_card_count_request: RemainDeckCardCountRequest) -> RemainDeckCardCountResponse {
-        println!("BattleFieldInfoServiceImpl: get_my_remain_deck_card_list()");
+        println!("BattleFieldInfoServiceImpl: get_remain_deck_card_list()");
         let account_unique_id = self.parse_account_unique_id(get_my_remain_deck_card_count_request.get_session_id()).await;
+        let battle_room_repository_guard=self.battle_room_repository.lock().await;
+        let opponent_id= battle_room_repository_guard.find_opponent_unique_id(account_unique_id).await.unwrap();
 
         let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
-        let mut count=game_deck_repository_guard.get_remain_deck_card_count(account_unique_id);
-        RemainDeckCardCountResponse::new(count)
+        if get_my_remain_deck_card_count_request.get_who()=="me"
+        {
+            let mut count=game_deck_repository_guard.get_remain_deck_card_count(account_unique_id);
+            RemainDeckCardCountResponse::new(count)
+        }
+        else
+        {
+            let mut opponent_count=game_deck_repository_guard.get_remain_deck_card_count(opponent_id);
+            RemainDeckCardCountResponse::new(opponent_count)
+        }
+
     }
 }
