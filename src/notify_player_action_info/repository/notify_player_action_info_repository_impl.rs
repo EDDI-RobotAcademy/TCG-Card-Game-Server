@@ -446,7 +446,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notify_player_attach_energy_to_specific_unit(
         &mut self,
         opponent_unique_id: i32,
-        field_unit_energy_info: FieldUnitEnergyInfo) -> bool {
+        field_unit_energy_info: FieldUnitEnergyInfo)-> PlayerFieldUnitEnergyInfo {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_attach_energy_to_specific_unit()");
 
@@ -470,7 +470,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_FIELD_UNIT_ENERGY(player_field_unit_energy_info)))).await;
 
-        true
+        return self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone())
     }
 
     async fn notify_player_instant_death_of_specific_opponent_unit(

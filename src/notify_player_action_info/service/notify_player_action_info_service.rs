@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_every_unit_by_using_hand_card_request::NoticeApplyDamageToEveryUnitByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_boost_energy_to_specific_unit_request::{NoticeBoostEnergyToSpecificUnitRequest};
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_specific_opponent_unit_request::{NoticeApplyDamageToSpecificOpponentUnitRequest};
-use crate::notify_player_action_info::service::request::notice_attach_energy_to_specific_unit_by_using_hand_card_request::NoticeAttachEnergyToSpecificUnitByUsingHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_attach_energy_to_specific_unit_request::{NoticeAttachEnergyToSpecificUnitRequest};
 use crate::notify_player_action_info::service::request::notice_draw_card_request::{NoticeDrawCardRequest};
 use crate::notify_player_action_info::service::request::notice_instant_death_of_specific_unit_by_using_hand_card_request::NoticeInstantDeathOfSpecificUnitByUsingHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_opponent_unit_request::{NoticeRemoveEnergyOfSpecificOpponentUnitRequest};
@@ -13,7 +13,7 @@ use crate::notify_player_action_info::service::response::notice_apply_damage_to_
 
 use crate::notify_player_action_info::service::response::notice_boost_energy_to_specific_unit_response::{NoticeBoostEnergyToSpecificUnitResponse};
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_specific_opponent_unit_response::{NoticeApplyDamageToSpecificOpponentUnitResponse};
-use crate::notify_player_action_info::service::response::notice_attach_energy_to_specific_unit_by_using_hand_card_response::NoticeAttachEnergyToSpecificUnitByUsingHandCardResponse;
+use crate::notify_player_action_info::service::response::notice_attach_energy_to_specific_unit_response::{NoticeAttachEnergyToSpecificUnitResponse};
 use crate::notify_player_action_info::service::response::notice_draw_card_response::{NoticeDrawCardResponse};
 use crate::notify_player_action_info::service::response::notice_instant_death_of_specific_unit_by_using_hand_card_response::NoticeInstantDeathOfSpecificUnitByUsingHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_remove_energy_of_specific_opponent_unit_response::{NoticeRemoveEnergyOfSpecificOpponentUnitResponse};
@@ -54,10 +54,10 @@ pub trait NotifyPlayerActionInfoService {
         &mut self,
         notice_apply_damage_to_every_unit_by_using_hand_card_request: NoticeApplyDamageToEveryUnitByUsingHandCardRequest)
         -> NoticeApplyDamageToEveryUnitByUsingHandCardResponse;
-    async fn notice_attach_energy_to_specific_unit_by_using_hand_card(
+    async fn notice_attach_energy_to_specific_unit(
         &mut self,
-        notice_attach_energy_to_specific_unit_by_using_hand_card_request: NoticeAttachEnergyToSpecificUnitByUsingHandCardRequest)
-        -> NoticeAttachEnergyToSpecificUnitByUsingHandCardResponse;
+        notice_attach_energy_to_specific_unit_request: NoticeAttachEnergyToSpecificUnitRequest)
+        -> NoticeAttachEnergyToSpecificUnitResponse;
     async fn notice_instant_death_of_specific_unit_by_using_hand_card(
         &mut self,
         notice_instant_death_of_specific_unit_by_using_hand_card_request: NoticeInstantDeathOfSpecificUnitByUsingHandCardRequest)

@@ -54,7 +54,7 @@ pub trait NotifyPlayerActionInfoRepository {
     async fn notify_player_attach_energy_to_specific_unit(
         &mut self,
         opponent_unique_id: i32,
-        field_unit_energy_info: FieldUnitEnergyInfo)-> bool;
+        field_unit_energy_info: FieldUnitEnergyInfo)-> PlayerFieldUnitEnergyInfo;
     async fn notify_player_instant_death_of_specific_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
