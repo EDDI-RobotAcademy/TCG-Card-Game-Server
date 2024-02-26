@@ -25,4 +25,5 @@ pub trait GameDeckService {
     async fn get_deck(&self, game_deck_card_list_request: GameDeckCardListRequest) -> GameDeckCardListResponse;
     async fn find_by_card_id_with_count(&self, found_card_from_deck_request: FoundCardFromDeckRequest) -> FoundCardFromDeckResponse;
     async fn search_specific_deck_card(&self, search_specific_deck_card_request: SearchSpecificDeckCardRequest) -> SearchSpecificDeckCardResponse;
+    async fn fake_create_and_shuffle_deck(&self, game_deck_card_list_request: GameDeckStartCardListRequest) -> GameDeckStartCardListResponse;
 }

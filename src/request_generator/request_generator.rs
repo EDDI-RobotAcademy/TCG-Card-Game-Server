@@ -78,6 +78,8 @@ use crate::request_generator::search_unit_support_request_form_generator::create
 use crate::request_generator::targeting_active_skill_request_form_generator::create_targeting_active_skill_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::request_generator::surrender_request_generator::create_surrender_request;
+use crate::request_generator::fake_create_game_deck_card_list_request_generator::fake_create_game_deck_card_list_request;
+use crate::request_generator::test_muligan_reqeust_generator::test_create_mulligan_request_form;
 use crate::response_generator::response_type::ResponseType;
 use crate::rockpaperscissors::controller::rockpaperscissors_controller::RockpaperscissorsController;
 use crate::rockpaperscissors::controller::rockpaperscissors_controller_impl::RockpaperscissorsControllerImpl;
@@ -822,6 +824,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
+            7002 => {
+                // 테스트용 30장 Mulligan 용
+                if let Some(request_form) = test_create_mulligan_request_form(&data) {
+                    let game_hand_controller_mutex = GameHandControllerImpl::get_instance();
+                    let game_hand_controller = game_hand_controller_mutex.lock().await;
+
+                    let response_form = game_hand_controller.execute_mulligan_procedure(request_form).await;
+                    let response_type = Some(ResponseType::CHANGE_FIRST_HAND(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             8001 => {
                 // Fake Battle Room Test
                 if let Some(request) = create_fake_battle_room_create_request_form(&data) {
@@ -835,7 +851,21 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 } else {
                     None
                 }
-            }
+            },
+            8002 => {
+                //드로우 30장 하고 시작 테스트용 Game Deck Card List
+                if let Some(request) = fake_create_game_deck_card_list_request(&data) {
+                    let game_deck_card_service_mutex = GameDeckServiceImpl::get_instance();
+                    let mut game_deck_card_service = game_deck_card_service_mutex.lock().await;
+
+                    let response = game_deck_card_service.fake_create_and_shuffle_deck(request).await;
+                    let response_type = Some(ResponseType::BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             _ => None,
         }
     } else {
