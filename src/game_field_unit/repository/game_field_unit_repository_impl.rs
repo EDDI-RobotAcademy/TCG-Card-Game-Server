@@ -205,6 +205,8 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         false
     }
+
+    // 여러 번 할 경우 reverse 로 사용 필요
     fn judge_death_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> (i32, i32) {
         println!("GameFieldUnitRepositoryImpl: judge_death_of_unit()");
 
@@ -230,16 +232,16 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         if let Some(game_field_unit) = self.get_game_field_unit_map().get_mut(&account_unique_id) {
             let field_unit_list = game_field_unit.get_all_field_unit_list_mut();
-            let mut index_director: usize = 0;
-            for unit_index in 0..field_unit_list.len() {
+            for unit_index in (0..field_unit_list.len()).rev() {
                 let dead_unit_id = game_field_unit.judge_death_of_unit(unit_index);
                 if dead_unit_id != -1 {
-                    dead_unit_tuple_list.push(((unit_index + index_director) as i32, dead_unit_id));
-                    if game_field_unit.check_unit_alive(unit_index - index_director) == false {
-                        index_director += 1;
-                    }
+                    dead_unit_tuple_list.push((unit_index as i32, dead_unit_id));
+                    game_field_unit.check_unit_alive(unit_index);
                 }
             }
+
+            // 원래 순서대로 되돌림
+            dead_unit_tuple_list.reverse();
 
             return dead_unit_tuple_list
         }
