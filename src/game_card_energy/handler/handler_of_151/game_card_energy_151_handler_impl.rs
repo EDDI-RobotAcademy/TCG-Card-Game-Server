@@ -8,7 +8,7 @@ pub struct EnergyCard_151_Function;
 
 impl GameCardEnergyHandler for EnergyCard_151_Function {
     unsafe fn use_specific_energy_card(&self) -> SummaryEnergyCardEffect {
-        println!("SupportCard_151_Function: use_specific_support_card()");
+        println!("EnergyCard_151_Function: use_special_energy_card()");
 
         SummaryEnergyCardEffect::new(RaceEnum::Undead,
                                      vec![

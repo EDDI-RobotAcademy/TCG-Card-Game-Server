@@ -51,7 +51,7 @@ impl GameCardItemService for GameCardItemServiceImpl {
     }
 
     async fn summary_item_card(&mut self, summary_item_card_effect_request: SummaryItemCardEffectRequest) -> SummaryItemCardEffectResponse {
-        println!("GameCardEnergyServiceImpl: summary_item_card()");
+        println!("GameCardItemServiceImpl: summary_item_card()");
 
         let game_card_item_repository_guard = self.game_card_item_repository.lock().await;
         let summary_item_card_effect_response = unsafe {

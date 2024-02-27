@@ -9,7 +9,7 @@ pub struct UnitCard_19_Passive_Slot_2_Function;
 
 impl GameCardPassiveSkillHandler for UnitCard_19_Passive_Slot_2_Function {
     unsafe fn summary_passive_skill(&self) -> SummaryPassiveSkillEffect {
-        println!("UnitCard_19_Passive_Function: summary_passive_skill()");
+        println!("UnitCard_19_Passive_Slot_2_Function: summary_passive_skill()");
 
         let mut summary_passive_skill_effect = SummaryPassiveSkillEffect::new(
             PassiveSkillType::SingleTarget, 20);
