@@ -35,6 +35,6 @@ impl RemoveOpponentFieldEnergySupportResponseForm {
 
         RemoveOpponentFieldEnergySupportResponseForm::new(
             false,
-            HashMap::from([(Opponent, -1)]))
+            HashMap::new())
     }
 }

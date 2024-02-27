@@ -42,9 +42,7 @@ impl EnergyBoostSupportResponseForm {
     pub fn default() -> EnergyBoostSupportResponseForm {
         EnergyBoostSupportResponseForm::new(
             false,
-            HashMap::from([(You, Vec::new())]),
-            HashMap::from([(You, FieldUnitEnergyInfo::new(
-                HashMap::from([(-1, AttachedEnergyInfo::new(
-                    HashMap::from([(-1, -1)])))])))]))
+            HashMap::new(),
+            HashMap::new())
     }
 }

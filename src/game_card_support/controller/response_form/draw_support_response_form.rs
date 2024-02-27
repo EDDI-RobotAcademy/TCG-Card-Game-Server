@@ -35,6 +35,6 @@ impl DrawSupportResponseForm {
 
         DrawSupportResponseForm::new(
             false,
-            HashMap::from([(You, Vec::new())]))
+            HashMap::new())
     }
 }

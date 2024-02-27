@@ -35,6 +35,6 @@ impl SearchUnitSupportResponseForm {
 
         SearchUnitSupportResponseForm::new(
             false,
-            HashMap::from([(You, Vec::new())]))
+            HashMap::new())
     }
 }
