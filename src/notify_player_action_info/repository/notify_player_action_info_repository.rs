@@ -67,6 +67,10 @@ pub trait NotifyPlayerActionInfoRepository {
         &mut self,
         opponent_unique_id: i32,
         field_unit_energy_info: FieldUnitEnergyInfo)-> PlayerFieldUnitEnergyInfo;
+    async fn notify_player_death_of_unit(
+        &mut self,
+        opponent_unique_id: i32,
+        field_unit_death_info: FieldUnitDeathInfo) -> PlayerFieldUnitDeathInfo;
     async fn notify_player_death_of_opponent_unit(
         &mut self,
         opponent_unique_id: i32,

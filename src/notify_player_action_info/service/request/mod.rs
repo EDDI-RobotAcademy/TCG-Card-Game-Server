@@ -10,3 +10,5 @@ pub mod notice_instant_death_of_specific_opponent_unit_request;
 pub mod notice_use_hand_card_request;
 pub mod notice_lost_deck_card_of_opponent_request;
 pub mod notice_apply_damage_to_opponent_main_character_request;
+pub mod notice_apply_damage_to_multiple_opponent_unit_request;
+pub mod notice_instant_death_of_specific_unit_request;
