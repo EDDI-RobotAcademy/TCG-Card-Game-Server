@@ -12,3 +12,4 @@ pub mod notice_lost_deck_card_opponent_response;
 pub mod notice_apply_damage_to_opponent_main_character_response;
 pub mod notice_apply_damage_to_multiple_opponent_unit_response;
 pub mod notice_instant_death_of_specific_unit_response;
+pub mod notice_add_field_energy_response;

@@ -1,6 +1,7 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::game_card_item::service::request::summary_item_card_effect_request::SummaryItemCardEffectRequest;
 use crate::game_field_energy::service::request::add_field_energy_with_amount_request::AddFieldEnergyWithAmountRequest;
+use crate::game_field_energy::service::request::get_current_field_energy_request::GetCurrentFieldEnergyRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 use crate::game_hand::service::request::use_game_hand_item_card_request::UseGameHandItemCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
@@ -9,6 +10,8 @@ use crate::game_protocol_validation::service::request::is_it_item_card_request::
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_field_energy_increase_request::NotifyOpponentYouUseItemFieldEnergyIncreaseRequest;
+use crate::notify_player_action_info::service::request::notice_add_field_energy_request::NoticeAddFieldEnergyRequest;
+use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 #[derive(Debug)]
@@ -76,6 +79,35 @@ impl AddFieldEnergyWithFieldUnitHealthPointRequestForm {
 
     pub fn to_add_field_energy_with_amount_request(&self, account_unique_id: i32, amount_to_add: i32) -> AddFieldEnergyWithAmountRequest {
         AddFieldEnergyWithAmountRequest::new(account_unique_id, amount_to_add)
+    }
+
+    pub fn to_get_current_field_energy_request(
+        &self,
+        account_unique_id: i32) -> GetCurrentFieldEnergyRequest {
+
+        GetCurrentFieldEnergyRequest::new(
+            account_unique_id
+        )
+    }
+
+    pub fn to_notice_use_hand_card_request(
+        &self,
+        opponent_unique_id: i32,
+        used_hand_card_id: i32,) -> NoticeUseHandCardRequest {
+
+        NoticeUseHandCardRequest::new(
+            opponent_unique_id,
+            used_hand_card_id
+        )
+    }
+
+    pub fn to_notice_add_field_energy_request(
+        &self,
+        opponent_unique_id: i32,
+        remaining_field_energy: i32) -> NoticeAddFieldEnergyRequest {
+
+        NoticeAddFieldEnergyRequest::new(
+            opponent_unique_id, remaining_field_energy)
     }
 
     pub fn to_notify_opponent_you_use_item_field_energy_increase_request(&self, opponent_unique_id: i32, item_card_id: i32, field_energy_increase: i32) -> NotifyOpponentYouUseItemFieldEnergyIncreaseRequest {

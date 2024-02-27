@@ -41,11 +41,15 @@ pub trait NotifyPlayerActionInfoRepository {
         &mut self,
         opponent_unique_id: i32,
         searched_card_list_from_deck: Vec<i32>) -> PlayerSearchCardListInfo;
+    async fn notify_player_field_energy(
+        &mut self,
+        opponent_unique_id: i32,
+        remaining_field_energy_count: i32) -> PlayerFieldEnergyInfo;
     async fn notify_player_opponent_field_energy(
         &mut self,
         opponent_unique_id: i32,
         remaining_field_energy_count: i32) -> PlayerFieldEnergyInfo;
-    async fn notify_player_remove_energy_of_specific_opponent_unit(
+    async fn notify_player_energy_of_specific_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
         field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo;

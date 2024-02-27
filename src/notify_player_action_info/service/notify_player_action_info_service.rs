@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use crate::notify_player_action_info::service::request::notice_add_field_energy_request::NoticeAddFieldEnergyRequest;
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_every_opponent_unit_request::{NoticeApplyDamageToEveryOpponentUnitRequest};
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_multiple_opponent_unit_request::NoticeApplyDamageToMultipleOpponentUnitRequest;
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_opponent_main_character_request::NoticeApplyDamageToOpponentMainCharacterRequest;
@@ -13,6 +14,7 @@ use crate::notify_player_action_info::service::request::notice_remove_energy_of_
 use crate::notify_player_action_info::service::request::notice_remove_field_energy_of_opponent_request::{NoticeRemoveFieldEnergyOfOpponentRequest};
 use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
+use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_multiple_opponent_unit_response::NoticeApplyDamageToMultipleOpponentUnitResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_opponent_main_character_response::NoticeApplyDamageToOpponentMainCharacterResponse;
@@ -46,6 +48,9 @@ pub trait NotifyPlayerActionInfoService {
         &mut self,
         notice_search_card_request: NoticeSearchCardRequest)
         -> NoticeSearchCardResponse;
+    async fn notice_add_field_energy(
+        &mut self, notice_add_field_energy_request: NoticeAddFieldEnergyRequest)
+        -> NoticeAddFieldEnergyResponse;
     async fn notice_remove_field_energy_of_opponent(
         &mut self,
         notice_remove_field_energy_of_opponent_request: NoticeRemoveFieldEnergyOfOpponentRequest)
