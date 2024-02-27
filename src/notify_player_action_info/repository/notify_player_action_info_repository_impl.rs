@@ -258,6 +258,45 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         return true
     }
 
+    async fn notify_player_use_field_energy_to_unit(
+        &mut self,
+        opponent_unique_id: i32,
+        field_unit_energy_info: FieldUnitEnergyInfo,
+        remaining_field_energy: i32) -> (PlayerFieldUnitEnergyInfo, PlayerFieldEnergyInfo) {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_use_field_energy_to_unit()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let player_field_unit_energy_info =
+            self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone());
+
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_UNIT_ENERGY(player_field_unit_energy_info)))).await;
+
+        let player_field_energy_info =
+            self.get_player_field_energy_info(Opponent, remaining_field_energy);
+
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_ENERGY(player_field_energy_info)))).await;
+
+        return (self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone()),
+                self.get_player_field_energy_info(You, remaining_field_energy))
+    }
+
     async fn notify_player_use_deck_card_list(
         &mut self,
         opponent_unique_id: i32,
