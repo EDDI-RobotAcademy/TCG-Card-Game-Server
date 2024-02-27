@@ -20,6 +20,8 @@ use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
+use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
+use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
@@ -29,7 +31,7 @@ pub struct GameFieldEnergyControllerImpl {
     battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
-    notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
+    notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
 }
 
@@ -38,7 +40,7 @@ impl GameFieldEnergyControllerImpl {
                battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
-               notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
+               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>) -> Self {
 
         GameFieldEnergyControllerImpl {
@@ -46,7 +48,7 @@ impl GameFieldEnergyControllerImpl {
             battle_room_service,
             game_field_unit_service,
             redis_in_memory_service,
-            notify_player_action_service,
+            notify_player_action_info_service,
             game_protocol_validation_service,
         }
     }
@@ -60,7 +62,7 @@ impl GameFieldEnergyControllerImpl {
                             BattleRoomServiceImpl::get_instance(),
                             GameFieldUnitServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
-                            NotifyPlayerActionServiceImpl::get_instance(),
+                            NotifyPlayerActionInfoServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance())));
         }
         INSTANCE.clone()
@@ -89,7 +91,7 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
                 attach_field_energy_to_field_unit_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return AttachFieldEnergyToFieldUnitResponseForm::new(false)
+            return AttachFieldEnergyToFieldUnitResponseForm::default()
         }
 
         // 2. TODO: 플레이어의 턴 검증
@@ -112,7 +114,7 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
 
         if !check_field_energy_enough_to_use_response.is_success() {
             println!("필드 에너지가 사용하기에 충분하지 않습니다.");
-            return AttachFieldEnergyToFieldUnitResponseForm::new(false)
+            return AttachFieldEnergyToFieldUnitResponseForm::default()
         }
 
         // 4. 필드 에너지를 수량에 따라 부착합니다.
@@ -138,7 +140,7 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
 
             if !attach_single_energy_to_unit_index_response.is_success() {
                 println!("필드 에너지를 부착하는 과정에서 문제가 발생하였습니다.");
-                return AttachFieldEnergyToFieldUnitResponseForm::new(false)
+                return AttachFieldEnergyToFieldUnitResponseForm::default()
             }
         }
 
@@ -153,19 +155,16 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
 
         if !attach_multiple_energy_to_unit_response.is_success() {
             println!("필드 에너지를 부착하는 과정에서 문제가 발생하였습니다.");
-            return AttachFieldEnergyToFieldUnitResponseForm::new(false)
+            return AttachFieldEnergyToFieldUnitResponseForm::default()
         }
 
         // 5. 에너지를 부착한 유닛의 업데이트 된 에너지 정보를 가져옵니다.
-        // let updated_energy_map =
-        //     game_field_unit_service_guard.get_current_attached_energy_of_field_unit_by_index(
-        //         attach_field_energy_to_field_unit_request_form
-        //             .to_get_current_attached_energy_of_field_unit_by_index_request(
-        //                 account_unique_id,
-        //                 unit_card_index,
-        //                 energy_race_enum)).await.get_current_attached_energy_map().clone();
-        //
-        // let updated_energy_count = updated_energy_map.
+        let updated_energy_map =
+            game_field_unit_service_guard.get_current_attached_energy_of_field_unit_by_index(
+                attach_field_energy_to_field_unit_request_form
+                    .to_get_current_attached_energy_of_field_unit_by_index_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_current_attached_energy_map().clone();
 
         // 6. 사용된 필드 에너지를 제거합니다.
         game_field_energy_service_guard.remove_field_energy_with_amount(
@@ -197,21 +196,21 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
         drop(battle_room_service_guard);
 
         // 9. 필드 에너지 사용에 따른 변화를 상대방에게 알립니다.
-        // let mut notify_player_action_service_guard =
-        //     self.notify_player_action_service.lock().await;
-        //
-        // notify_player_action_service_guard.notify_opponent_you_attach_field_energy_to_field_unit(
-        //         attach_field_energy_to_field_unit_request_form
-        //             .to_notify_you_attach_field_energy_to_field_unit_request(
-        //                 opponent_unique_id,
-        //                 unit_card_index,
-        //                 energy_race_enum,
-        //                 will_be_used_field_energy_quantity,
-        //                 updated_energy_count,
-        //                 remaining_field_energy_count)).await;
-        //
-        // drop(notify_player_action_service_guard);
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
 
-        AttachFieldEnergyToFieldUnitResponseForm::new(true)
+        let notice_use_field_energy_to_specific_unit_response =
+            notify_player_action_info_service_guard.notice_use_field_energy_to_specific_unit(
+                attach_field_energy_to_field_unit_request_form
+                    .to_notice_use_field_energy_to_unit_request(
+                        opponent_unique_id,
+                        unit_card_index,
+                        updated_energy_map,
+                        remaining_field_energy_count)).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        AttachFieldEnergyToFieldUnitResponseForm::from_response(
+            notice_use_field_energy_to_specific_unit_response)
     }
 }
