@@ -195,7 +195,10 @@ impl GameCardItemControllerImpl {
 
 #[async_trait]
 impl GameCardItemController for GameCardItemControllerImpl {
-    async fn request_to_use_target_death_item(&self, target_death_item_request_form: TargetDeathItemRequestForm) -> TargetDeathItemResponseForm {
+    async fn request_to_use_target_death_item(
+        &self, target_death_item_request_form: TargetDeathItemRequestForm)
+        -> TargetDeathItemResponseForm {
+
         println!("GameCardItemControllerImpl: request_to_use_target_death_item()");
 
         // 1. Redis 에서 토큰을 가지고 있는지 검증
@@ -794,7 +797,8 @@ impl GameCardItemController for GameCardItemControllerImpl {
     }
 
     async fn request_to_use_applying_multiple_target_damage_by_field_unit_death_item(
-        &self, multiple_target_damage_by_field_unit_death_item_request_form: MultipleTargetDamageByFieldUnitDeathItemRequestForm) -> MultipleTargetDamageByFieldUnitDeathItemResponseForm {
+        &self, multiple_target_damage_by_field_unit_death_item_request_form: MultipleTargetDamageByFieldUnitDeathItemRequestForm)
+        -> MultipleTargetDamageByFieldUnitDeathItemResponseForm {
 
         println!("GameCardItemControllerImpl: request_to_use_catastrophic_damage_by_field_unit_death_item()");
 
