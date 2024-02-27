@@ -235,7 +235,7 @@ impl GameHandService for GameHandServiceImpl {
     }
 
     async fn use_energy_card(&mut self, use_game_hand_energy_card_request: UseGameHandEnergyCardRequest) -> UseGameHandEnergyCardResponse {
-        println!("GameHandServiceImpl: use_unit_card()");
+        println!("GameHandServiceImpl: use_energy_card()");
 
         let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
         let maybe_energy_card = game_hand_repository_guard.use_specific_card(
@@ -251,7 +251,7 @@ impl GameHandService for GameHandServiceImpl {
     }
 
     async fn use_item_card(&mut self, use_game_hand_item_card_request: UseGameHandItemCardRequest) -> UseGameHandItemCardResponse {
-        println!("GameHandServiceImpl: use_unit_card()");
+        println!("GameHandServiceImpl: use_item_card()");
 
         let mut game_hand_repository_guard = self.game_hand_repository.lock().await;
         let maybe_item_card = game_hand_repository_guard.use_specific_card(

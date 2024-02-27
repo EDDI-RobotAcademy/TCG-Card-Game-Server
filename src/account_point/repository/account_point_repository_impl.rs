@@ -50,7 +50,7 @@ impl AccountPointRepository for AccountPointRepositoryImpl {
     async fn save_account_points(&self, account_id_only: AccountId) -> Result<(), diesel::result::Error> {
         use crate::account_point::entity::account_id::account_points::dsl::*;
 
-        println!("AccountRepositoryImpl: save()");
+        println!("AccountPointRepository: save_account_points()");
 
         let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
         let mut connection = MysqlConnection::establish(&database_url)
@@ -61,11 +61,11 @@ impl AccountPointRepository for AccountPointRepositoryImpl {
             .execute(&mut connection)
         {
             Ok(_) => {
-                println!("Account saved successfully.");
+                println!("Account point saved successfully.");
                 Ok(())
             }
             Err(e) => {
-                eprintln!("Error saving account: {:?}", e);
+                eprintln!("Error saving account point: {:?}", e);
                 Err(e)
             }
         }
