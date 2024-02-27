@@ -721,8 +721,13 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         let opponent_target_unit_index_list_string =
             multiple_target_damage_by_field_unit_death_item_request_form.get_opponent_target_unit_index_list().to_vec();
-        let opponent_target_unit_index_list =
+        let mut opponent_target_unit_index_list =
             VectorStringToVectorInteger::vector_string_to_vector_i32(opponent_target_unit_index_list_string);
+
+        opponent_target_unit_index_list.sort();
+        opponent_target_unit_index_list.reverse();
+
+        let reversed_opponent_target_unit_index_list = opponent_target_unit_index_list.clone();
 
         // 사용할 아이템 카드 요약 정보
         let mut summarized_item_effect_response = self.get_summary_of_item_card(
@@ -781,7 +786,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let mut updated_health_point_list = Vec::new();
         let mut dead_unit_index_list = Vec::new();
 
-        for opponent_unit_index in opponent_target_unit_index_list.clone() {
+        for opponent_unit_index in reversed_opponent_target_unit_index_list {
             game_field_unit_service_guard.apply_damage_to_target_unit_index(
                 multiple_target_damage_by_field_unit_death_item_request_form
                     .to_apply_damage_to_target_unit_request(
@@ -803,12 +808,15 @@ impl GameCardItemController for GameCardItemControllerImpl {
                     multiple_target_damage_by_field_unit_death_item_request_form
                         .to_judge_death_of_unit_request(
                             opponent_unique_id,
-                            opponent_unique_id)).await.get_dead_unit_index();
+                            opponent_unit_index)).await.get_dead_unit_index();
 
             if maybe_dead_unit_index != -1 {
                 dead_unit_index_list.push(maybe_dead_unit_index);
             }
         }
+
+        updated_health_point_list.reverse();
+        dead_unit_index_list.reverse();
 
         drop(game_field_unit_service_guard);
 
