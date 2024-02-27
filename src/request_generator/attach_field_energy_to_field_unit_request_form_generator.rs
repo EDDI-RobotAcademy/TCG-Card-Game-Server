@@ -3,15 +3,15 @@ use crate::game_field_energy::controller::request_form::attach_field_energy_to_f
 
 pub fn create_attach_field_energy_to_field_unit_request_form(data: &JsonValue) -> Option<AttachFieldEnergyToFieldUnitRequestForm> {
     if let (Some(session_info), Some(unit_card_index), Some(energy_race), Some(energy_count)) = (
-        data.get("unitIndex").and_then(|v| v.as_str()),
         data.get("sessionInfo").and_then(|v| v.as_str()),
+        data.get("unitIndex").and_then(|v| v.as_str()),
         data.get("energyRace").and_then(|v| v.as_str()),
         data.get("energyCount").and_then(|v| v.as_str()),
     ) {
-        Some(AttachFieldEnergyToFieldUnitRequestForm::new(session_info,
-                                                          unit_card_index,
-                                                          energy_race,
-                                                          energy_count))
+        Some(AttachFieldEnergyToFieldUnitRequestForm::new(session_info.to_string(),
+                                                          unit_card_index.to_string(),
+                                                          energy_race.to_string(),
+                                                          energy_count.to_string()))
     } else {
         None
     }
