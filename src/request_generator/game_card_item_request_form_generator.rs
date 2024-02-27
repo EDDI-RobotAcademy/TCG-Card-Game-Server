@@ -53,8 +53,9 @@ pub fn create_multiple_target_damage_by_field_unit_sacrifice_item_request_form(d
     ) {
         let mut opponent_target_unit_index_list_string = Vec::new();
         for value in opponent_target_unit_index_list {
-            let index = value.to_string();
-            opponent_target_unit_index_list_string.push(index);
+            if let Some(target_unit_index) = value.as_str() {
+                opponent_target_unit_index_list_string.push(target_unit_index.to_string());
+            }
         }
         Some(MultipleTargetDamageByFieldUnitDeathItemRequestForm::new(my_field_unit_index,
                                                                       session_info,
