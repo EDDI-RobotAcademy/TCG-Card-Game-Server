@@ -9,6 +9,7 @@ use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_card_energy::service::game_card_energy_service_impl::GameCardEnergyServiceImpl;
+use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_field_energy::controller::game_field_energy_controller::GameFieldEnergyController;
 use crate::game_field_energy::controller::request_form::attach_field_energy_to_field_unit_request_form::AttachFieldEnergyToFieldUnitRequestForm;
 use crate::game_field_energy::controller::response_form::attach_field_energy_to_field_unit_response_form::AttachFieldEnergyToFieldUnitResponseForm;
@@ -17,6 +18,7 @@ use crate::game_field_energy::service::game_field_energy_service_impl::GameField
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
+use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
@@ -94,7 +96,21 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
             return AttachFieldEnergyToFieldUnitResponseForm::default()
         }
 
-        // 2. TODO: 플레이어의 턴 검증
+        // 2. 플레이어의 턴을 검증합니다.
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                attach_field_energy_to_field_unit_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return AttachFieldEnergyToFieldUnitResponseForm::default()
+        }
+
+        drop(game_protocol_validation_service_guard);
 
         // 3. 필드 에너지가 충분히 있는지 검증합니다.
         let will_be_used_field_energy_quantity_string =
