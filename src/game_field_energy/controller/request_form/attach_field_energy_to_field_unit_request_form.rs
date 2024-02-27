@@ -19,10 +19,10 @@ pub struct AttachFieldEnergyToFieldUnitRequestForm {
 }
 
 impl AttachFieldEnergyToFieldUnitRequestForm {
-    pub fn new(session_id: &str,
-               unit_index: &str,
-               energy_race: &str,
-               quantity: &str) -> Self {
+    pub fn new(session_id: String,
+               unit_index: String,
+               energy_race: String,
+               quantity: String) -> Self {
         AttachFieldEnergyToFieldUnitRequestForm {
             session_id: session_id.to_string(),
             unit_index: unit_index.to_string(),

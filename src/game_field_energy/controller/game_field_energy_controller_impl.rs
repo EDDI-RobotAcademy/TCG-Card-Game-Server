@@ -67,7 +67,7 @@ impl GameFieldEnergyControllerImpl {
     }
 
     async fn is_valid_session(&self, request: GetValueWithKeyRequest) -> i32 {
-        let mut redis_in_memory_service_guard = self.redis_in_memory_service.lock().await;
+        let redis_in_memory_service_guard = self.redis_in_memory_service.lock().await;
         let session_validation_response = redis_in_memory_service_guard.get_value_with_key(request).await;
 
         let value_string = session_validation_response.get_value();
