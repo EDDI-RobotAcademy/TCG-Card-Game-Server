@@ -334,13 +334,19 @@ impl GameCardItemController for GameCardItemControllerImpl {
         TargetDeathItemResponseForm::new(true)
     }
 
-    async fn request_to_use_add_field_energy_with_field_unit_health_point(&self, add_field_energy_with_field_unit_health_point_request_form: AddFieldEnergyWithFieldUnitHealthPointRequestForm) -> AddFieldEnergyWithFieldUnitHealthPointResponseForm {
+    async fn request_to_use_add_field_energy_with_field_unit_health_point(
+        &self, add_field_energy_with_field_unit_health_point_request_form: AddFieldEnergyWithFieldUnitHealthPointRequestForm)
+        -> AddFieldEnergyWithFieldUnitHealthPointResponseForm {
+
         println!("GameCardItemControllerImpl: request_to_use_add_field_energy_with_field_unit_health_point()");
 
-        let account_unique_id = self.is_valid_session(add_field_energy_with_field_unit_health_point_request_form.to_session_validation_request()).await;
+        let account_unique_id = self.is_valid_session(
+            add_field_energy_with_field_unit_health_point_request_form
+                .to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             println!("Invalid session");
-            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
+            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::default()
         }
 
         let mut game_protocol_validation_service_guard =
@@ -353,100 +359,139 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
+            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
 
-        let item_card_id_string = add_field_energy_with_field_unit_health_point_request_form.get_item_card_id();
-        let item_card_id = item_card_id_string.parse::<i32>().unwrap();
+        let item_card_id_string =
+            add_field_energy_with_field_unit_health_point_request_form.get_item_card_id();
+        let item_card_id =
+            item_card_id_string.parse::<i32>().unwrap();
 
         let check_protocol_hacking_response = self.is_valid_protocol(
-            add_field_energy_with_field_unit_health_point_request_form.to_check_protocol_hacking_request(account_unique_id, item_card_id)).await;
+            add_field_energy_with_field_unit_health_point_request_form
+                .to_check_protocol_hacking_request(account_unique_id, item_card_id)).await;
+
         if !check_protocol_hacking_response {
             println!("해킹범을 검거합니다!");
-            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
+            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::default()
         }
 
         let is_it_item_response = self.is_it_item_card(
-            add_field_energy_with_field_unit_health_point_request_form.to_is_it_item_card_request(item_card_id)).await;
+            add_field_energy_with_field_unit_health_point_request_form
+                .to_is_it_item_card_request(item_card_id)).await;
+
         if !is_it_item_response {
             println!("아이템 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
-            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
+            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::default()
         }
 
         let can_use_card_response = self.is_able_to_use(
-            add_field_energy_with_field_unit_health_point_request_form.to_can_use_card_request(account_unique_id, item_card_id)).await;
+            add_field_energy_with_field_unit_health_point_request_form
+                .to_can_use_card_request(account_unique_id, item_card_id)).await;
+
         if !can_use_card_response {
             println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
-            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
+            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::default()
         }
 
-        let field_unit_index_string = add_field_energy_with_field_unit_health_point_request_form.get_field_unit_index();
-        let field_unit_index = field_unit_index_string.parse::<i32>().unwrap();
+        let field_unit_index_string =
+            add_field_energy_with_field_unit_health_point_request_form.get_field_unit_index();
+        let field_unit_index =
+            field_unit_index_string.parse::<i32>().unwrap();
 
-        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let get_current_health_point_of_field_unit_by_index_response = game_field_unit_service_guard
-            .get_current_health_point_of_field_unit_by_index(
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
+
+        let get_current_health_point_of_field_unit_by_index_response =
+            game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
                 add_field_energy_with_field_unit_health_point_request_form
-                    .to_get_field_unit_health_point_request(account_unique_id, field_unit_index)).await;
+                    .to_get_field_unit_health_point_request(
+                        account_unique_id,
+                        field_unit_index)).await;
 
-        let current_health_point_of_field_unit = get_current_health_point_of_field_unit_by_index_response.get_current_unit_health_point();
+        let current_health_point_of_field_unit =
+            get_current_health_point_of_field_unit_by_index_response.get_current_unit_health_point();
 
         if current_health_point_of_field_unit == -1 {
             println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 당신도 해킹범입니다!");
-            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
+            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::default()
         }
 
         drop(game_field_unit_service_guard);
 
         let mut summarized_item_effect_response = self.get_summary_of_item_card(
-            add_field_energy_with_field_unit_health_point_request_form.to_summary_item_effect_request(item_card_id)).await;
+            add_field_energy_with_field_unit_health_point_request_form
+                .to_summary_item_effect_request(item_card_id)).await;
 
         let field_energy_amount_to_increase = summarized_item_effect_response
             .get_field_energy_addition_calculator()
                 .calculation_of_field_energy_increment(current_health_point_of_field_unit);
 
-        let game_field_energy_service_guard = self.game_field_energy_service.lock().await;
-        let add_field_energy_with_amount_response = game_field_energy_service_guard.add_field_energy_with_amount(
-            add_field_energy_with_field_unit_health_point_request_form
-                .to_add_field_energy_with_amount_request(account_unique_id, field_energy_amount_to_increase)).await;
+        let game_field_energy_service_guard =
+            self.game_field_energy_service.lock().await;
+
+        let add_field_energy_with_amount_response =
+            game_field_energy_service_guard.add_field_energy_with_amount(
+                add_field_energy_with_field_unit_health_point_request_form
+                    .to_add_field_energy_with_amount_request(
+                        account_unique_id,
+                        field_energy_amount_to_increase)).await;
 
         if !add_field_energy_with_amount_response.is_success() {
             println!("필드에 에너지를 추가하는 과정에서 문제가 발생했습니다!");
-            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
+            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::default()
         }
+
+        let updated_field_energy =
+            game_field_energy_service_guard.get_current_field_energy(
+                add_field_energy_with_field_unit_health_point_request_form
+                    .to_get_current_field_energy_request(
+                        account_unique_id)).await.get_field_energy_count();
 
         drop(game_field_energy_service_guard);
 
-        let mut battle_room_service_guard = self.battle_room_service.lock().await;
+        let mut battle_room_service_guard =
+            self.battle_room_service.lock().await;
+
         let opponent_unique_id = battle_room_service_guard
             .find_opponent_by_account_unique_id(
                 add_field_energy_with_field_unit_health_point_request_form
-                    .to_find_opponent_by_account_id_request(account_unique_id)).await.get_opponent_unique_id();
+                    .to_find_opponent_by_account_id_request(
+                        account_unique_id)).await.get_opponent_unique_id();
 
         drop(battle_room_service_guard);
 
-        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_opponent_you_use_item_card_response = notify_player_action_service_guard
-            .notify_opponent_you_use_item_field_energy_increase_item_card(
-                add_field_energy_with_field_unit_health_point_request_form
-                    .to_notify_opponent_you_use_item_field_energy_increase_request(opponent_unique_id, item_card_id, field_energy_amount_to_increase)).await;
-
-        if !notify_opponent_you_use_item_card_response.is_success() {
-            println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
-            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(false)
-        }
-
-        drop(notify_player_action_service_guard);
-
         let usage_hand_card = self.use_item_card(
-            add_field_energy_with_field_unit_health_point_request_form.to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
+            add_field_energy_with_field_unit_health_point_request_form
+                .to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
 
         self.place_used_card_to_tomb(
-            add_field_energy_with_field_unit_health_point_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+            add_field_energy_with_field_unit_health_point_request_form
+                .to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
 
-        AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(true)
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        let notice_use_hand_card_response =
+            notify_player_action_info_service_guard.notice_use_hand_card(
+                add_field_energy_with_field_unit_health_point_request_form
+                    .to_notice_use_hand_card_request(
+                        opponent_unique_id,
+                        usage_hand_card)).await;
+
+        let notice_add_field_energy_response =
+            notify_player_action_info_service_guard.notice_add_field_energy(
+                add_field_energy_with_field_unit_health_point_request_form
+                    .to_notice_add_field_energy_request(
+                        opponent_unique_id,
+                        updated_field_energy)).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        AddFieldEnergyWithFieldUnitHealthPointResponseForm::from_response(
+            notice_use_hand_card_response, notice_add_field_energy_response)
     }
 
     async fn request_to_use_catastrophic_damage_item(
