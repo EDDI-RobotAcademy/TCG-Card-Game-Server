@@ -378,6 +378,36 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         return self.get_player_search_card_list_info(You, searched_card_list_from_deck.clone())
     }
 
+    async fn notify_player_field_energy(
+        &mut self,
+        opponent_unique_id: i32,
+        remaining_field_energy_count: i32) -> PlayerFieldEnergyInfo {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notify_player_field_energy()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let player_field_energy_info =
+            self.get_player_field_energy_info(Opponent, remaining_field_energy_count);
+
+        // 상대에게 갱신된 필드 에너지 정보 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_FIELD_ENERGY(player_field_energy_info)))).await;
+
+        return self.get_player_field_energy_info(You, remaining_field_energy_count)
+    }
+
     async fn notify_player_opponent_field_energy(
         &mut self,
         opponent_unique_id: i32,
@@ -408,7 +438,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         return self.get_player_field_energy_info(Opponent, remaining_field_energy_count)
     }
 
-    async fn notify_player_remove_energy_of_specific_opponent_unit(
+    async fn notify_player_energy_of_specific_opponent_unit(
         &mut self,
         opponent_unique_id: i32,
         field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo {

@@ -15,6 +15,7 @@ use crate::notify_player_action_info::entity::field_unit_death_info::{FieldUnitD
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository_impl::NotifyPlayerActionInfoRepositoryImpl;
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
+use crate::notify_player_action_info::service::request::notice_add_field_energy_request::NoticeAddFieldEnergyRequest;
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_every_opponent_unit_request::{NoticeApplyDamageToEveryOpponentUnitRequest};
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_multiple_opponent_unit_request::NoticeApplyDamageToMultipleOpponentUnitRequest;
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_opponent_main_character_request::NoticeApplyDamageToOpponentMainCharacterRequest;
@@ -29,6 +30,7 @@ use crate::notify_player_action_info::service::request::notice_remove_energy_of_
 use crate::notify_player_action_info::service::request::notice_remove_field_energy_of_opponent_request::{NoticeRemoveFieldEnergyOfOpponentRequest};
 use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
+use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_multiple_opponent_unit_response::NoticeApplyDamageToMultipleOpponentUnitResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_opponent_main_character_response::NoticeApplyDamageToOpponentMainCharacterResponse;
@@ -185,6 +187,25 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         NoticeSearchCardResponse::new(response)
     }
 
+    async fn notice_add_field_energy(
+        &mut self, notice_add_field_energy_request: NoticeAddFieldEnergyRequest)
+        -> NoticeAddFieldEnergyResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_add_field_energy()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notify_player_field_energy(
+                notice_add_field_energy_request.get_opponent_unique_id(),
+                notice_add_field_energy_request.get_remaining_field_energy()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeAddFieldEnergyResponse::new(response)
+    }
+
     async fn notice_remove_field_energy_of_opponent(
         &mut self,
         notice_remove_field_energy_of_opponent_request: NoticeRemoveFieldEnergyOfOpponentRequest)
@@ -224,7 +245,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notify_player_remove_energy_of_specific_opponent_unit(
+            notify_player_action_info_repository_guard.notify_player_energy_of_specific_opponent_unit(
                 notice_remove_energy_of_specific_opponent_unit_request.get_opponent_unique_id(),
                 field_unit_energy_info).await;
 
