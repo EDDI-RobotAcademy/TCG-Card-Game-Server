@@ -57,7 +57,7 @@ impl BattleWaitQueueRepository for BattleWaitQueueRepositoryImpl {
     }
 
     async fn get_wait_queue_length(&self) -> i32 {
-        println!("BattleWaitQueueRepositoryImpl: dequeue_two_players_from_wait_queue()");
+        println!("BattleWaitQueueRepositoryImpl: get_wait_queue_length()");
         let battle_wait_queue_guard = self.battle_wait_queue.lock().await;
         let player_id_list_guard = battle_wait_queue_guard.player_id_list.lock().await;
         player_id_list_guard.len() as i32
