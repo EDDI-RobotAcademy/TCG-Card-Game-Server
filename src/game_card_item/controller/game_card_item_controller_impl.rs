@@ -195,143 +195,217 @@ impl GameCardItemControllerImpl {
 
 #[async_trait]
 impl GameCardItemController for GameCardItemControllerImpl {
-    async fn request_to_use_target_death_item(&self, target_death_item_request_form: TargetDeathItemRequestForm) -> TargetDeathItemResponseForm {
+    async fn request_to_use_target_death_item(
+        &self, target_death_item_request_form: TargetDeathItemRequestForm)
+        -> TargetDeathItemResponseForm {
+
         println!("GameCardItemControllerImpl: request_to_use_target_death_item()");
 
-        // 1. Redis에서 토큰을 가지고 있는지 검증
-        let account_unique_id = self.is_valid_session(target_death_item_request_form.to_session_validation_request()).await;
+        // 1. Redis 에서 토큰을 가지고 있는지 검증
+        let account_unique_id = self.is_valid_session(
+            target_death_item_request_form.to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             println!("Invalid session");
-            return TargetDeathItemResponseForm::new(false)
+            return TargetDeathItemResponseForm::default()
         }
 
+        // 2. 자신의 턴인지 검증
         let mut game_protocol_validation_service_guard =
             self.game_protocol_validation_service.lock().await;
 
         let is_this_your_turn_response =
             game_protocol_validation_service_guard.is_this_your_turn(
-                target_death_item_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+                target_death_item_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return TargetDeathItemResponseForm::new(false)
+            return TargetDeathItemResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
 
-        // TODO: 세션을 제외하고 애초에 UI 에서 숫자로 전송하면 더 좋다.
         let item_card_id_string = target_death_item_request_form.get_item_card_id();
         let item_card_id = item_card_id_string.parse::<i32>().unwrap();
 
-        // 2. Hand 에 있는지 확인하여 해킹 여부 검증
+        // 3. Hand 에 있는지 확인하여 해킹 여부 검증
         let check_protocol_hacking_response = self.is_valid_protocol(
-            target_death_item_request_form.to_check_protocol_hacking_request(account_unique_id, item_card_id)).await;
+            target_death_item_request_form
+                .to_check_protocol_hacking_request(account_unique_id, item_card_id)).await;
+
         if !check_protocol_hacking_response {
             println!("해킹범을 검거합니다!");
-            return TargetDeathItemResponseForm::new(false)
+            return TargetDeathItemResponseForm::default()
         }
 
-        // 3. 실제 아이템 카드가 맞는지 확인
+        // 4. 실제 아이템 카드가 맞는지 확인
         let is_it_item_response = self.is_it_item_card(
             target_death_item_request_form.to_is_it_item_card_request(item_card_id)).await;
         if !is_it_item_response {
             println!("아이템 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
-            return TargetDeathItemResponseForm::new(false)
+            return TargetDeathItemResponseForm::default()
         }
 
-        // 4. GameProtocolValidation Service 호출하여 사용 가능한지 조건 검사 (신화 > 4라운드 제약)
+        // 5. GameProtocolValidation Service 호출하여 사용 가능한지 조건 검사 (신화 > 4라운드 제약)
         let can_use_card_response = self.is_able_to_use(
-            target_death_item_request_form.to_can_use_card_request(account_unique_id, item_card_id)).await;
+            target_death_item_request_form
+                .to_can_use_card_request(account_unique_id, item_card_id)).await;
+
         if !can_use_card_response {
             println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
-            return TargetDeathItemResponseForm::new(false)
+            return TargetDeathItemResponseForm::default()
         }
 
-        // 5. 효과를 적용하기 위해 Game Card Item Service 호출하여 필요 효과 설정
+        // 6. 효과를 적용하기 위해 Game Card Item Service 호출하여 필요 효과 설정
         let summarized_item_effect_response = self.get_summary_of_item_card(
-            target_death_item_request_form.to_summary_item_effect_request(item_card_id)).await;
+            target_death_item_request_form
+                .to_summary_item_effect_request(item_card_id)).await;
 
-        // TODO: 사용 방식에 대한 논의 필요 <- UI에서 어떻게 보여줄 것인가
-        // 6. 필드 에너지 혹은 손패의 에너지가 충분한지 확인
-        // 여기서 summarized_item_effect_response 의 required_energy 처리
-        let required_energy = summarized_item_effect_response.get_required_energy_count();
+        // TODO: 카드 사용 시 필요한 에너지가 존재한다면 이에 대한 추가 검증이 필요
 
         // 7. Hand Service 호출하여 카드 사용
         let usage_hand_card = self.use_item_card(
-            target_death_item_request_form.to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
+            target_death_item_request_form
+                .to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
 
         // 8. Item 카드 사용이므로 Tomb Service 호출하여 무덤 배치
         self.place_used_card_to_tomb(
-            target_death_item_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+            target_death_item_request_form
+                .to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
 
         // 9. 즉사 스킬 적용을 위해 상대방의 고유 id 값을 확보
-        let battle_room_service_guard = self.battle_room_service.lock().await;
-        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
-            target_death_item_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+        let battle_room_service_guard =
+            self.battle_room_service.lock().await;
 
-        // TODO: 세션을 제외하고 애초에 UI에서 숫자로 전송하면 더 좋다.
-        let opponent_target_unit_index_string = target_death_item_request_form.get_opponent_target_unit_index();
-        let opponent_target_unit_index = opponent_target_unit_index_string.parse::<i32>().unwrap();
+        let opponent_unique_id =
+            battle_room_service_guard.find_opponent_by_account_unique_id(
+                target_death_item_request_form
+                    .to_find_opponent_by_account_id_request(
+                        account_unique_id)).await.get_opponent_unique_id();
+
+        drop(battle_room_service_guard);
+
+        let opponent_target_unit_index_string =
+            target_death_item_request_form.get_opponent_target_unit_index();
+        let opponent_target_unit_index =
+            opponent_target_unit_index_string.parse::<i32>().unwrap();
 
         // TODO: 추후 즉사 면역인 언데드 등등에 대한 조건도 필요함
         // 10. 타겟 인덱스 유닛이 신화 미만인지 확인
-        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let find_target_unit_id_by_index_response = game_field_unit_service_guard.find_target_unit_id_by_index(
-            target_death_item_request_form.to_find_target_unit_id_by_index_request(
-                find_opponent_by_account_id_response.get_opponent_unique_id(),
-                opponent_target_unit_index)).await;
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
 
-        let card_grade_service_guard = self.card_grade_service.lock().await;
-        let opponent_target_unit_grade = card_grade_service_guard.get_card_grade(
-            &find_target_unit_id_by_index_response.get_found_opponent_unit_id()).await;
+        let find_target_unit_id_by_index_response =
+            game_field_unit_service_guard.find_target_unit_id_by_index(
+                target_death_item_request_form
+                    .to_find_target_unit_id_by_index_request(
+                        opponent_unique_id,
+                        opponent_target_unit_index)).await;
 
-        // 11. Field Unit Service를 호출하여 상대 유닛에 Alternatives 적용
+        if find_target_unit_id_by_index_response.get_found_opponent_unit_id() == -1 {
+            println!("필드 위에 존재하지 않는 대상에 대한 요청이므로 당신도 해킹범입니다.");
+            return TargetDeathItemResponseForm::default()
+        }
+
+        let card_grade_service_guard =
+            self.card_grade_service.lock().await;
+
+        let opponent_target_unit_grade =
+            card_grade_service_guard.get_card_grade(
+                &find_target_unit_id_by_index_response.get_found_opponent_unit_id()).await;
+
+        drop(card_grade_service_guard);
+
+        // 11. 신화 등급인 경우 Field Unit Service 를 호출하여 상대 유닛에 Alternatives 적용
         if opponent_target_unit_grade == GradeEnum::Mythical {
             game_field_unit_service_guard.apply_damage_to_target_unit_index(
                 target_death_item_request_form.to_apply_damage_to_target_unit_index(
-                    find_opponent_by_account_id_response.get_opponent_unique_id(),
+                    opponent_unique_id,
                     opponent_target_unit_index,
                     summarized_item_effect_response.get_alternatives_damage())).await;
 
-            // 즉사기에 면역되어 alternatives로 작용하였음을 알림
-            let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-            let notify_to_opponent_you_use_item_card_response = notify_player_action_service_guard
-                .notify_to_opponent_you_use_instant_death_alternatives_item_card(
-                    target_death_item_request_form.to_notify_to_opponent_you_use_item_instant_death_alternatives_request(
-                        find_opponent_by_account_id_response.get_opponent_unique_id(),
-                        opponent_target_unit_index,
-                        usage_hand_card,
-                        summarized_item_effect_response.get_alternatives_damage())).await;
+            let updated_health_point =
+                game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
+                    target_death_item_request_form
+                        .to_get_current_health_point_of_field_unit_by_index_request(
+                            opponent_unique_id,
+                            opponent_target_unit_index)).await.get_current_unit_health_point();
 
-            if !notify_to_opponent_you_use_item_card_response.is_success() {
-                println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
-                return TargetDeathItemResponseForm::new(false)
-            }
+            let maybe_dead_unit_index =
+                game_field_unit_service_guard.judge_death_of_unit(
+                    target_death_item_request_form
+                        .to_judge_death_of_unit_request(
+                            opponent_unique_id,
+                            opponent_target_unit_index)).await.get_dead_unit_index();
 
-            return TargetDeathItemResponseForm::new(true)
+            drop(game_field_unit_service_guard);
+
+            let mut notify_player_action_info_service_guard =
+                self.notify_player_action_info_service.lock().await;
+
+            let notice_use_hand_card_response =
+                notify_player_action_info_service_guard.notice_use_hand_card(
+                    target_death_item_request_form
+                        .to_notice_use_hand_card_request(
+                            opponent_unique_id,
+                            usage_hand_card)).await;
+
+            let notice_apply_damage_to_specific_opponent_unit_response =
+                notify_player_action_info_service_guard.notice_apply_damage_to_specific_opponent_unit(
+                    target_death_item_request_form
+                        .to_notice_apply_damage_to_specific_opponent_unit_request(
+                            opponent_unique_id,
+                            opponent_target_unit_index,
+                            summarized_item_effect_response.get_alternatives_damage(),
+                            updated_health_point,
+                            maybe_dead_unit_index)).await;
+
+            drop(notify_player_action_info_service_guard);
+
+            return TargetDeathItemResponseForm::from_alternative_response(
+                notice_use_hand_card_response,
+                notice_apply_damage_to_specific_opponent_unit_response)
         }
 
-        // 12. Field Unit Service를 호출하여 상대 유닛에 즉사 적용
-        let apply_instant_death_to_target_unit_index_response = game_field_unit_service_guard.apply_instant_death_to_target_unit_index(
-            target_death_item_request_form.to_apply_instant_death_to_target_unit_index_request(
-                find_opponent_by_account_id_response.get_opponent_unique_id(),
-                opponent_target_unit_index)).await;
+        // 12. Field Unit Service 를 호출하여 상대 유닛에 즉사 적용
+        game_field_unit_service_guard.apply_instant_death_to_target_unit_index(
+            target_death_item_request_form
+                .to_apply_instant_death_to_target_unit_index_request(
+                    opponent_unique_id,
+                    opponent_target_unit_index)).await;
 
-        // 즉사기가 적용되어 실제 사망 처리 되었음을 알림
-        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_to_opponent_you_use_item_card_response = notify_player_action_service_guard
-            .notify_to_opponent_you_use_instant_death_item_card(
-                target_death_item_request_form.to_notify_to_opponent_you_use_item_instant_death_request(
-                    find_opponent_by_account_id_response.get_opponent_unique_id(),
-                    opponent_target_unit_index,
-                    usage_hand_card)).await;
+        let maybe_dead_unit_index =
+            game_field_unit_service_guard.judge_death_of_unit(
+                target_death_item_request_form
+                    .to_judge_death_of_unit_request(
+                        opponent_unique_id,
+                        opponent_target_unit_index)).await.get_dead_unit_index();
 
-        if !notify_to_opponent_you_use_item_card_response.is_success() {
-            println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
-            return TargetDeathItemResponseForm::new(false)
-        }
+        drop(game_field_unit_service_guard);
 
-        TargetDeathItemResponseForm::new(true)
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        let notice_use_hand_card_response =
+            notify_player_action_info_service_guard.notice_use_hand_card(
+                target_death_item_request_form
+                    .to_notice_use_hand_card_request(
+                        opponent_unique_id,
+                        usage_hand_card)).await;
+
+        let notice_instant_death_of_specific_opponent_unit_response =
+            notify_player_action_info_service_guard.notice_instant_death_of_specific_opponent_unit(
+                target_death_item_request_form
+                    .to_notice_instant_death_of_specific_opponent_unit_request(
+                        opponent_unique_id,
+                        maybe_dead_unit_index)).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        TargetDeathItemResponseForm::from_response(
+            notice_use_hand_card_response,
+            notice_instant_death_of_specific_opponent_unit_response)
     }
 
     async fn request_to_use_add_field_energy_with_field_unit_health_point(
@@ -723,7 +797,8 @@ impl GameCardItemController for GameCardItemControllerImpl {
     }
 
     async fn request_to_use_applying_multiple_target_damage_by_field_unit_death_item(
-        &self, multiple_target_damage_by_field_unit_death_item_request_form: MultipleTargetDamageByFieldUnitDeathItemRequestForm) -> MultipleTargetDamageByFieldUnitDeathItemResponseForm {
+        &self, multiple_target_damage_by_field_unit_death_item_request_form: MultipleTargetDamageByFieldUnitDeathItemRequestForm)
+        -> MultipleTargetDamageByFieldUnitDeathItemResponseForm {
 
         println!("GameCardItemControllerImpl: request_to_use_catastrophic_damage_by_field_unit_death_item()");
 

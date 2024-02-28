@@ -2,11 +2,13 @@ use crate::battle_room::service::request::find_opponent_by_account_id_request::F
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::service::request::summary_energy_card_effect_request::SummaryEnergyCardEffectRequest;
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
+use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_energy_card_request::IsItEnergyCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
+use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyOpponentYouUseEnergyCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
@@ -63,6 +65,10 @@ impl AttachGeneralEnergyCardRequestForm {
             account_unique_id, energy_card_id)
     }
 
+    pub fn to_place_to_tomb_request(&self, account_unique_id: i32, used_card_id: i32) -> PlaceToTombRequest {
+        PlaceToTombRequest::new(account_unique_id, used_card_id)
+    }
+
     pub fn to_summary_energy_card_effect_request(&self, energy_card_id: i32) -> SummaryEnergyCardEffectRequest {
         SummaryEnergyCardEffectRequest::new(
             energy_card_id)
@@ -70,6 +76,15 @@ impl AttachGeneralEnergyCardRequestForm {
 
     pub fn to_attach_single_energy_to_field_unit_request(&self, account_unique_id: i32, unit_card_index: i32, race_enum: RaceEnum) -> AttachSingleEnergyToUnitIndexRequest {
         AttachSingleEnergyToUnitIndexRequest::new(account_unique_id, unit_card_index, race_enum)
+    }
+
+    pub fn to_get_current_attached_energy_of_unit_by_index_request(
+        &self,
+        account_unique_id: i32,
+        unit_index: i32,) -> GetCurrentAttachedEnergyOfFieldUnitByIndexRequest {
+
+        GetCurrentAttachedEnergyOfFieldUnitByIndexRequest::new(
+            account_unique_id, unit_index)
     }
 
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {

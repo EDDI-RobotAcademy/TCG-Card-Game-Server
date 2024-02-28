@@ -13,6 +13,7 @@ use crate::notify_player_action_info::service::request::notice_lost_deck_card_of
 use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_opponent_unit_request::{NoticeRemoveEnergyOfSpecificOpponentUnitRequest};
 use crate::notify_player_action_info::service::request::notice_remove_field_energy_of_opponent_request::{NoticeRemoveFieldEnergyOfOpponentRequest};
 use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
+use crate::notify_player_action_info::service::request::notice_use_field_energy_to_specific_unit_request::NoticeUseFieldEnergyToSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
@@ -29,6 +30,7 @@ use crate::notify_player_action_info::service::response::notice_lost_deck_card_o
 use crate::notify_player_action_info::service::response::notice_remove_energy_of_specific_opponent_unit_response::{NoticeRemoveEnergyOfSpecificOpponentUnitResponse};
 use crate::notify_player_action_info::service::response::notice_remove_field_energy_of_opponent_response::{NoticeRemoveFieldEnergyOfOpponentResponse};
 use crate::notify_player_action_info::service::response::notice_search_card_response::{NoticeSearchCardResponse};
+use crate::notify_player_action_info::service::response::notice_use_field_energy_to_specific_unit_response::NoticeUseFieldEnergyToSpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
 
 #[async_trait]
@@ -36,6 +38,9 @@ pub trait NotifyPlayerActionInfoService {
     async fn notice_use_hand_card(
         &mut self, notice_use_hand_card_request: NoticeUseHandCardRequest)
         -> NoticeUseHandCardResponse;
+    async fn notice_use_field_energy_to_specific_unit(
+        &mut self, notice_use_field_energy_to_specific_unit_request: NoticeUseFieldEnergyToSpecificUnitRequest)
+        -> NoticeUseFieldEnergyToSpecificUnitResponse;
     async fn notice_boost_energy_to_specific_unit(
         &mut self,
         notice_boost_energy_to_specific_unit_request: NoticeBoostEnergyToSpecificUnitRequest)

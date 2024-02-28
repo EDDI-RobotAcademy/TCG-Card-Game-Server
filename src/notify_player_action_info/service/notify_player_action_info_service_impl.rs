@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
+use diesel::IntoSql;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
@@ -29,6 +30,7 @@ use crate::notify_player_action_info::service::request::notice_lost_deck_card_of
 use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_opponent_unit_request::{NoticeRemoveEnergyOfSpecificOpponentUnitRequest};
 use crate::notify_player_action_info::service::request::notice_remove_field_energy_of_opponent_request::{NoticeRemoveFieldEnergyOfOpponentRequest};
 use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
+use crate::notify_player_action_info::service::request::notice_use_field_energy_to_specific_unit_request::NoticeUseFieldEnergyToSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
@@ -44,6 +46,7 @@ use crate::notify_player_action_info::service::response::notice_lost_deck_card_o
 use crate::notify_player_action_info::service::response::notice_remove_energy_of_specific_opponent_unit_response::{NoticeRemoveEnergyOfSpecificOpponentUnitResponse};
 use crate::notify_player_action_info::service::response::notice_remove_field_energy_of_opponent_response::{NoticeRemoveFieldEnergyOfOpponentResponse};
 use crate::notify_player_action_info::service::response::notice_search_card_response::{NoticeSearchCardResponse};
+use crate::notify_player_action_info::service::response::notice_use_field_energy_to_specific_unit_response::NoticeUseFieldEnergyToSpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
 
 pub struct NotifyPlayerActionInfoServiceImpl {
@@ -113,6 +116,33 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         drop(notify_player_action_info_repository_guard);
 
         NoticeUseHandCardResponse::new(response)
+    }
+
+    async fn notice_use_field_energy_to_specific_unit(
+        &mut self, notice_use_field_energy_to_specific_unit_request: NoticeUseFieldEnergyToSpecificUnitRequest)
+        -> NoticeUseFieldEnergyToSpecificUnitResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_use_field_energy_to_specific_unit()");
+
+        let mut field_unit_energy_map = HashMap::new();
+        field_unit_energy_map.insert(
+            notice_use_field_energy_to_specific_unit_request.get_unit_index(),
+            notice_use_field_energy_to_specific_unit_request.get_updated_unit_energy_map().to_attached_energy_info());
+
+        let field_unit_energy_info = FieldUnitEnergyInfo::new(field_unit_energy_map);
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notify_player_use_field_energy_to_unit(
+                notice_use_field_energy_to_specific_unit_request.get_opponent_unique_id(),
+                field_unit_energy_info,
+                notice_use_field_energy_to_specific_unit_request.get_remaining_field_energy()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeUseFieldEnergyToSpecificUnitResponse::new(response.0, response.1)
     }
 
     async fn notice_boost_energy_to_specific_unit(
