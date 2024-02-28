@@ -1,13 +1,13 @@
 #[derive(Debug)]
-pub struct GenerateUseSupportCardToSearchUnitFromMyDeckDataRequest {
+pub struct GenerateSearchMyDeckDataRequest {
     used_hand_card_id: i32,
     found_card_list: Vec<i32>,
 }
 
-impl GenerateUseSupportCardToSearchUnitFromMyDeckDataRequest {
+impl GenerateSearchMyDeckDataRequest {
     pub fn new(used_hand_card_id: i32,
                found_card_list: Vec<i32>,) -> Self {
-        GenerateUseSupportCardToSearchUnitFromMyDeckDataRequest {
+        GenerateSearchMyDeckDataRequest {
             used_hand_card_id,
             found_card_list
         }

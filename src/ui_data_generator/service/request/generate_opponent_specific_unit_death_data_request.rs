@@ -1,11 +1,11 @@
 #[derive(Debug)]
-pub struct GenerateInstantDeathOfYourSpecificUnitDataRequest {
+pub struct GenerateOpponentSpecificUnitDeathDataRequest {
     dead_unit_index: i32,
 }
 
-impl GenerateInstantDeathOfYourSpecificUnitDataRequest {
+impl GenerateOpponentSpecificUnitDeathDataRequest {
     pub fn new(dead_unit_index: i32,) -> Self {
-        GenerateInstantDeathOfYourSpecificUnitDataRequest {
+        GenerateOpponentSpecificUnitDeathDataRequest {
             dead_unit_index,
         }
     }

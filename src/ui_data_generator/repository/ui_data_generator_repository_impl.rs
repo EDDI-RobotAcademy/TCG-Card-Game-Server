@@ -300,118 +300,81 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
          player_field_energy_info_for_notice)
     }
 
-    async fn generate_use_support_card_to_boost_energy_to_my_specific_unit_data(
+    async fn generate_use_my_deck_card_list_data(
         &mut self,
-        used_hand_card_id: i32,
-        used_hand_card_kind: KindsEnum,
-        found_energy_card_id_list: Vec<i32>,
-        unit_index: i32,
-        updated_unit_energy_map: AttachedEnergyMap
+        deck_card_id_list: Vec<i32>,
     ) -> (PlayerDeckCardUseListInfo,
-          PlayerFieldUnitEnergyInfo,
-          PlayerHandCardUseInfo,
-          PlayerDeckCardUseListInfo,
-          PlayerFieldUnitEnergyInfo) {
+          PlayerDeckCardUseListInfo) {
 
-        println!("UiDataGeneratorRepositoryImpl: generate_use_support_card_to_boost_energy_to_my_specific_unit()");
-
-        let field_unit_energy_info =
-            self.get_field_unit_energy_info(unit_index, updated_unit_energy_map);
+        println!("UiDataGeneratorRepositoryImpl: generate_use_my_deck_card_list_data()");
 
         let player_deck_card_list_use_info_for_response =
-            self.get_player_deck_card_list_use_info(You, found_energy_card_id_list.clone());
-        let player_field_unit_energy_info_for_response =
-            self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone());
-        let player_hand_use_info_for_notice =
-            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_kind);
+            self.get_player_deck_card_list_use_info(You, deck_card_id_list.clone());
         let player_deck_card_list_use_info_for_notice =
-            self.get_player_deck_card_list_use_info(Opponent, found_energy_card_id_list.clone());
-        let player_field_unit_energy_info_for_notice =
-            self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone());
+            self.get_player_deck_card_list_use_info(Opponent, deck_card_id_list.clone());
 
         (player_deck_card_list_use_info_for_response,
-         player_field_unit_energy_info_for_response,
-         player_hand_use_info_for_notice,
-         player_deck_card_list_use_info_for_notice,
-         player_field_unit_energy_info_for_notice)
+         player_deck_card_list_use_info_for_notice)
     }
 
-    async fn generate_use_support_card_to_draw_my_deck_data(
+    async fn generate_draw_my_deck_data(
         &mut self,
-        used_hand_card_id: i32,
-        used_hand_card_kind: KindsEnum,
         drawn_card_list: Vec<i32>
     ) -> (PlayerDrawnCardListInfo,
-          PlayerHandCardUseInfo,
           PlayerDrawCountInfo) {
 
-        println!("UiDataGeneratorRepositoryImpl: generate_use_support_card_to_draw_my_deck()");
+        println!("UiDataGeneratorRepositoryImpl: generate_draw_my_deck_data()");
 
         let player_drawn_card_list_info_for_response =
             self.get_player_drawn_card_list_info(You, drawn_card_list.clone());
-        let player_hand_use_info_for_notice =
-            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_kind);
         let player_draw_count_info_for_notice =
             self.get_player_draw_count_info(Opponent, drawn_card_list.clone());
 
         (player_drawn_card_list_info_for_response,
-         player_hand_use_info_for_notice,
          player_draw_count_info_for_notice)
     }
 
-    async fn generate_use_support_card_to_search_unit_from_my_deck_data(
+    async fn generate_search_my_deck_data(
         &mut self,
-        used_hand_card_id: i32,
-        used_hand_card_kind: KindsEnum,
         found_card_list: Vec<i32>
     ) -> (PlayerSearchCardListInfo,
-          PlayerHandCardUseInfo,
           PlayerSearchCountInfo) {
 
-        println!("UiDataGeneratorRepositoryImpl: generate_use_support_card_to_search_unit_from_my_deck()");
+        println!("UiDataGeneratorRepositoryImpl: generate_search_my_deck_data()");
 
         let player_search_card_list_info_for_response =
             self.get_player_search_card_list_info(You, found_card_list.clone());
-        let player_hand_use_info_for_notice =
-            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_kind);
         let player_search_count_info_for_notice =
             self.get_player_search_count_info(Opponent, found_card_list.clone());
 
         (player_search_card_list_info_for_response,
-         player_hand_use_info_for_notice,
          player_search_count_info_for_notice)
     }
 
-    async fn generate_use_support_card_to_remove_your_field_energy_data(
+    async fn generate_opponent_field_energy_data(
         &mut self,
-        used_hand_card_id: i32,
-        used_hand_card_kind: KindsEnum,
         remaining_field_energy: i32
     ) -> (PlayerFieldEnergyInfo,
-          PlayerHandCardUseInfo,
           PlayerFieldEnergyInfo) {
 
-        println!("UiDataGeneratorRepositoryImpl: generate_use_support_card_to_remove_your_field_energy_data()");
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_field_energy_data()");
 
         let player_field_energy_info_for_response =
-            self.get_player_field_energy_info(You, remaining_field_energy);
-        let player_hand_use_info_for_notice =
-            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_kind);
-        let player_field_energy_info_for_notice =
             self.get_player_field_energy_info(Opponent, remaining_field_energy);
+        let player_field_energy_info_for_notice =
+            self.get_player_field_energy_info(You, remaining_field_energy);
 
         (player_field_energy_info_for_response,
-         player_hand_use_info_for_notice,
          player_field_energy_info_for_notice)
     }
 
-    async fn generate_instant_death_of_your_specific_unit_data(
+    async fn generate_opponent_specific_unit_death_data(
         &mut self,
         dead_unit_index: i32
     ) -> (PlayerFieldUnitDeathInfo,
           PlayerFieldUnitDeathInfo) {
 
-        println!("UiDataGeneratorRepositoryImpl: generate_instant_death_of_your_specific_unit_data()");
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_specific_unit_death_data()");
 
         let field_unit_death_info =
             self.get_field_unit_death_info_by_index(dead_unit_index);

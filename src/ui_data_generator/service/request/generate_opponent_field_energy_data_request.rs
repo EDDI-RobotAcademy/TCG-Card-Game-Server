@@ -1,12 +1,12 @@
 #[derive(Debug)]
-pub struct GenerateUseMyFieldEnergyDataRequest {
+pub struct GenerateOpponentFieldEnergyDataRequest {
     remaining_field_energy: i32
 }
 
-impl GenerateUseMyFieldEnergyDataRequest {
+impl GenerateOpponentFieldEnergyDataRequest {
     pub fn new(remaining_field_energy: i32) -> Self {
-        GenerateUseMyFieldEnergyDataRequest {
-            remaining_field_energy,
+        GenerateOpponentFieldEnergyDataRequest {
+            remaining_field_energy
         }
     }
 
