@@ -6,4 +6,6 @@ use crate::game_card_passive_skill::entity::summary_passive_skill_effect::Summar
 #[async_trait]
 pub trait GameCardPassiveSkillRepository {
     unsafe fn call_passive_skill_repository_handler(&self, unit_card_id: i32, skill_index: i32) -> SummaryPassiveSkillEffect;
-}
+    unsafe fn call_deploy_passive_skill_repository_handler(&self, unit_card_id:i32, skill_index: i32) -> SummaryPassiveSkillEffect;
+    unsafe fn call_turn_start_passive_skill_repository_handler(&self, unit_card_id:i32, skill_index: i32) -> SummaryPassiveSkillEffect ;
+    }

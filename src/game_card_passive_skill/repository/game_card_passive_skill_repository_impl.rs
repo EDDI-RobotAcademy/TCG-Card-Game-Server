@@ -3,6 +3,7 @@ use std::sync::Arc;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::game_card_passive_skill::entity::passive_skill_casting_condition::PassiveSkillCastingCondition;
 
 use crate::game_card_passive_skill::entity::passive_skill_type::PassiveSkillType;
 use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
@@ -22,7 +23,7 @@ impl GameCardPassiveSkillHandler for NonePassiveSkillFunction {
         println!("아직 구현되지 않은 기능입니다.");
 
         SummaryPassiveSkillEffect::new(
-            PassiveSkillType::Dummy, -1)
+            PassiveSkillType::Dummy, vec![PassiveSkillCastingCondition::Dummy], -1)
     }
 }
 
@@ -312,6 +313,34 @@ impl GameCardPassiveSkillRepository for GameCardPassiveSkillRepositoryImpl {
             }
         }
 
-        SummaryPassiveSkillEffect::new(PassiveSkillType::Dummy, -1)
+        SummaryPassiveSkillEffect::new(PassiveSkillType::Dummy, vec![PassiveSkillCastingCondition::Dummy],-1)
+    }
+    unsafe fn call_deploy_passive_skill_repository_handler(&self, unit_card_id:i32, skill_index: i32) -> SummaryPassiveSkillEffect {
+        println!("GameCardActiveSkillRepositoryImpl: call_active_skill_repository_handler()");
+
+        if let Some(inner_map) = self.passive_skill_functions.get(&skill_index) {
+            if let Some(passive_skill_summary_handler) = inner_map.get(&unit_card_id) {
+                let is_deploy = passive_skill_summary_handler.summary_passive_skill()
+                    .get_passive_skill_casting_condition()
+                    .iter().find(|x| x == &&PassiveSkillCastingCondition::Deploy).is_some();
+                if is_deploy { return passive_skill_summary_handler.summary_passive_skill(); }
+            }
+        }
+
+        SummaryPassiveSkillEffect::new(PassiveSkillType::Dummy, vec![PassiveSkillCastingCondition::Dummy],-1)
+    }
+    unsafe fn call_turn_start_passive_skill_repository_handler(&self, unit_card_id:i32, skill_index: i32) -> SummaryPassiveSkillEffect {
+        println!("GameCardActiveSkillRepositoryImpl: call_active_skill_repository_handler()");
+
+        if let Some(inner_map) = self.passive_skill_functions.get(&skill_index) {
+            if let Some(passive_skill_summary_handler) = inner_map.get(&unit_card_id) {
+                let is_deploy = passive_skill_summary_handler.summary_passive_skill()
+                    .get_passive_skill_casting_condition()
+                    .iter().find(|x| x == &&PassiveSkillCastingCondition::TurnStart).is_some();
+                if is_deploy { return passive_skill_summary_handler.summary_passive_skill(); }
+            }
+        }
+
+        SummaryPassiveSkillEffect::new(PassiveSkillType::Dummy, vec![PassiveSkillCastingCondition::Dummy],-1)
     }
 }
