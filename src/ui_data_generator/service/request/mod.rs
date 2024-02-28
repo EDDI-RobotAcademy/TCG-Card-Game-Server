@@ -8,3 +8,4 @@ pub mod generate_opponent_specific_unit_death_data_request;
 pub mod generate_opponent_specific_unit_health_point_data_request;
 pub mod generate_use_my_hand_card_data_request;
 pub mod generate_my_specific_unit_health_point_data_request;
+pub mod generate_opponent_multiple_unit_health_point_data_request;
