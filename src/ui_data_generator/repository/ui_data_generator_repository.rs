@@ -7,6 +7,7 @@ use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCa
 use crate::ui_data_generator::entity::player_field_energy_info::PlayerFieldEnergyInfo;
 use crate::ui_data_generator::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
 use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::ui_data_generator::entity::player_search_card_list_info::PlayerSearchCardListInfo;
 use crate::ui_data_generator::entity::player_search_count_info::PlayerSearchCountInfo;
@@ -55,4 +56,10 @@ pub trait UiDataGeneratorRepository {
         dead_unit_index: i32
     ) -> (PlayerFieldUnitDeathInfo,
           PlayerFieldUnitDeathInfo);
+    async fn generate_opponent_specific_unit_health_point_data(
+        &mut self,
+        opponent_unit_index: i32,
+        opponent_unit_updated_health_point: i32
+    ) -> (PlayerFieldUnitHealthPointInfo,
+          PlayerFieldUnitHealthPointInfo);
 }
