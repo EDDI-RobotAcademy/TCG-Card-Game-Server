@@ -246,6 +246,8 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         updated_unit_energy_map: AttachedEnergyMap
     ) -> (PlayerFieldUnitEnergyInfo, PlayerHandCardUseInfo, PlayerFieldUnitEnergyInfo) {
 
+        println!("UiDataGeneratorRepositoryImpl: generate_use_energy_card_to_my_specific_unit_data()");
+
         let field_unit_energy_info =
             self.get_field_unit_energy_info(unit_index, updated_unit_energy_map);
         let player_field_unit_energy_info_for_response =
@@ -257,6 +259,33 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
 
         (player_field_unit_energy_info_for_response,
          player_hand_use_info_for_notice,
+         player_field_unit_energy_info_for_notice)
+    }
+
+    async fn generate_use_field_energy_to_my_specific_unit_data(
+        &mut self,
+        unit_index: i32,
+        updated_unit_energy_map: AttachedEnergyMap,
+        remaining_field_energy: i32
+    ) -> (PlayerFieldEnergyInfo, PlayerFieldUnitEnergyInfo, PlayerFieldEnergyInfo, PlayerFieldUnitEnergyInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_use_field_energy_to_my_specific_unit_data()");
+
+        let field_unit_energy_info =
+            self.get_field_unit_energy_info(unit_index, updated_unit_energy_map);
+
+        let player_field_energy_info_for_response =
+            self.get_player_field_energy_info(You, remaining_field_energy);
+        let player_field_unit_energy_info_for_response =
+            self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone());
+        let player_field_energy_info_for_notice =
+            self.get_player_field_energy_info(Opponent, remaining_field_energy);
+        let player_field_unit_energy_info_for_notice =
+            self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone());
+
+        (player_field_energy_info_for_response,
+         player_field_unit_energy_info_for_response,
+         player_field_energy_info_for_notice,
          player_field_unit_energy_info_for_notice)
     }
 }
