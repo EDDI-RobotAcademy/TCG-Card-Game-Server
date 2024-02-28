@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::player_search_card_list_info::PlayerSearchCardListInfo;
+use crate::ui_data_generator::entity::player_search_card_list_info::PlayerSearchCardListInfo;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoticeSearchCardResponse {

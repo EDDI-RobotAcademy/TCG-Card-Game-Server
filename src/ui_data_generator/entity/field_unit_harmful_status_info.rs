@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::harmful_effect_info::HarmfulStatusInfo;
+use crate::ui_data_generator::entity::harmful_effect_info::HarmfulStatusInfo;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FieldUnitHarmfulStatusInfo {

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
+use crate::ui_data_generator::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoticeInstantDeathOfSpecificUnitResponse {

@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex::You;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::notify_player_action_info::service::response::notice_search_card_response::NoticeSearchCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
 

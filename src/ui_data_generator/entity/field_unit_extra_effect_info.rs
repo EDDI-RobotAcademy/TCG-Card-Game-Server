@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::extra_effect_info::ExtraEffectInfo;
+use crate::ui_data_generator::entity::extra_effect_info::ExtraEffectInfo;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FieldUnitExtraEffectInfo {

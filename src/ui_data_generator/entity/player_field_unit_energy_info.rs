@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::attached_energy_info::AttachedEnergyInfo;
-use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::attached_energy_info::AttachedEnergyInfo;
+use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlayerFieldUnitEnergyInfo {

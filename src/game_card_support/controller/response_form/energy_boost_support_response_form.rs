@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::attached_energy_info::AttachedEnergyInfo;
-use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex::You;
+use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::notify_player_action_info::service::response::notice_boost_energy_to_specific_unit_response::NoticeBoostEnergyToSpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
 

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
+use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoticeLostDeckCardOfOpponentResponse {

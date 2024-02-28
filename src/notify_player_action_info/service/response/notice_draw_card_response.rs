@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
+use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoticeDrawCardResponse {

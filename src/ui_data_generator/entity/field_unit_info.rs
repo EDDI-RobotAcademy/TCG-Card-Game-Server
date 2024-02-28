@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::attached_energy_info::AttachedEnergyInfo;
-use crate::notify_player_action_info::entity::extra_effect_info::ExtraEffectInfo;
-use crate::notify_player_action_info::entity::harmful_effect_info::HarmfulStatusInfo;
+use crate::ui_data_generator::entity::attached_energy_info::AttachedEnergyInfo;
+use crate::ui_data_generator::entity::extra_effect_info::ExtraEffectInfo;
+use crate::ui_data_generator::entity::harmful_effect_info::HarmfulStatusInfo;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FieldUnitInfo {

@@ -1,13 +1,10 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
-use crate::notify_player_action_info::entity::field_unit_damage_info::FieldUnitDamageInfo;
-use crate::notify_player_action_info::entity::field_unit_death_info::FieldUnitDeathInfo;
-use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
-use crate::notify_player_action_info::entity::player_main_character_damage_info::PlayerMainCharacterDamageInfo;
-use crate::notify_player_action_info::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
-use crate::notify_player_action_info::entity::player_main_character_survival_info::PlayerMainCharacterSurvivalInfo;
+use crate::ui_data_generator::entity::field_unit_damage_info::FieldUnitDamageInfo;
+use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
+use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::NoticeApplyDamageToEveryOpponentUnitResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_opponent_main_character_response::NoticeApplyDamageToOpponentMainCharacterResponse;
 use crate::notify_player_action_info::service::response::notice_lost_deck_card_opponent_response::NoticeLostDeckCardOfOpponentResponse;

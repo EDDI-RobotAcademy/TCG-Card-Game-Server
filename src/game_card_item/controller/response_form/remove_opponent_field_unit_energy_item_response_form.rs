@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::field_unit_damage_info::FieldUnitDamageInfo;
-use crate::notify_player_action_info::entity::field_unit_death_info::FieldUnitDeathInfo;
-use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
-use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::field_unit_damage_info::FieldUnitDamageInfo;
+use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
+use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_specific_opponent_unit_response::NoticeApplyDamageToSpecificOpponentUnitResponse;
 use crate::notify_player_action_info::service::response::notice_remove_energy_of_specific_opponent_unit_response::NoticeRemoveEnergyOfSpecificOpponentUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
