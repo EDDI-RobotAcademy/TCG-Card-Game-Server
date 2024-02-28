@@ -5,7 +5,7 @@ pub struct GameTurn {
 
 impl GameTurn {
     pub fn new() -> Self {
-        GameTurn { turn: 1 }
+        GameTurn { turn: 0 }
     }
 
     pub fn get_turn(&self) -> i32 {

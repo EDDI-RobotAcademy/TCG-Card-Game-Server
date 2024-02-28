@@ -824,20 +824,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            7002 => {
-                // 테스트용 30장 Mulligan 용
-                if let Some(request_form) = test_create_mulligan_request_form(&data) {
-                    let game_hand_controller_mutex = GameHandControllerImpl::get_instance();
-                    let game_hand_controller = game_hand_controller_mutex.lock().await;
 
-                    let response_form = game_hand_controller.execute_mulligan_procedure(request_form).await;
-                    let response_type = Some(ResponseType::CHANGE_FIRST_HAND(response_form));
-
-                    response_type
-                } else {
-                    None
-                }
-            },
             8001 => {
                 // Fake Battle Room Test
                 if let Some(request) = create_fake_battle_room_create_request_form(&data) {
