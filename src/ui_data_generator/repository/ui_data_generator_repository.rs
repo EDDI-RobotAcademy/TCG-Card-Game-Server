@@ -2,6 +2,8 @@ use async_trait::async_trait;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
+use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
+use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::ui_data_generator::entity::player_field_energy_info::PlayerFieldEnergyInfo;
 use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
@@ -38,4 +40,12 @@ pub trait UiDataGeneratorRepository {
           PlayerHandCardUseInfo,
           PlayerDeckCardUseListInfo,
           PlayerFieldUnitEnergyInfo);
+    async fn generate_use_support_card_to_draw_my_deck(
+        &mut self,
+        used_hand_card_id: i32,
+        used_hand_card_kind: KindsEnum,
+        drawn_card_list: Vec<i32>
+    ) -> (PlayerDrawnCardListInfo,
+          PlayerHandCardUseInfo,
+          PlayerDrawCountInfo);
 }

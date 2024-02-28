@@ -13,15 +13,8 @@ impl PlayerDrawCountInfo {
             player_draw_count_map
         }
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use serde_json::json;
-    use super::*;
-
-    #[test]
-    fn test_data() {
-        todo!()
+    pub fn get_player_draw_count_map(&self) -> &HashMap<PlayerIndex, i32> {
+        &self.player_draw_count_map
     }
 }
