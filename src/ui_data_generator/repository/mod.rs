@@ -1,0 +1,2 @@
+pub mod ui_data_generator_repository;
+pub mod ui_data_generator_repository_impl;

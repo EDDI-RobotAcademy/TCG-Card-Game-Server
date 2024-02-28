@@ -14,15 +14,8 @@ impl PlayerHandCardUseInfo {
             player_hand_card_use_map
         }
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use serde_json::json;
-    use super::*;
-
-    #[test]
-    fn test_data() {
-        todo!()
+    pub fn get_player_hand_card_use_map(&self) -> &HashMap<PlayerIndex, UsedHandCardInfo> {
+        &self.player_hand_card_use_map
     }
 }
