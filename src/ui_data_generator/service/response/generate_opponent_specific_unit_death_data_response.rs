@@ -4,15 +4,15 @@ use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GenerateInstantDeathOfYourSpecificUnitDataResponse {
+pub struct GenerateOpponentSpecificUnitDeathDataResponse {
     player_field_unit_death_map_for_response: HashMap<PlayerIndex, FieldUnitDeathInfo>,
     player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
 }
 
-impl GenerateInstantDeathOfYourSpecificUnitDataResponse {
+impl GenerateOpponentSpecificUnitDeathDataResponse {
     pub fn new(player_field_unit_death_map_for_response: HashMap<PlayerIndex, FieldUnitDeathInfo>,
                player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,) -> Self {
-        GenerateInstantDeathOfYourSpecificUnitDataResponse {
+        GenerateOpponentSpecificUnitDeathDataResponse {
             player_field_unit_death_map_for_response,
             player_field_unit_death_map_for_notice,
         }

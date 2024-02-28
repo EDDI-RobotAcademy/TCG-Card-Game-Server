@@ -1,19 +1,18 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GenerateUseMyFieldEnergyDataResponse {
+pub struct GenerateMyFieldEnergyDataResponse {
     player_field_energy_map_for_response: HashMap<PlayerIndex, i32>,
     player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
 }
 
-impl GenerateUseMyFieldEnergyDataResponse {
+impl GenerateMyFieldEnergyDataResponse {
     pub fn new(player_field_energy_map_for_response: HashMap<PlayerIndex, i32>,
                player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,) -> Self {
 
-        GenerateUseMyFieldEnergyDataResponse {
+        GenerateMyFieldEnergyDataResponse {
             player_field_energy_map_for_response,
             player_field_energy_map_for_notice,
         }

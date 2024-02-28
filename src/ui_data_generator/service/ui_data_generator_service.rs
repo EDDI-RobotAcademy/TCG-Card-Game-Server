@@ -1,20 +1,20 @@
 use async_trait::async_trait;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_energy_data_request::GenerateMySpecificUnitEnergyDataRequest;
-use crate::ui_data_generator::service::request::generate_use_my_field_energy_data_request::{GenerateUseMyFieldEnergyDataRequest};
-use crate::ui_data_generator::service::request::generate_instant_death_of_your_specific_unit_data_request::{GenerateInstantDeathOfYourSpecificUnitDataRequest};
+use crate::ui_data_generator::service::request::generate_my_field_energy_data_request::{GenerateMyFieldEnergyDataRequest};
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_death_data_request::{GenerateOpponentSpecificUnitDeathDataRequest};
 use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
-use crate::ui_data_generator::service::request::generate_use_support_card_to_boost_energy_to_my_specific_unit_data_request::GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataRequest;
-use crate::ui_data_generator::service::request::generate_use_support_card_to_draw_my_deck_data_request::GenerateUseSupportCardToDrawMyDeckDataRequest;
-use crate::ui_data_generator::service::request::generate_use_support_card_to_remove_your_field_energy_data_request::GenerateUseSupportCardToRemoveYourFieldEnergyDataRequest;
-use crate::ui_data_generator::service::request::generate_use_support_card_to_search_unit_from_my_deck_data_request::GenerateUseSupportCardToSearchUnitFromMyDeckDataRequest;
+use crate::ui_data_generator::service::request::generate_use_my_deck_card_list_data_request::GenerateUseMyDeckCardListDataRequest;
+use crate::ui_data_generator::service::request::generate_draw_my_deck_data_request::GenerateDrawMyDeckDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_field_energy_data_request::GenerateOpponentFieldEnergyDataRequest;
+use crate::ui_data_generator::service::request::generate_search_my_deck_data_request::GenerateSearchMyDeckDataRequest;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_energy_data_response::GenerateMySpecificUnitEnergyDataResponse;
-use crate::ui_data_generator::service::response::generate_use_my_field_energy_data_response::{GenerateUseMyFieldEnergyDataResponse};
-use crate::ui_data_generator::service::response::generate_instant_death_of_your_specific_unit_data_response::{GenerateInstantDeathOfYourSpecificUnitDataResponse};
+use crate::ui_data_generator::service::response::generate_my_field_energy_data_response::{GenerateMyFieldEnergyDataResponse};
+use crate::ui_data_generator::service::response::generate_opponent_specific_unit_death_data_response::{GenerateOpponentSpecificUnitDeathDataResponse};
 use crate::ui_data_generator::service::response::generate_use_my_hand_card_data_response::GenerateUseMyHandCardDataResponse;
-use crate::ui_data_generator::service::response::generate_use_support_card_to_boost_energy_to_my_specific_unit_data_response::GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataResponse;
-use crate::ui_data_generator::service::response::generate_use_support_card_to_draw_my_deck_data_response::GenerateUseSupportCardToDrawMyDeckDataResponse;
-use crate::ui_data_generator::service::response::generate_use_support_card_to_remove_your_field_energy_data_response::GenerateUseSupportCardToRemoveYourFieldEnergyDataResponse;
-use crate::ui_data_generator::service::response::generate_use_support_card_to_search_unit_from_my_deck_data_response::GenerateUseSupportCardToSearchUnitFromMyDeckDataResponse;
+use crate::ui_data_generator::service::response::generate_use_my_deck_card_list_data_response::GenerateUseMyDeckCardListDataResponse;
+use crate::ui_data_generator::service::response::generate_draw_my_deck_data_response::GenerateDrawMyDeckDataResponse;
+use crate::ui_data_generator::service::response::generate_opponent_field_energy_data_response::GenerateOpponentFieldEnergyDataResponse;
+use crate::ui_data_generator::service::response::generate_search_my_deck_data_response::GenerateSearchMyDeckDataResponse;
 
 #[async_trait]
 pub trait UiDataGeneratorService {
@@ -26,28 +26,28 @@ pub trait UiDataGeneratorService {
         &mut self,
         generate_my_specific_unit_energy_data_request: GenerateMySpecificUnitEnergyDataRequest)
         -> GenerateMySpecificUnitEnergyDataResponse;
-    async fn generate_use_my_field_energy_data(
+    async fn generate_my_field_energy_data(
         &mut self,
-        generate_use_my_field_energy_data_request: GenerateUseMyFieldEnergyDataRequest)
-        -> GenerateUseMyFieldEnergyDataResponse;
-    async fn generate_use_support_card_to_boost_energy_to_my_specific_unit_data(
+        generate_my_field_energy_data_request: GenerateMyFieldEnergyDataRequest)
+        -> GenerateMyFieldEnergyDataResponse;
+    async fn generate_use_my_deck_card_list_data(
         &mut self,
-        generate_use_support_card_to_boost_energy_to_my_specific_unit_data_request: GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataRequest)
-        -> GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataResponse;
-    async fn generate_use_support_card_to_draw_my_deck_data(
+        generate_use_my_deck_card_list_data_request: GenerateUseMyDeckCardListDataRequest)
+        -> GenerateUseMyDeckCardListDataResponse;
+    async fn generate_draw_my_deck_data(
         &mut self,
-        generate_use_support_card_to_draw_my_deck_data_request: GenerateUseSupportCardToDrawMyDeckDataRequest)
-        -> GenerateUseSupportCardToDrawMyDeckDataResponse;
-    async fn generate_use_support_card_to_search_unit_from_my_deck_data(
+        generate_draw_my_deck_data_request: GenerateDrawMyDeckDataRequest)
+        -> GenerateDrawMyDeckDataResponse;
+    async fn generate_search_my_deck_data(
         &mut self,
-        generate_use_support_card_to_search_unit_from_my_deck_data_request: GenerateUseSupportCardToSearchUnitFromMyDeckDataRequest)
-        -> GenerateUseSupportCardToSearchUnitFromMyDeckDataResponse;
-    async fn generate_use_support_card_to_remove_your_field_energy_data(
+        generate_search_my_deck_data_request: GenerateSearchMyDeckDataRequest)
+        -> GenerateSearchMyDeckDataResponse;
+    async fn generate_opponent_field_energy_data(
         &mut self,
-        generate_use_support_card_to_remove_your_field_energy_data_request: GenerateUseSupportCardToRemoveYourFieldEnergyDataRequest)
-        -> GenerateUseSupportCardToRemoveYourFieldEnergyDataResponse;
-    async fn generate_instant_death_of_your_specific_unit_data(
+        generate_opponent_field_energy_data_request: GenerateOpponentFieldEnergyDataRequest)
+        -> GenerateOpponentFieldEnergyDataResponse;
+    async fn generate_opponent_specific_unit_death_data(
         &mut self,
-        generate_instant_death_of_your_specific_unit_data_request: GenerateInstantDeathOfYourSpecificUnitDataRequest)
-        -> GenerateInstantDeathOfYourSpecificUnitDataResponse;
+        generate_opponent_specific_unit_death_data_request: GenerateOpponentSpecificUnitDeathDataRequest)
+        -> GenerateOpponentSpecificUnitDeathDataResponse;
 }
