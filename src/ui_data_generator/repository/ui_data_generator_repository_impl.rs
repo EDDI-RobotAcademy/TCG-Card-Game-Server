@@ -376,4 +376,27 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
          player_hand_use_info_for_notice,
          player_search_count_info_for_notice)
     }
+
+    async fn generate_use_support_card_to_remove_your_field_energy_data(
+        &mut self,
+        used_hand_card_id: i32,
+        used_hand_card_kind: KindsEnum,
+        remaining_field_energy: i32
+    ) -> (PlayerFieldEnergyInfo,
+          PlayerHandCardUseInfo,
+          PlayerFieldEnergyInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_use_support_card_to_remove_your_field_energy_data()");
+
+        let player_field_energy_info_for_response =
+            self.get_player_field_energy_info(You, remaining_field_energy);
+        let player_hand_use_info_for_notice =
+            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_kind);
+        let player_field_energy_info_for_notice =
+            self.get_player_field_energy_info(Opponent, remaining_field_energy);
+
+        (player_field_energy_info_for_response,
+         player_hand_use_info_for_notice,
+         player_field_energy_info_for_notice)
+    }
 }
