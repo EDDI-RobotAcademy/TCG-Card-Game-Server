@@ -248,61 +248,56 @@ impl UiDataGeneratorRepositoryImpl {
 
 #[async_trait]
 impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
-    async fn generate_use_energy_card_to_my_specific_unit_data(
+    async fn generate_use_my_hand_card_data(
         &mut self,
         used_hand_card_id: i32,
-        used_hand_card_kind: KindsEnum,
+        used_hand_card_kind: KindsEnum
+    ) -> (bool,
+          PlayerHandCardUseInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_use_my_hand_card_data()");
+
+        let player_hand_use_info_for_notice =
+            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_kind);
+
+        (true, player_hand_use_info_for_notice)
+    }
+    async fn generate_my_specific_unit_energy_data(
+        &mut self,
         unit_index: i32,
         updated_unit_energy_map: AttachedEnergyMap
     ) -> (PlayerFieldUnitEnergyInfo,
-          PlayerHandCardUseInfo,
           PlayerFieldUnitEnergyInfo) {
 
-        println!("UiDataGeneratorRepositoryImpl: generate_use_energy_card_to_my_specific_unit_data()");
+        println!("UiDataGeneratorRepositoryImpl: generate_my_specific_unit_energy_data()");
 
         let field_unit_energy_info =
             self.get_field_unit_energy_info(unit_index, updated_unit_energy_map);
 
         let player_field_unit_energy_info_for_response =
             self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone());
-        let player_hand_use_info_for_notice =
-            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_kind);
         let player_field_unit_energy_info_for_notice =
             self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone());
 
         (player_field_unit_energy_info_for_response,
-         player_hand_use_info_for_notice,
          player_field_unit_energy_info_for_notice)
     }
 
-    async fn generate_use_field_energy_to_my_specific_unit_data(
+    async fn generate_use_my_field_energy_data(
         &mut self,
-        unit_index: i32,
-        updated_unit_energy_map: AttachedEnergyMap,
         remaining_field_energy: i32
     ) -> (PlayerFieldEnergyInfo,
-          PlayerFieldUnitEnergyInfo,
-          PlayerFieldEnergyInfo,
-          PlayerFieldUnitEnergyInfo) {
+          PlayerFieldEnergyInfo) {
 
-        println!("UiDataGeneratorRepositoryImpl: generate_use_field_energy_to_my_specific_unit_data()");
-
-        let field_unit_energy_info =
-            self.get_field_unit_energy_info(unit_index, updated_unit_energy_map);
+        println!("UiDataGeneratorRepositoryImpl: generate_use_my_field_energy_data()");
 
         let player_field_energy_info_for_response =
             self.get_player_field_energy_info(You, remaining_field_energy);
-        let player_field_unit_energy_info_for_response =
-            self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone());
         let player_field_energy_info_for_notice =
             self.get_player_field_energy_info(Opponent, remaining_field_energy);
-        let player_field_unit_energy_info_for_notice =
-            self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone());
 
         (player_field_energy_info_for_response,
-         player_field_unit_energy_info_for_response,
-         player_field_energy_info_for_notice,
-         player_field_unit_energy_info_for_notice)
+         player_field_energy_info_for_notice)
     }
 
     async fn generate_use_support_card_to_boost_energy_to_my_specific_unit_data(
