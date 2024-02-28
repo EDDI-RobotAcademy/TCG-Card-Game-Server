@@ -11,6 +11,7 @@ use crate::game_card_passive_skill::entity::summary_passive_skill_effect::Summar
 use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect::DarkFire;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
@@ -319,12 +320,36 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         damage: i32,
         extra_status_effect_list: Vec<ExtraStatusEffect>
     ) -> bool {
-        if let Some(mut indexed_unit_reference) = self.find_indexed_unit(opponent_unique_id, opponent_unit_index) {
-            let mut mutable_indexed_unit_reference = indexed_unit_reference.to_owned(); // Assuming GameFieldUnitCard is Clone
+        if let Some(indexed_unit_reference) = self.find_indexed_unit(opponent_unique_id, opponent_unit_index) {
+            println!("indexed_unit_reference: {:?}", indexed_unit_reference);
+            let mut mutable_indexed_unit_reference = indexed_unit_reference.to_owned(); // 테스트용 문구
+            let extra_status_effect_list_clone = extra_status_effect_list.clone(); // 테스트용 문구
+            mutable_indexed_unit_reference.impose_harmful_state_list(extra_status_effect_list_clone); // 테스트용 문구
+            // 피격 유닛에게 DarkFire 효과 보유 시, 지속시간 리셋(피격 유닛의 DarkFire 삭제 후 공격 유닛의 DarkFire 적용)
+            let harmful_status_effect = indexed_unit_reference.to_owned().get_harmful_status_effect_list().to_owned(); // 테스트용 문구
+            println!("harmful_status_effect: {:?}", harmful_status_effect); // 테스트용 문구
+            // let check_indexed = indexed_unit_reference.get_harmful_status_effect_list().get(opponent_unit_index as usize).unwrap().get_harmful_effect().clone();
+
+
+            let harmful_status_effect_list = indexed_unit_reference.get_harmful_status_effect_list().clone();
+            for harmful_status_effect in 0..harmful_status_effect_list.len() {
+                if indexed_unit_reference.get_harmful_status_effect_list().get(harmful_status_effect).unwrap().get_harmful_effect().clone() == ExtraEffect::DarkFire {
+                let mut mutable_indexed_unit_reference = indexed_unit_reference.to_owned(); // Assuming GameFieldUnitCard is Clone
+                    for attacker_extra_statusEffect_index in (0..extra_status_effect_list.len()).rev() {
+                        if *extra_status_effect_list[attacker_extra_statusEffect_index].get_extra_effect() == ExtraEffect::DarkFire {
+                            indexed_unit_reference.get_harmful_status_effect_list().get(harmful_status_effect).expect("e").to_owned().set_harmful_extra_effect_dummy()
+                        }
+                    }
+            }
             mutable_indexed_unit_reference.apply_damage(damage);
             mutable_indexed_unit_reference.impose_harmful_state_list(extra_status_effect_list);
 
+            let harmful_status_list_after_test = mutable_indexed_unit_reference.get_harmful_status_effect_list();
+            println!("game_field_unit_card_after_test: {:?}", mutable_indexed_unit_reference);
+            println!("harmful_status_list_after_test: {:?}", harmful_status_list_after_test);
+
             return true;
+                }
         }
 
         false
@@ -532,6 +557,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
 #[cfg(test)]
 mod tests {
+    use crate::game_field_unit::entity::extra_effect::ExtraEffect::Freeze;
     use super::*;
 
     #[tokio::test]
@@ -999,5 +1025,112 @@ mod tests {
 
         println!("{:?}", game_field_unit_repository.get_game_field_unit_map().get(&1))
     }
+    #[tokio::test]
+    async fn test_attack_target_unit_with_extra_effect() {
+
+        let mut game_field_unit_repository = GameFieldUnitRepositoryImpl::new();
+
+        // game_field_unit_map 생성
+        let account_unique_id = 1;
+        let opponent_unique_id = 2;
+        let opponent_unit_index = 1;
+
+        let new_game_field_unit_map = GameFieldUnit::new();
+        game_field_unit_repository.create_game_field_unit_object(opponent_unique_id);
+        game_field_unit_repository.game_field_unit_map.insert(account_unique_id, new_game_field_unit_map);
+
+        // Add multiple units to the game field
+        for _ in 0..2 {
+            game_field_unit_repository.add_unit_to_game_field(
+                account_unique_id,
+                42,
+                RaceEnum::Chaos,
+                GradeEnum::Legend,
+                35,
+                30,
+                2,
+                false,
+                false,
+                false,
+            );
+        }
+
+        for index in 0..3 {
+            game_field_unit_repository.add_unit_to_game_field(
+                opponent_unique_id,
+                index,
+                RaceEnum::Chaos,
+                GradeEnum::Legend,
+                35,
+                30,
+                2,
+                false,
+                false,
+                false,
+            );
+        }
+
+        // opponent_unique_id, opponent_unique_id 유닛 카드에 harmful_effect_list 셋팅 (특수 효과 공격을 받은 상황을 선행)
+        let mut extra_effect_list: Vec<ExtraStatusEffect> = Vec::new();
+        let harmful_status_effect_01: ExtraStatusEffect = ExtraStatusEffect::new(DarkFire, 6, 5, 4);
+        let harmful_status_effect_02: ExtraStatusEffect = ExtraStatusEffect::new(Freeze, 3, 2, 1);
+        // extra_effect_list.push(harmful_status_effect_01);
+        extra_effect_list.push(harmful_status_effect_02);
+        let mut game_field_unit_card_reference = game_field_unit_repository.find_indexed_unit(opponent_unique_id, opponent_unit_index).unwrap().to_owned();
+        println!("=============================");
+        println!("game_field_unit_card_reference: {:?}", game_field_unit_card_reference);
+        println!("extra_effect_list_first_setting: {:?}", extra_effect_list);
+        println!("=============================");
+
+        println!("game_field_unit_card_reference: {:?}", game_field_unit_card_reference);
+        game_field_unit_card_reference.impose_harmful_state(harmful_status_effect_01.clone());
+
+        println!("Initial state: {:?}", game_field_unit_repository.get_game_field_unit_map());
+
+        // 공격 유닛의 특수효과 셋팅
+        let mut extra_effect_list: Vec<ExtraStatusEffect> = Vec::new();
+        let extra_effect_list_01: ExtraStatusEffect = ExtraStatusEffect::new(DarkFire, 10, 9, 8);
+        let extra_effect_list_02: ExtraStatusEffect = ExtraStatusEffect::new(Freeze, 7, 6, 5);
+        extra_effect_list.push(extra_effect_list_01);
+        extra_effect_list.push(extra_effect_list_02);
+        println!("attacker_extra_effect_list: {:?}", extra_effect_list);
+
+        // 특수 공격 구동
+        let test_game_field_unit_card = game_field_unit_repository.find_indexed_unit(opponent_unique_id, opponent_unit_index).unwrap();
+        println!("test_game_field_unit_card_before_attack: {:?}", test_game_field_unit_card);
+        game_field_unit_repository.attack_target_unit_with_extra_effect(opponent_unique_id, opponent_unit_index, 1, extra_effect_list);
+        let test_game_field_unit_card_after = game_field_unit_repository.find_indexed_unit(opponent_unique_id, opponent_unit_index).unwrap();
+        println!("test_game_field_unit_card_after_attack: {:?}", test_game_field_unit_card_after);
+
+        println!("state after attack: {:?}", game_field_unit_repository.get_game_field_unit_map());
+
+            // let print_harmful_status_card = game_field_unit_repository.find_unit_by_id(opponent_unique_id, opponent_unit_index);
+            // println!("print_harmful_status_card: {:?},", print_harmful_status_card);
+            // let print_harmful_status_list = print_harmful_status_card.expect("e").get_harmful_status_effect_list();
+            // println!("harmful_effect_list_before: {:?}", print_harmful_status_list);
+            //
+            // let unit_card = game_field_unit_repository.find_indexed_unit(opponent_unique_id, opponent_unit_index).unwrap();
+            // println!("unit_card: {:?}", unit_card);
+            // let harmful_status_effect = unit_card.get_harmful_status_effect_list().clone();
+            //
+            // println!("harmful_status_effect: {:?}", harmful_status_effect);
+            //
+            // let mut extra_effect_list: Vec<ExtraStatusEffect> = Vec::new();
+            // let extra_effect_list_01: ExtraStatusEffect = ExtraStatusEffect::new(DarkFire, 10, 9, 8);
+            // let extra_effect_list_02: ExtraStatusEffect = ExtraStatusEffect::new(Freeze, 7, 6, 5);
+            // extra_effect_list.push(extra_effect_list_01);
+            // extra_effect_list.push(extra_effect_list_02);
+            //
+            // // 특수 공격 구동
+            // game_field_unit_repository.attack_target_unit_with_extra_effect(opponent_unique_id, opponent_unit_index, 1, extra_effect_list);
+            //
+            // println!("여기 나오니?");
+            // let unit_card_result = game_field_unit_repository.find_indexed_unit(opponent_unique_id, opponent_unit_index).unwrap();
+            // let harmful_status_effect_result = unit_card_result.get_harmful_status_effect_list().clone();
+            //
+            //
+            // println!("harmful_status_effect_result: {:?}", harmful_status_effect_result);
+        }
+
 
 }

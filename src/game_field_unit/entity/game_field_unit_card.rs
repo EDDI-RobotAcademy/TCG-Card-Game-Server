@@ -398,7 +398,7 @@ mod tests {
             false,
             true
         );
-
+        println!("Before apply_status_effect_damage_before_impose: {:?}", game_field_unit_card);
         let harmful_state = ExtraStatusEffect::new(ExtraEffect::DarkFire, 5, 5, 0);
         game_field_unit_card.impose_harmful_state(harmful_state.clone());
 
