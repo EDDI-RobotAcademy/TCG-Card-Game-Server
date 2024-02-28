@@ -17,7 +17,7 @@ impl GenerateUseMyHandCardDataResponse {
         }
     }
 
-    pub fn is_success(&self) -> bool { self.is_success }
+    pub fn is_success_for_response(&self) -> bool { self.is_success }
 
     pub fn get_player_hand_use_map_for_notice(&self) -> &HashMap<PlayerIndex, UsedHandCardInfo> {
         &self.player_hand_use_map_for_notice
