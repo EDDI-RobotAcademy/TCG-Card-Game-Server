@@ -42,4 +42,8 @@ impl HarmfulStatusEffect {
     pub fn set_reapply_round(&mut self, reapply_round: i32) {
         self.reapply_round = reapply_round
     }
+
+    pub fn set_harmful_extra_effect_dummy(&mut self) {
+        self.effect = ExtraEffect::Dummy;
+    }
 }

@@ -472,7 +472,8 @@ mod tests {
             let battle_finish_service = BattleFinishServiceImpl::get_instance();
             let battle_finish_service_guard = battle_finish_service.lock().await;
 
-            let test_request = BattleFinishRequest::new(redis_token_account_id.to_string(), Winner);
+            let test_request = BattleFinishRequest::new(redis_token_account_id.to_string());
+            // let test_request = BattleFinishRequest::new(redis_token_account_id.to_string(), Winner);
             println!("test_request: {:?}", test_request);
             battle_finish_service_guard
                 .battle_finish_for_player_battle(test_request)
