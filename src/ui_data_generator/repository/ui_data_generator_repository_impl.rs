@@ -244,12 +244,15 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         used_hand_card_kind: KindsEnum,
         unit_index: i32,
         updated_unit_energy_map: AttachedEnergyMap
-    ) -> (PlayerFieldUnitEnergyInfo, PlayerHandCardUseInfo, PlayerFieldUnitEnergyInfo) {
+    ) -> (PlayerFieldUnitEnergyInfo,
+          PlayerHandCardUseInfo,
+          PlayerFieldUnitEnergyInfo) {
 
         println!("UiDataGeneratorRepositoryImpl: generate_use_energy_card_to_my_specific_unit_data()");
 
         let field_unit_energy_info =
             self.get_field_unit_energy_info(unit_index, updated_unit_energy_map);
+
         let player_field_unit_energy_info_for_response =
             self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone());
         let player_hand_use_info_for_notice =
@@ -267,7 +270,10 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         unit_index: i32,
         updated_unit_energy_map: AttachedEnergyMap,
         remaining_field_energy: i32
-    ) -> (PlayerFieldEnergyInfo, PlayerFieldUnitEnergyInfo, PlayerFieldEnergyInfo, PlayerFieldUnitEnergyInfo) {
+    ) -> (PlayerFieldEnergyInfo,
+          PlayerFieldUnitEnergyInfo,
+          PlayerFieldEnergyInfo,
+          PlayerFieldUnitEnergyInfo) {
 
         println!("UiDataGeneratorRepositoryImpl: generate_use_field_energy_to_my_specific_unit_data()");
 
@@ -286,6 +292,42 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_energy_info_for_response,
          player_field_unit_energy_info_for_response,
          player_field_energy_info_for_notice,
+         player_field_unit_energy_info_for_notice)
+    }
+
+    async fn generate_use_support_card_to_boost_energy_to_my_specific_unit(
+        &mut self,
+        used_hand_card_id: i32,
+        used_hand_card_kind: KindsEnum,
+        found_energy_card_id_list: Vec<i32>,
+        unit_index: i32,
+        updated_unit_energy_map: AttachedEnergyMap
+    ) -> (PlayerDeckCardUseListInfo,
+          PlayerFieldUnitEnergyInfo,
+          PlayerHandCardUseInfo,
+          PlayerDeckCardUseListInfo,
+          PlayerFieldUnitEnergyInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_use_support_card_to_boost_energy_to_my_specific_unit()");
+
+        let field_unit_energy_info =
+            self.get_field_unit_energy_info(unit_index, updated_unit_energy_map);
+
+        let player_deck_card_list_use_info_for_response =
+            self.get_player_deck_card_list_use_info(You, found_energy_card_id_list.clone());
+        let player_field_unit_energy_info_for_response =
+            self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone());
+        let player_hand_use_info_for_notice =
+            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_kind);
+        let player_deck_card_list_use_info_for_notice =
+            self.get_player_deck_card_list_use_info(Opponent, found_energy_card_id_list.clone());
+        let player_field_unit_energy_info_for_notice =
+            self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone());
+
+        (player_deck_card_list_use_info_for_response,
+         player_field_unit_energy_info_for_response,
+         player_hand_use_info_for_notice,
+         player_deck_card_list_use_info_for_notice,
          player_field_unit_energy_info_for_notice)
     }
 }
