@@ -273,6 +273,28 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
 
         (true, player_hand_use_info_for_notice)
     }
+
+    async fn generate_my_specific_unit_health_point_data(
+        &mut self,
+        my_unit_index: i32,
+        my_unit_updated_health_point: i32
+    ) -> (PlayerFieldUnitHealthPointInfo,
+          PlayerFieldUnitHealthPointInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_my_specific_unit_health_point_data()");
+
+        let field_unit_health_point_info =
+            self.get_field_unit_health_info(my_unit_index, my_unit_updated_health_point);
+
+        let player_field_unit_health_point_info_for_response =
+            self.get_player_field_unit_health_point_info(You, field_unit_health_point_info.clone());
+        let player_field_unit_health_point_info_for_notice =
+            self.get_player_field_unit_health_point_info(Opponent, field_unit_health_point_info.clone());
+
+        (player_field_unit_health_point_info_for_response,
+         player_field_unit_health_point_info_for_notice)
+    }
+
     async fn generate_my_specific_unit_energy_data(
         &mut self,
         unit_index: i32,

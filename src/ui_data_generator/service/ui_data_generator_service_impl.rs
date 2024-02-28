@@ -13,6 +13,7 @@ use crate::ui_data_generator::service::request::generate_opponent_specific_unit_
 use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
 use crate::ui_data_generator::service::request::generate_use_my_deck_card_list_data_request::{GenerateUseMyDeckCardListDataRequest};
 use crate::ui_data_generator::service::request::generate_draw_my_deck_data_request::{GenerateDrawMyDeckDataRequest};
+use crate::ui_data_generator::service::request::generate_my_specific_unit_health_point_data_request::GenerateMySpecificUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_field_energy_data_request::{GenerateOpponentFieldEnergyDataRequest};
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_health_point_data_request::GenerateOpponentSpecificUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_search_my_deck_data_request::{GenerateSearchMyDeckDataRequest};
@@ -22,6 +23,7 @@ use crate::ui_data_generator::service::response::generate_opponent_specific_unit
 use crate::ui_data_generator::service::response::generate_use_my_hand_card_data_response::GenerateUseMyHandCardDataResponse;
 use crate::ui_data_generator::service::response::generate_use_my_deck_card_list_data_response::{GenerateUseMyDeckCardListDataResponse};
 use crate::ui_data_generator::service::response::generate_draw_my_deck_data_response::{GenerateDrawMyDeckDataResponse};
+use crate::ui_data_generator::service::response::generate_my_specific_unit_health_point_data_response::GenerateMySpecificUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_field_energy_data_response::{GenerateOpponentFieldEnergyDataResponse};
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_health_point_data_response::GenerateOpponentSpecificUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_search_my_deck_data_response::{GenerateSearchMyDeckDataResponse};
@@ -60,7 +62,6 @@ impl UiDataGeneratorServiceImpl {
 #[async_trait]
 impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
 
-    // 내 턴에 핸드 사용 시 활용
     async fn generate_use_my_hand_card_data(
         &mut self,
         generate_use_my_hand_card_data_request: GenerateUseMyHandCardDataRequest)
@@ -94,7 +95,32 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
             info_tuple.1.get_player_hand_card_use_map().clone())
     }
 
-    // 내 유닛
+    async fn generate_my_specific_unit_health_point_data(
+        &mut self, generate_my_specific_unit_health_point_data_request: GenerateMySpecificUnitHealthPointDataRequest)
+        -> GenerateMySpecificUnitHealthPointDataResponse {
+
+        println!("UiDataGeneratorServiceImpl: generate_my_specific_unit_health_point_data()");
+
+        let my_unit_index =
+            generate_my_specific_unit_health_point_data_request.get_my_unit_index();
+        let my_unit_updated_health_point =
+            generate_my_specific_unit_health_point_data_request.get_my_unit_updated_health_point();
+
+        let mut ui_data_generator_repository_guard =
+            self.ui_data_generator_repository.lock().await;
+
+        let info_tuple =
+            ui_data_generator_repository_guard.generate_my_specific_unit_health_point_data(
+                my_unit_index,
+                my_unit_updated_health_point).await;
+
+        drop(ui_data_generator_repository_guard);
+
+        GenerateMySpecificUnitHealthPointDataResponse::new(
+            info_tuple.0.get_player_field_unit_health_point_map().clone(),
+            info_tuple.1.get_player_field_unit_health_point_map().clone())
+    }
+
     async fn generate_my_specific_unit_energy_data(
         &mut self,
         generate_my_specific_unit_energy_data_request: GenerateMySpecificUnitEnergyDataRequest)

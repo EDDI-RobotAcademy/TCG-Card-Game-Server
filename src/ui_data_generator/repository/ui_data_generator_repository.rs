@@ -20,6 +20,12 @@ pub trait UiDataGeneratorRepository {
         used_hand_card_kind: KindsEnum
     ) -> (bool,
           PlayerHandCardUseInfo);
+    async fn generate_my_specific_unit_health_point_data(
+        &mut self,
+        my_unit_index: i32,
+        my_unit_updated_health_point: i32
+    ) -> (PlayerFieldUnitHealthPointInfo,
+          PlayerFieldUnitHealthPointInfo);
     async fn generate_my_specific_unit_energy_data(
         &mut self,
         unit_index: i32,
