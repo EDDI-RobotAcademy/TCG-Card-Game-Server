@@ -1,19 +1,19 @@
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 
 #[derive(Debug)]
-pub struct GenerateUseSupportCardToBoostEnergyToMySpecificUnitRequest {
+pub struct GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataRequest {
     used_hand_card_id: i32,
     found_energy_card_id_list: Vec<i32>,
     unit_index: i32,
     updated_attached_energy_map: AttachedEnergyMap,
 }
 
-impl GenerateUseSupportCardToBoostEnergyToMySpecificUnitRequest {
+impl GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataRequest {
     pub fn new(used_hand_card_id: i32,
                found_energy_card_id_list: Vec<i32>,
                unit_index: i32,
                updated_attached_energy_map: AttachedEnergyMap,) -> Self {
-        GenerateUseSupportCardToBoostEnergyToMySpecificUnitRequest {
+        GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataRequest {
             used_hand_card_id,
             found_energy_card_id_list,
             unit_index,

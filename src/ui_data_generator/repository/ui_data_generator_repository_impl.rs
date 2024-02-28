@@ -295,7 +295,7 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
          player_field_unit_energy_info_for_notice)
     }
 
-    async fn generate_use_support_card_to_boost_energy_to_my_specific_unit(
+    async fn generate_use_support_card_to_boost_energy_to_my_specific_unit_data(
         &mut self,
         used_hand_card_id: i32,
         used_hand_card_kind: KindsEnum,
@@ -331,7 +331,7 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
          player_field_unit_energy_info_for_notice)
     }
 
-    async fn generate_use_support_card_to_draw_my_deck(
+    async fn generate_use_support_card_to_draw_my_deck_data(
         &mut self,
         used_hand_card_id: i32,
         used_hand_card_kind: KindsEnum,
@@ -352,5 +352,28 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_drawn_card_list_info_for_response,
          player_hand_use_info_for_notice,
          player_draw_count_info_for_notice)
+    }
+
+    async fn generate_use_support_card_to_search_unit_from_my_deck_data(
+        &mut self,
+        used_hand_card_id: i32,
+        used_hand_card_kind: KindsEnum,
+        found_card_list: Vec<i32>
+    ) -> (PlayerSearchCardListInfo,
+          PlayerHandCardUseInfo,
+          PlayerSearchCountInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_use_support_card_to_search_unit_from_my_deck()");
+
+        let player_search_card_list_info_for_response =
+            self.get_player_search_card_list_info(You, found_card_list.clone());
+        let player_hand_use_info_for_notice =
+            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_kind);
+        let player_search_count_info_for_notice =
+            self.get_player_search_count_info(Opponent, found_card_list.clone());
+
+        (player_search_card_list_info_for_response,
+         player_hand_use_info_for_notice,
+         player_search_count_info_for_notice)
     }
 }
