@@ -58,4 +58,12 @@ pub trait UiDataGeneratorRepository {
     ) -> (PlayerSearchCardListInfo,
           PlayerHandCardUseInfo,
           PlayerSearchCountInfo);
+    async fn generate_use_support_card_to_remove_your_field_energy_data(
+        &mut self,
+        used_hand_card_id: i32,
+        used_hand_card_kind: KindsEnum,
+        remaining_field_energy: i32
+    ) -> (PlayerFieldEnergyInfo,
+          PlayerHandCardUseInfo,
+          PlayerFieldEnergyInfo);
 }
