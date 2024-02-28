@@ -8,4 +8,6 @@ use crate::game_card_passive_skill::service::response::summary_passive_skill_eff
 #[async_trait]
 pub trait GameCardPassiveSkillService {
     async fn summary_passive_skill(&self, summary_passive_skill_effect_request: SummaryPassiveSkillEffectRequest) -> SummaryPassiveSkillEffectResponse;
-}
+    async fn summary_deploy_passive_skill(&self, summary_passive_skill_effect_request: SummaryPassiveSkillEffectRequest) -> SummaryPassiveSkillEffectResponse;
+    async fn summary_turn_start_passive_skill(&self, summary_deploy_passive_skill_effect_request: SummaryPassiveSkillEffectRequest) -> SummaryPassiveSkillEffectResponse;
+    }
