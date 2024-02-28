@@ -5,6 +5,7 @@ use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeck
 use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::ui_data_generator::entity::player_field_energy_info::PlayerFieldEnergyInfo;
+use crate::ui_data_generator::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
 use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::ui_data_generator::entity::player_search_card_list_info::PlayerSearchCardListInfo;
@@ -66,4 +67,9 @@ pub trait UiDataGeneratorRepository {
     ) -> (PlayerFieldEnergyInfo,
           PlayerHandCardUseInfo,
           PlayerFieldEnergyInfo);
+    async fn generate_instant_death_of_your_specific_unit_data(
+        &mut self,
+        dead_unit_index: i32
+    ) -> (PlayerFieldUnitDeathInfo,
+          PlayerFieldUnitDeathInfo);
 }

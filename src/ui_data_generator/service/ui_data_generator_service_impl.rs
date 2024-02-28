@@ -9,12 +9,14 @@ use crate::ui_data_generator::repository::ui_data_generator_repository::UiDataGe
 use crate::ui_data_generator::repository::ui_data_generator_repository_impl::UiDataGeneratorRepositoryImpl;
 use crate::ui_data_generator::service::request::generate_use_energy_card_to_my_specific_unit_data_request::GenerateUseEnergyCardToMySpecificUnitDataRequest;
 use crate::ui_data_generator::service::request::generate_use_field_energy_to_my_specific_unit_data_request::{GenerateUseFieldEnergyToMySpecificUnitDataRequest};
+use crate::ui_data_generator::service::request::generate_instant_death_of_your_specific_unit_data_request::{GenerateInstantDeathOfYourSpecificUnitDataRequest};
 use crate::ui_data_generator::service::request::generate_use_support_card_to_boost_energy_to_my_specific_unit_data_request::{GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataRequest};
 use crate::ui_data_generator::service::request::generate_use_support_card_to_draw_my_deck_data_request::{GenerateUseSupportCardToDrawMyDeckDataRequest};
 use crate::ui_data_generator::service::request::generate_use_support_card_to_remove_your_field_energy_data_request::GenerateUseSupportCardToRemoveYourFieldEnergyDataRequest;
 use crate::ui_data_generator::service::request::generate_use_support_card_to_search_unit_from_my_deck_data_request::{GenerateUseSupportCardToSearchUnitFromMyDeckDataRequest};
 use crate::ui_data_generator::service::response::generate_use_energy_card_to_my_specific_unit_data_response::GenerateUseEnergyCardToMySpecificUnitDataResponse;
 use crate::ui_data_generator::service::response::generate_use_field_energy_to_my_specific_unit_data_response::{GenerateUseFieldEnergyToMySpecificUnitDataResponse};
+use crate::ui_data_generator::service::response::generate_instant_death_of_your_specific_unit_data_response::{GenerateInstantDeathOfYourSpecificUnitDataResponse};
 use crate::ui_data_generator::service::response::generate_use_support_card_to_boost_energy_to_my_specific_unit_data_response::{GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataResponse};
 use crate::ui_data_generator::service::response::generate_use_support_card_to_draw_my_deck_data_response::{GenerateUseSupportCardToDrawMyDeckDataResponse};
 use crate::ui_data_generator::service::response::generate_use_support_card_to_remove_your_field_energy_data_response::GenerateUseSupportCardToRemoveYourFieldEnergyDataResponse;
@@ -116,6 +118,8 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
                 updated_unit_energy_map.clone(),
                 remaining_field_energy).await;
 
+        drop(ui_data_generator_repository_guard);
+
         GenerateUseFieldEnergyToMySpecificUnitDataResponse::new(
             info_tuple.0.get_player_field_energy_map().clone(),
             info_tuple.1.get_player_field_unit_energy_map().clone(),
@@ -158,6 +162,8 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
                 unit_index,
                 updated_unit_energy_map.clone()).await;
 
+        drop(ui_data_generator_repository_guard);
+
         GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataResponse::new(
             info_tuple.0.get_player_deck_card_use_list_map().clone(),
             info_tuple.1.get_player_field_unit_energy_map().clone(),
@@ -195,6 +201,8 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
                 hand_card_kind_enum,
                 drawn_card_list.clone()).await;
 
+        drop(ui_data_generator_repository_guard);
+
         GenerateUseSupportCardToDrawMyDeckDataResponse::new(
             info_tuple.0.get_player_drawn_card_list_map().clone(),
             info_tuple.1.get_player_hand_card_use_map().clone(),
@@ -229,6 +237,8 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
                 used_hand_card_id,
                 hand_card_kind_enum,
                 found_card_list.clone()).await;
+
+        drop(ui_data_generator_repository_guard);
 
         GenerateUseSupportCardToSearchUnitFromMyDeckDataResponse::new(
             info_tuple.0.get_player_search_card_list_map().clone(),
@@ -265,9 +275,35 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
                 hand_card_kind_enum,
                 remaining_field_energy_of_opponent).await;
 
+        drop(ui_data_generator_repository_guard);
+
         GenerateUseSupportCardToRemoveYourFieldEnergyDataResponse::new(
             info_tuple.0.get_player_field_energy_map().clone(),
             info_tuple.1.get_player_hand_card_use_map().clone(),
             info_tuple.2.get_player_field_energy_map().clone())
+    }
+
+    async fn generate_instant_death_of_your_specific_unit_data(
+        &mut self,
+        generate_instant_death_of_your_specific_unit_data_request: GenerateInstantDeathOfYourSpecificUnitDataRequest)
+        -> GenerateInstantDeathOfYourSpecificUnitDataResponse {
+
+        println!("UiDataGeneratorServiceImpl: generate_instant_death_of_your_specific_unit_data()");
+
+        let opponent_dead_unit_index =
+            generate_instant_death_of_your_specific_unit_data_request.get_dead_unit_index();
+
+        let mut ui_data_generator_repository_guard =
+            self.ui_data_generator_repository.lock().await;
+
+        let info_tuple =
+            ui_data_generator_repository_guard.generate_instant_death_of_your_specific_unit_data(
+                opponent_dead_unit_index).await;
+
+        drop(ui_data_generator_repository_guard);
+
+        GenerateInstantDeathOfYourSpecificUnitDataResponse::new(
+            info_tuple.0.get_player_field_unit_death_map().clone(),
+            info_tuple.1.get_player_field_unit_death_map().clone())
     }
 }

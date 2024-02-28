@@ -60,6 +60,16 @@ impl UiDataGeneratorRepositoryImpl {
         FieldUnitEnergyInfo::new(map)
     }
 
+    fn get_field_unit_death_info_by_index(
+        &self,
+        unit_index: i32,) -> FieldUnitDeathInfo {
+
+        let mut list = Vec::new();
+        list.push(unit_index);
+
+        FieldUnitDeathInfo::new(list)
+    }
+
     fn get_player_hand_card_use_info(&self,
                                      notify_player_index: PlayerIndex,
                                      used_card_id: i32,
@@ -398,5 +408,25 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_energy_info_for_response,
          player_hand_use_info_for_notice,
          player_field_energy_info_for_notice)
+    }
+
+    async fn generate_instant_death_of_your_specific_unit_data(
+        &mut self,
+        dead_unit_index: i32
+    ) -> (PlayerFieldUnitDeathInfo,
+          PlayerFieldUnitDeathInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_instant_death_of_your_specific_unit_data()");
+
+        let field_unit_death_info =
+            self.get_field_unit_death_info_by_index(dead_unit_index);
+
+        let player_field_unit_death_info_for_response =
+            self.get_player_field_unit_death_info(Opponent, field_unit_death_info.clone());
+        let player_field_unit_death_info_for_notice =
+            self.get_player_field_unit_death_info(You, field_unit_death_info.clone());
+
+        (player_field_unit_death_info_for_response,
+         player_field_unit_death_info_for_notice)
     }
 }
