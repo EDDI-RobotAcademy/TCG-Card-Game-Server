@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex::{Opponent};
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::notify_player_action_info::service::response::notice_remove_field_energy_of_opponent_response::NoticeRemoveFieldEnergyOfOpponentResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
 

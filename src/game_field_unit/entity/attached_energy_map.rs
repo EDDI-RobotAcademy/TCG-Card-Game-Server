@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
-use crate::notify_player_action_info::entity::attached_energy_info::AttachedEnergyInfo;
+use crate::ui_data_generator::entity::attached_energy_info::AttachedEnergyInfo;
 
 use serde::{Deserialize, Serialize};
 

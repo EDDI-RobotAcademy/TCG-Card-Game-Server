@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PlayerMainCharacterSurvivalInfo {

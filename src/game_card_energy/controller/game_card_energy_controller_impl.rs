@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
@@ -25,6 +26,8 @@ use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
+use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
+use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
@@ -38,6 +41,7 @@ pub struct GameCardEnergyControllerImpl {
     game_card_energy_service: Arc<AsyncMutex<GameCardEnergyServiceImpl>>,
     notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
+    notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
 }
 
 impl GameCardEnergyControllerImpl {
@@ -48,7 +52,8 @@ impl GameCardEnergyControllerImpl {
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                game_card_energy_service: Arc<AsyncMutex<GameCardEnergyServiceImpl>>,
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
-               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>) -> Self {
+               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
+               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,) -> Self {
 
         GameCardEnergyControllerImpl {
             game_hand_service,
@@ -59,6 +64,7 @@ impl GameCardEnergyControllerImpl {
             game_card_energy_service,
             notify_player_action_service,
             game_protocol_validation_service,
+            notify_player_action_info_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardEnergyControllerImpl>> {
@@ -74,7 +80,8 @@ impl GameCardEnergyControllerImpl {
                             RedisInMemoryServiceImpl::get_instance(),
                             GameCardEnergyServiceImpl::get_instance(),
                             NotifyPlayerActionServiceImpl::get_instance(),
-                            GameProtocolValidationServiceImpl::get_instance())));
+                            GameProtocolValidationServiceImpl::get_instance(),
+                            NotifyPlayerActionInfoServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -220,94 +227,153 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
         drop(battle_room_service_guard);
 
         // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
-        let mut notify_player_action_service_guard =
-            self.notify_player_action_service.lock().await;
+        // let mut notify_player_action_service_guard =
+        //     self.notify_player_action_service.lock().await;
+        //
+        // let notify_to_opponent_you_attached_energy_to_field_unit_response =
+        //     notify_player_action_service_guard.notify_opponent_you_use_energy_card(
+        //         attach_energy_request_form
+        //             .to_notify_opponent_you_use_general_energy_card(
+        //                 opponent_unique_id,
+        //                 usage_hand_card_id,
+        //                 unit_card_index,
+        //                 energy_card_effect_response.get_race() as i32,
+        //                 energy_card_effect_response.get_quantity())).await;
+        //
+        // drop(notify_player_action_service_guard);
 
-        let notify_to_opponent_you_attached_energy_to_field_unit_response =
-            notify_player_action_service_guard.notify_opponent_you_use_energy_card(
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        let response =
+            notify_player_action_info_service_guard.notice_use_general_energy_card_to_my_specific_unit(
                 attach_energy_request_form
-                    .to_notify_opponent_you_use_general_energy_card(
+                    .to_notice_use_general_energy_card_to_my_specific_unit_request(
                         opponent_unique_id,
                         usage_hand_card_id,
                         unit_card_index,
-                        energy_card_effect_response.get_race() as i32,
-                        energy_card_effect_response.get_quantity())).await;
-
-        if !notify_to_opponent_you_attached_energy_to_field_unit_response.is_success() {
-            println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
-            return AttachGeneralEnergyCardResponseForm::new(false)
-        }
+                        updated_energy_map_of_unit)).await;
 
         AttachGeneralEnergyCardResponseForm::new(true)
     }
 
-    async fn request_to_attach_special_energy(&self, attach_special_energy_request_form: AttachSpecialEnergyCardRequestForm) -> AttachSpecialEnergyCardResponseForm {
-        println!("GameCardEnergyControllerImpl: request_to_attach_energy()");
+    async fn request_to_attach_special_energy(
+        &self, attach_special_energy_request_form: AttachSpecialEnergyCardRequestForm)
+        -> AttachSpecialEnergyCardResponseForm {
+
+        println!("GameCardEnergyControllerImpl: request_to_attach_special_energy()");
 
         // 1. 세션 아이디를 검증합니다.
-        let account_unique_id = self.is_valid_session(attach_special_energy_request_form.to_session_validation_request()).await;
+        let account_unique_id = self.is_valid_session(
+            attach_special_energy_request_form.to_session_validation_request()).await;
+
         if account_unique_id == -1 {
             return AttachSpecialEnergyCardResponseForm::new(false)
         }
 
-        // TODO: 세션을 제외하고 애초에 UI에서 숫자로 전송하면 더 좋다.
         let energy_card_id_string = attach_special_energy_request_form.get_energy_card_id();
         let energy_card_id = energy_card_id_string.parse::<i32>().unwrap();
 
-        // 2. GameProtocolValidation Service 호출하여 Hand에 있는지 확인하여 해킹 여부 검증
-        let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
-        let check_protocol_hacking_response = game_protocol_validation_service_guard.check_protocol_hacking(
-            attach_special_energy_request_form.to_check_protocol_hacking_request(account_unique_id, energy_card_id)).await;
+        // 2. GameProtocolValidation Service 호출하여 Hand 에 있는지 확인하여 해킹 여부 검증
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                attach_special_energy_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return AttachSpecialEnergyCardResponseForm::new(false)
+        }
+
+        let check_protocol_hacking_response =
+            game_protocol_validation_service_guard.check_protocol_hacking(
+                attach_special_energy_request_form
+                    .to_check_protocol_hacking_request(account_unique_id, energy_card_id)).await;
+
         if !check_protocol_hacking_response.is_success() {
             println!("해킹범을 검거합니다!");
             return AttachSpecialEnergyCardResponseForm::new(false)
         }
 
-        // 3. CardKinds Service를 호출하여 실제 에너지 카드가 맞는지 확인
-        let is_it_energy_response = game_protocol_validation_service_guard.is_it_energy_card(
-            attach_special_energy_request_form.to_is_it_energy_card_request(energy_card_id)).await;
+        // 3. CardKinds Service 를 호출하여 실제 에너지 카드가 맞는지 확인
+        let is_it_energy_response =
+            game_protocol_validation_service_guard.is_it_energy_card(
+                attach_special_energy_request_form
+                    .to_is_it_energy_card_request(energy_card_id)).await;
+
         if !is_it_energy_response.is_success() {
             println!("에너지 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
             return AttachSpecialEnergyCardResponseForm::new(false)
         }
 
+        drop(game_protocol_validation_service_guard);
+
         // 4. Hand Service 호출하여 에너지 카드 사용
-        let mut game_hand_service_guard = self.game_hand_service.lock().await;
-        let use_game_hand_unit_card_response = game_hand_service_guard.use_energy_card(
-            attach_special_energy_request_form.to_use_game_hand_energy_card_request(account_unique_id, energy_card_id)).await;
+        let mut game_hand_service_guard =
+            self.game_hand_service.lock().await;
+
+        let use_game_hand_unit_card_response =
+            game_hand_service_guard.use_energy_card(
+                attach_special_energy_request_form
+                    .to_use_game_hand_energy_card_request(
+                        account_unique_id, energy_card_id)).await;
+
+        drop(game_hand_service_guard);
+
         let usage_hand_card_id = use_game_hand_unit_card_response.get_found_energy_card_id();
 
         // 5. Special Energy 카드 Summarized Effect 산출
-        let mut game_card_energy_service_guard = self.game_card_energy_service.lock().await;
-        let special_energy_card_effect_response = game_card_energy_service_guard.summary_special_energy_effect(
-            attach_special_energy_request_form.to_summary_special_energy_card_effect_request(energy_card_id)).await;
+        let mut game_card_energy_service_guard =
+            self.game_card_energy_service.lock().await;
 
-        // TODO: 세션을 제외하고 애초에 UI에서 숫자로 전송하면 더 좋다.
+        let special_energy_card_effect_response =
+            game_card_energy_service_guard.summary_special_energy_effect(
+                attach_special_energy_request_form
+                    .to_summary_special_energy_card_effect_request(energy_card_id)).await;
+
+        drop(game_card_energy_service_guard);
+
         let unit_card_index_string = attach_special_energy_request_form.get_unit_card_index();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
 
         // 6. Battle Field 유닛에 특수 에너지 붙이기
-        let mut game_field_unit_service_guard = self.game_field_unit_service.lock().await;
-        let attach_energy_to_field_unit_response = game_field_unit_service_guard.attach_special_energy_to_field_unit_index(
-            attach_special_energy_request_form.to_attach_special_energy_to_field_unit_request(
-                account_unique_id,
-                unit_card_index,
-                special_energy_card_effect_response.get_race(),
-                special_energy_card_effect_response.get_status_effect_list().to_vec())).await;
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
+
+        let attach_energy_to_field_unit_response =
+            game_field_unit_service_guard.attach_special_energy_to_field_unit_index(
+                attach_special_energy_request_form
+                    .to_attach_special_energy_to_field_unit_request(
+                        account_unique_id,
+                        unit_card_index,
+                        special_energy_card_effect_response.get_race(),
+                        special_energy_card_effect_response.get_status_effect_list().to_vec())).await;
+
         if !attach_energy_to_field_unit_response.is_success() {
             println!("필드에 유닛에게 에너지를 부착하는 과정에서 문제가 발생하였습니다.");
             return AttachSpecialEnergyCardResponseForm::new(false)
         }
 
         // 7. 상대방의 고유 id 값을 확보
-        let battle_room_service_guard = self.battle_room_service.lock().await;
-        let find_opponent_by_account_id_response = battle_room_service_guard.find_opponent_by_account_unique_id(
-            attach_special_energy_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+        let battle_room_service_guard =
+            self.battle_room_service.lock().await;
+
+        let find_opponent_by_account_id_response =
+            battle_room_service_guard.find_opponent_by_account_unique_id(
+                attach_special_energy_request_form
+                    .to_find_opponent_by_account_id_request(account_unique_id)).await;
+
+        drop(battle_room_service_guard);
 
         // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
-        let mut notify_player_action_service_guard = self.notify_player_action_service.lock().await;
-        let notify_to_opponent_you_attached_energy_to_field_unit_response = notify_player_action_service_guard
-            .notify_opponent_you_use_energy_card(
+        let mut notify_player_action_service_guard =
+            self.notify_player_action_service.lock().await;
+
+        let notify_to_opponent_you_attached_energy_to_field_unit_response =
+            notify_player_action_service_guard.notify_opponent_you_use_energy_card(
                 attach_special_energy_request_form
                     .to_notify_opponent_you_use_special_energy_card(
                         find_opponent_by_account_id_response.get_opponent_unique_id(),
@@ -316,10 +382,7 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
                         special_energy_card_effect_response.get_race() as i32,
                         special_energy_card_effect_response.get_quantity())).await;
 
-        if !notify_to_opponent_you_attached_energy_to_field_unit_response.is_success() {
-            println!("상대에게 무엇을 했는지 알려주는 과정에서 문제가 발생했습니다.");
-            return AttachSpecialEnergyCardResponseForm::new(false)
-        }
+        drop(notify_player_action_service_guard);
 
         AttachSpecialEnergyCardResponseForm::new(true)
     }

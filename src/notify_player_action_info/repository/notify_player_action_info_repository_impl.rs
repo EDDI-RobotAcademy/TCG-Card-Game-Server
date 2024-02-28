@@ -7,30 +7,31 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::connection_context::repository::connection_context_repository_impl::ConnectionContextRepositoryImpl;
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
-use crate::notify_player_action_info::entity::field_unit_damage_info::FieldUnitDamageInfo;
-use crate::notify_player_action_info::entity::field_unit_energy_info::FieldUnitEnergyInfo;
-use crate::notify_player_action_info::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
-use crate::notify_player_action_info::entity::field_unit_death_info::{FieldUnitDeathInfo};
-use crate::notify_player_action_info::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
-use crate::notify_player_action_info::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
-use crate::notify_player_action_info::entity::player_draw_count_info::PlayerDrawCountInfo;
-use crate::notify_player_action_info::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
-use crate::notify_player_action_info::entity::player_field_energy_info::PlayerFieldEnergyInfo;
-use crate::notify_player_action_info::entity::player_field_unit_damage_info::PlayerFieldUnitDamageInfo;
-use crate::notify_player_action_info::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
-use crate::notify_player_action_info::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
-use crate::notify_player_action_info::entity::player_field_unit_death_info::{PlayerFieldUnitDeathInfo};
-use crate::notify_player_action_info::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex;
-use crate::notify_player_action_info::entity::player_index_enum::PlayerIndex::{Opponent, You};
-use crate::notify_player_action_info::entity::player_main_character_damage_info::PlayerMainCharacterDamageInfo;
-use crate::notify_player_action_info::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
-use crate::notify_player_action_info::entity::player_main_character_survival_info::PlayerMainCharacterSurvivalInfo;
-use crate::notify_player_action_info::entity::player_search_card_list_info::PlayerSearchCardListInfo;
-use crate::notify_player_action_info::entity::player_search_count_info::PlayerSearchCountInfo;
-use crate::notify_player_action_info::entity::used_hand_card_info::UsedHandCardInfo;
+use crate::ui_data_generator::entity::field_unit_damage_info::FieldUnitDamageInfo;
+use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
+use crate::ui_data_generator::entity::field_unit_death_info::{FieldUnitDeathInfo};
+use crate::ui_data_generator::entity::notify_form::notify_form_use_general_energy_card_to_specific_unit::NotifyFormUseGeneralEnergyCardToSpecificUnit;
+use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
+use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
+use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
+use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
+use crate::ui_data_generator::entity::player_field_energy_info::PlayerFieldEnergyInfo;
+use crate::ui_data_generator::entity::player_field_unit_damage_info::PlayerFieldUnitDamageInfo;
+use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
+use crate::ui_data_generator::entity::player_field_unit_death_info::{PlayerFieldUnitDeathInfo};
+use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex::{Opponent, You};
+use crate::ui_data_generator::entity::player_main_character_damage_info::PlayerMainCharacterDamageInfo;
+use crate::ui_data_generator::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
+use crate::ui_data_generator::entity::player_main_character_survival_info::PlayerMainCharacterSurvivalInfo;
+use crate::ui_data_generator::entity::player_search_card_list_info::PlayerSearchCardListInfo;
+use crate::ui_data_generator::entity::player_search_count_info::PlayerSearchCountInfo;
+use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
-use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LOST_LIST, NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_DAMAGE, NOTIFY_FIELD_UNIT_DEATH, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_HAND_CARD_USE, NOTIFY_MAIN_CHARACTER_DAMAGE, NOTIFY_MAIN_CHARACTER_HEALTH_POINT, NOTIFY_MAIN_CHARACTER_SURVIVAL, NOTIFY_SEARCH_COUNT};
+use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LOST_LIST, NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_DAMAGE, NOTIFY_FIELD_UNIT_DEATH, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_HAND_CARD_USE, NOTIFY_MAIN_CHARACTER_DAMAGE, NOTIFY_MAIN_CHARACTER_HEALTH_POINT, NOTIFY_MAIN_CHARACTER_SURVIVAL, NOTIFY_SEARCH_COUNT, NOTIFY_USE_GENERAL_ENERGY_CARD_TO_SPECIFIC_UNIT};
 
 pub struct NotifyPlayerActionInfoRepositoryImpl;
 
@@ -731,5 +732,40 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                     NOTIFY_DECK_CARD_LOST_LIST(player_deck_card_lost_list_info)))).await;
 
         return self.get_player_deck_card_lost_list_info(Opponent, lost_deck_card_list.clone());
+    }
+
+    async fn notice_use_general_energy_card_to_my_specific_unit(
+        &mut self,
+        opponent_unique_id: i32,
+        used_hand_card_info: UsedHandCardInfo,
+        field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_general_energy_card_to_my_specific_unit()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+
+        let notify_form_use_general_energy_card_to_specific_unit =
+            NotifyFormUseGeneralEnergyCardToSpecificUnit::new(Opponent,
+                                                              used_hand_card_info,
+                                                              field_unit_energy_info.clone());
+
+        // 상대에게 일반 에너지 카드 사용 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_USE_GENERAL_ENERGY_CARD_TO_SPECIFIC_UNIT(
+                        notify_form_use_general_energy_card_to_specific_unit)))).await;
+
+        self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone())
     }
 }

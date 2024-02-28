@@ -1,6 +1,7 @@
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::service::request::summary_energy_card_effect_request::SummaryEnergyCardEffectRequest;
+use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
 use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
@@ -10,6 +11,7 @@ use crate::game_protocol_validation::service::request::is_it_energy_card_request
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyOpponentYouUseEnergyCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
 pub struct AttachGeneralEnergyCardRequestForm {
@@ -90,6 +92,20 @@ impl AttachGeneralEnergyCardRequestForm {
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
         FindOpponentByAccountIdRequest::new(
             account_unique_id)
+    }
+
+    pub fn to_notice_use_general_energy_card_to_my_specific_unit_request(
+        &self,
+        opponent_unique_id: i32,
+        used_hand_card_id: i32,
+        unit_index: i32,
+        updated_unit_energy_map: AttachedEnergyMap,) -> NoticeUseGeneralEnergyCardToMySpecificUnitRequest {
+
+        NoticeUseGeneralEnergyCardToMySpecificUnitRequest::new(
+            opponent_unique_id,
+            used_hand_card_id,
+            unit_index,
+            updated_unit_energy_map)
     }
 
     pub fn to_notify_opponent_you_use_general_energy_card(&self, opponent_unique_id: i32, usage_energy_card_id: i32, unit_card_index: i32, energy_race: i32, energy_count: i32) -> NotifyOpponentYouUseEnergyCardRequest {

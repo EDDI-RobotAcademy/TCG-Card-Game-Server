@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
-use crate::notify_player_action_info::entity::player_main_character_damage_info::PlayerMainCharacterDamageInfo;
-use crate::notify_player_action_info::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
-use crate::notify_player_action_info::entity::player_main_character_survival_info::PlayerMainCharacterSurvivalInfo;
+use crate::ui_data_generator::entity::player_main_character_damage_info::PlayerMainCharacterDamageInfo;
+use crate::ui_data_generator::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
+use crate::ui_data_generator::entity::player_main_character_survival_info::PlayerMainCharacterSurvivalInfo;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NoticeApplyDamageToOpponentMainCharacterResponse {
