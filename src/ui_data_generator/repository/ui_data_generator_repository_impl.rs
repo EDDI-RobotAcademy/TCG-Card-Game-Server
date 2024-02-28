@@ -60,7 +60,7 @@ impl UiDataGeneratorRepositoryImpl {
         FieldUnitEnergyInfo::new(map)
     }
 
-    fn get_field_unit_death_info_by_index(
+    fn get_field_unit_death_info(
         &self,
         unit_index: i32,) -> FieldUnitDeathInfo {
 
@@ -68,6 +68,17 @@ impl UiDataGeneratorRepositoryImpl {
         list.push(unit_index);
 
         FieldUnitDeathInfo::new(list)
+    }
+
+    fn get_field_unit_health_info(
+        &self,
+        unit_index: i32,
+        health_point: i32) -> FieldUnitHealthPointInfo {
+
+        let mut map = HashMap::new();
+        map.insert(unit_index, health_point);
+
+        FieldUnitHealthPointInfo::new(map)
     }
 
     fn get_player_hand_card_use_info(&self,
@@ -377,7 +388,7 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         println!("UiDataGeneratorRepositoryImpl: generate_opponent_specific_unit_death_data()");
 
         let field_unit_death_info =
-            self.get_field_unit_death_info_by_index(dead_unit_index);
+            self.get_field_unit_death_info(dead_unit_index);
 
         let player_field_unit_death_info_for_response =
             self.get_player_field_unit_death_info(Opponent, field_unit_death_info.clone());
@@ -386,5 +397,26 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
 
         (player_field_unit_death_info_for_response,
          player_field_unit_death_info_for_notice)
+    }
+
+    async fn generate_opponent_specific_unit_health_point_data(
+        &mut self,
+        opponent_unit_index: i32,
+        opponent_unit_updated_health_point: i32
+    ) -> (PlayerFieldUnitHealthPointInfo,
+          PlayerFieldUnitHealthPointInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_specific_unit_health_point_data()");
+
+        let field_unit_health_point_info =
+            self.get_field_unit_health_info(opponent_unit_index, opponent_unit_updated_health_point);
+
+        let player_field_unit_health_point_info_for_response =
+            self.get_player_field_unit_health_point_info(Opponent, field_unit_health_point_info.clone());
+        let player_field_unit_health_point_info_for_notice =
+            self.get_player_field_unit_health_point_info(You, field_unit_health_point_info.clone());
+
+        (player_field_unit_health_point_info_for_response,
+         player_field_unit_health_point_info_for_notice)
     }
 }
