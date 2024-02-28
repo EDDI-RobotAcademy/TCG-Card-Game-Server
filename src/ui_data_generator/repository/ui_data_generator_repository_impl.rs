@@ -330,4 +330,27 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
          player_deck_card_list_use_info_for_notice,
          player_field_unit_energy_info_for_notice)
     }
+
+    async fn generate_use_support_card_to_draw_my_deck(
+        &mut self,
+        used_hand_card_id: i32,
+        used_hand_card_kind: KindsEnum,
+        drawn_card_list: Vec<i32>
+    ) -> (PlayerDrawnCardListInfo,
+          PlayerHandCardUseInfo,
+          PlayerDrawCountInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_use_support_card_to_draw_my_deck()");
+
+        let player_drawn_card_list_info_for_response =
+            self.get_player_drawn_card_list_info(You, drawn_card_list.clone());
+        let player_hand_use_info_for_notice =
+            self.get_player_hand_card_use_info(Opponent, used_hand_card_id, used_hand_card_kind);
+        let player_draw_count_info_for_notice =
+            self.get_player_draw_count_info(Opponent, drawn_card_list.clone());
+
+        (player_drawn_card_list_info_for_response,
+         player_hand_use_info_for_notice,
+         player_draw_count_info_for_notice)
+    }
 }
