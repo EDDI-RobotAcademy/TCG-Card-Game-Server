@@ -13,4 +13,8 @@ impl PlayerSearchCountInfo {
             player_search_count_map
         }
     }
+
+    pub fn get_player_search_count_map(&self) -> &HashMap<PlayerIndex, i32> {
+        &self.player_search_count_map
+    }
 }

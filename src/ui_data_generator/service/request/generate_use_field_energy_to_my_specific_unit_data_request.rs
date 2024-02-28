@@ -1,17 +1,17 @@
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 
 #[derive(Debug)]
-pub struct GenerateUseFieldEnergyToMySpecificUnitRequest {
+pub struct GenerateUseFieldEnergyToMySpecificUnitDataRequest {
     unit_index: i32,
     updated_unit_energy_map: AttachedEnergyMap,
     remaining_field_energy: i32
 }
 
-impl GenerateUseFieldEnergyToMySpecificUnitRequest {
+impl GenerateUseFieldEnergyToMySpecificUnitDataRequest {
     pub fn new(unit_index: i32,
                updated_unit_energy_map: AttachedEnergyMap,
                remaining_field_energy: i32) -> Self {
-        GenerateUseFieldEnergyToMySpecificUnitRequest {
+        GenerateUseFieldEnergyToMySpecificUnitDataRequest {
             unit_index,
             updated_unit_energy_map,
             remaining_field_energy,

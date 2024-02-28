@@ -5,7 +5,7 @@ use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GenerateUseSupportCardToBoostEnergyToMySpecificUnitResponse {
+pub struct GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataResponse {
     player_deck_card_use_list_map_for_response: HashMap<PlayerIndex, Vec<i32>>,
     player_field_unit_energy_map_for_response: HashMap<PlayerIndex, FieldUnitEnergyInfo>,
     player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
@@ -13,13 +13,13 @@ pub struct GenerateUseSupportCardToBoostEnergyToMySpecificUnitResponse {
     player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>,
 }
 
-impl GenerateUseSupportCardToBoostEnergyToMySpecificUnitResponse {
+impl GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataResponse {
     pub fn new(player_deck_card_use_list_map_for_response: HashMap<PlayerIndex, Vec<i32>>,
                player_field_unit_energy_map_for_response: HashMap<PlayerIndex, FieldUnitEnergyInfo>,
                player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
                player_deck_card_use_list_map_for_notice: HashMap<PlayerIndex, Vec<i32>>,
                player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>,) -> Self {
-        GenerateUseSupportCardToBoostEnergyToMySpecificUnitResponse {
+        GenerateUseSupportCardToBoostEnergyToMySpecificUnitDataResponse {
             player_deck_card_use_list_map_for_response,
             player_field_unit_energy_map_for_response,
             player_hand_use_map_for_notice,
