@@ -11,7 +11,7 @@ use crate::ui_data_generator::entity::field_unit_damage_info::FieldUnitDamageInf
 use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::field_unit_death_info::{FieldUnitDeathInfo};
-use crate::ui_data_generator::entity::notify_form::notify_form_use_general_energy_card_to_specific_unit::NotifyFormUseGeneralEnergyCardToSpecificUnit;
+use crate::notify_player_action_info::entity::notify_form_use_general_energy_card_to_specific_unit::NotifyFormUseGeneralEnergyCardToSpecificUnit;
 use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
