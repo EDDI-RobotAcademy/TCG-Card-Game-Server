@@ -13,24 +13,23 @@ use crate::ui_data_generator::entity::player_search_count_info::PlayerSearchCoun
 
 #[async_trait]
 pub trait UiDataGeneratorRepository {
-    async fn generate_use_energy_card_to_my_specific_unit_data(
+    async fn generate_use_my_hand_card_data(
         &mut self,
         used_hand_card_id: i32,
-        used_hand_card_kind: KindsEnum,
+        used_hand_card_kind: KindsEnum
+    ) -> (bool,
+          PlayerHandCardUseInfo);
+    async fn generate_my_specific_unit_energy_data(
+        &mut self,
         unit_index: i32,
         updated_unit_energy_map: AttachedEnergyMap
     ) -> (PlayerFieldUnitEnergyInfo,
-          PlayerHandCardUseInfo,
           PlayerFieldUnitEnergyInfo);
-    async fn generate_use_field_energy_to_my_specific_unit_data(
+    async fn generate_use_my_field_energy_data(
         &mut self,
-        unit_index: i32,
-        updated_unit_energy_map: AttachedEnergyMap,
         remaining_field_energy: i32
     ) -> (PlayerFieldEnergyInfo,
-          PlayerFieldUnitEnergyInfo,
-          PlayerFieldEnergyInfo,
-          PlayerFieldUnitEnergyInfo);
+          PlayerFieldEnergyInfo);
     async fn generate_use_support_card_to_boost_energy_to_my_specific_unit_data(
         &mut self,
         used_hand_card_id: i32,
