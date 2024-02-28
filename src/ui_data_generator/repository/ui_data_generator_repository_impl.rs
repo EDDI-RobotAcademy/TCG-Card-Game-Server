@@ -81,6 +81,18 @@ impl UiDataGeneratorRepositoryImpl {
         FieldUnitHealthPointInfo::new(map)
     }
 
+    fn get_field_unit_health_info_from_tuple_list(
+        &self,
+        unit_health_point_tuple_list: Vec<(i32, i32)>) -> FieldUnitHealthPointInfo {
+
+        let mut map = HashMap::new();
+        for (unit_index, health_point) in unit_health_point_tuple_list {
+            map.insert(unit_index, health_point);
+        }
+
+        FieldUnitHealthPointInfo::new(map)
+    }
+
     fn get_player_hand_card_use_info(&self,
                                      notify_player_index: PlayerIndex,
                                      used_card_id: i32,
@@ -432,6 +444,26 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
 
         let field_unit_health_point_info =
             self.get_field_unit_health_info(opponent_unit_index, opponent_unit_updated_health_point);
+
+        let player_field_unit_health_point_info_for_response =
+            self.get_player_field_unit_health_point_info(Opponent, field_unit_health_point_info.clone());
+        let player_field_unit_health_point_info_for_notice =
+            self.get_player_field_unit_health_point_info(You, field_unit_health_point_info.clone());
+
+        (player_field_unit_health_point_info_for_response,
+         player_field_unit_health_point_info_for_notice)
+    }
+
+    async fn generate_opponent_multiple_unit_health_point_data(
+        &mut self,
+        opponent_unit_health_point_tuple_list: Vec<(i32, i32)>
+    ) -> (PlayerFieldUnitHealthPointInfo,
+          PlayerFieldUnitHealthPointInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_multiple_unit_health_point_data()");
+
+        let field_unit_health_point_info =
+            self.get_field_unit_health_info_from_tuple_list(opponent_unit_health_point_tuple_list);
 
         let player_field_unit_health_point_info_for_response =
             self.get_player_field_unit_health_point_info(Opponent, field_unit_health_point_info.clone());
