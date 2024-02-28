@@ -86,8 +86,8 @@ impl GameFieldUnitCard {
         &self.extra_status_effect_list
     }
 
-    pub fn get_harmful_status_effect_list(&self) -> &Vec<HarmfulStatusEffect> {
-        &self.harmful_status_effect_list
+    pub fn get_harmful_status_effect_list_mut(&mut self) -> &mut Vec<HarmfulStatusEffect> {
+        &mut self.harmful_status_effect_list
     }
 
     pub fn is_alive(&self) -> bool {
@@ -398,7 +398,6 @@ mod tests {
             false,
             true
         );
-        println!("Before apply_status_effect_damage_before_impose: {:?}", game_field_unit_card);
         let harmful_state = ExtraStatusEffect::new(ExtraEffect::DarkFire, 5, 5, 0);
         game_field_unit_card.impose_harmful_state(harmful_state.clone());
 
