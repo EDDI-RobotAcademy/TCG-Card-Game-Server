@@ -64,6 +64,8 @@ use crate::notify_player_action_info::service::notify_player_action_info_service
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
+use crate::ui_data_generator::service::ui_data_generator_service_impl::UiDataGeneratorServiceImpl;
 
 pub struct GameCardItemControllerImpl {
     game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
@@ -81,6 +83,7 @@ pub struct GameCardItemControllerImpl {
     game_lost_zone_service: Arc<AsyncMutex<GameLostZoneServiceImpl>>,
     card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>,
     notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
+    ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
 }
 
 impl GameCardItemControllerImpl {
@@ -98,7 +101,8 @@ impl GameCardItemControllerImpl {
                game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
                game_lost_zone_service: Arc<AsyncMutex<GameLostZoneServiceImpl>>,
                card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>,
-               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,) -> Self {
+               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
+               ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,) -> Self {
 
         GameCardItemControllerImpl {
             game_hand_service,
@@ -115,7 +119,8 @@ impl GameCardItemControllerImpl {
             game_deck_service,
             game_lost_zone_service,
             card_race_service,
-            notify_player_action_info_service
+            notify_player_action_info_service,
+            ui_data_generator_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardItemControllerImpl>> {
@@ -138,7 +143,8 @@ impl GameCardItemControllerImpl {
                             GameDeckServiceImpl::get_instance(),
                             GameLostZoneServiceImpl::get_instance(),
                             CardRaceServiceImpl::get_instance(),
-                            NotifyPlayerActionInfoServiceImpl::get_instance())));
+                            NotifyPlayerActionInfoServiceImpl::get_instance(),
+                            UiDataGeneratorServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -203,7 +209,8 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         // 1. Redis 에서 토큰을 가지고 있는지 검증
         let account_unique_id = self.is_valid_session(
-            target_death_item_request_form.to_session_validation_request()).await;
+            target_death_item_request_form
+                .to_session_validation_request()).await;
 
         if account_unique_id == -1 {
             println!("Invalid session");
@@ -241,7 +248,9 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         // 4. 실제 아이템 카드가 맞는지 확인
         let is_it_item_response = self.is_it_item_card(
-            target_death_item_request_form.to_is_it_item_card_request(item_card_id)).await;
+            target_death_item_request_form
+                .to_is_it_item_card_request(item_card_id)).await;
+
         if !is_it_item_response {
             println!("아이템 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
             return TargetDeathItemResponseForm::default()
@@ -340,6 +349,30 @@ impl GameCardItemController for GameCardItemControllerImpl {
                             opponent_target_unit_index)).await.get_dead_unit_index();
 
             drop(game_field_unit_service_guard);
+
+            let mut ui_data_generator_service_guard =
+                self.ui_data_generator_service.lock().await;
+
+            let generate_use_my_hand_card_data_response =
+                ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                    target_death_item_request_form
+                        .to_generate_use_my_hand_card_data_request(
+                            usage_hand_card)).await;
+
+            let generate_opponent_specific_unit_health_point_data_response =
+                ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
+                    target_death_item_request_form
+                        .to_generate_opponent_specific_unit_health_point_data_request(
+                            opponent_target_unit_index,
+                            updated_health_point)).await;
+
+            let generate_opponent_specific_unit_death_data_response =
+                ui_data_generator_service_guard.generate_opponent_specific_unit_death_data(
+                    target_death_item_request_form
+                        .to_generate_opponent_specific_unit_death_data_request(
+                            maybe_dead_unit_index)).await;
+
+            drop(ui_data_generator_service_guard);
 
             let mut notify_player_action_info_service_guard =
                 self.notify_player_action_info_service.lock().await;
