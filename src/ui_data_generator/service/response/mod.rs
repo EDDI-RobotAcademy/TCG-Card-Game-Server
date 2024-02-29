@@ -16,3 +16,4 @@ pub mod generate_opponent_specific_unit_energy_data_response;
 pub mod generate_my_main_character_health_point_data_response;
 pub mod generate_opponent_main_character_health_point_data_response;
 pub mod generate_my_main_character_survival_data_response;
+pub mod generate_opponent_main_character_survival_data_response;
