@@ -15,6 +15,7 @@ use crate::ui_data_generator::service::request::generate_use_my_deck_card_list_d
 use crate::ui_data_generator::service::request::generate_draw_my_deck_data_request::{GenerateDrawMyDeckDataRequest};
 use crate::ui_data_generator::service::request::generate_draw_opponent_deck_data_request::GenerateDrawOpponentDeckDataRequest;
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_health_point_data_request::GenerateMyMultipleUnitHealthPointDataRequest;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_death_data_request::GenerateMySpecificUnitDeathDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_health_point_data_request::GenerateMySpecificUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_field_energy_data_request::{GenerateOpponentFieldEnergyDataRequest};
 use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_health_point_data_request::GenerateOpponentMultipleUnitHealthPointDataRequest;
@@ -28,6 +29,7 @@ use crate::ui_data_generator::service::response::generate_use_my_deck_card_list_
 use crate::ui_data_generator::service::response::generate_draw_my_deck_data_response::{GenerateDrawMyDeckDataResponse};
 use crate::ui_data_generator::service::response::generate_draw_opponent_deck_data_response::GenerateDrawOpponentDeckDataResponse;
 use crate::ui_data_generator::service::response::generate_my_multiple_unit_health_point_data_response::GenerateMyMultipleUnitHealthPointDataResponse;
+use crate::ui_data_generator::service::response::generate_my_specific_unit_death_data_response::GenerateMySpecificUnitDeathDataResponse;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_health_point_data_response::GenerateMySpecificUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_field_energy_data_response::{GenerateOpponentFieldEnergyDataResponse};
 use crate::ui_data_generator::service::response::generate_opponent_multiple_unit_health_point_data_response::GenerateOpponentMultipleUnitHealthPointDataResponse;
@@ -343,6 +345,29 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
         drop(ui_data_generator_repository_guard);
 
         GenerateOpponentSpecificUnitDeathDataResponse::new(
+            info_tuple.0.get_player_field_unit_death_map().clone(),
+            info_tuple.1.get_player_field_unit_death_map().clone())
+    }
+    async fn generate_my_specific_unit_death_data(
+        &mut self,
+        generate_my_specific_unit_death_data_request: GenerateMySpecificUnitDeathDataRequest)
+        -> GenerateMySpecificUnitDeathDataResponse {
+
+        println!("UiDataGeneratorServiceImpl: generate_my_specific_unit_death_data()");
+
+        let my_dead_unit_index =
+            generate_my_specific_unit_death_data_request.get_dead_unit_index();
+
+        let mut ui_data_generator_repository_guard =
+            self.ui_data_generator_repository.lock().await;
+
+        let info_tuple =
+            ui_data_generator_repository_guard.generate_my_specific_unit_death_data(
+                my_dead_unit_index).await;
+
+        drop(ui_data_generator_repository_guard);
+
+        GenerateMySpecificUnitDeathDataResponse::new(
             info_tuple.0.get_player_field_unit_death_map().clone(),
             info_tuple.1.get_player_field_unit_death_map().clone())
     }
