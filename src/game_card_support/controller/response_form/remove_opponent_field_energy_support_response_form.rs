@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::notify_player_action_info::service::response::notice_remove_field_energy_of_opponent_response::NoticeRemoveFieldEnergyOfOpponentResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
+use crate::ui_data_generator::service::response::generate_opponent_field_energy_data_response::GenerateOpponentFieldEnergyDataResponse;
+use crate::ui_data_generator::service::response::generate_use_my_hand_card_data_response::GenerateUseMyHandCardDataResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RemoveOpponentFieldEnergySupportResponseForm {
@@ -19,15 +21,14 @@ impl RemoveOpponentFieldEnergySupportResponseForm {
         }
     }
 
-    pub fn from_response(notice_use_hand_card_response: NoticeUseHandCardResponse,
-                         notice_remove_field_energy_of_opponent_response: NoticeRemoveFieldEnergyOfOpponentResponse)
+    pub fn from_response(generate_use_my_hand_card_data_response: GenerateUseMyHandCardDataResponse,
+                         generate_opponent_field_energy_data_response: GenerateOpponentFieldEnergyDataResponse)
         -> RemoveOpponentFieldEnergySupportResponseForm {
 
         RemoveOpponentFieldEnergySupportResponseForm::new(
-            notice_use_hand_card_response.is_success(),
-            notice_remove_field_energy_of_opponent_response
-                .get_player_field_energy_info()
-                .get_player_field_energy_map().clone())
+            generate_use_my_hand_card_data_response.is_success_for_response(),
+            generate_opponent_field_energy_data_response
+                .get_player_field_energy_map_for_response().clone())
     }
 
     pub fn default() -> RemoveOpponentFieldEnergySupportResponseForm {
