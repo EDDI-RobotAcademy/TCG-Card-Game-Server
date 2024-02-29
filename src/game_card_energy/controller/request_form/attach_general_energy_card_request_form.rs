@@ -11,12 +11,13 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_energy_card_request::IsItEnergyCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::NotifyOpponentYouUseEnergyCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_energy_data_request::GenerateMySpecificUnitEnergyDataRequest;
+use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
 
 pub struct AttachGeneralEnergyCardRequestForm {
     session_id: String,
@@ -96,6 +97,25 @@ impl AttachGeneralEnergyCardRequestForm {
     pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
         FindOpponentByAccountIdRequest::new(
             account_unique_id)
+    }
+
+    pub fn to_generate_use_my_hand_card_data_request(
+        &self,
+        used_hand_card_id: i32
+    ) -> GenerateUseMyHandCardDataRequest {
+
+        GenerateUseMyHandCardDataRequest::new(
+            used_hand_card_id)
+    }
+
+    pub fn to_generate_my_specific_unit_energy_data_request(
+        &self,
+        unit_index: i32,
+        updated_unit_energy_map: AttachedEnergyMap) -> GenerateMySpecificUnitEnergyDataRequest {
+
+        GenerateMySpecificUnitEnergyDataRequest::new(
+            unit_index,
+            updated_unit_energy_map)
     }
 
     pub fn to_notice_use_general_energy_card_to_my_specific_unit_request(
