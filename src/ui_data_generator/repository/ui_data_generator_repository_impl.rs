@@ -96,6 +96,7 @@ impl UiDataGeneratorRepositoryImpl {
 
         FieldUnitHealthPointInfo::new(map)
     }
+
     fn get_field_unit_extra_effect_from_tuple_list(
         &self,
         unit_extra_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>) ->FieldUnitExtraEffectInfo {
@@ -107,10 +108,7 @@ impl UiDataGeneratorRepositoryImpl {
         }
 
         FieldUnitExtraEffectInfo::new(map)
-
-
     }
-
 
     fn get_player_hand_card_use_info(&self,
                                      notify_player_index: PlayerIndex,
@@ -355,8 +353,6 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
 
         println!("UiDataGeneratorRepositoryImpl: generate_my_main_character_health_point_data()");
 
-
-
         let player_main_character_health_point_info_for_response =
             self.get_player_main_character_health_point_info(You, my_main_character_updated_health_point.clone());
         let player_main_character_health_point_info_for_notice =
@@ -365,6 +361,7 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_main_character_health_point_info_for_response,
          player_main_character_health_point_info_for_notice)
     }
+
     async fn generate_opponent_main_character_health_point_data(
         &mut self,
         opponent_main_character_updated_health_point: i32
@@ -372,8 +369,6 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
           PlayerMainCharacterHealthPointInfo) {
 
         println!("UiDataGeneratorRepositoryImpl: generate_opponent_main_character_health_point_data()");
-
-
 
         let player_main_character_health_point_info_for_response =
             self.get_player_main_character_health_point_info(Opponent, opponent_main_character_updated_health_point.clone());
@@ -404,6 +399,7 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_energy_info_for_response,
          player_field_unit_energy_info_for_notice)
     }
+
     async fn generate_opponent_specific_unit_energy_data(
         &mut self,
         unit_index: i32,
@@ -475,12 +471,12 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_drawn_card_list_info_for_response,
          player_draw_count_info_for_notice)
     }
+
     async fn generate_draw_opponent_deck_data(
         &mut self,
         drawn_card_list: Vec<i32>
     ) -> (PlayerDrawCountInfo,
-          PlayerDrawnCardListInfo,
-          ) {
+          PlayerDrawnCardListInfo) {
 
         println!("UiDataGeneratorRepositoryImpl: generate_draw_opponent_deck_data()");
 
@@ -546,6 +542,7 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_death_info_for_response,
          player_field_unit_death_info_for_notice)
     }
+
     async fn generate_my_specific_unit_death_data(
         &mut self,
         dead_unit_index: i32
@@ -606,6 +603,7 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_health_point_info_for_response,
          player_field_unit_health_point_info_for_notice)
     }
+
     async fn generate_my_multiple_unit_health_point_data(
         &mut self,
         my_unit_health_point_tuple_list: Vec<(i32, i32)>
@@ -625,6 +623,7 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_health_point_info_for_response,
          player_field_unit_health_point_info_for_notice)
     }
+
     async fn generate_my_main_character_survival_data(
         &mut self,
         my_main_character_status: StatusMainCharacterEnum
@@ -641,13 +640,14 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_main_character_survival_info_for_response,
          player_main_character_survival_info_for_notice)
     }
+
     async fn generate_opponent_main_character_survival_data(
         &mut self,
         my_main_character_status: StatusMainCharacterEnum
     ) -> (PlayerMainCharacterSurvivalInfo,
           PlayerMainCharacterSurvivalInfo) {
-        println!("UiDataGeneratorRepositoryImpl: generate_opponent_main_character_survival_data()");
 
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_main_character_survival_data()");
 
         let player_main_character_survival_info_for_response =
             self.get_player_main_character_survival_info(Opponent, my_main_character_status.clone());
@@ -657,16 +657,19 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_main_character_survival_info_for_response,
          player_main_character_survival_info_for_notice)
     }
+
     async fn generate_my_specific_unit_extra_effect_data(
         &mut self,
         my_extra_effect_unit_index:i32,
         my_unit_extra_effect_list:Vec<ExtraEffect>
     ) -> (PlayerFieldUnitExtraEffectInfo,
           PlayerFieldUnitExtraEffectInfo) {
+
         println!("UiDataGeneratorRepositoryImpl: generate_my_specific_unit_extra_effect_data()");
 
         let field_unit_extra_effect_info =
-                 self.get_field_unit_extra_effect_info(my_extra_effect_unit_index, my_unit_extra_effect_list);
+            self.get_field_unit_extra_effect_info(my_extra_effect_unit_index, my_unit_extra_effect_list);
+
         let player_main_character_survival_info_for_response =
             self.get_player_field_unit_extra_effect_info(You, field_unit_extra_effect_info.clone());
         let player_main_character_survival_info_for_notice =
@@ -675,11 +678,13 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_main_character_survival_info_for_response,
          player_main_character_survival_info_for_notice)
     }
+
     async fn generate_my_multiple_unit_extra_effect_data(
         &mut self,
         my_unit_extra_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
     ) -> (PlayerFieldUnitExtraEffectInfo,
           PlayerFieldUnitExtraEffectInfo) {
+
         println!("UiDataGeneratorRepositoryImpl: generate_my_multiple_unit_extra_effect_data()");
 
         let field_unit_extra_effect_info =
@@ -693,5 +698,4 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_extra_effect_info_for_response,
          player_field_unit_extra_effect_info_for_notice)
     }
-
 }

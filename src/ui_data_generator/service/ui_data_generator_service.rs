@@ -112,10 +112,10 @@ pub trait UiDataGeneratorService {
         &mut self, generate_opponent_multiple_unit_health_point_data_request: GenerateOpponentMultipleUnitHealthPointDataRequest)
         -> GenerateOpponentMultipleUnitHealthPointDataResponse;
     async fn generate_my_main_character_survival_data(
-        &mut self, generate_my_main_character_survial_data_request: GenerateMyMainCharacterSurvivalDataRequest)
+        &mut self, generate_my_main_character_survival_data_request: GenerateMyMainCharacterSurvivalDataRequest)
         -> GenerateMyMainCharacterSurvivalDataResponse;
     async fn generate_opponent_main_character_survival_data(
-        &mut self, generate_opponent_main_character_survial_data_request: GenerateOpponentMainCharacterSurvivalDataRequest)
+        &mut self, generate_opponent_main_character_survival_data_request: GenerateOpponentMainCharacterSurvivalDataRequest)
         -> GenerateOpponentMainCharacterSurvivalDataResponse;
     async fn generate_my_specific_unit_extra_effect_data(
         &mut self, generate_my_specific_unit_extra_effect_data_request: GenerateMySpecificUnitExtraEffectDataRequest)

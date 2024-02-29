@@ -164,6 +164,7 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
             info_tuple.0.get_player_main_character_health_point_map().clone(),
             info_tuple.1.get_player_main_character_health_point_map().clone())
     }
+
     async fn generate_opponent_main_character_health_point_data(
         &mut self, generate_opponent_main_character_health_point_data_request: GenerateOpponentMainCharacterHealthPointDataRequest)
         -> GenerateOpponentMainCharacterHealthPointDataResponse {
@@ -336,6 +337,7 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
             info_tuple.0.get_player_drawn_card_list_map().clone(),
             info_tuple.1.get_player_draw_count_map().clone())
     }
+
     async fn generate_draw_opponent_deck_data(
         &mut self,
         generate_draw_opponent_deck_data_request: GenerateDrawOpponentDeckDataRequest)
@@ -432,6 +434,7 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
             info_tuple.0.get_player_field_unit_death_map().clone(),
             info_tuple.1.get_player_field_unit_death_map().clone())
     }
+
     async fn generate_my_specific_unit_death_data(
         &mut self,
         generate_my_specific_unit_death_data_request: GenerateMySpecificUnitDeathDataRequest)
@@ -506,13 +509,15 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
             info_tuple.0.get_player_field_unit_health_point_map().clone(),
             info_tuple.1.get_player_field_unit_health_point_map().clone())
     }
+
     async fn generate_my_main_character_survival_data(
-        &mut self, generate_my_main_character_survial_data_request: GenerateMyMainCharacterSurvivalDataRequest)
+        &mut self, generate_my_main_character_survival_data_request: GenerateMyMainCharacterSurvivalDataRequest)
         -> GenerateMyMainCharacterSurvivalDataResponse {
-        println!("UiDataGeneratorServiceImpl: generate_my_main_character_survial_data()");
+
+        println!("UiDataGeneratorServiceImpl: generate_my_main_character_survival_data()");
 
         let my_main_character_status =
-            generate_my_main_character_survial_data_request.get_main_character_status();
+            generate_my_main_character_survival_data_request.get_main_character_status();
 
 
         let mut ui_data_generator_repository_guard =
@@ -528,16 +533,16 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
         GenerateMyMainCharacterSurvivalDataResponse::new(
             info_tuple.0.get_player_main_character_survival_map().clone(),
             info_tuple.1.get_player_main_character_survival_map().clone())
-
-
     }
+
     async fn generate_opponent_main_character_survival_data(
-        &mut self, generate_opponent_main_character_survial_data_request: GenerateOpponentMainCharacterSurvivalDataRequest)
+        &mut self, generate_opponent_main_character_survival_data_request: GenerateOpponentMainCharacterSurvivalDataRequest)
         -> GenerateOpponentMainCharacterSurvivalDataResponse {
-        println!("UiDataGeneratorServiceImpl: generate_opponent_main_character_survial_data()");
+
+        println!("UiDataGeneratorServiceImpl: generate_opponent_main_character_survival_data()");
 
         let opponent_main_character_status =
-            generate_opponent_main_character_survial_data_request.get_main_character_status();
+            generate_opponent_main_character_survival_data_request.get_main_character_status();
 
 
         let mut ui_data_generator_repository_guard =
@@ -553,12 +558,12 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
         GenerateOpponentMainCharacterSurvivalDataResponse::new(
             info_tuple.0.get_player_main_character_survival_map().clone(),
             info_tuple.1.get_player_main_character_survival_map().clone())
-
-
     }
+
     async fn generate_my_specific_unit_extra_effect_data(
         &mut self, generate_my_specific_unit_extra_effect_data_request: GenerateMySpecificUnitExtraEffectDataRequest)
         -> GenerateMySpecificUnitExtraEffectDataResponse {
+
         println!("UiDataGeneratorServiceImpl: generate_my_specific_unit_extra_effect_data()");
 
         let my_unit_index =
@@ -581,9 +586,11 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
             info_tuple.0.get_player_field_unit_extra_effect_map().clone(),
             info_tuple.1.get_player_field_unit_extra_effect_map().clone())
     }
+
     async fn generate_my_multiple_unit_extra_effect_data(
         &mut self, generate_my_multiple_unit_extra_effect_data_request: GenerateMyMultipleUnitExtraEffectDataRequest)
         -> GenerateMyMultipleUnitExtraEffectDataResponse {
+
         println!("UiDataGeneratorServiceImpl: generate_my_multiple_unit_extra_effect_data()");
 
         let my_unit_extra_effect_tuple_list =
