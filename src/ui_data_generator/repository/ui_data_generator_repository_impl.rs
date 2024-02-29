@@ -327,6 +327,26 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_energy_info_for_response,
          player_field_unit_energy_info_for_notice)
     }
+    async fn generate_opponent_specific_unit_energy_data(
+        &mut self,
+        unit_index: i32,
+        updated_unit_energy_map: AttachedEnergyMap
+    ) -> (PlayerFieldUnitEnergyInfo,
+          PlayerFieldUnitEnergyInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_specific_unit_energy_data()");
+
+        let field_unit_energy_info =
+            self.get_field_unit_energy_info(unit_index, updated_unit_energy_map);
+
+        let player_field_unit_energy_info_for_response =
+            self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone());
+        let player_field_unit_energy_info_for_notice =
+            self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone());
+
+        (player_field_unit_energy_info_for_response,
+         player_field_unit_energy_info_for_notice)
+    }
 
     async fn generate_use_my_field_energy_data(
         &mut self,
