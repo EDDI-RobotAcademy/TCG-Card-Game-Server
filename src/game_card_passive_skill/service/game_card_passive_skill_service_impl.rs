@@ -69,7 +69,7 @@ impl GameCardPassiveSkillService for GameCardPassiveSkillServiceImpl {
             summary_third_passive_skill_effect_response)
     }
     async fn summary_deploy_passive_skill(&self, summary_deploy_passive_skill_effect_request: SummaryPassiveSkillEffectRequest) -> SummaryPassiveSkillEffectResponse {
-        println!("GameCardPassiveSkillServiceImpl: summary_passive_skill()");
+        println!("GameCardPassiveSkillServiceImpl: summary_deploy_passive_skill()");
 
         let game_card_passive_skill_repository_guard = self.game_card_passive_skill_repository.lock().await;
         let summary_first_passive_skill_effect_response = unsafe {
@@ -99,7 +99,7 @@ impl GameCardPassiveSkillService for GameCardPassiveSkillServiceImpl {
             summary_third_passive_skill_effect_response)
     }
     async fn summary_turn_start_passive_skill(&self, summary_deploy_passive_skill_effect_request: SummaryPassiveSkillEffectRequest) -> SummaryPassiveSkillEffectResponse {
-        println!("GameCardPassiveSkillServiceImpl: summary_passive_skill()");
+        println!("GameCardPassiveSkillServiceImpl: summary_turn_start_passive_skill()");
 
         let game_card_passive_skill_repository_guard = self.game_card_passive_skill_repository.lock().await;
         let summary_first_passive_skill_effect_response = unsafe {

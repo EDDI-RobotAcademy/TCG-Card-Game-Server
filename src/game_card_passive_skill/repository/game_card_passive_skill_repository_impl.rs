@@ -316,7 +316,7 @@ impl GameCardPassiveSkillRepository for GameCardPassiveSkillRepositoryImpl {
         SummaryPassiveSkillEffect::new(PassiveSkillType::Dummy, vec![PassiveSkillCastingCondition::Dummy],-1)
     }
     unsafe fn call_deploy_passive_skill_repository_handler(&self, unit_card_id:i32, skill_index: i32) -> SummaryPassiveSkillEffect {
-        println!("GameCardActiveSkillRepositoryImpl: call_active_skill_repository_handler()");
+        println!("GameCardPassiveSkillRepositoryImpl: call_passive_skill_repository_handler()");
 
         if let Some(inner_map) = self.passive_skill_functions.get(&skill_index) {
             if let Some(passive_skill_summary_handler) = inner_map.get(&unit_card_id) {
@@ -330,7 +330,7 @@ impl GameCardPassiveSkillRepository for GameCardPassiveSkillRepositoryImpl {
         SummaryPassiveSkillEffect::new(PassiveSkillType::Dummy, vec![PassiveSkillCastingCondition::Dummy],-1)
     }
     unsafe fn call_turn_start_passive_skill_repository_handler(&self, unit_card_id:i32, skill_index: i32) -> SummaryPassiveSkillEffect {
-        println!("GameCardActiveSkillRepositoryImpl: call_active_skill_repository_handler()");
+        println!("GameCardPassiveSkillRepositoryImpl: call_passive_skill_repository_handler()");
 
         if let Some(inner_map) = self.passive_skill_functions.get(&skill_index) {
             if let Some(passive_skill_summary_handler) = inner_map.get(&unit_card_id) {
