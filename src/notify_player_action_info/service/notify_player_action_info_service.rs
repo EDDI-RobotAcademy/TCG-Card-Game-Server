@@ -15,6 +15,7 @@ use crate::notify_player_action_info::service::request::notice_remove_field_ener
 use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
 use crate::notify_player_action_info::service::request::notice_use_draw_support_card_request::NoticeUseDrawSupportCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_energy_boost_support_card_to_my_specific_unit_request::NoticeUseEnergyBoostSupportCardToSpecificUnitRequest;
+use crate::notify_player_action_info::service::request::notice_use_field_energy_increase_item_card_request::NoticeUseFieldEnergyIncreaseItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_field_energy_remove_support_card_request::NoticeUseFieldEnergyRemoveSupportCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_field_energy_to_my_specific_unit_request::NoticeUseFieldEnergyToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
@@ -38,6 +39,7 @@ use crate::notify_player_action_info::service::response::notice_remove_field_ene
 use crate::notify_player_action_info::service::response::notice_search_card_response::{NoticeSearchCardResponse};
 use crate::notify_player_action_info::service::response::notice_use_draw_support_card_response::NoticeUseDrawSupportCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_energy_boost_support_card_to_my_specific_unit_response::NoticeUseEnergyBoostSupportCardToSpecificUnitResponse;
+use crate::notify_player_action_info::service::response::notice_use_field_energy_increase_item_card_response::NoticeUseFieldEnergyIncreaseItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_field_energy_remove_support_card_response::NoticeUseFieldEnergyRemoveSupportCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_field_energy_to_my_specific_unit_response::NoticeUseFieldEnergyToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_general_energy_card_to_my_specific_unit_response::NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
@@ -115,7 +117,7 @@ pub trait NotifyPlayerActionInfoService {
     async fn notice_use_general_energy_card_to_my_specific_unit(
         &mut self, notice_use_general_energy_card_to_my_specific_unit_request: NoticeUseGeneralEnergyCardToMySpecificUnitRequest)
         -> NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
-    async fn notice_use_energy_boost_support_card_to_specific_unit(
+    async fn notice_use_energy_boost_support_card_to_my_specific_unit(
         &mut self,
         notice_use_energy_boost_support_card_to_specific_unit_request: NoticeUseEnergyBoostSupportCardToSpecificUnitRequest)
         -> NoticeUseEnergyBoostSupportCardToSpecificUnitResponse;
@@ -135,4 +137,8 @@ pub trait NotifyPlayerActionInfoService {
         &mut self,
         notice_use_instant_death_item_card_to_opponent_specific_unit_request: NoticeUseInstantDeathItemCardToOpponentSpecificUnitRequest)
         -> NoticeUseInstantDeathItemCardToOpponentSpecificUnitResponse;
+    async fn notice_use_field_energy_increase_item_card(
+        &mut self,
+        notice_use_field_energy_increase_item_card_request: NoticeUseFieldEnergyIncreaseItemCardRequest)
+        -> NoticeUseFieldEnergyIncreaseItemCardResponse;
 }
