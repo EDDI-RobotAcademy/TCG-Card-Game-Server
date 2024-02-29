@@ -28,11 +28,13 @@ pub trait NotifyPlayerActionInfoRepository {
         opponent_unique_id: i32,
         used_hand_card_id: i32,
         used_hand_card_type: KindsEnum) -> bool;
-    async fn notify_player_use_field_energy_to_unit(
+    // TODO: Fix Completed
+    async fn notice_use_field_energy_to_unit(
         &mut self,
         opponent_unique_id: i32,
-        field_unit_energy_info: FieldUnitEnergyInfo,
-        remaining_field_energy: i32) -> (PlayerFieldUnitEnergyInfo, PlayerFieldEnergyInfo);
+        player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
+        player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>
+    ) -> bool;
     async fn notify_player_use_deck_card_list(
         &mut self,
         opponent_unique_id: i32,
