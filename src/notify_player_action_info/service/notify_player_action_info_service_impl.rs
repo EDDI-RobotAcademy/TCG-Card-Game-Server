@@ -31,6 +31,7 @@ use crate::notify_player_action_info::service::request::notice_lost_deck_card_of
 use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_opponent_unit_request::{NoticeRemoveEnergyOfSpecificOpponentUnitRequest};
 use crate::notify_player_action_info::service::request::notice_remove_field_energy_of_opponent_request::{NoticeRemoveFieldEnergyOfOpponentRequest};
 use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
+use crate::notify_player_action_info::service::request::notice_use_energy_boost_support_card_to_my_specific_unit_request::NoticeUseEnergyBoostSupportCardToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_field_energy_to_specific_unit_request::NoticeUseFieldEnergyToSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
@@ -48,6 +49,7 @@ use crate::notify_player_action_info::service::response::notice_lost_deck_card_o
 use crate::notify_player_action_info::service::response::notice_remove_energy_of_specific_opponent_unit_response::{NoticeRemoveEnergyOfSpecificOpponentUnitResponse};
 use crate::notify_player_action_info::service::response::notice_remove_field_energy_of_opponent_response::{NoticeRemoveFieldEnergyOfOpponentResponse};
 use crate::notify_player_action_info::service::response::notice_search_card_response::{NoticeSearchCardResponse};
+use crate::notify_player_action_info::service::response::notice_use_energy_boost_support_card_to_my_specific_unit_response::NoticeUseEnergyBoostSupportCardToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_field_energy_to_specific_unit_response::NoticeUseFieldEnergyToSpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_general_energy_card_to_my_specific_unit_response::NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
@@ -597,5 +599,27 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         drop(notify_player_action_info_repository_guard);
 
         NoticeUseGeneralEnergyCardToMySpecificUnitResponse::from_info(my_field_unit_energy_info)
+    }
+
+    async fn notice_use_energy_boost_support_card_to_my_specific_unit(
+        &mut self,
+        notice_use_energy_boost_support_card_to_my_specific_unit_request: NoticeUseEnergyBoostSupportCardToMySpecificUnitRequest)
+        -> NoticeUseEnergyBoostSupportCardToMySpecificUnitResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_use_energy_boost_support_card_to_my_specific_unit()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_use_energy_boost_support_to_my_specific_unit(
+                notice_use_energy_boost_support_card_to_my_specific_unit_request.get_opponent_unique_id(),
+                notice_use_energy_boost_support_card_to_my_specific_unit_request.get_player_hand_use_map_for_notice().clone(),
+                notice_use_energy_boost_support_card_to_my_specific_unit_request.get_player_deck_card_use_list_map_for_notice().clone(),
+                notice_use_energy_boost_support_card_to_my_specific_unit_request.get_player_field_unit_energy_map().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeUseEnergyBoostSupportCardToMySpecificUnitResponse::new(response)
     }
 }
