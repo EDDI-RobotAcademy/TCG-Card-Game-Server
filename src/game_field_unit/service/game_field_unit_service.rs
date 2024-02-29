@@ -25,6 +25,7 @@ use crate::game_field_unit::service::request::get_current_health_point_of_all_fi
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
+use crate::game_field_unit::service::request::reset_all_passive_of_unit_request::ResetAllPassiveOfUnitRequest;
 use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
@@ -52,6 +53,7 @@ use crate::game_field_unit::service::response::get_current_health_point_of_all_f
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_unique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
 use crate::game_field_unit::service::response::judge_death_of_every_unit_response::JudgeDeathOfEveryUnitResponse;
+use crate::game_field_unit::service::response::reset_all_passive_of_unit_response::ResetAllPassiveOfUnitResponse;
 use crate::game_field_unit::service::response::reset_turn_action_of_all_field_unit_response::ResetTurnActionOfAllFieldUnitResponse;
 
 #[async_trait]
@@ -82,4 +84,5 @@ pub trait GameFieldUnitService {
     async fn get_game_field_unit_card_of_account_unique_id(&mut self, get_game_field_unit_map_to_service_request: GetGameFieldUnitCardOfAccountUniqueIdRequest) -> GetGameFieldUnitCardOfAccountUniqueIdResponse;
     async fn acquire_unit_passive_status_list(&mut self, acquire_unit_passive_status_list_request: AcquireUnitPassiveStatusListRequest) -> AcquireUnitPassiveStatusListResponse;
     async fn acquire_unit_harmful_status_effect(&mut self, acquire_unit_harmful_status_effect_request: AcquireUnitHarmfulStatusEffectRequest) -> AcquireUnitHarmfulStatusEffectResponse;
+    async fn reset_all_passive_of_unit(&mut self, reset_all_passive_of_unit: ResetAllPassiveOfUnitRequest) -> ResetAllPassiveOfUnitResponse;
 }
