@@ -121,19 +121,13 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
     }
 
     fn find_indexed_unit(&self, account_unique_id: i32, unit_card_index: i32) -> Option<&GameFieldUnitCard> {
+        println!("GameFieldUnitRepositoryImpl: find_indexed_unit()");
+
         if let Some(game_field_unit) = self.game_field_unit_map.get(&account_unique_id) {
-            if Some(game_field_unit.find_unit_by_index(unit_card_index as usize)).is_some() {
-                if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
-            Some(game_field_unit.find_unit_by_index(unit_card_index as usize))
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        } else {
-            None
+            return Some(game_field_unit.find_unit_by_index(unit_card_index as usize))
         }
+
+        None
     }
 
     fn attach_multiple_energy_to_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: i32, race_enum: RaceEnum, quantity: i32) -> bool {
@@ -141,9 +135,8 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
-                return false
+                game_field_unit.add_energy_to_indexed_unit(unit_card_index as usize, RaceEnumValue::from(race_enum as i32), quantity);
             }
-            game_field_unit.add_energy_to_indexed_unit(unit_card_index as usize, RaceEnumValue::from(race_enum as i32), quantity);
             return true
         }
 
@@ -154,13 +147,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             if game_field_unit.find_unit_by_index(unit_card_index).get_card() != -1 {
                 game_field_unit.increase_max_health_of_indexed_unit(unit_card_index, amount);
-                true
-            } else {
-                false
+                return true
             }
-        } else {
-            false
         }
+        false
     }
 
     // TODO: 필드 위 모든 유닛의 아이디 값을 다룰 수 있으므로 Naming 이 바뀌면 더 좋을 것
@@ -172,6 +162,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
                 return target_unit_card.get_card();
             }
         }
+
         -1
     }
 
@@ -336,12 +327,6 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
     ) -> &Vec<ExtraStatusEffect> {
         let indexed_unit_reference = self.find_indexed_unit(account_unique_id, attacker_unit_index).unwrap();
         return indexed_unit_reference.get_extra_status_effect_list();
-    }
-
-    fn acquire_unit_harmful_status_effect_list_by_index(&mut self, opponent_unique_id: i32, opponent_unit_index: i32) -> &Vec<HarmfulStatusEffect> {
-        let mut indexed_unit_reference = self.get_game_field_unit_map().get_mut(&opponent_unique_id).unwrap();
-        let mut indexed_unit_card_reference = indexed_unit_reference.get_all_field_unit_list_mut().get_mut(opponent_unit_index as usize).unwrap();
-        return indexed_unit_card_reference.get_harmful_status_effect_list_mut();
     }
 
     fn attack_target_unit_with_extra_effect(
@@ -589,6 +574,12 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
 
         return game_field_unit_card_list[unit_index as usize].is_alive()
+    }
+
+    fn acquire_unit_harmful_status_effect_list_by_index(&mut self, opponent_unique_id: i32, opponent_unit_index: i32) -> &Vec<HarmfulStatusEffect> {
+        let mut indexed_unit_reference = self.get_game_field_unit_map().get_mut(&opponent_unique_id).unwrap();
+        let mut indexed_unit_card_reference = indexed_unit_reference.get_all_field_unit_list_mut().get_mut(opponent_unit_index as usize).unwrap();
+        return indexed_unit_card_reference.get_harmful_status_effect_list_mut();
     }
 
     fn reset_all_passive_of_unit(
