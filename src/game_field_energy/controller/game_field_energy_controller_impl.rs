@@ -1,15 +1,11 @@
 use std::sync::Arc;
 use async_trait::async_trait;
-use diesel::IntoSql;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
-use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
-use crate::game_card_energy::service::game_card_energy_service_impl::GameCardEnergyServiceImpl;
-use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_field_energy::controller::game_field_energy_controller::GameFieldEnergyController;
 use crate::game_field_energy::controller::request_form::attach_field_energy_to_field_unit_request_form::AttachFieldEnergyToFieldUnitRequestForm;
 use crate::game_field_energy::controller::response_form::attach_field_energy_to_field_unit_response_form::AttachFieldEnergyToFieldUnitResponseForm;
@@ -17,16 +13,15 @@ use crate::game_field_energy::service::game_field_energy_service::GameFieldEnerg
 use crate::game_field_energy::service::game_field_energy_service_impl::GameFieldEnergyServiceImpl;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
-use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
-use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
-use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
 use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
+use crate::ui_data_generator::service::ui_data_generator_service_impl::UiDataGeneratorServiceImpl;
 
 pub struct GameFieldEnergyControllerImpl {
     game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
@@ -35,6 +30,7 @@ pub struct GameFieldEnergyControllerImpl {
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
     notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
+    ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
 }
 
 impl GameFieldEnergyControllerImpl {
@@ -43,7 +39,8 @@ impl GameFieldEnergyControllerImpl {
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
-               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>) -> Self {
+               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
+               ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,) -> Self {
 
         GameFieldEnergyControllerImpl {
             game_field_energy_service,
@@ -52,6 +49,7 @@ impl GameFieldEnergyControllerImpl {
             redis_in_memory_service,
             notify_player_action_info_service,
             game_protocol_validation_service,
+            ui_data_generator_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameFieldEnergyControllerImpl>> {
@@ -65,7 +63,8 @@ impl GameFieldEnergyControllerImpl {
                             GameFieldUnitServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
                             NotifyPlayerActionInfoServiceImpl::get_instance(),
-                            GameProtocolValidationServiceImpl::get_instance())));
+                            GameProtocolValidationServiceImpl::get_instance(),
+                            UiDataGeneratorServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -88,11 +87,11 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
         println!("GameFieldEnergyControllerImpl: request_to_attach_field_energy_to_field_unit()");
 
         // 1. 세션 아이디를 검증합니다.
-        let account_unique_id =
-            self.is_valid_session(
-                attach_field_energy_to_field_unit_request_form.to_session_validation_request()).await;
+        let account_unique_id = self.is_valid_session(
+            attach_field_energy_to_field_unit_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
+            println!("세션이 존재하지 않습니다.");
             return AttachFieldEnergyToFieldUnitResponseForm::default()
         }
 
@@ -199,7 +198,25 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
         drop(game_field_unit_service_guard);
         drop(game_field_energy_service_guard);
 
-        // 8. 상대방의 고유 아이디를 가져옵니다.
+        // 8. UI 로 전송할 데이터를 가공합니다.
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_my_field_energy_data_response =
+            ui_data_generator_service_guard.generate_my_field_energy_data(
+                attach_field_energy_to_field_unit_request_form
+                    .to_generate_my_field_energy_data_request(remaining_field_energy_count)).await;
+
+        let generate_my_specific_unit_energy_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_energy_data(
+                attach_field_energy_to_field_unit_request_form
+                    .to_generate_my_specific_unit_energy_data_request(
+                        unit_card_index,
+                        updated_energy_map)).await;
+
+        drop(ui_data_generator_service_guard);
+
+        // 9. 상대방의 고유 아이디를 가져옵니다.
         let mut battle_room_service_guard =
             self.battle_room_service.lock().await;
 
@@ -211,22 +228,27 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
 
         drop(battle_room_service_guard);
 
-        // 9. 필드 에너지 사용에 따른 변화를 상대방에게 알립니다.
+        // 10. 필드 에너지 사용에 따른 변화를 상대방에게 알립니다.
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        let notice_use_field_energy_to_specific_unit_response =
-            notify_player_action_info_service_guard.notice_use_field_energy_to_specific_unit(
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_field_energy_to_my_specific_unit(
                 attach_field_energy_to_field_unit_request_form
-                    .to_notice_use_field_energy_to_unit_request(
+                    .to_notice_use_field_energy_to_my_specific_unit_request(
                         opponent_unique_id,
-                        unit_card_index,
-                        updated_energy_map,
-                        remaining_field_energy_count)).await;
+                        generate_my_field_energy_data_response
+                            .get_player_field_energy_map_for_notice().clone(),
+                        generate_my_specific_unit_energy_data_response
+                            .get_player_field_unit_energy_map_for_notice().clone())).await;
+
+        println!("notice_response: {:?}", notice_response);
 
         drop(notify_player_action_info_service_guard);
 
+        // 11. 응답을 반환합니다.
         AttachFieldEnergyToFieldUnitResponseForm::from_response(
-            notice_use_field_energy_to_specific_unit_response)
+            generate_my_field_energy_data_response,
+            generate_my_specific_unit_energy_data_response)
     }
 }
