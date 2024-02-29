@@ -12,3 +12,4 @@ pub mod generate_opponent_multiple_unit_health_point_data_request;
 pub mod generate_draw_opponent_deck_data_request;
 pub mod generate_my_multiple_unit_health_point_data_request;
 pub mod generate_my_specific_unit_death_data_request;
+pub mod generate_opponent_specific_unit_energy_data_request;

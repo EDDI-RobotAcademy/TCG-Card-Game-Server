@@ -11,6 +11,7 @@ use crate::ui_data_generator::service::request::generate_my_specific_unit_death_
 use crate::ui_data_generator::service::request::generate_my_specific_unit_health_point_data_request::GenerateMySpecificUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_field_energy_data_request::GenerateOpponentFieldEnergyDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_health_point_data_request::GenerateOpponentMultipleUnitHealthPointDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_energy_data_request::GenerateOpponentSpecificUnitEnergyDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_health_point_data_request::GenerateOpponentSpecificUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_search_my_deck_data_request::GenerateSearchMyDeckDataRequest;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_energy_data_response::GenerateMySpecificUnitEnergyDataResponse;
@@ -25,6 +26,7 @@ use crate::ui_data_generator::service::response::generate_my_specific_unit_death
 use crate::ui_data_generator::service::response::generate_my_specific_unit_health_point_data_response::GenerateMySpecificUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_field_energy_data_response::GenerateOpponentFieldEnergyDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_multiple_unit_health_point_data_response::GenerateOpponentMultipleUnitHealthPointDataResponse;
+use crate::ui_data_generator::service::response::generate_opponent_specific_unit_energy_data_response::GenerateOpponentSpecificUnitEnergyDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_health_point_data_response::GenerateOpponentSpecificUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_search_my_deck_data_response::GenerateSearchMyDeckDataResponse;
 
@@ -45,6 +47,10 @@ pub trait UiDataGeneratorService {
         &mut self,
         generate_my_specific_unit_energy_data_request: GenerateMySpecificUnitEnergyDataRequest)
         -> GenerateMySpecificUnitEnergyDataResponse;
+    async fn generate_opponent_specific_unit_energy_data(
+        &mut self,
+        generate_opponent_specific_unit_energy_data_request: GenerateOpponentSpecificUnitEnergyDataRequest)
+        -> GenerateOpponentSpecificUnitEnergyDataResponse;
     async fn generate_my_field_energy_data(
         &mut self,
         generate_my_field_energy_data_request: GenerateMyFieldEnergyDataRequest)
@@ -69,6 +75,7 @@ pub trait UiDataGeneratorService {
         &mut self,
         generate_opponent_field_energy_data_request: GenerateOpponentFieldEnergyDataRequest)
         -> GenerateOpponentFieldEnergyDataResponse;
+
     async fn generate_opponent_specific_unit_death_data(
         &mut self,
         generate_opponent_specific_unit_death_data_request: GenerateOpponentSpecificUnitDeathDataRequest)

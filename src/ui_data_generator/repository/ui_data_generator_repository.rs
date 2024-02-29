@@ -37,6 +37,12 @@ pub trait UiDataGeneratorRepository {
         updated_unit_energy_map: AttachedEnergyMap
     ) -> (PlayerFieldUnitEnergyInfo,
           PlayerFieldUnitEnergyInfo);
+    async fn generate_opponent_specific_unit_energy_data(
+        &mut self,
+        unit_index: i32,
+        updated_unit_energy_map: AttachedEnergyMap
+    ) -> (PlayerFieldUnitEnergyInfo,
+          PlayerFieldUnitEnergyInfo);
     async fn generate_use_my_field_energy_data(
         &mut self,
         remaining_field_energy: i32
