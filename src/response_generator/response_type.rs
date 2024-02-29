@@ -58,6 +58,7 @@ use crate::notify_player_action::entity::notify_opponent_to_damage_main_characte
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
+use crate::notify_player_action_info::entity::notify_form_use_energy_boost_support_card_to_specific_unit::NotifyFormUseEnergyBoostSupportCardToSpecificUnit;
 use crate::notify_player_action_info::entity::notify_form_use_general_energy_card_to_specific_unit::NotifyFormUseGeneralEnergyCardToSpecificUnit;
 use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
@@ -184,6 +185,7 @@ pub enum ResponseType {
     NOTIFY_MAIN_CHARACTER_SURVIVAL(PlayerMainCharacterSurvivalInfo),
 
     NOTIFY_USE_GENERAL_ENERGY_CARD_TO_SPECIFIC_UNIT(NotifyFormUseGeneralEnergyCardToSpecificUnit),
+    NOTIFY_USE_ENERGY_BOOST_SUPPORT_CARD_TO_SPECIFIC_UNIT(NotifyFormUseEnergyBoostSupportCardToSpecificUnit),
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),
