@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_support::service::request::summarize_support_card_effect_request::SummarizeSupportCardEffectRequest;
@@ -15,8 +16,15 @@ use crate::game_protocol_validation::service::request::is_it_support_card_reques
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action_info::service::request::notice_boost_energy_to_specific_unit_request::{NoticeBoostEnergyToSpecificUnitRequest};
+use crate::notify_player_action_info::service::request::notice_use_energy_boost_support_card_to_my_specific_unit_request::NoticeUseEnergyBoostSupportCardToSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_energy_data_request::GenerateMySpecificUnitEnergyDataRequest;
+use crate::ui_data_generator::service::request::generate_use_my_deck_card_list_data_request::GenerateUseMyDeckCardListDataRequest;
+use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
 
 #[derive(Debug)]
 pub struct EnergyBoostSupportRequestForm {
@@ -119,6 +127,34 @@ impl EnergyBoostSupportRequestForm {
             account_unique_id)
     }
 
+    pub fn to_generate_use_my_hand_card_data_request(
+        &self,
+        used_hand_card_id: i32
+    ) -> GenerateUseMyHandCardDataRequest {
+
+        GenerateUseMyHandCardDataRequest::new(
+            used_hand_card_id)
+    }
+
+    pub fn to_generate_use_my_deck_card_list_data_request(
+        &self,
+        deck_card_id_list: Vec<i32>
+    ) -> GenerateUseMyDeckCardListDataRequest {
+
+        GenerateUseMyDeckCardListDataRequest::new(
+            deck_card_id_list)
+    }
+
+    pub fn to_generate_my_specific_unit_energy_data_request(
+        &self,
+        unit_index: i32,
+        updated_unit_energy_map: AttachedEnergyMap) -> GenerateMySpecificUnitEnergyDataRequest {
+
+        GenerateMySpecificUnitEnergyDataRequest::new(
+            unit_index,
+            updated_unit_energy_map)
+    }
+
     pub fn to_notice_use_hand_card_request(&self,
                                            opponent_unique_id: i32,
                                            used_hand_card_id: i32) -> NoticeUseHandCardRequest {
@@ -138,5 +174,20 @@ impl EnergyBoostSupportRequestForm {
             found_energy_card_id_list,
             unit_index,
             attached_energy_map)
+    }
+
+    pub fn to_notice_energy_boost_support_card_to_specific_unit_request(
+        &self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_deck_card_use_list_map_for_notice: HashMap<PlayerIndex, Vec<i32>>,
+        player_field_unit_energy_map: HashMap<PlayerIndex, FieldUnitEnergyInfo>
+    ) -> NoticeUseEnergyBoostSupportCardToSpecificUnitRequest {
+
+        NoticeUseEnergyBoostSupportCardToSpecificUnitRequest::new(
+            opponent_unique_id,
+            player_hand_use_map_for_notice,
+            player_deck_card_use_list_map_for_notice,
+            player_field_unit_energy_map)
     }
 }

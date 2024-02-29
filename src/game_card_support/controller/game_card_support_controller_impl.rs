@@ -52,6 +52,8 @@ use crate::notify_player_action_info::service::notify_player_action_info_service
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
+use crate::ui_data_generator::service::ui_data_generator_service_impl::UiDataGeneratorServiceImpl;
 
 pub struct GameCardSupportControllerImpl {
     battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
@@ -66,6 +68,7 @@ pub struct GameCardSupportControllerImpl {
     card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
     game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
     notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
+    ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
 }
 
 impl GameCardSupportControllerImpl {
@@ -80,7 +83,8 @@ impl GameCardSupportControllerImpl {
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
                game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
-               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,) -> Self {
+               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
+               ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,) -> Self {
 
         GameCardSupportControllerImpl {
             battle_room_service,
@@ -94,7 +98,8 @@ impl GameCardSupportControllerImpl {
             redis_in_memory_service,
             card_grade_service,
             game_card_support_usage_counter_service,
-            notify_player_action_info_service
+            notify_player_action_info_service,
+            ui_data_generator_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardSupportControllerImpl>> {
@@ -114,7 +119,8 @@ impl GameCardSupportControllerImpl {
                             RedisInMemoryServiceImpl::get_instance(),
                             CardGradeServiceImpl::get_instance(),
                             GameCardSupportUsageCounterServiceImpl::get_instance(),
-                            NotifyPlayerActionInfoServiceImpl::get_instance())));
+                            NotifyPlayerActionInfoServiceImpl::get_instance(),
+                            UiDataGeneratorServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -319,6 +325,31 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         drop(game_field_unit_service_guard);
 
+        // UI 로 전송할 데이터 가공
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_use_my_hand_card_data_response =
+            ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                energy_boost_support_request_form
+                    .to_generate_use_my_hand_card_data_request(
+                        usage_hand_card)).await;
+
+        let generate_use_my_deck_card_list_data_response =
+            ui_data_generator_service_guard.generate_use_my_deck_card_list_data(
+                energy_boost_support_request_form
+                    .to_generate_use_my_deck_card_list_data_request(
+                        found_card_list_from_deck.clone())).await;
+
+        let generate_my_field_unit_energy_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_energy_data(
+                energy_boost_support_request_form
+                    .to_generate_my_specific_unit_energy_data_request(
+                        unit_card_index,
+                        updated_attached_energy_map)).await;
+
+        drop(ui_data_generator_service_guard);
+
         // 상대방의 고유 id 값을 확보
         let opponent_unique_id = self.get_opponent_unique_id(
             energy_boost_support_request_form
@@ -328,26 +359,26 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        let notice_use_hand_card_response =
-            notify_player_action_info_service_guard.notice_use_hand_card(
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_energy_boost_support_card_to_specific_unit(
                 energy_boost_support_request_form
-                    .to_notice_use_hand_card_request(
+                    .to_notice_energy_boost_support_card_to_specific_unit_request(
                         opponent_unique_id,
-                        usage_hand_card)).await;
+                        generate_use_my_hand_card_data_response
+                            .get_player_hand_use_map_for_notice().clone(),
+                        generate_use_my_deck_card_list_data_response
+                            .get_player_deck_card_use_list_map_for_notice().clone(),
+                        generate_my_field_unit_energy_data_response
+                            .get_player_field_unit_energy_map_for_notice().clone())).await;
 
-        let notice_boost_energy_response =
-            notify_player_action_info_service_guard.notice_boost_energy_to_specific_unit(
-                energy_boost_support_request_form
-                    .to_notice_boost_energy_to_specific_unit_request(
-                        opponent_unique_id,
-                        found_card_list_from_deck.clone(),
-                        unit_card_index,
-                        updated_attached_energy_map)).await;
+        println!("notice_response: {:?}", notice_response);
 
         drop(notify_player_action_info_service_guard);
 
         EnergyBoostSupportResponseForm::from_response(
-            notice_use_hand_card_response, notice_boost_energy_response)
+            generate_use_my_hand_card_data_response,
+            generate_use_my_deck_card_list_data_response,
+            generate_my_field_unit_energy_data_response)
     }
 
     async fn request_to_use_draw_support(&self, draw_support_request_form: DrawSupportRequestForm) -> DrawSupportResponseForm {
