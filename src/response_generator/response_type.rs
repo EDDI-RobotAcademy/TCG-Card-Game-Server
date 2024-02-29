@@ -59,10 +59,10 @@ use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_us
 use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
 use crate::notify_player_action_info::entity::notify_form_use_draw_support_card::NotifyFormUseDrawSupportCard;
-use crate::notify_player_action_info::entity::notify_form_use_energy_boost_support_card_to_specific_unit::NotifyFormUseEnergyBoostSupportCardToSpecificUnit;
+use crate::notify_player_action_info::entity::notify_form_use_energy_boost_support_card::NotifyFormUseUnitEnergyBoostSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_field_energy_remove_support_card::NotifyFormUseFieldEnergyRemoveSupportCard;
-use crate::notify_player_action_info::entity::notify_form_use_general_energy_card_to_specific_unit::NotifyFormUseGeneralEnergyCardToSpecificUnit;
-use crate::notify_player_action_info::entity::notify_form_use_instant_death_item_card_to_specific_unit::NotifyFormUseInstantDeathItemCardToSpecificUnit;
+use crate::notify_player_action_info::entity::notify_form_use_general_energy_card::NotifyFormUseGeneralEnergyCardToUnit;
+use crate::notify_player_action_info::entity::notify_form_use_instant_unit_death_item_card::NotifyFormUseInstantUnitDeathItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_search_deck_support_card::NotifyFormUseSearchDeckSupportCard;
 use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
@@ -188,12 +188,12 @@ pub enum ResponseType {
     NOTIFY_MAIN_CHARACTER_HEALTH_POINT(PlayerMainCharacterHealthPointInfo),
     NOTIFY_MAIN_CHARACTER_SURVIVAL(PlayerMainCharacterSurvivalInfo),
 
-    NOTIFY_USE_GENERAL_ENERGY_CARD_TO_SPECIFIC_UNIT(NotifyFormUseGeneralEnergyCardToSpecificUnit),
-    NOTIFY_USE_ENERGY_BOOST_SUPPORT_CARD_TO_SPECIFIC_UNIT(NotifyFormUseEnergyBoostSupportCardToSpecificUnit),
+    NOTIFY_USE_GENERAL_ENERGY_CARD_TO_UNIT(NotifyFormUseGeneralEnergyCardToUnit),
+    NOTIFY_USE_UNIT_ENERGY_BOOST_SUPPORT_CARD(NotifyFormUseUnitEnergyBoostSupportCard),
     NOTIFY_USE_DRAW_SUPPORT_CARD(NotifyFormUseDrawSupportCard),
     NOTIFY_USE_SEARCH_DECK_SUPPORT_CARD(NotifyFormUseSearchDeckSupportCard),
     NOTIFY_USE_FIELD_ENERGY_REMOVE_SUPPORT_CARD(NotifyFormUseFieldEnergyRemoveSupportCard),
-    NOTIFY_USE_INSTANT_DEATH_ITEM_CARD_TO_UNIT(NotifyFormUseInstantDeathItemCardToSpecificUnit),
+    NOTIFY_USE_INSTANT_UNIT_DEATH_ITEM_CARD(NotifyFormUseInstantUnitDeathItemCard),
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),

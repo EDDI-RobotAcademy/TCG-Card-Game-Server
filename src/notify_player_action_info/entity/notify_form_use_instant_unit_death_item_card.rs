@@ -6,18 +6,18 @@ use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NotifyFormUseInstantDeathItemCardToSpecificUnit {
+pub struct NotifyFormUseInstantUnitDeathItemCard {
     player_hand_use_map: HashMap<PlayerIndex, UsedHandCardInfo>,
     player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
     player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
 }
 
-impl NotifyFormUseInstantDeathItemCardToSpecificUnit {
+impl NotifyFormUseInstantUnitDeathItemCard {
     pub fn new(player_hand_use_map: HashMap<PlayerIndex, UsedHandCardInfo>,
                player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
                player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,) -> Self {
 
-        NotifyFormUseInstantDeathItemCardToSpecificUnit {
+        NotifyFormUseInstantUnitDeathItemCard {
             player_hand_use_map,
             player_field_unit_health_point_map,
             player_field_unit_death_map

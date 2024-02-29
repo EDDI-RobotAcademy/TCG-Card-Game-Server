@@ -93,12 +93,13 @@ pub trait NotifyPlayerActionInfoRepository {
         lost_deck_card_list: Vec<i32>) -> PlayerDeckCardLostListInfo;
 
     // 뭉쳐서 날리는 notify
-    async fn notice_use_general_energy_card_to_my_specific_unit(
+    async fn notice_use_general_energy_to_unit(
         &mut self,
         opponent_unique_id: i32,
-        used_hand_card_info: UsedHandCardInfo,
-        field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo;
-    async fn notice_use_energy_boost_support_to_specific_unit(
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>
+    ) -> bool;
+    async fn notice_use_unit_energy_boost_support(
         &mut self,
         opponent_unique_id: i32,
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
@@ -123,7 +124,7 @@ pub trait NotifyPlayerActionInfoRepository {
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
         player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
     ) -> bool;
-    async fn notice_use_instant_death_item_to_unit(
+    async fn notice_use_instant_unit_death_item(
         &mut self,
         opponent_unique_id: i32,
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
