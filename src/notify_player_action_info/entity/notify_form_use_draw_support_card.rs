@@ -7,16 +7,16 @@ use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NotifyFormUseDrawSupportCard {
     player_hand_use_map: HashMap<PlayerIndex, UsedHandCardInfo>,
-    player_draw_count_map_for_notice: HashMap<PlayerIndex, i32>,
+    player_draw_count_map: HashMap<PlayerIndex, i32>,
 }
 
 impl NotifyFormUseDrawSupportCard {
     pub fn new(player_hand_use_map: HashMap<PlayerIndex, UsedHandCardInfo>,
-               player_draw_count_map_for_notice: HashMap<PlayerIndex, i32>,) -> Self {
+               player_draw_count_map: HashMap<PlayerIndex, i32>,) -> Self {
 
         NotifyFormUseDrawSupportCard {
             player_hand_use_map,
-            player_draw_count_map_for_notice,
+            player_draw_count_map,
         }
     }
 }

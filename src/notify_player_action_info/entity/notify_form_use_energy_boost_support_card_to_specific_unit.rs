@@ -7,18 +7,18 @@ use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NotifyFormUseEnergyBoostSupportCardToSpecificUnit {
     player_hand_use_map: HashMap<PlayerIndex, UsedHandCardInfo>,
-    player_deck_card_use_list_map_for_notice: HashMap<PlayerIndex, Vec<i32>>,
+    player_deck_card_use_list_map: HashMap<PlayerIndex, Vec<i32>>,
     player_field_unit_energy_map: HashMap<PlayerIndex, FieldUnitEnergyInfo>,
 }
 
 impl NotifyFormUseEnergyBoostSupportCardToSpecificUnit {
     pub fn new(player_hand_use_map: HashMap<PlayerIndex, UsedHandCardInfo>,
-               player_deck_card_use_list_map_for_notice: HashMap<PlayerIndex, Vec<i32>>,
+               player_deck_card_use_list_map: HashMap<PlayerIndex, Vec<i32>>,
                player_field_unit_energy_map: HashMap<PlayerIndex, FieldUnitEnergyInfo>,) -> Self {
 
         NotifyFormUseEnergyBoostSupportCardToSpecificUnit {
             player_hand_use_map,
-            player_deck_card_use_list_map_for_notice,
+            player_deck_card_use_list_map,
             player_field_unit_energy_map
         }
     }
