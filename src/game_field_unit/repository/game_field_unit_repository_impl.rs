@@ -122,7 +122,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
     fn find_indexed_unit(&self, account_unique_id: i32, unit_card_index: i32) -> Option<&GameFieldUnitCard> {
         if let Some(game_field_unit) = self.game_field_unit_map.get(&account_unique_id) {
+            if Some(game_field_unit.find_unit_by_index(unit_card_index as usize)).is_some() {
+                if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
             Some(game_field_unit.find_unit_by_index(unit_card_index as usize))
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
         } else {
             None
         }
@@ -132,6 +140,9 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: attach_multiple_energy_to_indexed_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
+                return false
+            }
             game_field_unit.add_energy_to_indexed_unit(unit_card_index as usize, RaceEnumValue::from(race_enum as i32), quantity);
             return true
         }
@@ -141,8 +152,12 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
     fn increase_max_health_of_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: usize, amount: i32) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            game_field_unit.increase_max_health_of_indexed_unit(unit_card_index, amount);
-            true
+            if game_field_unit.find_unit_by_index(unit_card_index).get_card() != -1 {
+                game_field_unit.increase_max_health_of_indexed_unit(unit_card_index, amount);
+                true
+            } else {
+                false
+            }
         } else {
             false
         }
@@ -165,8 +180,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             let target_unit_index = opponent_target_unit_index as usize;
 
             if target_unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
-                game_field_unit.apply_damage_to_indexed_unit(target_unit_index, damage);
-                return true;
+                if game_field_unit.find_unit_by_index(target_unit_index).get_card() != -1 {
+                    game_field_unit.apply_damage_to_indexed_unit(target_unit_index, damage);
+                    return true;
+                }
             }
         }
 
@@ -178,8 +195,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             let target_unit_index = opponent_target_unit_index as usize;
 
             if target_unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
-                game_field_unit.apply_death_to_indexed_unit(target_unit_index);
-                return true;
+                if game_field_unit.find_unit_by_index(target_unit_index).get_card() != -1 {
+                    game_field_unit.apply_death_to_indexed_unit(target_unit_index);
+                    return true;
+                }
             }
         }
 
@@ -199,9 +218,11 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
     fn execute_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            let unit_card_index = unit_card_index as usize;
-            game_field_unit.execute_turn_action_of_unit(unit_card_index);
-            return true
+            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
+                let unit_card_index = unit_card_index as usize;
+                game_field_unit.execute_turn_action_of_unit(unit_card_index);
+                return true
+            }
         }
 
         false
@@ -254,13 +275,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: attach_special_energy_to_indexed_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            game_field_unit.add_special_energy_to_indexed_unit(
-                unit_card_index as usize,
-                RaceEnumValue::from(race_enum as i32),
-                quantity,
-                status_effect_list);
+            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
+                game_field_unit.add_special_energy_to_indexed_unit(
+                    unit_card_index as usize,
+                    RaceEnumValue::from(race_enum as i32),
+                    quantity,
+                    status_effect_list);
 
-            return true
+                return true
+            }
         }
 
         return false
@@ -283,8 +306,12 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         harmful_state: ExtraStatusEffect,
     ) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            game_field_unit.impose_harmful_state_to_indexed_unit(unit_card_index as usize, harmful_state);
-            true
+            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
+                game_field_unit.impose_harmful_state_to_indexed_unit(unit_card_index as usize, harmful_state);
+                true
+            } else {
+                false
+            }
         } else {
             false
         }
@@ -296,7 +323,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         attacker_unit_index: i32
     ) -> i32 {
         let indexed_unit_reference = self.find_indexed_unit(account_unique_id, attacker_unit_index).unwrap();
-        return indexed_unit_reference.get_unit_attack_point();
+        if indexed_unit_reference.get_card() != -1 {
+            return indexed_unit_reference.get_unit_attack_point();
+        }
+        -1
     }
 
     fn acquire_unit_extra_effect_by_index(
@@ -355,8 +385,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         if let Some(game_field_unit) = self.get_game_field_unit_map().get_mut(&opponent_unique_id) {
             let game_field_unit_list_mut = game_field_unit.get_all_field_unit_list_mut();
             for unit in game_field_unit_list_mut {
-                unit.apply_damage(damage);
-                unit.impose_harmful_state_list(extra_status_effect_list.clone());
+                if unit.get_card() != -1 {
+                    unit.apply_damage(damage);
+                    unit.impose_harmful_state_list(extra_status_effect_list.clone());
+                }
             }
             return true
         }
@@ -373,7 +405,9 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             let all_units = game_field_unit.get_all_field_unit_list_mut();
 
             for unit in all_units.iter_mut() {
-                unit.apply_damage(damage);
+                if unit.get_card() != -1 {
+                    unit.apply_damage(damage);
+                }
             }
 
             true
@@ -389,8 +423,12 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         extra_effect_state: SummaryPassiveSkillEffect,
     ) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            game_field_unit.impose_extra_effect_state_to_indexed_unit(unit_index as usize, extra_effect_state);
-            true
+            if game_field_unit.find_unit_by_index(unit_index as usize).get_card() != -1 {
+                game_field_unit.impose_extra_effect_state_to_indexed_unit(unit_index as usize, extra_effect_state);
+                true
+            } else {
+                false
+            }
         } else {
             false
         }
@@ -405,11 +443,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: detach_multiple_energy_from_indexed_unit()");
 
         return if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            game_field_unit.detach_energy_from_unit(
-                unit_card_index as usize,
-                RaceEnumValue::from(race_enum as i32),
-                quantity);
-            true
+            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
+                game_field_unit.detach_energy_from_unit(
+                    unit_card_index as usize,
+                    RaceEnumValue::from(race_enum as i32),
+                    quantity);
+                true
+            } else {
+                false
+            }
         } else {
             false
         }
@@ -424,8 +466,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: set_field_unit_deployed_round()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            game_field_unit.set_unit_deployed_round(unit_card_index as usize, current_round_value);
-            return true
+            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
+                game_field_unit.set_unit_deployed_round(unit_card_index as usize, current_round_value);
+                return true
+            }
         }
 
         false
@@ -466,9 +510,11 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: set_passive_status_list_of_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            if game_field_unit.find_unit_by_index(unit_index as usize).get_card() != -1 {
             let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
-            game_field_unit_card_list[unit_index as usize].set_passive_status_list(passive_status_list);
-            return true
+                game_field_unit_card_list[unit_index as usize].set_passive_status_list(passive_status_list);
+                return true
+            }
         }
 
         false
@@ -478,8 +524,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: set_passive_status_list_of_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
-            return game_field_unit_card_list[unit_index as usize].get_passive_status_list().clone();
+            if game_field_unit.find_unit_by_index(unit_index as usize).get_card() != -1 {
+                let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
+                return game_field_unit_card_list[unit_index as usize].get_passive_status_list().clone();
+            }
         }
 
         Vec::new()
