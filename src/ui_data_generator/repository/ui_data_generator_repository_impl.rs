@@ -378,6 +378,23 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_drawn_card_list_info_for_response,
          player_draw_count_info_for_notice)
     }
+    async fn generate_draw_opponent_deck_data(
+        &mut self,
+        drawn_card_list: Vec<i32>
+    ) -> (PlayerDrawCountInfo,
+          PlayerDrawnCardListInfo,
+          ) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_draw_opponent_deck_data()");
+
+        let player_drawn_card_count_info_for_response =
+            self.get_player_draw_count_info(Opponent, drawn_card_list.clone());
+        let player_draw_count_list_for_notice =
+            self.get_player_drawn_card_list_info(You, drawn_card_list.clone());
+
+        (player_drawn_card_count_info_for_response,
+         player_draw_count_list_for_notice)
+    }
 
     async fn generate_search_my_deck_data(
         &mut self,
