@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
+use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
@@ -10,6 +11,7 @@ use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerField
 use crate::ui_data_generator::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::ui_data_generator::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
+use crate::ui_data_generator::entity::player_main_character_survival_info::PlayerMainCharacterSurvivalInfo;
 use crate::ui_data_generator::entity::player_search_card_list_info::PlayerSearchCardListInfo;
 use crate::ui_data_generator::entity::player_search_count_info::PlayerSearchCountInfo;
 
@@ -107,4 +109,9 @@ pub trait UiDataGeneratorRepository {
         opponent_unit_health_point_tuple_list: Vec<(i32, i32)>
     ) -> (PlayerFieldUnitHealthPointInfo,
           PlayerFieldUnitHealthPointInfo);
+    async fn generate_my_main_character_survival_data(
+        &mut self,
+        my_main_character_status: StatusMainCharacterEnum
+    ) -> (PlayerMainCharacterSurvivalInfo,
+          PlayerMainCharacterSurvivalInfo);
 }

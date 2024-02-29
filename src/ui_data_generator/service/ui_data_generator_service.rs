@@ -7,6 +7,7 @@ use crate::ui_data_generator::service::request::generate_use_my_deck_card_list_d
 use crate::ui_data_generator::service::request::generate_draw_my_deck_data_request::GenerateDrawMyDeckDataRequest;
 use crate::ui_data_generator::service::request::generate_draw_opponent_deck_data_request::GenerateDrawOpponentDeckDataRequest;
 use crate::ui_data_generator::service::request::generate_my_main_character_health_point_data_request::GenerateMyMainCharacterHealthPointDataRequest;
+use crate::ui_data_generator::service::request::generate_my_main_character_survival_data_request::GenerateMyMainCharacterSurvivalDataRequest;
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_health_point_data_request::GenerateMyMultipleUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_death_data_request::GenerateMySpecificUnitDeathDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_health_point_data_request::GenerateMySpecificUnitHealthPointDataRequest;
@@ -24,6 +25,7 @@ use crate::ui_data_generator::service::response::generate_use_my_deck_card_list_
 use crate::ui_data_generator::service::response::generate_draw_my_deck_data_response::GenerateDrawMyDeckDataResponse;
 use crate::ui_data_generator::service::response::generate_draw_opponent_deck_data_response::GenerateDrawOpponentDeckDataResponse;
 use crate::ui_data_generator::service::response::generate_my_main_character_health_point_data_response::GenerateMyMainCharacterHealthPointDataResponse;
+use crate::ui_data_generator::service::response::generate_my_main_character_survival_data_response::GenerateMyMainCharacterSurvivalDataResponse;
 use crate::ui_data_generator::service::response::generate_my_multiple_unit_health_point_data_response::GenerateMyMultipleUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_death_data_response::GenerateMySpecificUnitDeathDataResponse;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_health_point_data_response::GenerateMySpecificUnitHealthPointDataResponse;
@@ -50,7 +52,7 @@ pub trait UiDataGeneratorService {
         -> GenerateMyMainCharacterHealthPointDataResponse;
     async fn generate_opponent_main_character_health_point_data(
         &mut self,
-        generate_Opponent_main_character_health_point_data_request: GenerateOpponentMainCharacterHealthPointDataRequest)
+        generate_opponent_main_character_health_point_data_request: GenerateOpponentMainCharacterHealthPointDataRequest)
         -> GenerateOpponentMainCharacterHealthPointDataResponse;
     async fn generate_my_multiple_unit_health_point_data(
         &mut self, generate_opponent_multiple_unit_health_point_data_request: GenerateMyMultipleUnitHealthPointDataRequest)
@@ -103,4 +105,8 @@ pub trait UiDataGeneratorService {
     async fn generate_opponent_multiple_unit_health_point_data(
         &mut self, generate_opponent_multiple_unit_health_point_data_request: GenerateOpponentMultipleUnitHealthPointDataRequest)
         -> GenerateOpponentMultipleUnitHealthPointDataResponse;
+    async fn generate_my_main_character_survial_data(
+        &mut self, generate_my_main_character_survial_data_request: GenerateMyMainCharacterSurvivalDataRequest)
+        -> GenerateMyMainCharacterSurvivalDataResponse;
+
 }
