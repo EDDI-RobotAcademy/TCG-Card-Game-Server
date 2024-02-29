@@ -1,3 +1,4 @@
 pub mod notify_form_use_general_energy_card_to_specific_unit;
 pub mod notify_form_use_energy_boost_support_card_to_specific_unit;
 pub mod notify_form_use_draw_support_card;
+pub mod notify_form_use_search_deck_support_card;
