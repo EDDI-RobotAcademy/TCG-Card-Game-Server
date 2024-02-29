@@ -13,3 +13,4 @@ pub mod generate_draw_opponent_deck_data_response;
 pub mod generate_my_multiple_unit_health_point_data_response;
 pub mod generate_my_specific_unit_death_data_response;
 pub mod generate_opponent_specific_unit_energy_data_response;
+pub mod generate_my_main_character_health_point_data_response;

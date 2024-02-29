@@ -9,6 +9,7 @@ use crate::ui_data_generator::entity::player_field_unit_death_info::PlayerFieldU
 use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
+use crate::ui_data_generator::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
 use crate::ui_data_generator::entity::player_search_card_list_info::PlayerSearchCardListInfo;
 use crate::ui_data_generator::entity::player_search_count_info::PlayerSearchCountInfo;
 
@@ -26,6 +27,12 @@ pub trait UiDataGeneratorRepository {
         my_unit_updated_health_point: i32
     ) -> (PlayerFieldUnitHealthPointInfo,
           PlayerFieldUnitHealthPointInfo);
+    async fn generate_my_main_character_health_point_data(
+        &mut self,
+        my_main_character_index: i32,
+        my_main_character_updated_health_point: i32
+    ) -> (PlayerMainCharacterHealthPointInfo,
+          PlayerMainCharacterHealthPointInfo);
     async fn generate_my_multiple_unit_health_point_data(
         &mut self,
         opponent_unit_health_point_tuple_list: Vec<(i32, i32)>
