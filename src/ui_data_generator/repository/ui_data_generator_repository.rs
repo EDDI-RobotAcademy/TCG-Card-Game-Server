@@ -127,4 +127,9 @@ pub trait UiDataGeneratorRepository {
         my_unit_extra_effect_list:Vec<ExtraEffect>
     ) -> (PlayerFieldUnitExtraEffectInfo,
           PlayerFieldUnitExtraEffectInfo);
+    async fn generate_my_multiple_unit_extra_effect_data(
+        &mut self,
+        my_unit_extra_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
+    ) -> (PlayerFieldUnitExtraEffectInfo,
+          PlayerFieldUnitExtraEffectInfo);
 }

@@ -96,6 +96,21 @@ impl UiDataGeneratorRepositoryImpl {
 
         FieldUnitHealthPointInfo::new(map)
     }
+    fn get_field_unit_extra_effect_from_tuple_list(
+        &self,
+        unit_extra_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>) ->FieldUnitExtraEffectInfo {
+
+        let mut map = HashMap::new();
+        for (unit_index, extra_effect_list) in unit_extra_effect_tuple_list {
+            let extra_effect_info = ExtraEffectInfo::new(extra_effect_list);
+            map.insert(unit_index, extra_effect_info);
+        }
+
+        FieldUnitExtraEffectInfo::new(map)
+
+
+    }
+
 
     fn get_player_hand_card_use_info(&self,
                                      notify_player_index: PlayerIndex,
@@ -659,6 +674,24 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
 
         (player_main_character_survival_info_for_response,
          player_main_character_survival_info_for_notice)
+    }
+    async fn generate_my_multiple_unit_extra_effect_data(
+        &mut self,
+        my_unit_extra_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
+    ) -> (PlayerFieldUnitExtraEffectInfo,
+          PlayerFieldUnitExtraEffectInfo) {
+        println!("UiDataGeneratorRepositoryImpl: generate_my_multiple_unit_extra_effect_data()");
+
+        let field_unit_extra_effect_info =
+            self.get_field_unit_extra_effect_from_tuple_list(my_unit_extra_effect_tuple_list);
+
+        let player_field_unit_extra_effect_info_for_response =
+            self.get_player_field_unit_extra_effect_info(You, field_unit_extra_effect_info.clone());
+        let player_field_unit_extra_effect_info_for_notice =
+            self.get_player_field_unit_extra_effect_info(Opponent, field_unit_extra_effect_info.clone());
+
+        (player_field_unit_extra_effect_info_for_response,
+         player_field_unit_extra_effect_info_for_notice)
     }
 
 }

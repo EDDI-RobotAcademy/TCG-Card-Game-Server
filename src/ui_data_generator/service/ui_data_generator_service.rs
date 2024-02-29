@@ -8,6 +8,7 @@ use crate::ui_data_generator::service::request::generate_draw_my_deck_data_reque
 use crate::ui_data_generator::service::request::generate_draw_opponent_deck_data_request::GenerateDrawOpponentDeckDataRequest;
 use crate::ui_data_generator::service::request::generate_my_main_character_health_point_data_request::GenerateMyMainCharacterHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_my_main_character_survival_data_request::GenerateMyMainCharacterSurvivalDataRequest;
+use crate::ui_data_generator::service::request::generate_my_multiple_unit_extra_effect_data_request::GenerateMyMultipleUnitExtraEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_health_point_data_request::GenerateMyMultipleUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_death_data_request::GenerateMySpecificUnitDeathDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_extra_effect_data_request::GenerateMySpecificUnitExtraEffectDataRequest;
@@ -28,6 +29,7 @@ use crate::ui_data_generator::service::response::generate_draw_my_deck_data_resp
 use crate::ui_data_generator::service::response::generate_draw_opponent_deck_data_response::GenerateDrawOpponentDeckDataResponse;
 use crate::ui_data_generator::service::response::generate_my_main_character_health_point_data_response::GenerateMyMainCharacterHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_my_main_character_survival_data_response::GenerateMyMainCharacterSurvivalDataResponse;
+use crate::ui_data_generator::service::response::generate_my_multiple_unit_extra_effect_data_response::GenerateMyMultipleUnitExtraEffectDataResponse;
 use crate::ui_data_generator::service::response::generate_my_multiple_unit_health_point_data_response::GenerateMyMultipleUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_death_data_response::GenerateMySpecificUnitDeathDataResponse;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_extra_effect_data_response::GenerateMySpecificUnitExtraEffectDataResponse;
@@ -118,4 +120,7 @@ pub trait UiDataGeneratorService {
     async fn generate_my_specific_unit_extra_effect_data(
         &mut self, generate_my_specific_unit_extra_effect_data_request: GenerateMySpecificUnitExtraEffectDataRequest)
         -> GenerateMySpecificUnitExtraEffectDataResponse;
+    async fn generate_my_multiple_unit_extra_effect_data(
+        &mut self, generate_my_multiple_unit_extra_effect_data_request: GenerateMyMultipleUnitExtraEffectDataRequest)
+        -> GenerateMyMultipleUnitExtraEffectDataResponse;
 }
