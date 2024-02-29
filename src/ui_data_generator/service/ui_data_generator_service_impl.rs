@@ -18,6 +18,7 @@ use crate::ui_data_generator::service::request::generate_my_main_character_healt
 use crate::ui_data_generator::service::request::generate_my_main_character_survival_data_request::GenerateMyMainCharacterSurvivalDataRequest;
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_health_point_data_request::GenerateMyMultipleUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_death_data_request::GenerateMySpecificUnitDeathDataRequest;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_extra_effect_data_request::GenerateMySpecificUnitExtraEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_health_point_data_request::GenerateMySpecificUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_field_energy_data_request::{GenerateOpponentFieldEnergyDataRequest};
 use crate::ui_data_generator::service::request::generate_opponent_main_character_health_point_data_request::GenerateOpponentMainCharacterHealthPointDataRequest;
@@ -37,6 +38,7 @@ use crate::ui_data_generator::service::response::generate_my_main_character_heal
 use crate::ui_data_generator::service::response::generate_my_main_character_survival_data_response::GenerateMyMainCharacterSurvivalDataResponse;
 use crate::ui_data_generator::service::response::generate_my_multiple_unit_health_point_data_response::GenerateMyMultipleUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_death_data_response::GenerateMySpecificUnitDeathDataResponse;
+use crate::ui_data_generator::service::response::generate_my_specific_unit_extra_effect_data_response::GenerateMySpecificUnitExtraEffectDataResponse;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_health_point_data_response::GenerateMySpecificUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_field_energy_data_response::{GenerateOpponentFieldEnergyDataResponse};
 use crate::ui_data_generator::service::response::generate_opponent_main_character_health_point_data_response::GenerateOpponentMainCharacterHealthPointDataResponse;
@@ -502,7 +504,7 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
             info_tuple.0.get_player_field_unit_health_point_map().clone(),
             info_tuple.1.get_player_field_unit_health_point_map().clone())
     }
-    async fn generate_my_main_character_survial_data(
+    async fn generate_my_main_character_survival_data(
         &mut self, generate_my_main_character_survial_data_request: GenerateMyMainCharacterSurvivalDataRequest)
         -> GenerateMyMainCharacterSurvivalDataResponse {
         println!("UiDataGeneratorServiceImpl: generate_my_main_character_survial_data()");
@@ -527,7 +529,7 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
 
 
     }
-    async fn generate_opponent_main_character_survial_data(
+    async fn generate_opponent_main_character_survival_data(
         &mut self, generate_opponent_main_character_survial_data_request: GenerateOpponentMainCharacterSurvivalDataRequest)
         -> GenerateOpponentMainCharacterSurvivalDataResponse {
         println!("UiDataGeneratorServiceImpl: generate_opponent_main_character_survial_data()");
@@ -552,5 +554,29 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
 
 
     }
+    async fn generate_my_specific_unit_extra_effect_data(
+        &mut self, generate_my_specific_unit_extra_effect_data_request: GenerateMySpecificUnitExtraEffectDataRequest)
+        -> GenerateMySpecificUnitExtraEffectDataResponse {
+        println!("UiDataGeneratorServiceImpl: generate_my_specific_unit_extra_effect_data()");
 
+        let my_unit_index =
+            generate_my_specific_unit_extra_effect_data_request.get_my_unit_index();
+        let my_unit_extra_effect_list=
+            generate_my_specific_unit_extra_effect_data_request.get_extra_effect_list();
+
+        let mut ui_data_generator_repository_guard =
+            self.ui_data_generator_repository.lock().await;
+
+        let info_tuple =
+            ui_data_generator_repository_guard.generate_my_specific_unit_extra_effect_data(
+                my_unit_index,
+                my_unit_extra_effect_list.clone()
+            ).await;
+
+        drop(ui_data_generator_repository_guard);
+
+        GenerateMySpecificUnitExtraEffectDataResponse::new(
+            info_tuple.0.get_player_field_unit_extra_effect_map().clone(),
+            info_tuple.1.get_player_field_unit_extra_effect_map().clone())
+    }
 }

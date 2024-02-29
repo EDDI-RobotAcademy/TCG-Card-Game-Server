@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
@@ -8,6 +9,7 @@ use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCa
 use crate::ui_data_generator::entity::player_field_energy_info::PlayerFieldEnergyInfo;
 use crate::ui_data_generator::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
 use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::player_field_unit_extra_effect_info::PlayerFieldUnitExtraEffectInfo;
 use crate::ui_data_generator::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::ui_data_generator::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
@@ -119,4 +121,10 @@ pub trait UiDataGeneratorRepository {
         my_main_character_status: StatusMainCharacterEnum
     ) -> (PlayerMainCharacterSurvivalInfo,
           PlayerMainCharacterSurvivalInfo);
+    async fn generate_my_specific_unit_extra_effect_data(
+        &mut self,
+        my_extra_effect_unit_index:i32,
+        my_unit_extra_effect_list:Vec<ExtraEffect>
+    ) -> (PlayerFieldUnitExtraEffectInfo,
+          PlayerFieldUnitExtraEffectInfo);
 }

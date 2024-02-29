@@ -12,6 +12,7 @@ impl ExtraEffectInfo {
             extra_effect_list
         }
     }
+
 }
 
 #[cfg(test)]
