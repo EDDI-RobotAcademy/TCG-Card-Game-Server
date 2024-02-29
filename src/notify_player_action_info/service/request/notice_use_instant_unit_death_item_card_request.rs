@@ -5,19 +5,19 @@ use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 
 #[derive(Debug)]
-pub struct NoticeUseInstantDeathItemCardToOpponentSpecificUnitRequest {
+pub struct NoticeUseInstantUnitDeathItemCardRequest {
     opponent_unique_id: i32,
     player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
     player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
     player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
 }
 
-impl NoticeUseInstantDeathItemCardToOpponentSpecificUnitRequest {
+impl NoticeUseInstantUnitDeathItemCardRequest {
     pub fn new(opponent_unique_id: i32,
                player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
                player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
                player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,) -> Self {
-        NoticeUseInstantDeathItemCardToOpponentSpecificUnitRequest {
+        NoticeUseInstantUnitDeathItemCardRequest {
             opponent_unique_id,
             player_hand_use_map_for_notice,
             player_field_unit_health_point_map_for_notice,

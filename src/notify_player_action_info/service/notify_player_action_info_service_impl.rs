@@ -38,7 +38,7 @@ use crate::notify_player_action_info::service::request::notice_use_field_energy_
 use crate::notify_player_action_info::service::request::notice_use_field_energy_to_my_specific_unit_request::NoticeUseFieldEnergyToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
-use crate::notify_player_action_info::service::request::notice_use_instant_death_item_card_to_opponent_specific_unit_request::NoticeUseInstantDeathItemCardToOpponentSpecificUnitRequest;
+use crate::notify_player_action_info::service::request::notice_use_instant_unit_death_item_card_request::NoticeUseInstantUnitDeathItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_search_deck_support_card_request::{NoticeUseSearchDeckSupportCardRequest};
 use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
@@ -61,7 +61,7 @@ use crate::notify_player_action_info::service::response::notice_use_field_energy
 use crate::notify_player_action_info::service::response::notice_use_field_energy_to_my_specific_unit_response::NoticeUseFieldEnergyToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_general_energy_card_to_my_specific_unit_response::NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
-use crate::notify_player_action_info::service::response::notice_use_instant_death_item_card_to_opponent_specific_unit_response::NoticeUseInstantDeathItemCardToOpponentSpecificUnitResponse;
+use crate::notify_player_action_info::service::response::notice_use_instant_unit_death_item_card_response::NoticeUseInstantUnitDeathItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_search_deck_support_card_response::{NoticeUseSearchDeckSupportCardResponse};
 
 pub struct NotifyPlayerActionInfoServiceImpl {
@@ -664,26 +664,26 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         NoticeUseFieldEnergyRemoveSupportCardResponse::new(response)
     }
 
-    async fn notice_use_instant_death_item_card_to_opponent_specific_unit(
+    async fn notice_use_instant_unit_death_item_card(
         &mut self,
-        notice_use_instant_death_item_card_to_opponent_specific_unit_request: NoticeUseInstantDeathItemCardToOpponentSpecificUnitRequest)
-        -> NoticeUseInstantDeathItemCardToOpponentSpecificUnitResponse {
+        notice_use_instant_unit_death_item_card_request: NoticeUseInstantUnitDeathItemCardRequest)
+        -> NoticeUseInstantUnitDeathItemCardResponse {
 
-        println!("NotifyPlayerActionInfoServiceImpl: notice_use_instant_death_item_card_to_opponent_specific_unit()");
+        println!("NotifyPlayerActionInfoServiceImpl: notice_use_instant_unit_death_item_card()");
 
         let mut notify_player_action_info_repository_guard =
             self.notify_player_action_info_repository.lock().await;
 
         let response =
             notify_player_action_info_repository_guard.notice_use_instant_unit_death_item(
-                notice_use_instant_death_item_card_to_opponent_specific_unit_request.get_opponent_unique_id(),
-                notice_use_instant_death_item_card_to_opponent_specific_unit_request.get_player_hand_use_map_for_notice().clone(),
-                notice_use_instant_death_item_card_to_opponent_specific_unit_request.get_player_field_unit_health_point_map_for_notice().clone(),
-                notice_use_instant_death_item_card_to_opponent_specific_unit_request.get_player_field_unit_death_map_for_notice().clone()).await;
+                notice_use_instant_unit_death_item_card_request.get_opponent_unique_id(),
+                notice_use_instant_unit_death_item_card_request.get_player_hand_use_map_for_notice().clone(),
+                notice_use_instant_unit_death_item_card_request.get_player_field_unit_health_point_map_for_notice().clone(),
+                notice_use_instant_unit_death_item_card_request.get_player_field_unit_death_map_for_notice().clone()).await;
 
         drop(notify_player_action_info_repository_guard);
 
-        NoticeUseInstantDeathItemCardToOpponentSpecificUnitResponse::new(response)
+        NoticeUseInstantUnitDeathItemCardResponse::new(response)
     }
 
     async fn notice_use_field_energy_increase_item_card(

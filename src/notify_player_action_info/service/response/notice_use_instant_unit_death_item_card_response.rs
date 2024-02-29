@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NoticeUseInstantDeathItemCardToOpponentSpecificUnitResponse {
+pub struct NoticeUseInstantUnitDeathItemCardResponse {
     is_success: bool,
 }
 
-impl NoticeUseInstantDeathItemCardToOpponentSpecificUnitResponse {
+impl NoticeUseInstantUnitDeathItemCardResponse {
     pub fn new(is_success: bool) -> Self {
-        NoticeUseInstantDeathItemCardToOpponentSpecificUnitResponse {
+        NoticeUseInstantUnitDeathItemCardResponse {
             is_success
         }
     }
