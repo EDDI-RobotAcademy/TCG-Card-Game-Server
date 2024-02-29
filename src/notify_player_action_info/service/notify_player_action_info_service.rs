@@ -14,7 +14,8 @@ use crate::notify_player_action_info::service::request::notice_remove_energy_of_
 use crate::notify_player_action_info::service::request::notice_remove_field_energy_of_opponent_request::{NoticeRemoveFieldEnergyOfOpponentRequest};
 use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
 use crate::notify_player_action_info::service::request::notice_use_draw_support_card_request::NoticeUseDrawSupportCardRequest;
-use crate::notify_player_action_info::service::request::notice_use_energy_boost_support_card_to_my_specific_unit_request::NoticeUseEnergyBoostSupportCardToMySpecificUnitRequest;
+use crate::notify_player_action_info::service::request::notice_use_energy_boost_support_card_to_my_specific_unit_request::NoticeUseEnergyBoostSupportCardToSpecificUnitRequest;
+use crate::notify_player_action_info::service::request::notice_use_field_energy_remove_support_card_request::NoticeUseFieldEnergyRemoveSupportCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_field_energy_to_specific_unit_request::NoticeUseFieldEnergyToSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
@@ -35,7 +36,8 @@ use crate::notify_player_action_info::service::response::notice_remove_energy_of
 use crate::notify_player_action_info::service::response::notice_remove_field_energy_of_opponent_response::{NoticeRemoveFieldEnergyOfOpponentResponse};
 use crate::notify_player_action_info::service::response::notice_search_card_response::{NoticeSearchCardResponse};
 use crate::notify_player_action_info::service::response::notice_use_draw_support_card_response::NoticeUseDrawSupportCardResponse;
-use crate::notify_player_action_info::service::response::notice_use_energy_boost_support_card_to_my_specific_unit_response::NoticeUseEnergyBoostSupportCardToMySpecificUnitResponse;
+use crate::notify_player_action_info::service::response::notice_use_energy_boost_support_card_to_my_specific_unit_response::NoticeUseEnergyBoostSupportCardToSpecificUnitResponse;
+use crate::notify_player_action_info::service::response::notice_use_field_energy_remove_support_card_response::NoticeUseFieldEnergyRemoveSupportCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_field_energy_to_specific_unit_response::NoticeUseFieldEnergyToSpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_general_energy_card_to_my_specific_unit_response::NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
@@ -109,10 +111,10 @@ pub trait NotifyPlayerActionInfoService {
     async fn notice_use_general_energy_card_to_my_specific_unit(
         &mut self, notice_use_general_energy_card_to_my_specific_unit_request: NoticeUseGeneralEnergyCardToMySpecificUnitRequest)
         -> NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
-    async fn notice_use_energy_boost_support_card_to_my_specific_unit(
+    async fn notice_use_energy_boost_support_card_to_specific_unit(
         &mut self,
-        notice_use_energy_boost_support_card_to_my_specific_unit_request: NoticeUseEnergyBoostSupportCardToMySpecificUnitRequest)
-        -> NoticeUseEnergyBoostSupportCardToMySpecificUnitResponse;
+        notice_use_energy_boost_support_card_to_specific_unit_request: NoticeUseEnergyBoostSupportCardToSpecificUnitRequest)
+        -> NoticeUseEnergyBoostSupportCardToSpecificUnitResponse;
     async fn notice_use_draw_support_card(
         &mut self,
         notice_use_draw_support_card_request: NoticeUseDrawSupportCardRequest)
@@ -121,4 +123,8 @@ pub trait NotifyPlayerActionInfoService {
         &mut self,
         notice_use_search_deck_support_card_request: NoticeUseSearchDeckSupportCardRequest)
         -> NoticeUseSearchDeckSupportCardResponse;
+    async fn notice_use_field_energy_remove_support_card(
+        &mut self,
+        notice_use_field_energy_remove_support_card_request: NoticeUseFieldEnergyRemoveSupportCardRequest)
+        -> NoticeUseFieldEnergyRemoveSupportCardResponse;
 }
