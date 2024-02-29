@@ -14,6 +14,7 @@ use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInf
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::field_unit_death_info::{FieldUnitDeathInfo};
 use crate::notify_player_action_info::entity::notify_form_use_general_energy_card_to_specific_unit::NotifyFormUseGeneralEnergyCardToSpecificUnit;
+use crate::notify_player_action_info::entity::notify_form_use_search_deck_support_card::NotifyFormUseSearchDeckSupportCard;
 use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
@@ -33,7 +34,7 @@ use crate::ui_data_generator::entity::player_search_card_list_info::PlayerSearch
 use crate::ui_data_generator::entity::player_search_count_info::PlayerSearchCountInfo;
 use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
-use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LOST_LIST, NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_DAMAGE, NOTIFY_FIELD_UNIT_DEATH, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_HAND_CARD_USE, NOTIFY_MAIN_CHARACTER_DAMAGE, NOTIFY_MAIN_CHARACTER_HEALTH_POINT, NOTIFY_MAIN_CHARACTER_SURVIVAL, NOTIFY_SEARCH_COUNT, NOTIFY_USE_DRAW_SUPPORT_CARD, NOTIFY_USE_ENERGY_BOOST_SUPPORT_CARD_TO_SPECIFIC_UNIT, NOTIFY_USE_GENERAL_ENERGY_CARD_TO_SPECIFIC_UNIT};
+use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LOST_LIST, NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_DAMAGE, NOTIFY_FIELD_UNIT_DEATH, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_HAND_CARD_USE, NOTIFY_MAIN_CHARACTER_DAMAGE, NOTIFY_MAIN_CHARACTER_HEALTH_POINT, NOTIFY_MAIN_CHARACTER_SURVIVAL, NOTIFY_SEARCH_COUNT, NOTIFY_USE_DRAW_SUPPORT_CARD, NOTIFY_USE_ENERGY_BOOST_SUPPORT_CARD_TO_SPECIFIC_UNIT, NOTIFY_USE_GENERAL_ENERGY_CARD_TO_SPECIFIC_UNIT, NOTIFY_USE_SEARCH_DECK_SUPPORT_CARD};
 
 pub struct NotifyPlayerActionInfoRepositoryImpl;
 
@@ -830,12 +831,46 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
             NotifyFormUseDrawSupportCard::new(player_hand_use_map_for_notice,
                                               player_draw_count_map_for_notice);
 
-        // 상대에게 에너지 부스트 서포트 카드 사용 공지
+        // 상대에게 드로우 서포트 카드 사용 공지
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
                     NOTIFY_USE_DRAW_SUPPORT_CARD(
                         notify_form_use_draw_support_card)))).await;
+
+        true
+    }
+
+    async fn notice_use_search_deck_support(
+        &mut self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_search_count_map_for_notice: HashMap<PlayerIndex, i32>,
+    ) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_search_deck_support()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_use_search_deck_support_card =
+            NotifyFormUseSearchDeckSupportCard::new(player_hand_use_map_for_notice,
+                                                    player_search_count_map_for_notice);
+
+        // 상대에게 덱 검색 서포트 카드 사용 공지 (유닛 검색이 아닌 경우에도 활용 가능)
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_USE_SEARCH_DECK_SUPPORT_CARD(
+                        notify_form_use_search_deck_support_card)))).await;
 
         true
     }

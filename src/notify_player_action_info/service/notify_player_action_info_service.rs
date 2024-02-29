@@ -18,6 +18,7 @@ use crate::notify_player_action_info::service::request::notice_use_energy_boost_
 use crate::notify_player_action_info::service::request::notice_use_field_energy_to_specific_unit_request::NoticeUseFieldEnergyToSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_search_deck_support_card_request::NoticeUseSearchDeckSupportCardRequest;
 use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_multiple_opponent_unit_response::NoticeApplyDamageToMultipleOpponentUnitResponse;
@@ -38,6 +39,7 @@ use crate::notify_player_action_info::service::response::notice_use_energy_boost
 use crate::notify_player_action_info::service::response::notice_use_field_energy_to_specific_unit_response::NoticeUseFieldEnergyToSpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_general_energy_card_to_my_specific_unit_response::NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
+use crate::notify_player_action_info::service::response::notice_use_search_deck_support_card_response::NoticeUseSearchDeckSupportCardResponse;
 
 #[async_trait]
 pub trait NotifyPlayerActionInfoService {
@@ -115,4 +117,8 @@ pub trait NotifyPlayerActionInfoService {
         &mut self,
         notice_use_draw_support_card_request: NoticeUseDrawSupportCardRequest)
         -> NoticeUseDrawSupportCardResponse;
+    async fn notice_use_search_deck_support_card(
+        &mut self,
+        notice_use_search_deck_support_card_request: NoticeUseSearchDeckSupportCardRequest)
+        -> NoticeUseSearchDeckSupportCardResponse;
 }
