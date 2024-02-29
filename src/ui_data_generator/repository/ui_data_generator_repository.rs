@@ -26,6 +26,11 @@ pub trait UiDataGeneratorRepository {
         my_unit_updated_health_point: i32
     ) -> (PlayerFieldUnitHealthPointInfo,
           PlayerFieldUnitHealthPointInfo);
+    async fn generate_my_multiple_unit_health_point_data(
+        &mut self,
+        opponent_unit_health_point_tuple_list: Vec<(i32, i32)>
+    ) -> (PlayerFieldUnitHealthPointInfo,
+          PlayerFieldUnitHealthPointInfo);
     async fn generate_my_specific_unit_energy_data(
         &mut self,
         unit_index: i32,

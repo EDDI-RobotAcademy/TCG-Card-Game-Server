@@ -490,4 +490,23 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_health_point_info_for_response,
          player_field_unit_health_point_info_for_notice)
     }
+    async fn generate_my_multiple_unit_health_point_data(
+        &mut self,
+        my_unit_health_point_tuple_list: Vec<(i32, i32)>
+    ) -> (PlayerFieldUnitHealthPointInfo,
+          PlayerFieldUnitHealthPointInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_my_multiple_unit_health_point_data()");
+
+        let field_unit_health_point_info =
+            self.get_field_unit_health_info_from_tuple_list(my_unit_health_point_tuple_list);
+
+        let player_field_unit_health_point_info_for_response =
+            self.get_player_field_unit_health_point_info(You, field_unit_health_point_info.clone());
+        let player_field_unit_health_point_info_for_notice =
+            self.get_player_field_unit_health_point_info(Opponent, field_unit_health_point_info.clone());
+
+        (player_field_unit_health_point_info_for_response,
+         player_field_unit_health_point_info_for_notice)
+    }
 }
