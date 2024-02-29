@@ -1,1 +1,2 @@
 pub mod summary_passive_skill_effect_request;
+pub mod summary_passive_skill_effect_by_index_request;

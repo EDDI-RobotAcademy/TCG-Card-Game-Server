@@ -23,7 +23,7 @@ impl SummaryPassiveSkillEffect {
     pub fn get_passive_skill_type(&self) -> &PassiveSkillType {
         &self.passive_skill_type
     }
-    pub fn get_passive_skill_casting_condition(&self) -> &Vec<PassiveSkillCastingCondition> { &self.passive_skill_casting_condition }
+    pub fn get_passive_skill_casting_condition(self) -> Vec<PassiveSkillCastingCondition> { self.passive_skill_casting_condition }
     pub fn get_skill_damage(&self) -> i32 {
         self.skill_damage
     }
