@@ -9,6 +9,7 @@ use crate::connection_context::repository::connection_context_repository_impl::C
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
 use crate::notify_player_action_info::entity::notify_form_use_draw_support_card::NotifyFormUseDrawSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_energy_boost_support_card_to_specific_unit::NotifyFormUseEnergyBoostSupportCardToSpecificUnit;
+use crate::notify_player_action_info::entity::notify_form_use_field_energy_remove_support_card::NotifyFormUseFieldEnergyRemoveSupportCard;
 use crate::ui_data_generator::entity::field_unit_damage_info::FieldUnitDamageInfo;
 use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
@@ -34,7 +35,7 @@ use crate::ui_data_generator::entity::player_search_card_list_info::PlayerSearch
 use crate::ui_data_generator::entity::player_search_count_info::PlayerSearchCountInfo;
 use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
-use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LOST_LIST, NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_DAMAGE, NOTIFY_FIELD_UNIT_DEATH, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_HAND_CARD_USE, NOTIFY_MAIN_CHARACTER_DAMAGE, NOTIFY_MAIN_CHARACTER_HEALTH_POINT, NOTIFY_MAIN_CHARACTER_SURVIVAL, NOTIFY_SEARCH_COUNT, NOTIFY_USE_DRAW_SUPPORT_CARD, NOTIFY_USE_ENERGY_BOOST_SUPPORT_CARD_TO_SPECIFIC_UNIT, NOTIFY_USE_GENERAL_ENERGY_CARD_TO_SPECIFIC_UNIT, NOTIFY_USE_SEARCH_DECK_SUPPORT_CARD};
+use crate::response_generator::response_type::ResponseType::{NOTIFY_DECK_CARD_LOST_LIST, NOTIFY_DECK_CARD_USE_LIST, NOTIFY_DRAW_COUNT, NOTIFY_FIELD_ENERGY, NOTIFY_FIELD_UNIT_DAMAGE, NOTIFY_FIELD_UNIT_DEATH, NOTIFY_FIELD_UNIT_ENERGY, NOTIFY_FIELD_UNIT_HEALTH_POINT, NOTIFY_HAND_CARD_USE, NOTIFY_MAIN_CHARACTER_DAMAGE, NOTIFY_MAIN_CHARACTER_HEALTH_POINT, NOTIFY_MAIN_CHARACTER_SURVIVAL, NOTIFY_SEARCH_COUNT, NOTIFY_USE_DRAW_SUPPORT_CARD, NOTIFY_USE_ENERGY_BOOST_SUPPORT_CARD_TO_SPECIFIC_UNIT, NOTIFY_USE_FIELD_ENERGY_REMOVE_SUPPORT_CARD, NOTIFY_USE_GENERAL_ENERGY_CARD_TO_SPECIFIC_UNIT, NOTIFY_USE_SEARCH_DECK_SUPPORT_CARD};
 
 pub struct NotifyPlayerActionInfoRepositoryImpl;
 
@@ -772,7 +773,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone())
     }
 
-    async fn notice_use_energy_boost_support_to_my_specific_unit(
+    async fn notice_use_energy_boost_support_to_specific_unit(
         &mut self,
         opponent_unique_id: i32,
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
@@ -780,7 +781,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>
     ) -> bool {
 
-        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_energy_boost_support_to_my_specific_unit()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_energy_boost_support_to_specific_unit()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -871,6 +872,40 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_USE_SEARCH_DECK_SUPPORT_CARD(
                         notify_form_use_search_deck_support_card)))).await;
+
+        true
+    }
+
+    async fn notice_use_field_energy_remove_support(
+        &mut self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
+    ) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_field_energy_remove_support()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_use_field_energy_remove_support_card =
+            NotifyFormUseFieldEnergyRemoveSupportCard::new(player_hand_use_map_for_notice,
+                                                           player_field_energy_map_for_notice);
+
+        // 상대에게 필드 에너지 파괴 서포트 카드 사용 공지 (동시 파괴인 경우에도 활용 가능)
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_USE_FIELD_ENERGY_REMOVE_SUPPORT_CARD(
+                        notify_form_use_field_energy_remove_support_card)))).await;
 
         true
     }

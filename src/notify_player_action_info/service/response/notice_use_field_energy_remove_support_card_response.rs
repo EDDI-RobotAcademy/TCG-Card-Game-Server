@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NoticeUseEnergyBoostSupportCardToSpecificUnitResponse {
+pub struct NoticeUseFieldEnergyRemoveSupportCardResponse {
     is_success: bool,
 }
 
-impl NoticeUseEnergyBoostSupportCardToSpecificUnitResponse {
+impl NoticeUseFieldEnergyRemoveSupportCardResponse {
     pub fn new(is_success: bool) -> Self {
-        NoticeUseEnergyBoostSupportCardToSpecificUnitResponse { is_success }
+        NoticeUseFieldEnergyRemoveSupportCardResponse { is_success }
     }
 
     pub fn is_success(&self) -> bool {
