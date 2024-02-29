@@ -73,6 +73,12 @@ pub trait UiDataGeneratorRepository {
         dead_unit_index: i32
     ) -> (PlayerFieldUnitDeathInfo,
           PlayerFieldUnitDeathInfo);
+    async fn generate_my_specific_unit_death_data(
+        &mut self,
+        dead_unit_index: i32
+    ) -> (PlayerFieldUnitDeathInfo,
+          PlayerFieldUnitDeathInfo);
+
     async fn generate_opponent_specific_unit_health_point_data(
         &mut self,
         opponent_unit_index: i32,

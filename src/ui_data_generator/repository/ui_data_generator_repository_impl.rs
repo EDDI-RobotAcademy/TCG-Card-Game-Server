@@ -449,6 +449,25 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_death_info_for_response,
          player_field_unit_death_info_for_notice)
     }
+    async fn generate_my_specific_unit_death_data(
+        &mut self,
+        dead_unit_index: i32
+    ) -> (PlayerFieldUnitDeathInfo,
+          PlayerFieldUnitDeathInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_my_specific_unit_death_data()");
+
+        let field_unit_death_info =
+            self.get_field_unit_death_info(dead_unit_index);
+
+        let player_field_unit_death_info_for_response =
+            self.get_player_field_unit_death_info(You, field_unit_death_info.clone());
+        let player_field_unit_death_info_for_notice =
+            self.get_player_field_unit_death_info(Opponent, field_unit_death_info.clone());
+
+        (player_field_unit_death_info_for_response,
+         player_field_unit_death_info_for_notice)
+    }
 
     async fn generate_opponent_specific_unit_health_point_data(
         &mut self,
