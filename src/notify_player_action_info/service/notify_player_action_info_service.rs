@@ -19,6 +19,7 @@ use crate::notify_player_action_info::service::request::notice_use_field_energy_
 use crate::notify_player_action_info::service::request::notice_use_field_energy_to_specific_unit_request::NoticeUseFieldEnergyToSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_instant_death_item_card_to_opponent_specific_unit_request::NoticeUseInstantDeathItemCardToOpponentSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_search_deck_support_card_request::NoticeUseSearchDeckSupportCardRequest;
 use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
@@ -41,6 +42,7 @@ use crate::notify_player_action_info::service::response::notice_use_field_energy
 use crate::notify_player_action_info::service::response::notice_use_field_energy_to_specific_unit_response::NoticeUseFieldEnergyToSpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_general_energy_card_to_my_specific_unit_response::NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
+use crate::notify_player_action_info::service::response::notice_use_instant_death_item_card_to_opponent_specific_unit_response::NoticeUseInstantDeathItemCardToOpponentSpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_search_deck_support_card_response::NoticeUseSearchDeckSupportCardResponse;
 
 #[async_trait]
@@ -127,4 +129,8 @@ pub trait NotifyPlayerActionInfoService {
         &mut self,
         notice_use_field_energy_remove_support_card_request: NoticeUseFieldEnergyRemoveSupportCardRequest)
         -> NoticeUseFieldEnergyRemoveSupportCardResponse;
+    async fn notice_use_instant_death_item_card_to_opponent_specific_unit(
+        &mut self,
+        notice_use_instant_death_item_card_to_opponent_specific_unit_request: NoticeUseInstantDeathItemCardToOpponentSpecificUnitRequest)
+        -> NoticeUseInstantDeathItemCardToOpponentSpecificUnitResponse;
 }

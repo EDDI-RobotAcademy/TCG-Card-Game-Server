@@ -6,10 +6,13 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
+use crate::ui_data_generator::entity::extra_effect_info::ExtraEffectInfo;
 use crate::ui_data_generator::entity::field_unit_damage_info::FieldUnitDamageInfo;
 use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
 use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::field_unit_extra_effect_info::FieldUnitExtraEffectInfo;
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
@@ -19,6 +22,7 @@ use crate::ui_data_generator::entity::player_field_energy_info::PlayerFieldEnerg
 use crate::ui_data_generator::entity::player_field_unit_damage_info::PlayerFieldUnitDamageInfo;
 use crate::ui_data_generator::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
 use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::player_field_unit_extra_effect_info::PlayerFieldUnitExtraEffectInfo;
 use crate::ui_data_generator::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
@@ -266,6 +270,28 @@ impl UiDataGeneratorRepositoryImpl {
         player_main_character_survival_map.insert(notify_player_index, survival_status);
 
         PlayerMainCharacterSurvivalInfo::new(player_main_character_survival_map)
+    }
+    fn get_field_unit_extra_effect_info(
+        &self,
+        unit_index: i32,
+        unit_extra_effect_list: Vec<ExtraEffect>) -> FieldUnitExtraEffectInfo {
+
+        let extra_effect_info = ExtraEffectInfo::new(unit_extra_effect_list);
+
+        let mut map = HashMap::new();
+        map.insert(unit_index, extra_effect_info);
+
+        FieldUnitExtraEffectInfo::new(map)
+    }
+    fn get_player_field_unit_extra_effect_info(&self,
+                                               notify_player_index: PlayerIndex,
+                                               field_unit_extra_effect_info: FieldUnitExtraEffectInfo
+    ) -> PlayerFieldUnitExtraEffectInfo {
+
+        let mut player_field_unit_extra_effect_map = HashMap::new();
+        player_field_unit_extra_effect_map.insert(notify_player_index, field_unit_extra_effect_info);
+
+        PlayerFieldUnitExtraEffectInfo::new(player_field_unit_extra_effect_map)
     }
 }
 
@@ -584,4 +610,55 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_health_point_info_for_response,
          player_field_unit_health_point_info_for_notice)
     }
+    async fn generate_my_main_character_survival_data(
+        &mut self,
+        my_main_character_status: StatusMainCharacterEnum
+    ) -> (PlayerMainCharacterSurvivalInfo,
+          PlayerMainCharacterSurvivalInfo) {
+        println!("UiDataGeneratorRepositoryImpl: generate_my_main_character_survival_data()");
+
+
+        let player_main_character_survival_info_for_response =
+            self.get_player_main_character_survival_info(You, my_main_character_status.clone());
+        let player_main_character_survival_info_for_notice =
+            self.get_player_main_character_survival_info(Opponent, my_main_character_status.clone());
+
+        (player_main_character_survival_info_for_response,
+         player_main_character_survival_info_for_notice)
+    }
+    async fn generate_opponent_main_character_survival_data(
+        &mut self,
+        my_main_character_status: StatusMainCharacterEnum
+    ) -> (PlayerMainCharacterSurvivalInfo,
+          PlayerMainCharacterSurvivalInfo) {
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_main_character_survival_data()");
+
+
+        let player_main_character_survival_info_for_response =
+            self.get_player_main_character_survival_info(Opponent, my_main_character_status.clone());
+        let player_main_character_survival_info_for_notice =
+            self.get_player_main_character_survival_info(You, my_main_character_status.clone());
+
+        (player_main_character_survival_info_for_response,
+         player_main_character_survival_info_for_notice)
+    }
+    async fn generate_my_specific_unit_extra_effect_data(
+        &mut self,
+        my_extra_effect_unit_index:i32,
+        my_unit_extra_effect_list:Vec<ExtraEffect>
+    ) -> (PlayerFieldUnitExtraEffectInfo,
+          PlayerFieldUnitExtraEffectInfo) {
+        println!("UiDataGeneratorRepositoryImpl: generate_my_specific_unit_extra_effect_data()");
+
+        let field_unit_extra_effect_info =
+                 self.get_field_unit_extra_effect_info(my_extra_effect_unit_index, my_unit_extra_effect_list);
+        let player_main_character_survival_info_for_response =
+            self.get_player_field_unit_extra_effect_info(You, field_unit_extra_effect_info.clone());
+        let player_main_character_survival_info_for_notice =
+            self.get_player_field_unit_extra_effect_info(Opponent, field_unit_extra_effect_info.clone());
+
+        (player_main_character_survival_info_for_response,
+         player_main_character_survival_info_for_notice)
+    }
+
 }
