@@ -2,8 +2,9 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
-use crate::notify_player_action_info::service::response::notice_boost_energy_to_specific_unit_response::NoticeBoostEnergyToSpecificUnitResponse;
-use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
+use crate::ui_data_generator::service::response::generate_my_specific_unit_energy_data_response::GenerateMySpecificUnitEnergyDataResponse;
+use crate::ui_data_generator::service::response::generate_use_my_deck_card_list_data_response::GenerateUseMyDeckCardListDataResponse;
+use crate::ui_data_generator::service::response::generate_use_my_hand_card_data_response::GenerateUseMyHandCardDataResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnergyBoostSupportResponseForm {
@@ -23,18 +24,15 @@ impl EnergyBoostSupportResponseForm {
         }
     }
 
-    pub fn from_response(notice_use_hand_card_response: NoticeUseHandCardResponse,
-                         notice_boost_energy_to_specific_unit_response: NoticeBoostEnergyToSpecificUnitResponse)
+    pub fn from_response(generate_use_my_hand_card_data_response: GenerateUseMyHandCardDataResponse,
+                         generate_use_my_deck_card_list_data_response: GenerateUseMyDeckCardListDataResponse,
+                         generate_my_specific_unit_energy_data_response: GenerateMySpecificUnitEnergyDataResponse)
         -> EnergyBoostSupportResponseForm {
 
         EnergyBoostSupportResponseForm::new(
-            notice_use_hand_card_response.is_success(),
-            notice_boost_energy_to_specific_unit_response
-                .get_player_deck_card_use_list_info()
-                .get_player_deck_card_use_list_map().clone(),
-            notice_boost_energy_to_specific_unit_response
-                .get_player_field_unit_energy_info()
-                .get_player_field_unit_energy_map().clone())
+            generate_use_my_hand_card_data_response.is_success_for_response(),
+            generate_use_my_deck_card_list_data_response.get_player_deck_card_use_list_map_for_response().clone(),
+            generate_my_specific_unit_energy_data_response.get_player_field_unit_energy_map_for_response().clone())
     }
 
     pub fn default() -> EnergyBoostSupportResponseForm {
