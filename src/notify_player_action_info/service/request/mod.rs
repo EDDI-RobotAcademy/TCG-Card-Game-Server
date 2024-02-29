@@ -20,3 +20,4 @@ pub mod notice_use_draw_support_card_request;
 pub mod notice_use_search_deck_support_card_request;
 pub mod notice_use_field_energy_remove_support_card_request;
 pub mod notice_use_instant_death_item_card_to_opponent_specific_unit_request;
+pub mod notice_use_field_energy_increase_item_card_request;
