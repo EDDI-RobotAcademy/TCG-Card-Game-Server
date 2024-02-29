@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::notify_player_action_info::service::response::notice_search_card_response::NoticeSearchCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
+use crate::ui_data_generator::service::response::generate_search_my_deck_data_response::GenerateSearchMyDeckDataResponse;
+use crate::ui_data_generator::service::response::generate_use_my_hand_card_data_response::GenerateUseMyHandCardDataResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchUnitSupportResponseForm {
@@ -19,15 +21,14 @@ impl SearchUnitSupportResponseForm {
         }
     }
 
-    pub fn from_response(notice_use_hand_card_response: NoticeUseHandCardResponse,
-                         notice_search_card_response: NoticeSearchCardResponse)
+    pub fn from_response(generate_use_my_hand_card_data_response: GenerateUseMyHandCardDataResponse,
+                         generate_search_my_deck_data_response: GenerateSearchMyDeckDataResponse)
         -> SearchUnitSupportResponseForm {
 
         SearchUnitSupportResponseForm::new(
-            notice_use_hand_card_response.is_success(),
-            notice_search_card_response
-                .get_player_search_card_list_info()
-                .get_player_search_card_list_map().clone())
+            generate_use_my_hand_card_data_response.is_success_for_response(),
+            generate_search_my_deck_data_response
+                .get_player_search_card_list_map_for_response().clone())
     }
 
     pub fn default() -> SearchUnitSupportResponseForm {
