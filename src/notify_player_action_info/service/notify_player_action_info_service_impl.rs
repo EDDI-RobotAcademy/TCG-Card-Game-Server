@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
-use diesel::IntoSql;
+
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
@@ -36,7 +36,7 @@ use crate::notify_player_action_info::service::request::notice_use_energy_boost_
 use crate::notify_player_action_info::service::request::notice_use_field_energy_to_specific_unit_request::NoticeUseFieldEnergyToSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
-use crate::notify_player_action_info::service::request::notice_use_search_unit_form_deck_support_card_request::NoticeUseSearchUnitFromDeckSupportCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_search_deck_support_card_request::{NoticeUseSearchDeckSupportCardRequest};
 use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_multiple_opponent_unit_response::NoticeApplyDamageToMultipleOpponentUnitResponse;
@@ -56,7 +56,7 @@ use crate::notify_player_action_info::service::response::notice_use_energy_boost
 use crate::notify_player_action_info::service::response::notice_use_field_energy_to_specific_unit_response::NoticeUseFieldEnergyToSpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_general_energy_card_to_my_specific_unit_response::NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
-use crate::notify_player_action_info::service::response::notice_use_search_unit_form_deck_support_card_response::NoticeUseSearchUnitFromDeckSupportCardResponse;
+use crate::notify_player_action_info::service::response::notice_use_search_deck_support_card_response::{NoticeUseSearchDeckSupportCardResponse};
 
 pub struct NotifyPlayerActionInfoServiceImpl {
     notify_player_action_info_repository: Arc<AsyncMutex<NotifyPlayerActionInfoRepositoryImpl>>,
@@ -648,24 +648,24 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         NoticeUseDrawSupportCardResponse::new(response)
     }
 
-    async fn notice_use_search_unit_from_deck_support_card(
+    async fn notice_use_search_deck_support_card(
         &mut self,
-        notice_use_search_unit_from_deck_support_card_request: NoticeUseSearchUnitFromDeckSupportCardRequest)
-        -> NoticeUseSearchUnitFromDeckSupportCardResponse {
+        notice_use_search_deck_support_card_request: NoticeUseSearchDeckSupportCardRequest)
+        -> NoticeUseSearchDeckSupportCardResponse {
 
-        println!("NotifyPlayerActionInfoServiceImpl: notice_use_search_unit_from_deck_support_card()");
+        println!("NotifyPlayerActionInfoServiceImpl: notice_use_search_deck_support_card()");
 
         let mut notify_player_action_info_repository_guard =
             self.notify_player_action_info_repository.lock().await;
 
         let response =
             notify_player_action_info_repository_guard.notice_use_search_deck_support(
-                notice_use_search_unit_from_deck_support_card_request.get_opponent_unique_id(),
-                notice_use_search_unit_from_deck_support_card_request.get_player_hand_use_map_for_notice().clone(),
-                notice_use_search_unit_from_deck_support_card_request.get_player_search_count_map_for_notice().clone()).await;
+                notice_use_search_deck_support_card_request.get_opponent_unique_id(),
+                notice_use_search_deck_support_card_request.get_player_hand_use_map_for_notice().clone(),
+                notice_use_search_deck_support_card_request.get_player_search_count_map_for_notice().clone()).await;
 
         drop(notify_player_action_info_repository_guard);
 
-        NoticeUseSearchUnitFromDeckSupportCardResponse::new(response)
+        NoticeUseSearchDeckSupportCardResponse::new(response)
     }
 }
