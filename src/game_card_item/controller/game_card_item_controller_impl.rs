@@ -377,28 +377,26 @@ impl GameCardItemController for GameCardItemControllerImpl {
             let mut notify_player_action_info_service_guard =
                 self.notify_player_action_info_service.lock().await;
 
-            let notice_use_hand_card_response =
-                notify_player_action_info_service_guard.notice_use_hand_card(
+            let notice_response =
+                notify_player_action_info_service_guard.notice_use_instant_unit_death_item_card(
                     target_death_item_request_form
-                        .to_notice_use_hand_card_request(
+                        .to_notice_use_instant_unit_death_item_card_request(
                             opponent_unique_id,
-                            usage_hand_card)).await;
+                            generate_use_my_hand_card_data_response
+                                .get_player_hand_use_map_for_notice().clone(),
+                            generate_opponent_specific_unit_health_point_data_response
+                                .get_player_field_unit_health_point_map_for_notice().clone(),
+                            generate_opponent_specific_unit_death_data_response
+                                .get_player_field_unit_death_map_for_notice().clone())).await;
 
-            let notice_apply_damage_to_specific_opponent_unit_response =
-                notify_player_action_info_service_guard.notice_apply_damage_to_specific_opponent_unit(
-                    target_death_item_request_form
-                        .to_notice_apply_damage_to_specific_opponent_unit_request(
-                            opponent_unique_id,
-                            opponent_target_unit_index,
-                            summarized_item_effect_response.get_alternatives_damage(),
-                            updated_health_point,
-                            maybe_dead_unit_index)).await;
+            println!("notice_response: {:?}", notice_response);
 
             drop(notify_player_action_info_service_guard);
 
-            return TargetDeathItemResponseForm::from_alternative_response(
-                notice_use_hand_card_response,
-                notice_apply_damage_to_specific_opponent_unit_response)
+            return TargetDeathItemResponseForm::from_response(
+                generate_use_my_hand_card_data_response,
+                generate_opponent_specific_unit_health_point_data_response,
+                generate_opponent_specific_unit_death_data_response)
         }
 
         // 12. Field Unit Service 를 호출하여 상대 유닛에 즉사 적용
@@ -407,6 +405,13 @@ impl GameCardItemController for GameCardItemControllerImpl {
                 .to_apply_instant_death_to_target_unit_index_request(
                     opponent_unique_id,
                     opponent_target_unit_index)).await;
+
+        let updated_health_point =
+            game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
+                target_death_item_request_form
+                    .to_get_current_health_point_of_field_unit_by_index_request(
+                        opponent_unique_id,
+                        opponent_target_unit_index)).await.get_current_unit_health_point();
 
         let maybe_dead_unit_index =
             game_field_unit_service_guard.judge_death_of_unit(
@@ -417,28 +422,53 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         drop(game_field_unit_service_guard);
 
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_use_my_hand_card_data_response =
+            ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                target_death_item_request_form
+                    .to_generate_use_my_hand_card_data_request(
+                        usage_hand_card)).await;
+
+        let generate_opponent_specific_unit_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
+                target_death_item_request_form
+                    .to_generate_opponent_specific_unit_health_point_data_request(
+                        opponent_target_unit_index,
+                        updated_health_point)).await;
+
+        let generate_opponent_specific_unit_death_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_death_data(
+                target_death_item_request_form
+                    .to_generate_opponent_specific_unit_death_data_request(
+                        maybe_dead_unit_index)).await;
+
+        drop(ui_data_generator_service_guard);
+
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        let notice_use_hand_card_response =
-            notify_player_action_info_service_guard.notice_use_hand_card(
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_instant_unit_death_item_card(
                 target_death_item_request_form
-                    .to_notice_use_hand_card_request(
+                    .to_notice_use_instant_unit_death_item_card_request(
                         opponent_unique_id,
-                        usage_hand_card)).await;
+                        generate_use_my_hand_card_data_response
+                            .get_player_hand_use_map_for_notice().clone(),
+                        generate_opponent_specific_unit_health_point_data_response
+                            .get_player_field_unit_health_point_map_for_notice().clone(),
+                        generate_opponent_specific_unit_death_data_response
+                            .get_player_field_unit_death_map_for_notice().clone())).await;
 
-        let notice_instant_death_of_specific_opponent_unit_response =
-            notify_player_action_info_service_guard.notice_instant_death_of_specific_opponent_unit(
-                target_death_item_request_form
-                    .to_notice_instant_death_of_specific_opponent_unit_request(
-                        opponent_unique_id,
-                        maybe_dead_unit_index)).await;
+        println!("notice_response: {:?}", notice_response);
 
         drop(notify_player_action_info_service_guard);
 
         TargetDeathItemResponseForm::from_response(
-            notice_use_hand_card_response,
-            notice_instant_death_of_specific_opponent_unit_response)
+            generate_use_my_hand_card_data_response,
+            generate_opponent_specific_unit_health_point_data_response,
+            generate_opponent_specific_unit_death_data_response)
     }
 
     async fn request_to_use_add_field_energy_with_field_unit_health_point(
