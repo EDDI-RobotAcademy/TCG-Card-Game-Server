@@ -40,4 +40,8 @@ impl GameCardUnitHandler for UnitCard_6_Function {
 
         return game_card_unit_effect;
     }
+
+    unsafe fn summary_unit_card_passive_default(&self) -> Vec<bool> {
+        vec![false, false, false]
+    }
 }

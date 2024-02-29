@@ -542,6 +542,26 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         return game_field_unit_card_list[unit_index as usize].is_alive()
     }
+
+    fn reset_all_passive_of_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_card_index: i32,
+        passive_default_list: Vec<bool>) -> bool {
+        println!("GameFieldUnitRepositoryImpl: reset_all_passive_of_unit()");
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let unit_index = unit_card_index as usize;
+
+            if unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
+                let _ = game_field_unit.reset_first_passive_of_unit(unit_index, passive_default_list[0]);
+                let _ = game_field_unit.reset_second_passive_of_unit(unit_index, passive_default_list[1]);
+                let _ = game_field_unit.reset_third_passive_of_unit(unit_index, passive_default_list[2]);
+                return true;
+            }
+        }
+        false
+    }
 }
 
 #[cfg(test)]
@@ -1091,5 +1111,32 @@ mod tests {
         let test_game_field_unit_card_after = game_field_unit_repository.find_indexed_unit(opponent_unique_id, opponent_unit_index).unwrap();
         println!("test_game_field_unit_card_after_attack: {:?}", test_game_field_unit_card_after);
         }
+
+    #[test]
+    fn test_reset_all_passive_of_unit() {
+        let mut game_field_unit_repository = GameFieldUnitRepositoryImpl::new();
+        game_field_unit_repository.create_game_field_unit_object(1);
+
+        // Add multiple units to the game field
+        for _ in 0..3 {
+            game_field_unit_repository.add_unit_to_game_field(
+                1,
+                42,
+                RaceEnum::Chaos,
+                GradeEnum::Legend,
+                35,
+                30,
+                2,
+                false,
+                false,
+                false,
+            );
+        }
+        let gaa = game_field_unit_repository.reset_all_passive_of_unit(1, 0, vec![true, true, false]);
+        let gab = game_field_unit_repository.reset_all_passive_of_unit(1, 1, vec![true, false, false]);
+
+
+        println!("{:?}", game_field_unit_repository.get_game_field_unit_map().get(&1))
+    }
 
 }

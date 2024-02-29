@@ -42,87 +42,145 @@ impl EnergyBoostSupportRequestForm {
         }
     }
 
-    pub fn get_session_id(&self) -> &str {
-        &self.session_id
-    }
-    pub fn get_unit_index_number(&self) -> &str {
-        &self.unit_index_number
-    }
-    pub fn get_support_card_id(&self) -> &str {
-        &self.support_card_id
+    pub fn get_unit_unit_index_number(
+        &self) -> &str { &self.unit_index_number }
+
+    pub fn get_support_card_id(
+        &self) -> &str { &self.support_card_id }
+
+    pub fn to_session_validation_request(
+        &self) -> GetValueWithKeyRequest {
+
+        GetValueWithKeyRequest::new(
+            self.session_id.clone().as_str())
     }
 
-    pub fn to_session_validation_request(&self) -> GetValueWithKeyRequest {
-        GetValueWithKeyRequest::new(self.session_id.clone().as_str())
+    pub fn to_is_this_your_turn_request(
+        &self,
+        account_unique_id: i32) -> IsThisYourTurnRequest {
+
+        IsThisYourTurnRequest::new(
+            account_unique_id)
     }
 
-    pub fn to_is_this_your_turn_request(&self,
-                                        account_unique_id: i32) -> IsThisYourTurnRequest {
-        IsThisYourTurnRequest::new(account_unique_id)
+    pub fn to_check_protocol_hacking_request(
+        &self,
+        account_unique_id: i32,
+        support_card_number: i32) -> CheckProtocolHackingRequest {
+
+        CheckProtocolHackingRequest::new(
+            account_unique_id,
+            support_card_number)
     }
 
-    pub fn to_check_protocol_hacking_request(&self, account_unique_id: i32, support_card_number: i32) -> CheckProtocolHackingRequest {
-        CheckProtocolHackingRequest::new(account_unique_id, support_card_number)
+    pub fn to_can_use_card_request(
+        &self,
+        account_unique_id: i32,
+        support_card_number: i32) -> CanUseCardRequest {
+
+        CanUseCardRequest::new(
+            account_unique_id,
+            support_card_number)
     }
 
-    pub fn to_can_use_card_request(&self, account_unique_id: i32, support_card_number: i32) -> CanUseCardRequest {
-        CanUseCardRequest::new(account_unique_id, support_card_number)
+    pub fn to_is_it_support_card_request(
+        &self,
+        support_card_number: i32) -> IsItSupportCardRequest {
+
+        IsItSupportCardRequest::new(
+            support_card_number)
     }
 
-    pub fn to_is_it_support_card_request(&self, support_card_number: i32) -> IsItSupportCardRequest {
-        IsItSupportCardRequest::new(support_card_number)
+    pub fn to_check_support_card_usage_count_request(
+        &self,
+        account_unique_id: i32) -> CheckSupportCardUsageCountRequest {
+
+        CheckSupportCardUsageCountRequest::new(
+            account_unique_id)
     }
 
-    pub fn to_check_support_card_usage_count_request(&self, account_unique_id: i32) -> CheckSupportCardUsageCountRequest {
-        CheckSupportCardUsageCountRequest::new(account_unique_id)
-    }
-    pub fn to_update_support_card_usage_count_request(&self, account_unique_id: i32) -> UpdateSupportCardUsageCountRequest {
-        UpdateSupportCardUsageCountRequest::new(account_unique_id)
-    }
+    pub fn to_update_support_card_usage_count_request(
+        &self,
+        account_unique_id: i32) -> UpdateSupportCardUsageCountRequest {
 
-    pub fn to_use_game_hand_support_card_request(&self, account_unique_id: i32, support_card_number: i32) -> UseGameHandSupportCardRequest {
+        UpdateSupportCardUsageCountRequest::new(
+            account_unique_id)
+    }
+    pub fn to_use_game_hand_support_card_request(
+        &self,
+        account_unique_id: i32,
+        support_card_number: i32) -> UseGameHandSupportCardRequest {
+
         UseGameHandSupportCardRequest::new(
-            account_unique_id, support_card_number)
+            account_unique_id,
+            support_card_number)
     }
 
-    pub fn to_place_to_tomb_request(&self, account_unique_id: i32, used_card_id: i32) -> PlaceToTombRequest {
-        PlaceToTombRequest::new(account_unique_id, used_card_id)
+    pub fn to_place_to_tomb_request(
+        &self,
+        account_unique_id: i32,
+        used_card_id: i32) -> PlaceToTombRequest {
+
+        PlaceToTombRequest::new(
+            account_unique_id,
+            used_card_id)
     }
 
-    pub fn to_summarize_support_card_effect_request(&self, support_card_number: i32) -> SummarizeSupportCardEffectRequest {
-        SummarizeSupportCardEffectRequest::new(support_card_number)
+    pub fn to_summarize_support_card_effect_request(
+        &self,
+        support_card_number: i32) -> SummarizeSupportCardEffectRequest {
+
+        SummarizeSupportCardEffectRequest::new(
+            support_card_number)
     }
 
-    pub fn to_found_card_from_deck_request(&self,
-                                           account_unique_id: i32,
-                                           need_to_find_card_id: i32,
-                                           energy_count: i32) -> FoundCardFromDeckRequest {
+    pub fn to_found_card_from_deck_request(
+        &self,
+        account_unique_id: i32,
+        need_to_find_card_id: i32,
+        energy_count: i32) -> FoundCardFromDeckRequest {
+
         FoundCardFromDeckRequest::new(
-            account_unique_id, need_to_find_card_id, energy_count)
+            account_unique_id,
+            need_to_find_card_id,
+            energy_count)
     }
 
-    pub fn to_attach_multiple_energy_to_unit_index_request(&self,
-                                                           account_unique_id: i32,
-                                                           unit_number: i32,
-                                                           boost_race: RaceEnum,
-                                                           energy_count: i32) -> AttachMultipleEnergyToUnitIndexRequest {
+    pub fn to_attach_multiple_energy_to_unit_index_request(
+        &self,
+        account_unique_id: i32,
+        unit_number: i32,
+        boost_race: RaceEnum,
+        energy_count: i32) -> AttachMultipleEnergyToUnitIndexRequest {
+
         AttachMultipleEnergyToUnitIndexRequest::new(
-            account_unique_id, unit_number, boost_race, energy_count)
+            account_unique_id,
+            unit_number,
+            boost_race,
+            energy_count)
     }
 
-    pub fn to_get_current_attached_energy_of_field_unit_by_index_request(&self,
-                                                                         account_unique_id: i32,
-                                                                         field_unit_index: i32) -> GetCurrentAttachedEnergyOfFieldUnitByIndexRequest {
+    pub fn to_get_current_attached_energy_of_field_unit_by_index_request(
+        &self,
+        account_unique_id: i32,
+        field_unit_index: i32) -> GetCurrentAttachedEnergyOfFieldUnitByIndexRequest {
+
         GetCurrentAttachedEnergyOfFieldUnitByIndexRequest::new(
-            account_unique_id, field_unit_index)
+            account_unique_id,
+            field_unit_index)
     }
 
-    pub fn to_shuffle_deck_request(&self) -> GameDeckCardShuffleRequest {
-        GameDeckCardShuffleRequest::new( self.session_id.clone() )
+    pub fn to_shuffle_deck_request(
+        &self) -> GameDeckCardShuffleRequest {
+
+        GameDeckCardShuffleRequest::new(
+            self.session_id.clone())
     }
 
-    pub fn to_find_opponent_by_account_id_request(&self,
-                                                  account_unique_id: i32) -> FindOpponentByAccountIdRequest {
+    pub fn to_find_opponent_by_account_id_request(
+        &self,
+        account_unique_id: i32) -> FindOpponentByAccountIdRequest {
+
         FindOpponentByAccountIdRequest::new(
             account_unique_id)
     }
@@ -153,27 +211,6 @@ impl EnergyBoostSupportRequestForm {
         GenerateMySpecificUnitEnergyDataRequest::new(
             unit_index,
             updated_unit_energy_map)
-    }
-
-    pub fn to_notice_use_hand_card_request(&self,
-                                           opponent_unique_id: i32,
-                                           used_hand_card_id: i32) -> NoticeUseHandCardRequest {
-        NoticeUseHandCardRequest::new(
-            opponent_unique_id, used_hand_card_id)
-    }
-
-    pub fn to_notice_boost_energy_to_specific_unit_request(
-        &self,
-        opponent_unique_id: i32,
-        found_energy_card_id_list: Vec<i32>,
-        unit_index: i32,
-        attached_energy_map: AttachedEnergyMap) -> NoticeBoostEnergyToSpecificUnitRequest {
-
-        NoticeBoostEnergyToSpecificUnitRequest::new(
-            opponent_unique_id,
-            found_energy_card_id_list,
-            unit_index,
-            attached_energy_map)
     }
 
     pub fn to_notice_energy_boost_support_card_to_specific_unit_request(

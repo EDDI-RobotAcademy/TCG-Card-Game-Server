@@ -8,6 +8,8 @@ use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::game_card_support_usage_counter::service::game_card_support_usage_counter_service::GameCardSupportUsageCounterService;
 use crate::game_card_support_usage_counter::service::game_card_support_usage_counter_service_impl::GameCardSupportUsageCounterServiceImpl;
+use crate::game_card_unit::service::game_card_unit_service::GameCardUnitService;
+use crate::game_card_unit::service::game_card_unit_service_impl::GameCardUnitServiceImpl;
 
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
@@ -51,6 +53,7 @@ pub struct GameTurnControllerImpl {
     game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
     game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
     game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
+    game_card_unit_service: Arc<AsyncMutex<GameCardUnitServiceImpl>>,
 }
 
 impl GameTurnControllerImpl {
@@ -66,6 +69,7 @@ impl GameTurnControllerImpl {
                game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
                game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
                game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
+               game_card_unit_service: Arc<AsyncMutex<GameCardUnitServiceImpl>>,
              ) -> Self {
 
         GameTurnControllerImpl {
@@ -80,7 +84,8 @@ impl GameTurnControllerImpl {
             game_main_character_service,
             game_tomb_service,
             game_hand_service,
-            game_card_support_usage_counter_service
+            game_card_support_usage_counter_service,
+            game_card_unit_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameTurnControllerImpl>> {
@@ -100,7 +105,8 @@ impl GameTurnControllerImpl {
                             GameMainCharacterServiceImpl::get_instance(),
                             GameTombServiceImpl::get_instance(),
                             GameHandServiceImpl::get_instance(),
-                            GameCardSupportUsageCounterServiceImpl::get_instance())));
+                            GameCardSupportUsageCounterServiceImpl::get_instance(),
+                            GameCardUnitServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -185,6 +191,35 @@ impl GameTurnController for GameTurnControllerImpl {
             turn_end_request_form
                 .to_reset_turn_action_of_all_field_unit_request(account_unique_id)).await;
 
+        // 패시브 스킬 사용 여부 초기화
+        let field_unit_list =
+            game_field_unit_service_guard.get_game_field_unit_card_of_account_unique_id(
+                turn_end_request_form
+                    .to_get_game_field_unit_card_of_account_unique_id_request(account_unique_id)).await;
+
+        let mut game_card_unit_service_gurad =
+            self.game_card_unit_service.lock().await;
+
+        let mut unit_index_for_reset_passive = 0 ;
+        for field_unit in field_unit_list.get_game_field_unit_card() {
+            let unit_card_id = field_unit.get_card();
+            let get_summary_passive_default =
+                game_card_unit_service_gurad.summary_unit_card_passive_default(
+                    turn_end_request_form
+                        .to_summary_unit_card_passive_default_request(unit_card_id)).await;
+
+            let passive_default_list = get_summary_passive_default.get_passive_default_list().clone();
+
+            game_field_unit_service_guard.reset_all_passive_of_unit(
+                turn_end_request_form
+                    .to_reset_all_passive_of_unit(
+                        account_unique_id,
+                        unit_index_for_reset_passive,
+                        passive_default_list)).await;
+            unit_index_for_reset_passive = unit_index_for_reset_passive + 1;
+        }
+
+        drop(game_card_unit_service_gurad);
         drop(game_field_unit_service_guard);
 
         let mut game_card_support_usage_counter_service_guard =
