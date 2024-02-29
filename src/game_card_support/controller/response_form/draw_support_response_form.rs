@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
-use crate::notify_player_action_info::service::response::notice_draw_card_response::NoticeDrawCardResponse;
-use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
+use crate::ui_data_generator::service::response::generate_draw_my_deck_data_response::GenerateDrawMyDeckDataResponse;
+use crate::ui_data_generator::service::response::generate_use_my_hand_card_data_response::GenerateUseMyHandCardDataResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DrawSupportResponseForm {
@@ -19,15 +19,14 @@ impl DrawSupportResponseForm {
         }
     }
 
-    pub fn from_response(notice_use_hand_card_response: NoticeUseHandCardResponse,
-                         notice_draw_card_response: NoticeDrawCardResponse)
-        -> DrawSupportResponseForm {
+    pub fn from_response(generate_use_hand_card_data_response: GenerateUseMyHandCardDataResponse,
+                         generate_draw_my_deck_data_response: GenerateDrawMyDeckDataResponse
+    ) -> DrawSupportResponseForm {
 
         DrawSupportResponseForm::new(
-            notice_use_hand_card_response.is_success(),
-            notice_draw_card_response
-                .get_player_drawn_card_list_info()
-                .get_player_drawn_card_list_map().clone())
+            generate_use_hand_card_data_response.is_success_for_response(),
+            generate_draw_my_deck_data_response
+                .get_player_drawn_card_list_map_for_response().clone())
     }
 
     pub fn default() -> DrawSupportResponseForm {
