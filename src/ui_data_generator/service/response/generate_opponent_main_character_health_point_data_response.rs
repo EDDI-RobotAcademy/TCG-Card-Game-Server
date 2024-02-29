@@ -3,16 +3,16 @@ use serde::{Deserialize, Serialize};
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GenerateMyMainCharacterHealthPointDataResponse {
+pub struct GenerateOpponentMainCharacterHealthPointDataResponse {
     player_main_character_health_point_map_for_response: HashMap<PlayerIndex, i32>,
     player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
 }
 
-impl GenerateMyMainCharacterHealthPointDataResponse {
+impl GenerateOpponentMainCharacterHealthPointDataResponse {
     pub fn new(player_main_character_health_point_map_for_response: HashMap<PlayerIndex, i32>,
                player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
     ) -> Self {
-        GenerateMyMainCharacterHealthPointDataResponse {
+        GenerateOpponentMainCharacterHealthPointDataResponse {
             player_main_character_health_point_map_for_response,
             player_main_character_health_point_map_for_notice,
         }

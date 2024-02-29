@@ -29,8 +29,12 @@ pub trait UiDataGeneratorRepository {
           PlayerFieldUnitHealthPointInfo);
     async fn generate_my_main_character_health_point_data(
         &mut self,
-        my_main_character_index: i32,
         my_main_character_updated_health_point: i32
+    ) -> (PlayerMainCharacterHealthPointInfo,
+          PlayerMainCharacterHealthPointInfo);
+    async fn generate_opponent_main_character_health_point_data(
+        &mut self,
+        opponent_main_character_updated_health_point: i32
     ) -> (PlayerMainCharacterHealthPointInfo,
           PlayerMainCharacterHealthPointInfo);
     async fn generate_my_multiple_unit_health_point_data(

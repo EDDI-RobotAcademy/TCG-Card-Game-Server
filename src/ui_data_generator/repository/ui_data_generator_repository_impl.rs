@@ -308,7 +308,6 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
     }
     async fn generate_my_main_character_health_point_data(
         &mut self,
-        my_main_character_index: i32,
         my_main_character_updated_health_point: i32
     ) -> (PlayerMainCharacterHealthPointInfo,
           PlayerMainCharacterHealthPointInfo) {
@@ -321,6 +320,24 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
             self.get_player_main_character_health_point_info(You, my_main_character_updated_health_point.clone());
         let player_main_character_health_point_info_for_notice =
             self.get_player_main_character_health_point_info(Opponent, my_main_character_updated_health_point.clone());
+
+        (player_main_character_health_point_info_for_response,
+         player_main_character_health_point_info_for_notice)
+    }
+    async fn generate_opponent_main_character_health_point_data(
+        &mut self,
+        opponent_main_character_updated_health_point: i32
+    ) -> (PlayerMainCharacterHealthPointInfo,
+          PlayerMainCharacterHealthPointInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_main_character_health_point_data()");
+
+
+
+        let player_main_character_health_point_info_for_response =
+            self.get_player_main_character_health_point_info(Opponent, opponent_main_character_updated_health_point.clone());
+        let player_main_character_health_point_info_for_notice =
+            self.get_player_main_character_health_point_info(You, opponent_main_character_updated_health_point.clone());
 
         (player_main_character_health_point_info_for_response,
          player_main_character_health_point_info_for_notice)
