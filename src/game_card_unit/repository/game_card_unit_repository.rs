@@ -4,4 +4,5 @@ use crate::game_card_unit::entity::game_card_unit_info::GameCardUnitInfo;
 #[async_trait]
 pub trait GameCardUnitRepository {
     unsafe fn call_unit_card_repository_handler(&self, unit_card_id: i32) -> GameCardUnitInfo;
+    unsafe fn call_unit_card_passive_default_repository_handler(&self, unit_card_id: i32) -> Vec<bool> ;
 }

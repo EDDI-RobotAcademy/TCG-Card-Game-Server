@@ -16,3 +16,6 @@ pub mod notice_add_field_energy_request;
 pub mod notice_use_field_energy_to_specific_unit_request;
 pub mod notice_use_general_energy_card_to_my_specific_unit_request;
 pub mod notice_use_energy_boost_support_card_to_my_specific_unit_request;
+pub mod notice_use_draw_support_card_request;
+pub mod notice_use_search_deck_support_card_request;
+pub mod notice_use_field_energy_remove_support_card_request;

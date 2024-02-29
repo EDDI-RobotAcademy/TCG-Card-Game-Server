@@ -244,6 +244,12 @@ impl GameFieldUnitCard {
         }
         extra_effect_list
     }
+    pub fn get_has_first_passive_skill(&self) -> bool { self.has_first_passive_skill }
+    pub fn set_has_first_passive_skill(&mut self, has_first_passive_skill: bool) { self.has_first_passive_skill = has_first_passive_skill; }
+    pub fn get_has_second_passive_skill(&self) -> bool { self.has_second_passive_skill }
+    pub fn set_has_second_passive_skill(&mut self, has_second_passive_skill: bool) { self.has_second_passive_skill = has_second_passive_skill; }
+    pub fn get_has_third_passive_skill(&self) -> bool { self.has_third_passive_skill }
+    pub fn set_has_third_passive_skill(&mut self, has_third_passive_skill: bool) { self.has_third_passive_skill = has_third_passive_skill; }
 }
 
 #[cfg(test)]

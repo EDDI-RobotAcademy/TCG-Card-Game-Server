@@ -98,11 +98,29 @@ pub trait NotifyPlayerActionInfoRepository {
         opponent_unique_id: i32,
         used_hand_card_info: UsedHandCardInfo,
         field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo;
-    async fn notice_use_energy_boost_support_to_my_specific_unit(
+    async fn notice_use_energy_boost_support_to_specific_unit(
         &mut self,
         opponent_unique_id: i32,
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
         player_deck_card_use_list_map_for_notice: HashMap<PlayerIndex, Vec<i32>>,
         player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>
+    ) -> bool;
+    async fn notice_use_draw_support(
+        &mut self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_draw_count_map_for_notice: HashMap<PlayerIndex, i32>,
+    ) -> bool;
+    async fn notice_use_search_deck_support(
+        &mut self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_search_count_map_for_notice: HashMap<PlayerIndex, i32>,
+    ) -> bool;
+    async fn notice_use_field_energy_remove_support(
+        &mut self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
     ) -> bool;
 }

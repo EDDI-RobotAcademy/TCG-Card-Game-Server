@@ -12,7 +12,9 @@ use crate::game_card_unit::repository::game_card_unit_repository::GameCardUnitRe
 use crate::game_card_unit::repository::game_card_unit_repository_impl::GameCardUnitRepositoryImpl;
 use crate::game_card_unit::service::game_card_unit_service::GameCardUnitService;
 use crate::game_card_unit::service::request::summary_unit_card_info_request::SummaryUnitCardInfoRequest;
+use crate::game_card_unit::service::request::summary_unit_card_passive_default_request::SummaryUnitCardPassiveDefaultRequest;
 use crate::game_card_unit::service::response::summary_unit_card_info_response::SummaryUnitCardInfoResponse;
+use crate::game_card_unit::service::response::summary_unit_card_passive_default_response::SummaryUnitCardPassiveDefaultResponse;
 
 pub struct GameCardUnitServiceImpl {
     game_card_unit_repository: Arc<AsyncMutex<GameCardUnitRepositoryImpl>>,
@@ -49,6 +51,15 @@ impl GameCardUnitService for GameCardUnitServiceImpl {
         };
 
         return SummaryUnitCardInfoResponse::from_game_card_unit_info(game_card_unit_info)
+    }
+    async fn summary_unit_card_passive_default(&mut self, summary_unit_card_passive_default_request: SummaryUnitCardPassiveDefaultRequest)
+                                               -> SummaryUnitCardPassiveDefaultResponse {
+        let game_card_unit_repository_guard = self.game_card_unit_repository.lock().await;
+        let game_card_unit_passive_default_list = unsafe {
+            game_card_unit_repository_guard.call_unit_card_passive_default_repository_handler(summary_unit_card_passive_default_request.get_unit_card_id())
+        };
+
+        return SummaryUnitCardPassiveDefaultResponse::new(game_card_unit_passive_default_list)
     }
 }
 

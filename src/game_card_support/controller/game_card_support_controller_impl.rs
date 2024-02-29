@@ -9,7 +9,6 @@ use crate::battle_room::service::request::find_opponent_by_account_id_request::F
 use crate::card_grade::service::card_grade_service::CardGradeService;
 use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
-use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
 use crate::game_card_support::controller::request_form::draw_support_request_form::DrawSupportRequestForm;
 use crate::game_card_support::controller::request_form::energy_boost_support_request_form::EnergyBoostSupportRequestForm;
@@ -40,18 +39,16 @@ use crate::game_protocol_validation::service::game_protocol_validation_service_i
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
-use crate::game_round::service::game_round_service::GameRoundService;
-use crate::game_round::service::game_round_service_impl::GameRoundServiceImpl;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
-use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
-use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
 use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
+use crate::ui_data_generator::service::ui_data_generator_service_impl::UiDataGeneratorServiceImpl;
 
 pub struct GameCardSupportControllerImpl {
     battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
@@ -66,6 +63,7 @@ pub struct GameCardSupportControllerImpl {
     card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
     game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
     notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
+    ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
 }
 
 impl GameCardSupportControllerImpl {
@@ -80,7 +78,8 @@ impl GameCardSupportControllerImpl {
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
                game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
-               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,) -> Self {
+               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
+               ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,) -> Self {
 
         GameCardSupportControllerImpl {
             battle_room_service,
@@ -94,7 +93,8 @@ impl GameCardSupportControllerImpl {
             redis_in_memory_service,
             card_grade_service,
             game_card_support_usage_counter_service,
-            notify_player_action_info_service
+            notify_player_action_info_service,
+            ui_data_generator_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardSupportControllerImpl>> {
@@ -114,7 +114,8 @@ impl GameCardSupportControllerImpl {
                             RedisInMemoryServiceImpl::get_instance(),
                             CardGradeServiceImpl::get_instance(),
                             GameCardSupportUsageCounterServiceImpl::get_instance(),
-                            NotifyPlayerActionInfoServiceImpl::get_instance())));
+                            NotifyPlayerActionInfoServiceImpl::get_instance(),
+                            UiDataGeneratorServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -185,7 +186,8 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         // Redis 에서 토큰을 가지고 있는지 검증
         let account_unique_id = self.is_valid_session(
-            energy_boost_support_request_form.to_session_validation_request()).await;
+            energy_boost_support_request_form
+                .to_session_validation_request()).await;
 
         if account_unique_id == -1 {
             println!("Invalid session");
@@ -198,7 +200,8 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         let is_this_your_turn_response =
             game_protocol_validation_service_guard.is_this_your_turn(
-                energy_boost_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+                energy_boost_support_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
@@ -222,7 +225,9 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         // 실제 서포트 카드가 맞는지 확인
         let is_it_support_response = self.is_it_support_card(
-            energy_boost_support_request_form.to_is_it_support_card_request(support_card_number)).await;
+            energy_boost_support_request_form
+                .to_is_it_support_card_request(support_card_number)).await;
+
         if !is_it_support_response {
             println!("서포트 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
             return EnergyBoostSupportResponseForm::default()
@@ -244,7 +249,8 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         let check_support_card_usage_count_response =
             game_card_support_usage_counter_service.check_support_card_usage_count(
-                energy_boost_support_request_form.to_check_support_card_usage_count_request(account_unique_id)).await;
+                energy_boost_support_request_form
+                    .to_check_support_card_usage_count_request(account_unique_id)).await;
 
         if check_support_card_usage_count_response.get_used_count() > 0 {
             println!("Support card usage limit over");
@@ -282,8 +288,10 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             game_deck_service_guard.find_by_card_id_with_count(
                 energy_boost_support_request_form.to_found_card_from_deck_request(
                     account_unique_id,
-                    calculated_effect_response.get_need_to_find_card_id(),
-                    calculated_effect_response.get_energy_from_deck().get_energy_count())).await.found_card_list().clone();
+                    calculated_effect_response
+                        .get_need_to_find_card_id(),
+                    calculated_effect_response
+                        .get_energy_from_deck().get_energy_count())).await.found_card_list().clone();
 
         // 서포트 카드 사용을 통해 덱에서 카드를 가져왔으므로 셔플
         game_deck_service_guard.shuffle_deck(
@@ -295,7 +303,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let energy_from_deck_info = calculated_effect_response.get_energy_from_deck();
         let boost_race_reference = energy_from_deck_info.get_race();
 
-        let unit_card_index_string = energy_boost_support_request_form.get_unit_index_number();
+        let unit_card_index_string = energy_boost_support_request_form.get_unit_unit_index_number();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
 
         let mut game_field_unit_service_guard =
@@ -303,11 +311,12 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         // 찾아온 종족 에너지 수량만큼 에너지 부착
         game_field_unit_service_guard.attach_multiple_energy_to_field_unit_index(
-            energy_boost_support_request_form.to_attach_multiple_energy_to_unit_index_request(
-                account_unique_id,
-                unit_card_index,
-                boost_race_reference.clone(),
-                found_card_list_from_deck.len() as i32)).await;
+            energy_boost_support_request_form
+                .to_attach_multiple_energy_to_unit_index_request(
+                    account_unique_id,
+                    unit_card_index,
+                    boost_race_reference.clone(),
+                    found_card_list_from_deck.len() as i32)).await;
 
         // 갱신된 정보를 UI 로 전송하기 위해 에너지 정보 로딩
         let updated_attached_energy_map =
@@ -319,6 +328,31 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         drop(game_field_unit_service_guard);
 
+        // UI 로 전송할 데이터 가공
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_use_my_hand_card_data_response =
+            ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                energy_boost_support_request_form
+                    .to_generate_use_my_hand_card_data_request(
+                        usage_hand_card)).await;
+
+        let generate_use_my_deck_card_list_data_response =
+            ui_data_generator_service_guard.generate_use_my_deck_card_list_data(
+                energy_boost_support_request_form
+                    .to_generate_use_my_deck_card_list_data_request(
+                        found_card_list_from_deck.clone())).await;
+
+        let generate_my_field_unit_energy_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_energy_data(
+                energy_boost_support_request_form
+                    .to_generate_my_specific_unit_energy_data_request(
+                        unit_card_index,
+                        updated_attached_energy_map)).await;
+
+        drop(ui_data_generator_service_guard);
+
         // 상대방의 고유 id 값을 확보
         let opponent_unique_id = self.get_opponent_unique_id(
             energy_boost_support_request_form
@@ -328,33 +362,37 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        let notice_use_hand_card_response =
-            notify_player_action_info_service_guard.notice_use_hand_card(
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_energy_boost_support_card_to_specific_unit(
                 energy_boost_support_request_form
-                    .to_notice_use_hand_card_request(
+                    .to_notice_energy_boost_support_card_to_specific_unit_request(
                         opponent_unique_id,
-                        usage_hand_card)).await;
+                        generate_use_my_hand_card_data_response
+                            .get_player_hand_use_map_for_notice().clone(),
+                        generate_use_my_deck_card_list_data_response
+                            .get_player_deck_card_use_list_map_for_notice().clone(),
+                        generate_my_field_unit_energy_data_response
+                            .get_player_field_unit_energy_map_for_notice().clone())).await;
 
-        let notice_boost_energy_response =
-            notify_player_action_info_service_guard.notice_boost_energy_to_specific_unit(
-                energy_boost_support_request_form
-                    .to_notice_boost_energy_to_specific_unit_request(
-                        opponent_unique_id,
-                        found_card_list_from_deck.clone(),
-                        unit_card_index,
-                        updated_attached_energy_map)).await;
+        println!("notice_response: {:?}", notice_response);
 
         drop(notify_player_action_info_service_guard);
 
         EnergyBoostSupportResponseForm::from_response(
-            notice_use_hand_card_response, notice_boost_energy_response)
+            generate_use_my_hand_card_data_response,
+            generate_use_my_deck_card_list_data_response,
+            generate_my_field_unit_energy_data_response)
     }
 
-    async fn request_to_use_draw_support(&self, draw_support_request_form: DrawSupportRequestForm) -> DrawSupportResponseForm {
+    async fn request_to_use_draw_support(
+        &self, draw_support_request_form: DrawSupportRequestForm)
+        -> DrawSupportResponseForm {
+
         println!("GameCardSupportControllerImpl: request_to_use_draw_support()");
 
         let account_unique_id =
-            self.is_valid_session(draw_support_request_form.to_session_validation_request()).await;
+            self.is_valid_session(
+                draw_support_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
             println!("Invalid session error");
@@ -366,7 +404,8 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         let is_this_your_turn_response =
             game_protocol_validation_service_guard.is_this_your_turn(
-                draw_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+                draw_support_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
@@ -397,7 +436,9 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         }
 
         let can_use_card_response = self.is_able_to_use(
-            draw_support_request_form.to_can_use_card_request(account_unique_id, support_card_number)).await;
+            draw_support_request_form
+                .to_can_use_card_request(account_unique_id, support_card_number)).await;
+
         if !can_use_card_response {
             println!("A mythical grade card can be used after round 4.");
             return DrawSupportResponseForm::default()
@@ -408,7 +449,8 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         let check_support_card_usage_count_response =
             game_card_support_usage_counter_service.check_support_card_usage_count(
-                draw_support_request_form.to_check_support_card_usage_count_request(account_unique_id)).await;
+                draw_support_request_form
+                    .to_check_support_card_usage_count_request(account_unique_id)).await;
 
         if check_support_card_usage_count_response.get_used_count() > 0 {
             println!("Support card usage limit over");
@@ -429,9 +471,9 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
                         account_unique_id,
                         support_card_effect_summary.get_need_to_draw_card_count())).await;
 
-        // 서포트 카드를 사용했으므로 카운트
         game_card_support_usage_counter_service.update_support_card_usage_count(
-            draw_support_request_form.to_update_support_card_usage_count_request(account_unique_id)).await;
+            draw_support_request_form
+                .to_update_support_card_usage_count_request(account_unique_id)).await;
 
         drop(game_card_support_usage_counter_service);
 
@@ -456,39 +498,60 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         drop(game_hand_service_guard);
 
         self.place_used_card_to_tomb(
-            draw_support_request_form.to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+            draw_support_request_form
+                .to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_use_my_hand_card_data_response =
+            ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                draw_support_request_form
+                    .to_generate_use_my_hand_card_data_request(
+                        usage_hand_card)).await;
+
+        let generate_draw_my_deck_data_response =
+            ui_data_generator_service_guard.generate_draw_my_deck_data(
+                draw_support_request_form
+                    .to_generate_draw_my_deck_data_request(drawn_cards)).await;
+
+        drop(ui_data_generator_service_guard);
 
         let opponent_unique_id = self.get_opponent_unique_id(
-            draw_support_request_form.to_find_opponent_by_account_id_request(account_unique_id)).await;
+            draw_support_request_form
+                .to_find_opponent_by_account_id_request(account_unique_id)).await;
 
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        let notice_use_hand_card_response =
-            notify_player_action_info_service_guard.notice_use_hand_card(
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_draw_support_card(
                 draw_support_request_form
-                    .to_notice_use_hand_card_request(
+                    .to_notice_use_draw_support_card_request(
                         opponent_unique_id,
-                        usage_hand_card)).await;
+                        generate_use_my_hand_card_data_response
+                            .get_player_hand_use_map_for_notice().clone(),
+                        generate_draw_my_deck_data_response
+                            .get_player_draw_count_map_for_notice().clone())).await;
 
-        let notice_draw_card_response =
-            notify_player_action_info_service_guard.notice_draw_card(
-                draw_support_request_form
-                    .to_notice_draw_card_request(
-                        opponent_unique_id,
-                        drawn_cards.clone())).await;
+        println!("notice_response: {:?}", notice_response);
 
         drop(notify_player_action_info_service_guard);
 
         DrawSupportResponseForm::from_response(
-            notice_use_hand_card_response, notice_draw_card_response)
+            generate_use_my_hand_card_data_response,
+            generate_draw_my_deck_data_response)
     }
 
-    async fn request_to_use_search_unit_support(&self, search_unit_support_request_form: SearchUnitSupportRequestForm) -> SearchUnitSupportResponseForm {
+    async fn request_to_use_search_unit_support(
+        &self, search_unit_support_request_form: SearchUnitSupportRequestForm)
+        -> SearchUnitSupportResponseForm {
+
         println!("GameCardSupportControllerImpl: request_to_use_search_unit_support()");
 
         let account_unique_id = self.is_valid_session(
-            search_unit_support_request_form.to_session_validation_request()).await;
+            search_unit_support_request_form
+                .to_session_validation_request()).await;
 
         if account_unique_id == -1 {
             println!("Invalid session error");
@@ -500,7 +563,8 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         let is_this_your_turn_response =
             game_protocol_validation_service_guard.is_this_your_turn(
-                search_unit_support_request_form.to_is_this_your_turn_request(account_unique_id)).await;
+                search_unit_support_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
@@ -566,32 +630,42 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let target_unit_card_number_list =
             VectorStringToVectorInteger::vector_string_to_vector_i32(target_unit_card_number_list_string);
 
-        let mut game_protocol_validation_service_guard = self.game_protocol_validation_service.lock().await;
-        let mut card_grade_service_guard = self.card_grade_service.lock().await;
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let mut card_grade_service_guard =
+            self.card_grade_service.lock().await;
 
         // card kind && grade check
         for unit_card_number in target_unit_card_number_list.clone() {
-            let is_it_unit_request = search_unit_support_request_form.to_is_it_unit_card_request(unit_card_number);
-            let is_it_unit_response = game_protocol_validation_service_guard.is_it_unit_card(is_it_unit_request).await;
+            let is_it_unit_request =
+                search_unit_support_request_form.to_is_it_unit_card_request(unit_card_number);
+            let is_it_unit_response =
+                game_protocol_validation_service_guard.is_it_unit_card(is_it_unit_request).await;
+
             if !is_it_unit_response.is_success() {
                 println!("Target is not unit.");
                 return SearchUnitSupportResponseForm::default()
             }
-            let grade_of_unit = card_grade_service_guard.get_card_grade(&unit_card_number).await;
+
+            let grade_of_unit =
+                card_grade_service_guard.get_card_grade(&unit_card_number).await;
+
             if grade_of_unit as i32 > searching_grade_limit as i32 {
                 println!("Player chose too high grade unit card to search.");
                 return SearchUnitSupportResponseForm::default()
             }
         }
 
+        drop(game_protocol_validation_service_guard);
+        drop(card_grade_service_guard);
+
         // target number check
-        if search_unit_support_request_form.get_target_unit_card_list().len() != searching_card_count as usize {
+        if search_unit_support_request_form
+            .get_target_unit_card_list().len() != searching_card_count as usize {
             println!("Player should choose {} unit(s) from deck.", searching_card_count);
             return SearchUnitSupportResponseForm::default()
         }
-
-        drop(game_protocol_validation_service_guard);
-        drop(card_grade_service_guard);
 
         // remove found card from deck && add it to hand && shuffle
         let mut game_deck_service_guard =
@@ -608,6 +682,11 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return SearchUnitSupportResponseForm::default()
         }
 
+        game_deck_service_guard.shuffle_deck(
+            search_unit_support_request_form.to_shuffle_deck_request()).await;
+
+        drop(game_deck_service_guard);
+
         let mut game_hand_service_guard =
             self.game_hand_service.lock().await;
 
@@ -618,11 +697,6 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
                     search_specific_deck_card_response.get_found_card_list().clone())).await;
 
         drop(game_hand_service_guard);
-
-        game_deck_service_guard.shuffle_deck(
-            search_unit_support_request_form.to_shuffle_deck_request()).await;
-
-        drop(game_deck_service_guard);
 
         let usage_hand_card = self.use_support_card(
             search_unit_support_request_form
@@ -638,6 +712,23 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         drop(game_card_support_usage_counter_service);
 
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_use_my_hand_card_data_response =
+            ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                search_unit_support_request_form
+                    .to_generate_use_my_hand_card_data_request(
+                        usage_hand_card)).await;
+
+        let generate_search_my_deck_data_response =
+            ui_data_generator_service_guard.generate_search_my_deck_data(
+                search_unit_support_request_form
+                    .to_generate_search_my_deck_data_request(
+                        search_specific_deck_card_response.get_found_card_list().clone())).await;
+
+        drop(ui_data_generator_service_guard);
+
         let opponent_unique_id = self.get_opponent_unique_id(
             search_unit_support_request_form
                 .to_find_opponent_by_account_id_request(account_unique_id)).await;
@@ -645,31 +736,34 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        let notice_use_hand_card_response =
-            notify_player_action_info_service_guard.notice_use_hand_card(
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_search_deck_support_card(
                 search_unit_support_request_form
-                    .to_notice_use_hand_card_request(
+                    .to_notice_use_search_deck_support_card_request(
                         opponent_unique_id,
-                        usage_hand_card)).await;
+                        generate_use_my_hand_card_data_response
+                            .get_player_hand_use_map_for_notice().clone(),
+                        generate_search_my_deck_data_response
+                            .get_player_search_count_map_for_notice().clone())).await;
 
-        let notice_search_card_response  =
-            notify_player_action_info_service_guard.notice_search_card(
-                search_unit_support_request_form
-                    .to_notice_search_card_request(
-                        opponent_unique_id,
-                        search_specific_deck_card_response.get_found_card_list().clone())).await;
+        println!("notice_response: {:?}", notice_response);
 
         drop(notify_player_action_info_service_guard);
 
         SearchUnitSupportResponseForm::from_response(
-            notice_use_hand_card_response, notice_search_card_response)
+            generate_use_my_hand_card_data_response,
+            generate_search_my_deck_data_response)
     }
 
-    async fn request_to_use_remove_opponent_field_energy_support(&self, remove_opponent_field_energy_support_request_form: RemoveOpponentFieldEnergySupportRequestForm) -> RemoveOpponentFieldEnergySupportResponseForm {
+    async fn request_to_use_remove_opponent_field_energy_support(
+        &self, remove_opponent_field_energy_support_request_form: RemoveOpponentFieldEnergySupportRequestForm)
+        -> RemoveOpponentFieldEnergySupportResponseForm {
+
         println!("GameCardSupportControllerImpl: request_to_use_remove_opponent_field_energy_support()");
 
         let account_unique_id = self.is_valid_session(
-            remove_opponent_field_energy_support_request_form.to_session_validation_request()).await;
+            remove_opponent_field_energy_support_request_form
+                .to_session_validation_request()).await;
 
         if account_unique_id == -1 {
             println!("Invalid session error");
@@ -781,26 +875,41 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         drop(game_card_support_usage_counter_service);
 
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_use_my_hand_card_data_response =
+            ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                remove_opponent_field_energy_support_request_form
+                    .to_generate_use_my_hand_card_data_request(usage_hand_card)).await;
+
+        let generate_opponent_field_energy_data_response =
+            ui_data_generator_service_guard.generate_opponent_field_energy_data(
+                remove_opponent_field_energy_support_request_form
+                    .to_generate_opponent_field_energy_data_request(
+                        updated_field_energy_count_of_opponent)).await;
+
+        drop(ui_data_generator_service_guard);
+
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        let notice_use_hand_card_response =
-            notify_player_action_info_service_guard.notice_use_hand_card(
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_field_energy_remove_support_card(
                 remove_opponent_field_energy_support_request_form
-                    .to_notice_use_hand_card_request(
+                    .to_notice_use_field_energy_remove_support_card_request(
                         opponent_unique_id,
-                        usage_hand_card)).await;
+                        generate_use_my_hand_card_data_response
+                            .get_player_hand_use_map_for_notice().clone(),
+                        generate_opponent_field_energy_data_response
+                            .get_player_field_energy_map_for_notice().clone())).await;
 
-        let notice_remove_field_energy_of_opponent_response =
-            notify_player_action_info_service_guard.notice_remove_field_energy_of_opponent(
-                remove_opponent_field_energy_support_request_form
-                    .to_notice_remove_field_energy_of_opponent_request(
-                        opponent_unique_id,
-                        updated_field_energy_count_of_opponent)).await;
+        println!("notice_response: {:?}", notice_response);
 
         drop(notify_player_action_info_service_guard);
 
         RemoveOpponentFieldEnergySupportResponseForm::from_response(
-            notice_use_hand_card_response, notice_remove_field_energy_of_opponent_response)
+            generate_use_my_hand_card_data_response,
+            generate_opponent_field_energy_data_response)
     }
 }

@@ -306,6 +306,42 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_health_point_info_for_response,
          player_field_unit_health_point_info_for_notice)
     }
+    async fn generate_my_main_character_health_point_data(
+        &mut self,
+        my_main_character_updated_health_point: i32
+    ) -> (PlayerMainCharacterHealthPointInfo,
+          PlayerMainCharacterHealthPointInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_my_main_character_health_point_data()");
+
+
+
+        let player_main_character_health_point_info_for_response =
+            self.get_player_main_character_health_point_info(You, my_main_character_updated_health_point.clone());
+        let player_main_character_health_point_info_for_notice =
+            self.get_player_main_character_health_point_info(Opponent, my_main_character_updated_health_point.clone());
+
+        (player_main_character_health_point_info_for_response,
+         player_main_character_health_point_info_for_notice)
+    }
+    async fn generate_opponent_main_character_health_point_data(
+        &mut self,
+        opponent_main_character_updated_health_point: i32
+    ) -> (PlayerMainCharacterHealthPointInfo,
+          PlayerMainCharacterHealthPointInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_main_character_health_point_data()");
+
+
+
+        let player_main_character_health_point_info_for_response =
+            self.get_player_main_character_health_point_info(Opponent, opponent_main_character_updated_health_point.clone());
+        let player_main_character_health_point_info_for_notice =
+            self.get_player_main_character_health_point_info(You, opponent_main_character_updated_health_point.clone());
+
+        (player_main_character_health_point_info_for_response,
+         player_main_character_health_point_info_for_notice)
+    }
 
     async fn generate_my_specific_unit_energy_data(
         &mut self,
@@ -323,6 +359,26 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
             self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone());
         let player_field_unit_energy_info_for_notice =
             self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone());
+
+        (player_field_unit_energy_info_for_response,
+         player_field_unit_energy_info_for_notice)
+    }
+    async fn generate_opponent_specific_unit_energy_data(
+        &mut self,
+        unit_index: i32,
+        updated_unit_energy_map: AttachedEnergyMap
+    ) -> (PlayerFieldUnitEnergyInfo,
+          PlayerFieldUnitEnergyInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_specific_unit_energy_data()");
+
+        let field_unit_energy_info =
+            self.get_field_unit_energy_info(unit_index, updated_unit_energy_map);
+
+        let player_field_unit_energy_info_for_response =
+            self.get_player_field_unit_energy_info(Opponent, field_unit_energy_info.clone());
+        let player_field_unit_energy_info_for_notice =
+            self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone());
 
         (player_field_unit_energy_info_for_response,
          player_field_unit_energy_info_for_notice)
@@ -449,6 +505,25 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_death_info_for_response,
          player_field_unit_death_info_for_notice)
     }
+    async fn generate_my_specific_unit_death_data(
+        &mut self,
+        dead_unit_index: i32
+    ) -> (PlayerFieldUnitDeathInfo,
+          PlayerFieldUnitDeathInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_my_specific_unit_death_data()");
+
+        let field_unit_death_info =
+            self.get_field_unit_death_info(dead_unit_index);
+
+        let player_field_unit_death_info_for_response =
+            self.get_player_field_unit_death_info(You, field_unit_death_info.clone());
+        let player_field_unit_death_info_for_notice =
+            self.get_player_field_unit_death_info(Opponent, field_unit_death_info.clone());
+
+        (player_field_unit_death_info_for_response,
+         player_field_unit_death_info_for_notice)
+    }
 
     async fn generate_opponent_specific_unit_health_point_data(
         &mut self,
@@ -489,5 +564,56 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
 
         (player_field_unit_health_point_info_for_response,
          player_field_unit_health_point_info_for_notice)
+    }
+    async fn generate_my_multiple_unit_health_point_data(
+        &mut self,
+        my_unit_health_point_tuple_list: Vec<(i32, i32)>
+    ) -> (PlayerFieldUnitHealthPointInfo,
+          PlayerFieldUnitHealthPointInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_my_multiple_unit_health_point_data()");
+
+        let field_unit_health_point_info =
+            self.get_field_unit_health_info_from_tuple_list(my_unit_health_point_tuple_list);
+
+        let player_field_unit_health_point_info_for_response =
+            self.get_player_field_unit_health_point_info(You, field_unit_health_point_info.clone());
+        let player_field_unit_health_point_info_for_notice =
+            self.get_player_field_unit_health_point_info(Opponent, field_unit_health_point_info.clone());
+
+        (player_field_unit_health_point_info_for_response,
+         player_field_unit_health_point_info_for_notice)
+    }
+    async fn generate_my_main_character_survival_data(
+        &mut self,
+        my_main_character_status: StatusMainCharacterEnum
+    ) -> (PlayerMainCharacterSurvivalInfo,
+          PlayerMainCharacterSurvivalInfo) {
+        println!("UiDataGeneratorRepositoryImpl: generate_my_main_character_survival_data()");
+
+
+        let player_main_character_survival_info_for_response =
+            self.get_player_main_character_survival_info(You, my_main_character_status.clone());
+        let player_main_character_survival_info_for_notice =
+            self.get_player_main_character_survival_info(Opponent, my_main_character_status.clone());
+
+        (player_main_character_survival_info_for_response,
+         player_main_character_survival_info_for_notice)
+    }
+    async fn generate_opponent_main_character_survival_data(
+        &mut self,
+        my_main_character_status: StatusMainCharacterEnum
+    ) -> (PlayerMainCharacterSurvivalInfo,
+          PlayerMainCharacterSurvivalInfo) {
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_main_character_survival_data()");
+
+
+        let player_main_character_survival_info_for_response =
+            self.get_player_main_character_survival_info(Opponent, my_main_character_status.clone());
+        let player_main_character_survival_info_for_notice =
+            self.get_player_main_character_survival_info(You, my_main_character_status.clone());
+
+        (player_main_character_survival_info_for_response,
+         player_main_character_survival_info_for_notice)
     }
 }

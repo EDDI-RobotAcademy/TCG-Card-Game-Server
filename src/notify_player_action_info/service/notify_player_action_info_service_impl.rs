@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
-use diesel::IntoSql;
+
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
@@ -31,10 +31,13 @@ use crate::notify_player_action_info::service::request::notice_lost_deck_card_of
 use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_opponent_unit_request::{NoticeRemoveEnergyOfSpecificOpponentUnitRequest};
 use crate::notify_player_action_info::service::request::notice_remove_field_energy_of_opponent_request::{NoticeRemoveFieldEnergyOfOpponentRequest};
 use crate::notify_player_action_info::service::request::notice_search_card_request::{NoticeSearchCardRequest};
-use crate::notify_player_action_info::service::request::notice_use_energy_boost_support_card_to_my_specific_unit_request::NoticeUseEnergyBoostSupportCardToMySpecificUnitRequest;
+use crate::notify_player_action_info::service::request::notice_use_draw_support_card_request::NoticeUseDrawSupportCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_energy_boost_support_card_to_my_specific_unit_request::NoticeUseEnergyBoostSupportCardToSpecificUnitRequest;
+use crate::notify_player_action_info::service::request::notice_use_field_energy_remove_support_card_request::NoticeUseFieldEnergyRemoveSupportCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_field_energy_to_specific_unit_request::NoticeUseFieldEnergyToSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_search_deck_support_card_request::{NoticeUseSearchDeckSupportCardRequest};
 use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_multiple_opponent_unit_response::NoticeApplyDamageToMultipleOpponentUnitResponse;
@@ -49,10 +52,13 @@ use crate::notify_player_action_info::service::response::notice_lost_deck_card_o
 use crate::notify_player_action_info::service::response::notice_remove_energy_of_specific_opponent_unit_response::{NoticeRemoveEnergyOfSpecificOpponentUnitResponse};
 use crate::notify_player_action_info::service::response::notice_remove_field_energy_of_opponent_response::{NoticeRemoveFieldEnergyOfOpponentResponse};
 use crate::notify_player_action_info::service::response::notice_search_card_response::{NoticeSearchCardResponse};
-use crate::notify_player_action_info::service::response::notice_use_energy_boost_support_card_to_my_specific_unit_response::NoticeUseEnergyBoostSupportCardToMySpecificUnitResponse;
+use crate::notify_player_action_info::service::response::notice_use_draw_support_card_response::NoticeUseDrawSupportCardResponse;
+use crate::notify_player_action_info::service::response::notice_use_energy_boost_support_card_to_my_specific_unit_response::{NoticeUseEnergyBoostSupportCardToSpecificUnitResponse};
+use crate::notify_player_action_info::service::response::notice_use_field_energy_remove_support_card_response::NoticeUseFieldEnergyRemoveSupportCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_field_energy_to_specific_unit_response::NoticeUseFieldEnergyToSpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_general_energy_card_to_my_specific_unit_response::NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
+use crate::notify_player_action_info::service::response::notice_use_search_deck_support_card_response::{NoticeUseSearchDeckSupportCardResponse};
 
 pub struct NotifyPlayerActionInfoServiceImpl {
     notify_player_action_info_repository: Arc<AsyncMutex<NotifyPlayerActionInfoRepositoryImpl>>,
@@ -601,25 +607,89 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         NoticeUseGeneralEnergyCardToMySpecificUnitResponse::from_info(my_field_unit_energy_info)
     }
 
-    async fn notice_use_energy_boost_support_card_to_my_specific_unit(
+    // TODO: Multi-Unit Boosting 에도 사용 가능
+    async fn notice_use_energy_boost_support_card_to_specific_unit(
         &mut self,
-        notice_use_energy_boost_support_card_to_my_specific_unit_request: NoticeUseEnergyBoostSupportCardToMySpecificUnitRequest)
-        -> NoticeUseEnergyBoostSupportCardToMySpecificUnitResponse {
+        notice_use_energy_boost_support_card_to_specific_unit_request: NoticeUseEnergyBoostSupportCardToSpecificUnitRequest)
+        -> NoticeUseEnergyBoostSupportCardToSpecificUnitResponse {
 
-        println!("NotifyPlayerActionInfoServiceImpl: notice_use_energy_boost_support_card_to_my_specific_unit()");
+        println!("NotifyPlayerActionInfoServiceImpl: notice_use_energy_boost_support_card_to_specific_unit()");
 
         let mut notify_player_action_info_repository_guard =
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notice_use_energy_boost_support_to_my_specific_unit(
-                notice_use_energy_boost_support_card_to_my_specific_unit_request.get_opponent_unique_id(),
-                notice_use_energy_boost_support_card_to_my_specific_unit_request.get_player_hand_use_map_for_notice().clone(),
-                notice_use_energy_boost_support_card_to_my_specific_unit_request.get_player_deck_card_use_list_map_for_notice().clone(),
-                notice_use_energy_boost_support_card_to_my_specific_unit_request.get_player_field_unit_energy_map().clone()).await;
+            notify_player_action_info_repository_guard.notice_use_energy_boost_support_to_specific_unit(
+                notice_use_energy_boost_support_card_to_specific_unit_request.get_opponent_unique_id(),
+                notice_use_energy_boost_support_card_to_specific_unit_request.get_player_hand_use_map_for_notice().clone(),
+                notice_use_energy_boost_support_card_to_specific_unit_request.get_player_deck_card_use_list_map_for_notice().clone(),
+                notice_use_energy_boost_support_card_to_specific_unit_request.get_player_field_unit_energy_map().clone()).await;
 
         drop(notify_player_action_info_repository_guard);
 
-        NoticeUseEnergyBoostSupportCardToMySpecificUnitResponse::new(response)
+        NoticeUseEnergyBoostSupportCardToSpecificUnitResponse::new(response)
+    }
+
+    async fn notice_use_draw_support_card(
+        &mut self,
+        notice_use_draw_support_card_request: NoticeUseDrawSupportCardRequest)
+        -> NoticeUseDrawSupportCardResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_use_draw_support_card()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_use_draw_support(
+                notice_use_draw_support_card_request.get_opponent_unique_id(),
+                notice_use_draw_support_card_request.get_player_hand_use_map_for_notice().clone(),
+                notice_use_draw_support_card_request.get_player_draw_count_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeUseDrawSupportCardResponse::new(response)
+    }
+
+    async fn notice_use_search_deck_support_card(
+        &mut self,
+        notice_use_search_deck_support_card_request: NoticeUseSearchDeckSupportCardRequest)
+        -> NoticeUseSearchDeckSupportCardResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_use_search_deck_support_card()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_use_search_deck_support(
+                notice_use_search_deck_support_card_request.get_opponent_unique_id(),
+                notice_use_search_deck_support_card_request.get_player_hand_use_map_for_notice().clone(),
+                notice_use_search_deck_support_card_request.get_player_search_count_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeUseSearchDeckSupportCardResponse::new(response)
+    }
+
+    async fn notice_use_field_energy_remove_support_card(
+        &mut self,
+        notice_use_field_energy_remove_support_card_request: NoticeUseFieldEnergyRemoveSupportCardRequest)
+        -> NoticeUseFieldEnergyRemoveSupportCardResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_use_field_energy_remove_support_card()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_use_field_energy_remove_support(
+                notice_use_field_energy_remove_support_card_request.get_opponent_unique_id(),
+                notice_use_field_energy_remove_support_card_request.get_player_hand_use_map_for_notice().clone(),
+                notice_use_field_energy_remove_support_card_request.get_player_field_energy_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeUseFieldEnergyRemoveSupportCardResponse::new(response)
     }
 }
