@@ -600,4 +600,20 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_main_character_survival_info_for_response,
          player_main_character_survival_info_for_notice)
     }
+    async fn generate_opponent_main_character_survival_data(
+        &mut self,
+        my_main_character_status: StatusMainCharacterEnum
+    ) -> (PlayerMainCharacterSurvivalInfo,
+          PlayerMainCharacterSurvivalInfo) {
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_main_character_survival_data()");
+
+
+        let player_main_character_survival_info_for_response =
+            self.get_player_main_character_survival_info(Opponent, my_main_character_status.clone());
+        let player_main_character_survival_info_for_notice =
+            self.get_player_main_character_survival_info(You, my_main_character_status.clone());
+
+        (player_main_character_survival_info_for_response,
+         player_main_character_survival_info_for_notice)
+    }
 }

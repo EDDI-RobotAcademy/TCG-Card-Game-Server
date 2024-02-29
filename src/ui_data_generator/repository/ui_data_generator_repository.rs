@@ -114,4 +114,9 @@ pub trait UiDataGeneratorRepository {
         my_main_character_status: StatusMainCharacterEnum
     ) -> (PlayerMainCharacterSurvivalInfo,
           PlayerMainCharacterSurvivalInfo);
+    async fn generate_opponent_main_character_survival_data(
+        &mut self,
+        my_main_character_status: StatusMainCharacterEnum
+    ) -> (PlayerMainCharacterSurvivalInfo,
+          PlayerMainCharacterSurvivalInfo);
 }
