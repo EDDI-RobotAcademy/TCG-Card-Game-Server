@@ -4,7 +4,6 @@ use crate::game_card_support::service::request::summarize_support_card_effect_re
 use crate::game_card_support_usage_counter::service::request::check_support_card_usage_count_request::CheckSupportCardUsageCountRequest;
 use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
 use crate::game_deck::service::request::draw_cards_from_deck_request::DrawCardsFromDeckRequest;
-use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
 use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
 use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
@@ -13,9 +12,7 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
-use crate::notify_player_action_info::service::request::notice_draw_card_request::NoticeDrawCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_draw_support_card_request::NoticeUseDrawSupportCardRequest;
-use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
