@@ -8,14 +8,14 @@ use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::connection_context::repository::connection_context_repository_impl::ConnectionContextRepositoryImpl;
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
 use crate::notify_player_action_info::entity::notify_form_use_draw_support_card::NotifyFormUseDrawSupportCard;
-use crate::notify_player_action_info::entity::notify_form_use_energy_boost_support_card_to_specific_unit::NotifyFormUseEnergyBoostSupportCardToSpecificUnit;
+use crate::notify_player_action_info::entity::notify_form_use_energy_boost_support_card::NotifyFormUseUnitEnergyBoostSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_field_energy_remove_support_card::NotifyFormUseFieldEnergyRemoveSupportCard;
 use crate::ui_data_generator::entity::field_unit_damage_info::FieldUnitDamageInfo;
 use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::field_unit_death_info::{FieldUnitDeathInfo};
-use crate::notify_player_action_info::entity::notify_form_use_general_energy_card_to_specific_unit::NotifyFormUseGeneralEnergyCardToSpecificUnit;
-use crate::notify_player_action_info::entity::notify_form_use_instant_death_item_card_to_specific_unit::NotifyFormUseInstantDeathItemCardToSpecificUnit;
+use crate::notify_player_action_info::entity::notify_form_use_general_energy_card::NotifyFormUseGeneralEnergyCardToUnit;
+use crate::notify_player_action_info::entity::notify_form_use_instant_unit_death_item_card::NotifyFormUseInstantUnitDeathItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_search_deck_support_card::NotifyFormUseSearchDeckSupportCard;
 use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
@@ -739,13 +739,14 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         return self.get_player_deck_card_lost_list_info(Opponent, lost_deck_card_list.clone());
     }
 
-    async fn notice_use_general_energy_card_to_my_specific_unit(
+    async fn notice_use_general_energy_to_unit(
         &mut self,
         opponent_unique_id: i32,
-        used_hand_card_info: UsedHandCardInfo,
-        field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo {
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>
+    ) -> bool {
 
-        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_general_energy_card_to_my_specific_unit()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_general_energy_to_unit()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -759,22 +760,22 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
 
-        let notify_form_use_general_energy_card_to_specific_unit =
-            NotifyFormUseGeneralEnergyCardToSpecificUnit::new(Opponent,
-                                                              used_hand_card_info,
-                                                              field_unit_energy_info.clone());
+        let notify_form_use_general_energy_card_to_unit =
+            NotifyFormUseGeneralEnergyCardToUnit::new(
+                player_hand_use_map_for_notice,
+                player_field_unit_energy_map_for_notice);
 
         // 상대에게 일반 에너지 카드 사용 공지
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_USE_GENERAL_ENERGY_CARD_TO_SPECIFIC_UNIT(
-                        notify_form_use_general_energy_card_to_specific_unit)))).await;
+                    NOTIFY_USE_GENERAL_ENERGY_CARD_TO_UNIT(
+                        notify_form_use_general_energy_card_to_unit)))).await;
 
-        self.get_player_field_unit_energy_info(You, field_unit_energy_info.clone())
+        true
     }
 
-    async fn notice_use_energy_boost_support_to_specific_unit(
+    async fn notice_use_unit_energy_boost_support(
         &mut self,
         opponent_unique_id: i32,
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
@@ -782,7 +783,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>
     ) -> bool {
 
-        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_energy_boost_support_to_specific_unit()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_unit_energy_boost_support()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -795,16 +796,18 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
-        let notify_form_use_energy_boost_support_card_to_specific_unit =
-            NotifyFormUseEnergyBoostSupportCardToSpecificUnit::new(player_hand_use_map_for_notice,
-                                                                   player_deck_card_use_list_map_for_notice,
-                                                                   player_field_unit_energy_map_for_notice);
+        let notify_form_use_unit_energy_boost_support_card =
+            NotifyFormUseUnitEnergyBoostSupportCard::new(
+                player_hand_use_map_for_notice,
+                player_deck_card_use_list_map_for_notice,
+                player_field_unit_energy_map_for_notice);
+
         // 상대에게 에너지 부스트 서포트 카드 사용 공지
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_USE_ENERGY_BOOST_SUPPORT_CARD_TO_SPECIFIC_UNIT(
-                        notify_form_use_energy_boost_support_card_to_specific_unit)))).await;
+                    NOTIFY_USE_UNIT_ENERGY_BOOST_SUPPORT_CARD(
+                        notify_form_use_unit_energy_boost_support_card)))).await;
 
         true
     }
@@ -911,7 +914,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         true
     }
 
-    async fn notice_use_instant_death_item_to_unit(
+    async fn notice_use_instant_unit_death_item(
         &mut self,
         opponent_unique_id: i32,
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
@@ -919,7 +922,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
     ) -> bool {
 
-        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_instant_death_item_to_unit()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_instant_unit_death_item()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -932,17 +935,17 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
-        let notify_form_use_instant_death_item_card_to_specific_unit =
-            NotifyFormUseInstantDeathItemCardToSpecificUnit::new(player_hand_use_map_for_notice,
-                                                                 player_field_unit_health_point_map_for_notice,
-                                                                 player_field_unit_death_map_for_notice);
+        let notify_form_use_instant_unit_death_item_card =
+            NotifyFormUseInstantUnitDeathItemCard::new(player_hand_use_map_for_notice,
+                                                       player_field_unit_health_point_map_for_notice,
+                                                       player_field_unit_death_map_for_notice);
 
         // 상대 즉사 아이템 사용 공지
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_USE_INSTANT_DEATH_ITEM_CARD_TO_UNIT(
-                        notify_form_use_instant_death_item_card_to_specific_unit)))).await;
+                    NOTIFY_USE_INSTANT_UNIT_DEATH_ITEM_CARD(
+                        notify_form_use_instant_unit_death_item_card)))).await;
 
         true
     }

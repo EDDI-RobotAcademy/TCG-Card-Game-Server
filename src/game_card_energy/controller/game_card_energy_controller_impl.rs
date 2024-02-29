@@ -226,33 +226,10 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         drop(battle_room_service_guard);
 
-        // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
-        // let mut notify_player_action_service_guard =
-        //     self.notify_player_action_service.lock().await;
-        //
-        // let notify_to_opponent_you_attached_energy_to_field_unit_response =
-        //     notify_player_action_service_guard.notify_opponent_you_use_energy_card(
-        //         attach_energy_request_form
-        //             .to_notify_opponent_you_use_general_energy_card(
-        //                 opponent_unique_id,
-        //                 usage_hand_card_id,
-        //                 unit_card_index,
-        //                 energy_card_effect_response.get_race() as i32,
-        //                 energy_card_effect_response.get_quantity())).await;
-        //
-        // drop(notify_player_action_service_guard);
-
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        let response =
-            notify_player_action_info_service_guard.notice_use_general_energy_card_to_my_specific_unit(
-                attach_energy_request_form
-                    .to_notice_use_general_energy_card_to_my_specific_unit_request(
-                        opponent_unique_id,
-                        usage_hand_card_id,
-                        unit_card_index,
-                        updated_energy_map_of_unit)).await;
+        drop(notify_player_action_info_service_guard);
 
         AttachGeneralEnergyCardResponseForm::new(true)
     }

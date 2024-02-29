@@ -569,44 +569,18 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
 
         println!("NotifyPlayerActionInfoServiceImpl: notice_use_general_energy_card_to_my_specific_unit()");
 
-        let opponent_unique_id =
-            notice_use_general_energy_card_to_my_specific_unit_request.get_opponent_unique_id();
-        let used_hand_card_id =
-            notice_use_general_energy_card_to_my_specific_unit_request.get_used_hand_card_id();
-        let unit_index =
-            notice_use_general_energy_card_to_my_specific_unit_request.get_unit_index();
-        let updated_unit_energy_map =
-            notice_use_general_energy_card_to_my_specific_unit_request.get_updated_unit_energy_map();
-
-        let mut card_kind_repository_guard =
-            self.card_kind_repository.lock().await;
-
-        let hand_card_kind_enum =
-            card_kind_repository_guard.get_card_kind(&used_hand_card_id).await;
-
-        drop(card_kind_repository_guard);
-
-        let used_hand_card_info =
-            UsedHandCardInfo::new(used_hand_card_id, hand_card_kind_enum as i32);
-
-        let mut field_unit_energy_map = HashMap::new();
-        field_unit_energy_map.insert(unit_index, updated_unit_energy_map.to_attached_energy_info());
-
-        let field_unit_energy_info = FieldUnitEnergyInfo::new(field_unit_energy_map);
-
         let mut notify_player_action_info_repository_guard =
             self.notify_player_action_info_repository.lock().await;
 
-        let my_field_unit_energy_info =
-            notify_player_action_info_repository_guard
-                .notice_use_general_energy_card_to_my_specific_unit(
-                    opponent_unique_id,
-                    used_hand_card_info,
-                    field_unit_energy_info).await;
+        let response =
+            notify_player_action_info_repository_guard.notice_use_general_energy_to_unit(
+                    notice_use_general_energy_card_to_my_specific_unit_request.get_opponent_unique_id(),
+                    notice_use_general_energy_card_to_my_specific_unit_request.get_player_hand_use_map_for_notice().clone(),
+                    notice_use_general_energy_card_to_my_specific_unit_request.get_player_field_unit_energy_map_for_notice().clone()).await;
 
         drop(notify_player_action_info_repository_guard);
 
-        NoticeUseGeneralEnergyCardToMySpecificUnitResponse::from_info(my_field_unit_energy_info)
+        NoticeUseGeneralEnergyCardToMySpecificUnitResponse::new(response)
     }
 
     // TODO: Multi-Unit Boosting 에도 사용 가능
@@ -621,7 +595,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notice_use_energy_boost_support_to_specific_unit(
+            notify_player_action_info_repository_guard.notice_use_unit_energy_boost_support(
                 notice_use_energy_boost_support_card_to_specific_unit_request.get_opponent_unique_id(),
                 notice_use_energy_boost_support_card_to_specific_unit_request.get_player_hand_use_map_for_notice().clone(),
                 notice_use_energy_boost_support_card_to_specific_unit_request.get_player_deck_card_use_list_map_for_notice().clone(),
@@ -706,7 +680,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notice_use_instant_death_item_to_unit(
+            notify_player_action_info_repository_guard.notice_use_instant_unit_death_item(
                 notice_use_instant_death_item_card_to_opponent_specific_unit_request.get_opponent_unique_id(),
                 notice_use_instant_death_item_card_to_opponent_specific_unit_request.get_player_hand_use_map_for_notice().clone(),
                 notice_use_instant_death_item_card_to_opponent_specific_unit_request.get_player_field_unit_health_point_map_for_notice().clone(),
