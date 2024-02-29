@@ -24,3 +24,4 @@ pub mod judge_death_of_every_unit_request;
 pub mod attack_every_unit_with_extra_effect_request;
 pub mod get_current_health_point_of_all_field_unit_request;
 pub mod acquire_unit_harmful_status_effect_request;
+pub mod reset_all_passive_of_unit_request;
