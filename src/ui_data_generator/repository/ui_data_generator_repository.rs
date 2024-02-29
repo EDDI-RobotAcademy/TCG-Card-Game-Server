@@ -47,6 +47,12 @@ pub trait UiDataGeneratorRepository {
         drawn_card_list: Vec<i32>
     ) -> (PlayerDrawnCardListInfo,
           PlayerDrawCountInfo);
+    async fn generate_draw_opponent_deck_data(
+        &mut self,
+        drawn_card_list: Vec<i32>
+    ) -> (PlayerDrawCountInfo,
+          PlayerDrawnCardListInfo
+          );
     async fn generate_search_my_deck_data(
         &mut self,
         found_card_list: Vec<i32>
