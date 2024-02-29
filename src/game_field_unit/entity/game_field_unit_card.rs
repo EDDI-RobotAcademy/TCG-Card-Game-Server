@@ -98,7 +98,14 @@ impl GameFieldUnitCard {
         self.turn_action
     }
 
+    pub fn set_dead_field_unit_card(&mut self) {
+        self.field_unit_card = -1
+    }
+
     pub fn set_is_alive(&mut self, is_alive: bool) {
+        if is_alive == false {
+            self.set_dead_field_unit_card()
+        }
         self.is_alive = is_alive;
     }
 
@@ -429,5 +436,27 @@ mod tests {
             game_field_unit_card.get_unit_health_point().get_current_health_point(),
             5
         );
+    }
+
+    #[test]
+    fn test_game_field_unit_card_dead_set() {
+        let mut game_field_unit_card = GameFieldUnitCard::new(
+            5,
+            RaceEnum::Chaos,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+            true);
+
+        assert_eq!(game_field_unit_card.get_card(), 5);
+        println!("field_unit_card of alive unit: {:?}", game_field_unit_card.get_card());
+        game_field_unit_card.set_is_alive(false);
+        println!("field_unit_card of dead unit: {:?}", game_field_unit_card.get_card());
+        assert_eq!(game_field_unit_card.get_card(), -1);
+        println!("Test passed: Dead FieldUnit set field_unit_card");
     }
 }
