@@ -17,6 +17,9 @@ use crate::notify_player_action_info::service::request::notice_apply_damage_to_s
 use crate::notify_player_action_info::service::request::notice_instant_death_of_specific_opponent_unit_request::NoticeInstantDeathOfSpecificOpponentUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_death_data_request::GenerateOpponentSpecificUnitDeathDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_health_point_data_request::GenerateOpponentSpecificUnitHealthPointDataRequest;
+use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
 
 #[derive(Debug)]
 pub struct TargetDeathItemRequestForm {
@@ -118,6 +121,33 @@ impl TargetDeathItemRequestForm {
         JudgeDeathOfUnitRequest::new(
             account_unique_id,
             unit_index)
+    }
+
+    pub fn to_generate_use_my_hand_card_data_request(
+        &self,
+        used_hand_card_id: i32
+    ) -> GenerateUseMyHandCardDataRequest {
+
+        GenerateUseMyHandCardDataRequest::new(
+            used_hand_card_id)
+    }
+
+    pub fn to_generate_opponent_specific_unit_health_point_data_request(
+        &self,
+        opponent_unit_index: i32,
+        opponent_unit_updated_health_point: i32) -> GenerateOpponentSpecificUnitHealthPointDataRequest {
+
+        GenerateOpponentSpecificUnitHealthPointDataRequest::new(
+            opponent_unit_index,
+            opponent_unit_updated_health_point)
+    }
+
+    pub fn to_generate_opponent_specific_unit_death_data_request(
+        &self,
+        opponent_dead_unit_index: i32) -> GenerateOpponentSpecificUnitDeathDataRequest {
+
+        GenerateOpponentSpecificUnitDeathDataRequest::new(
+            opponent_dead_unit_index)
     }
 
     pub fn to_notice_use_hand_card_request(
