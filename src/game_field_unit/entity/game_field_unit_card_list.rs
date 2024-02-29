@@ -180,6 +180,15 @@ impl GameFieldUnitCardList {
 
         Vec::new()
     }
+    pub fn reset_first_passive(&mut self, unit_card_index: usize, first_passive_default: bool) {
+        self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_has_first_passive_skill(first_passive_default);
+    }
+    pub fn reset_second_passive(&mut self, unit_card_index: usize, second_passive_default: bool) {
+        self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_has_second_passive_skill(second_passive_default);
+    }
+    pub fn reset_third_passive(&mut self, unit_card_index: usize, third_passive_default: bool) {
+        self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_has_third_passive_skill(third_passive_default);
+    }
 }
 
 #[cfg(test)]

@@ -40,6 +40,10 @@ impl GameCardUnitHandler for NoneUnitFunction {
             false,
             -1)
     }
+
+    unsafe fn summary_unit_card_passive_default(&self) -> Vec<bool> {
+        vec![false, false, false]
+    }
 }
 
 impl GameCardUnitRepositoryImpl {
@@ -149,6 +153,11 @@ impl GameCardUnitRepository for GameCardUnitRepositoryImpl {
 
         let unit_card_summary_handler = self.unit_card_functions.get(&unit_card_id);
         unit_card_summary_handler.unwrap().summary_unit_card()
+    }
+    unsafe fn call_unit_card_passive_default_repository_handler(&self, unit_card_id: i32) -> Vec<bool> {
+
+        let unit_card_summary_handler = self.unit_card_functions.get(&unit_card_id);
+        unit_card_summary_handler.unwrap().summary_unit_card_passive_default()
     }
 }
 

@@ -123,6 +123,15 @@ impl GameFieldUnit {
     pub fn get_unit_deployed_round(&mut self, unit_card_index: usize) -> i32 {
         return self.game_field_unit.get_unit_deployed_round(unit_card_index)
     }
+    pub fn reset_first_passive_of_unit(&mut self, unit_card_index: usize, first_passive_default: bool) {
+        self.game_field_unit.reset_first_passive(unit_card_index, first_passive_default)
+    }
+    pub fn reset_second_passive_of_unit(&mut self, unit_card_index: usize, second_passive_default: bool) {
+        self.game_field_unit.reset_second_passive(unit_card_index, second_passive_default)
+    }
+    pub fn reset_third_passive_of_unit(&mut self, unit_card_index: usize, third_passive_default: bool) {
+        self.game_field_unit.reset_third_passive(unit_card_index, third_passive_default)
+    }
 }
 
 #[cfg(test)]
