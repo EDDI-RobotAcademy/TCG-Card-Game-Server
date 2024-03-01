@@ -273,17 +273,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         // TODO: 카드 사용 시 필요한 에너지가 존재한다면 이에 대한 추가 검증이 필요
 
-        // 7. Hand Service 호출하여 카드 사용
-        let usage_hand_card = self.use_item_card(
-            target_death_item_request_form
-                .to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
-
-        // 8. Item 카드 사용이므로 Tomb Service 호출하여 무덤 배치
-        self.place_used_card_to_tomb(
-            target_death_item_request_form
-                .to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
-
-        // 9. 즉사 스킬 적용을 위해 상대방의 고유 id 값을 확보
+        // 7. 즉사 스킬 적용을 위해 상대방의 고유 id 값을 확보
         let battle_room_service_guard =
             self.battle_room_service.lock().await;
 
@@ -301,7 +291,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
             opponent_target_unit_index_string.parse::<i32>().unwrap();
 
         // TODO: 추후 즉사 면역인 언데드 등등에 대한 조건도 필요함
-        // 10. 타겟 인덱스 유닛이 신화 미만인지 확인
+        // 8. 타겟 인덱스 유닛이 신화 미만인지 확인
         let mut game_field_unit_service_guard =
             self.game_field_unit_service.lock().await;
 
@@ -325,6 +315,16 @@ impl GameCardItemController for GameCardItemControllerImpl {
                 &find_target_unit_id_by_index_response.get_found_opponent_unit_id()).await;
 
         drop(card_grade_service_guard);
+
+        // 9. Hand Service 호출하여 카드 사용
+        let usage_hand_card = self.use_item_card(
+            target_death_item_request_form
+                .to_use_game_hand_item_card_request(account_unique_id, item_card_id)).await;
+
+        // 10. Item 카드 사용이므로 Tomb Service 호출하여 무덤 배치
+        self.place_used_card_to_tomb(
+            target_death_item_request_form
+                .to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
 
         // 11. 신화 등급인 경우 Field Unit Service 를 호출하여 상대 유닛에 Alternatives 적용
         if opponent_target_unit_grade == GradeEnum::Mythical {
