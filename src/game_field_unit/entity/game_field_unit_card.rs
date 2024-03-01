@@ -98,14 +98,7 @@ impl GameFieldUnitCard {
         self.turn_action
     }
 
-    pub fn set_dead_field_unit_card(&mut self) {
-        self.field_unit_card = -1
-    }
-
     pub fn set_is_alive(&mut self, is_alive: bool) {
-        if is_alive == false {
-            self.set_dead_field_unit_card()
-        }
         self.is_alive = is_alive;
     }
 

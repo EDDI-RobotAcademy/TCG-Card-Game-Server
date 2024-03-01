@@ -826,15 +826,6 @@ impl GameCardItemController for GameCardItemControllerImpl {
                         opponent_unique_id,
                         usage_hand_card)).await;
 
-        let notice_apply_damage_to_every_opponent_unit_response =
-            notify_player_action_info_service_guard.notice_apply_damage_to_every_opponent_unit(
-                catastrophic_damage_item_request_form
-                    .to_notice_apply_damage_to_every_opponent_unit_request(
-                        opponent_unique_id,
-                        damage_for_field_unit,
-                        current_health_point_list_to_notice,
-                        dead_unit_index_list)).await;
-
         let notice_apply_damage_to_opponent_main_character_response =
             notify_player_action_info_service_guard.notice_apply_damage_to_opponent_main_character(
                 catastrophic_damage_item_request_form
@@ -852,11 +843,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         drop(notify_player_action_info_service_guard);
 
-        CatastrophicDamageItemResponseForm::from_response(
-            notice_use_hand_card_response,
-            notice_apply_damage_to_every_opponent_unit_response,
-            notice_apply_damage_to_opponent_main_character_response,
-            notice_lost_deck_card_of_opponent_response)
+        CatastrophicDamageItemResponseForm::default()
     }
 
     async fn request_to_use_applying_multiple_target_damage_by_field_unit_death_item(

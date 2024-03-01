@@ -64,7 +64,9 @@ impl GameFieldUnit {
     pub fn apply_death_to_indexed_unit(&mut self, unit_card_index: usize) {
         self.game_field_unit.apply_death_to_indexed_unit(unit_card_index);
     }
-
+    pub fn get_unit_id_by_index(&mut self, unit_card_index: usize) -> i32 {
+        return self.game_field_unit.get_unit_card_id(unit_card_index)
+    }
     pub fn judge_death_of_unit(&mut self, unit_card_index: usize) -> i32 {
         return self.game_field_unit.judge_death_of_unit(unit_card_index)
     }

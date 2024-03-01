@@ -70,6 +70,8 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
                               second_passive_skill: bool,
                               third_passive_skill: bool) -> i32 {
 
+        println!("GameFieldUnitRepositoryImpl: add_unit_to_game_field()");
+
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             let unit_index = game_field_unit.add_unit_to_game_field(
                 GameFieldUnitCard::new(
@@ -94,6 +96,8 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
     // TODO: 수량 1개 (enum 관련 사항을 어떻게 처리 할 것인가 고찰이 필요함)
     fn attach_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race_enum: RaceEnum, quantity: i32) {
+        println!("GameFieldUnitRepositoryImpl: attach_energy_to_game_field_unit()");
+
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             let race = RaceEnumValue::from(race_enum as i32);
             game_field_unit.add_energy_to_unit(unit_card_number, race, quantity);
@@ -102,6 +106,8 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
     // TODO: 여러 개 (enum 관련 사항을 어떻게 처리 할 것인가 고찰이 필요함)
     fn attach_multiple_energy_to_game_field_unit(&mut self, account_unique_id: i32, unit_card_number: i32, race_number: i32, quantity: i32) -> bool {
+        println!("GameFieldUnitRepositoryImpl: attach_multiple_energy_to_game_field_unit()");
+
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             let race = RaceEnumValue::from(race_number);
             game_field_unit.add_energy_to_unit(unit_card_number, race, quantity);
@@ -113,6 +119,8 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
     }
 
     fn find_unit_by_id(&self, account_unique_id: i32, unit_card_number: i32) -> Option<&GameFieldUnitCard> {
+        println!("GameFieldUnitRepositoryImpl: find_unit_by_id()");
+
         if let Some(game_field_unit) = self.game_field_unit_map.get(&account_unique_id) {
             game_field_unit.find_unit_by_id(unit_card_number)
         } else {
@@ -134,32 +142,35 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: attach_multiple_energy_to_indexed_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
+            if game_field_unit.check_unit_alive(unit_card_index as usize) {
                 game_field_unit.add_energy_to_indexed_unit(unit_card_index as usize, RaceEnumValue::from(race_enum as i32), quantity);
                 return true
             }
         }
-        println!("Failed to attach_multiple_energy_to_indexed_unit - index error");
+
         false
     }
 
     fn increase_max_health_of_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: usize, amount: i32) -> bool {
+        println!("GameFieldUnitRepositoryImpl: increase_max_health_of_indexed_unit()");
+
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            if game_field_unit.find_unit_by_index(unit_card_index).get_card() != -1 {
+            if game_field_unit.check_unit_alive(unit_card_index) {
                 game_field_unit.increase_max_health_of_indexed_unit(unit_card_index, amount);
                 return true
             }
         }
+
         false
     }
 
     // TODO: 필드 위 모든 유닛의 아이디 값을 다룰 수 있으므로 Naming 이 바뀌면 더 좋을 것
     fn find_target_unit_id_by_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32) -> i32 {
-        if let Some(opponent_game_field_unit) = self.game_field_unit_map.get(&opponent_unique_id) {
-            if (0..opponent_game_field_unit.get_all_unit_list_in_game_field().len() as i32).contains(&opponent_target_unit_index) {
-                let target_unit_card = &opponent_game_field_unit.get_all_unit_list_in_game_field()[opponent_target_unit_index as usize];
+        println!("GameFieldUnitRepositoryImpl: find_target_unit_id_by_index()");
 
-                return target_unit_card.get_card();
+        if let Some(opponent_game_field_unit) = self.game_field_unit_map.get_mut(&opponent_unique_id) {
+            if opponent_game_field_unit.check_unit_alive(opponent_target_unit_index as usize) {
+                return opponent_game_field_unit.get_unit_id_by_index(opponent_target_unit_index as usize)
             }
         }
 
@@ -167,14 +178,13 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
     }
 
     fn apply_damage_to_target_unit_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32, damage: i32) -> bool {
+        println!("GameFieldUnitRepositoryImpl: apply_damage_to_target_unit_index()");
+
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&opponent_unique_id) {
             let target_unit_index = opponent_target_unit_index as usize;
-
             if target_unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
-                if game_field_unit.find_unit_by_index(target_unit_index).get_card() != -1 {
-                    game_field_unit.apply_damage_to_indexed_unit(target_unit_index, damage);
-                    return true;
-                }
+                game_field_unit.apply_damage_to_indexed_unit(target_unit_index, damage);
+                return true
             }
         }
 
@@ -182,14 +192,13 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
     }
 
     fn apply_instant_death_to_target_unit_index(&mut self, opponent_unique_id: i32, opponent_target_unit_index: i32) -> bool {
+        println!("GameFieldUnitRepositoryImpl: apply_instant_death_to_target_unit_index()");
+
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&opponent_unique_id) {
             let target_unit_index = opponent_target_unit_index as usize;
-
             if target_unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
-                if game_field_unit.find_unit_by_index(target_unit_index).get_card() != -1 {
-                    game_field_unit.apply_death_to_indexed_unit(target_unit_index);
-                    return true;
-                }
+                game_field_unit.apply_death_to_indexed_unit(target_unit_index);
+                return true
             }
         }
 
@@ -197,6 +206,8 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
     }
 
     fn reset_turn_action_of_all_unit(&mut self, account_unique_id: i32) -> bool {
+        println!("GameFieldUnitRepositoryImpl: reset_turn_action_of_all_unit()");
+
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             for unit_card in game_field_unit.get_all_field_unit_list_mut() {
                 unit_card.set_turn_action(false)
@@ -208,12 +219,12 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
     }
 
     fn execute_turn_action_of_unit(&mut self, account_unique_id: i32, unit_card_index: i32) -> bool {
+        println!("GameFieldUnitRepositoryImpl: execute_turn_action_of_unit()");
+
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
-                let unit_card_index = unit_card_index as usize;
-                game_field_unit.execute_turn_action_of_unit(unit_card_index);
-                return true
-            }
+            let unit_card_index = unit_card_index as usize;
+            game_field_unit.execute_turn_action_of_unit(unit_card_index);
+            return true
         }
 
         false
@@ -228,7 +239,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
             if unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
                 let maybe_dead_unit_id = game_field_unit.judge_death_of_unit(unit_index);
-                if maybe_dead_unit_id != -1 && game_field_unit.check_unit_alive(unit_index) == false {
+                if maybe_dead_unit_id != -1 {
                     return (unit_card_index, maybe_dead_unit_id);
                 }
             }
@@ -246,7 +257,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             let field_unit_list = game_field_unit.get_all_field_unit_list_mut();
             for unit_index in (0..field_unit_list.len()).rev() {
                 let dead_unit_id = game_field_unit.judge_death_of_unit(unit_index);
-                if dead_unit_id != -1 && game_field_unit.check_unit_alive(unit_index) == false {
+                if dead_unit_id != -1 {
                     dead_unit_tuple_list.push((unit_index as i32, dead_unit_id));
                 }
             }
@@ -265,7 +276,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: attach_special_energy_to_indexed_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
+            if game_field_unit.check_unit_alive(unit_card_index as usize) {
                 game_field_unit.add_special_energy_to_indexed_unit(
                     unit_card_index as usize,
                     RaceEnumValue::from(race_enum as i32),
@@ -296,15 +307,12 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         harmful_state: ExtraStatusEffect,
     ) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
+            if game_field_unit.check_unit_alive(unit_card_index as usize) {
                 game_field_unit.impose_harmful_state_to_indexed_unit(unit_card_index as usize, harmful_state);
-                true
-            } else {
-                false
+                return true
             }
-        } else {
-            false
         }
+        false
     }
 
     fn acquire_unit_attack_point(
@@ -313,9 +321,10 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         attacker_unit_index: i32
     ) -> i32 {
         let indexed_unit_reference = self.find_indexed_unit(account_unique_id, attacker_unit_index).unwrap();
-        if indexed_unit_reference.get_card() != -1 {
+        if indexed_unit_reference.is_alive() {
             return indexed_unit_reference.get_unit_attack_point();
         }
+
         -1
     }
 
@@ -369,7 +378,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         if let Some(game_field_unit) = self.get_game_field_unit_map().get_mut(&opponent_unique_id) {
             let game_field_unit_list_mut = game_field_unit.get_all_field_unit_list_mut();
             for unit in game_field_unit_list_mut {
-                if unit.get_card() != -1 {
+                if unit.is_alive() {
                     unit.apply_damage(damage);
                     unit.impose_harmful_state_list(extra_status_effect_list.clone());
                 }
@@ -389,7 +398,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             let all_units = game_field_unit.get_all_field_unit_list_mut();
 
             for unit in all_units.iter_mut() {
-                if unit.get_card() != -1 {
+                if unit.is_alive() {
                     unit.apply_damage(damage);
                 }
             }
@@ -407,15 +416,13 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         extra_effect_state: SummaryPassiveSkillEffect,
     ) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            if game_field_unit.find_unit_by_index(unit_index as usize).get_card() != -1 {
+            if game_field_unit.check_unit_alive(unit_index as usize) {
                 game_field_unit.impose_extra_effect_state_to_indexed_unit(unit_index as usize, extra_effect_state);
-                true
-            } else {
-                false
+                return true
             }
-        } else {
-            false
         }
+
+        false
     }
 
     fn detach_multiple_energy_from_indexed_unit(
@@ -427,7 +434,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: detach_multiple_energy_from_indexed_unit()");
 
         return if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
+            if game_field_unit.check_unit_alive(unit_card_index as usize) {
                 game_field_unit.detach_energy_from_unit(
                     unit_card_index as usize,
                     RaceEnumValue::from(race_enum as i32),
@@ -450,16 +457,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: set_field_unit_deployed_round()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
-                game_field_unit.set_unit_deployed_round(unit_card_index as usize, current_round_value);
-                return true
-            }
+            game_field_unit.set_unit_deployed_round(unit_card_index as usize, current_round_value);
+            return true
         }
 
         false
     }
 
     // 소환 시 단일기 적용 패시브를 가진 유닛이 가장 가까운 상대를 공격할 수 있습니다
+    // TODO: index remove 가 사라짐에 따라 수정 필요
     fn apply_damage_to_nearest_target(
         &mut self,
         account_unique_id: i32,
@@ -494,11 +500,9 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: set_passive_status_list_of_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            if game_field_unit.find_unit_by_index(unit_index as usize).get_card() != -1 {
             let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
-                game_field_unit_card_list[unit_index as usize].set_passive_status_list(passive_status_list);
-                return true
-            }
+            game_field_unit_card_list[unit_index as usize].set_passive_status_list(passive_status_list);
+            return true
         }
 
         false
@@ -508,7 +512,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: set_passive_status_list_of_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            if game_field_unit.find_unit_by_index(unit_index as usize).get_card() != -1 {
+            if game_field_unit.check_unit_alive(unit_index as usize) {
                 let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
                 return game_field_unit_card_list[unit_index as usize].get_passive_status_list().clone();
             }
@@ -517,6 +521,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         Vec::new()
     }
 
+    // TODO: Need Refactor
     fn remove_game_field_unit_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             self.game_field_unit_map.remove(&account_unique_id);
@@ -543,15 +548,17 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         return game_field_unit_card_list[unit_index as usize].get_unit_health_point()
     }
 
-    fn acquire_current_health_point_of_all_unit(&mut self, account_unique_id: i32) -> Vec<i32> {
+    fn acquire_current_health_point_of_all_unit(&mut self, account_unique_id: i32) -> Vec<(i32, i32)> {
         println!("GameFieldUnitRepositoryImpl: acquire_current_health_point_of_all_unit()");
 
         let game_field_unit = self.game_field_unit_map.get_mut(&account_unique_id).unwrap();
         let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
 
         let mut current_health_point_of_all_unit = Vec::new();
-        for game_field_unit_card in game_field_unit_card_list {
-            current_health_point_of_all_unit.push(game_field_unit_card.get_unit_health_point().get_current_health_point());
+        for (index, unit) in game_field_unit_card_list.iter().enumerate() {
+            if unit.is_alive() {
+                current_health_point_of_all_unit.push((index as i32, unit.get_unit_health_point().get_current_health_point()));
+            }
         }
 
         current_health_point_of_all_unit
@@ -566,13 +573,15 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         return game_field_unit_card_list[unit_index as usize].get_extra_effect_list()
     }
 
+    // TODO: 이 feature 로 target validation 진행
     fn acquire_survival_of_indexed_unit(&mut self, account_unique_id: i32, unit_index: i32) -> bool {
-        println!("GameFieldUnitRepositoryImpl: acquire_extra_effect_list_of_indexed_unit()");
+        println!("GameFieldUnitRepositoryImpl: acquire_survival_of_indexed_unit()");
 
-        let game_field_unit = self.game_field_unit_map.get_mut(&account_unique_id).unwrap();
-        let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            return game_field_unit.check_unit_alive(unit_index as usize)
+        }
 
-        return game_field_unit_card_list[unit_index as usize].is_alive()
+        false
     }
 
     fn acquire_unit_harmful_status_effect_list_by_index(&mut self, opponent_unique_id: i32, opponent_unit_index: i32) -> &Vec<HarmfulStatusEffect> {
