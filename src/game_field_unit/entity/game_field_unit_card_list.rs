@@ -103,7 +103,6 @@ impl GameFieldUnitCardList {
         if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
             let is_alive = unit.is_alive();
             if !is_alive {
-                self.game_field_unit_card_list.remove(unit_card_index);
                 return false
             }
         }
