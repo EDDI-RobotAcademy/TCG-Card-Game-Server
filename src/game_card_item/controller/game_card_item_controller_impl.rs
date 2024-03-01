@@ -827,34 +827,73 @@ impl GameCardItemController for GameCardItemControllerImpl {
             drop(game_lost_zone_service_guard);
         }
 
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_use_my_hand_card_data_response =
+            ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                catastrophic_damage_item_request_form
+                    .to_generate_use_my_hand_card_data_request(usage_hand_card)).await;
+
+        let generate_opponent_multiple_unit_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_multiple_unit_health_point_data(
+                catastrophic_damage_item_request_form
+                    .to_generate_opponent_multiple_health_point_data_request(current_health_point_list_to_notice)).await;
+
+        let generate_opponent_multiple_unit_death_data_response =
+            ui_data_generator_service_guard.generate_opponent_multiple_unit_death_data(
+                catastrophic_damage_item_request_form
+                    .to_generate_opponent_multiple_unit_death_data_request(dead_unit_index_list)).await;
+
+        let generate_opponent_main_character_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_main_character_health_point_data(
+                catastrophic_damage_item_request_form
+                    .to_generate_opponent_main_character_health_point_data_request(current_opponent_health_point_to_notice)).await;
+
+        let generate_opponent_main_character_survival_data_response =
+            ui_data_generator_service_guard.generate_opponent_main_character_survival_data(
+                catastrophic_damage_item_request_form
+                    .to_generate_opponent_main_character_survival_data_request(opponent_survival_status_to_notice)).await;
+
+        let generate_opponent_deck_card_lost_data_response =
+            ui_data_generator_service_guard.generate_opponent_deck_card_lost_data(
+                catastrophic_damage_item_request_form
+                    .to_generate_opponent_deck_card_lost_data_request(lost_deck_card_list_to_notice)).await;
+
+        drop(ui_data_generator_service_guard);
+
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        let notice_use_hand_card_response =
-            notify_player_action_info_service_guard.notice_use_hand_card(
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_catastrophic_damage_item_card(
                 catastrophic_damage_item_request_form
-                    .to_notice_use_hand_card_request(
+                    .to_notice_use_catastrophic_item_card_request(
                         opponent_unique_id,
-                        usage_hand_card)).await;
+                        generate_use_my_hand_card_data_response
+                            .get_player_hand_use_map_for_notice().clone(),
+                        generate_opponent_multiple_unit_health_point_data_response
+                            .get_player_field_unit_health_point_map_for_notice().clone(),
+                        generate_opponent_multiple_unit_death_data_response
+                            .get_player_field_unit_death_map_for_notice().clone(),
+                        generate_opponent_main_character_health_point_data_response
+                            .get_player_main_character_health_point_map_for_notice().clone(),
+                        generate_opponent_main_character_survival_data_response
+                            .get_player_main_character_survival_map_for_notice().clone(),
+                        generate_opponent_deck_card_lost_data_response
+                            .get_player_deck_card_lost_list_map_for_notice().clone())).await;
 
-        let notice_apply_damage_to_opponent_main_character_response =
-            notify_player_action_info_service_guard.notice_apply_damage_to_opponent_main_character(
-                catastrophic_damage_item_request_form
-                    .to_notice_apply_damage_to_opponent_main_character_request(
-                        opponent_unique_id,
-                        damage_for_main_character,
-                        current_opponent_health_point_to_notice,
-                        opponent_survival_status_to_notice)).await;
-
-        let notice_lost_deck_card_of_opponent_response =
-            notify_player_action_info_service_guard.notice_lost_deck_card_of_opponent(
-                catastrophic_damage_item_request_form.to_notice_lost_deck_card_of_opponent_request(
-                    opponent_unique_id,
-                    lost_deck_card_list_to_notice)).await;
+        println!("{:?}", notice_response);
 
         drop(notify_player_action_info_service_guard);
 
-        CatastrophicDamageItemResponseForm::default()
+        CatastrophicDamageItemResponseForm::from_response(
+            generate_use_my_hand_card_data_response,
+            generate_opponent_multiple_unit_health_point_data_response,
+            generate_opponent_multiple_unit_death_data_response,
+            generate_opponent_main_character_health_point_data_response,
+            generate_opponent_main_character_survival_data_response,
+            generate_opponent_deck_card_lost_data_response)
     }
 
     async fn request_to_use_applying_multiple_target_damage_by_field_unit_death_item(
