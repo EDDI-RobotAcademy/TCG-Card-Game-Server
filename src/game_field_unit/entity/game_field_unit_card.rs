@@ -230,13 +230,6 @@ impl GameFieldUnitCard {
         &self.passive_status_list
     }
 
-    pub fn get_extra_effect_list(&mut self) -> Vec<ExtraEffect> {
-        let mut extra_effect_list = Vec::new();
-        for extra_status_effect in &self.extra_status_effect_list {
-            extra_effect_list.push(extra_status_effect.get_extra_effect().clone())
-        }
-        extra_effect_list
-    }
     pub fn get_has_first_passive_skill(&self) -> bool { self.has_first_passive_skill }
     pub fn set_has_first_passive_skill(&mut self, has_first_passive_skill: bool) { self.has_first_passive_skill = has_first_passive_skill; }
     pub fn get_has_second_passive_skill(&self) -> bool { self.has_second_passive_skill }

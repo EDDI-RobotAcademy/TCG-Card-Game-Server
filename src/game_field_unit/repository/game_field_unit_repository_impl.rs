@@ -328,7 +328,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         -1
     }
 
-    fn acquire_unit_extra_effect_by_index(
+    fn acquire_unit_extra_status_effect_by_index(
         &mut self,
         account_unique_id: i32,
         attacker_unit_index: i32
@@ -562,26 +562,6 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         }
 
         current_health_point_of_all_unit
-    }
-
-    fn acquire_extra_effect_list_of_indexed_unit(&mut self, account_unique_id: i32, unit_index: i32) -> Vec<ExtraEffect> {
-        println!("GameFieldUnitRepositoryImpl: acquire_extra_effect_list_of_indexed_unit()");
-
-        let game_field_unit = self.game_field_unit_map.get_mut(&account_unique_id).unwrap();
-        let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
-
-        return game_field_unit_card_list[unit_index as usize].get_extra_effect_list()
-    }
-
-    // TODO: 이 feature 로 target validation 진행
-    fn acquire_survival_of_indexed_unit(&mut self, account_unique_id: i32, unit_index: i32) -> bool {
-        println!("GameFieldUnitRepositoryImpl: acquire_survival_of_indexed_unit()");
-
-        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            return game_field_unit.check_unit_alive(unit_index as usize)
-        }
-
-        false
     }
 
     fn acquire_unit_harmful_status_effect_list_by_index(&mut self, opponent_unique_id: i32, opponent_unit_index: i32) -> &Vec<HarmfulStatusEffect> {

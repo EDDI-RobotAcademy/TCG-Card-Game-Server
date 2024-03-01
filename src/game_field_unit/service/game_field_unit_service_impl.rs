@@ -323,7 +323,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         println!("GameFieldUnitServiceImpl: acquire_unit_extra_effect()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        let extra_effect_list = game_field_unit_repository_guard.acquire_unit_extra_effect_by_index(
+        let extra_effect_list = game_field_unit_repository_guard.acquire_unit_extra_status_effect_by_index(
             acquire_unit_extra_effect_request.get_account_unique_id(),
             acquire_unit_extra_effect_request.get_attacker_unit_index());
 
