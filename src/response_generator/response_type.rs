@@ -58,6 +58,7 @@ use crate::notify_player_action::entity::notify_opponent_to_damage_main_characte
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
+use crate::notify_player_action_info::entity::notify_form_use_catastrophic_damage_item_card::NotifyFormUseCatastrophicDamageItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_draw_support_card::NotifyFormUseDrawSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_field_energy_increase_item_card::NotifyFormUseFieldEnergyIncreaseItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_unit_energy_boost_support_card::NotifyFormUseUnitEnergyBoostSupportCard;
@@ -198,6 +199,7 @@ pub enum ResponseType {
     NOTIFY_USE_INSTANT_UNIT_DEATH_ITEM_CARD(NotifyFormUseInstantUnitDeathItemCard),
     NOTIFY_USE_FIELD_ENERGY_TO_UNIT(NotifyFormUseFieldEnergyToUnit),
     NOTIFY_USE_FIELD_ENERGY_INCREASE_ITEM_CARD(NotifyFormUseFieldEnergyIncreaseItemCard),
+    NOTIFY_USE_CATASTROPHIC_DAMAGE_ITEM_CARD(NotifyFormUseCatastrophicDamageItemCard),
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),

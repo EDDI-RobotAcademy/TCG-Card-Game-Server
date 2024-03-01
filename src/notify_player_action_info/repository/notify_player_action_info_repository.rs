@@ -139,4 +139,14 @@ pub trait NotifyPlayerActionInfoRepository {
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
         player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>
     ) -> bool;
+    async fn notice_use_catastrophic_damage_item(
+        &mut self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+        player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+        player_deck_card_lost_list_map_for_notice: HashMap<PlayerIndex, Vec<i32>>,
+    ) -> bool;
 }

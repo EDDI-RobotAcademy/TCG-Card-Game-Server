@@ -3,6 +3,7 @@ use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
+use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
@@ -132,4 +133,9 @@ pub trait UiDataGeneratorRepository {
         my_unit_extra_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
     ) -> (PlayerFieldUnitExtraEffectInfo,
           PlayerFieldUnitExtraEffectInfo);
+    async fn generate_opponent_deck_card_lost_data(
+        &mut self,
+        opponent_lost_deck_card_list: Vec<i32>
+    ) -> (PlayerDeckCardLostListInfo,
+          PlayerDeckCardLostListInfo);
 }
