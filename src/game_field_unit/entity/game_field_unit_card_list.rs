@@ -179,7 +179,7 @@ impl GameFieldUnitCardList {
 
         -1
     }
-    
+
     pub fn reset_first_passive(&mut self, unit_card_index: usize, first_passive_default: bool) {
         self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_has_first_passive_skill(first_passive_default);
     }
