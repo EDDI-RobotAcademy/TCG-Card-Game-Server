@@ -20,3 +20,4 @@ pub mod generate_opponent_main_character_survival_data_response;
 pub mod generate_my_specific_unit_extra_effect_data_response;
 pub mod generate_my_multiple_unit_extra_effect_data_response;
 pub mod generate_opponent_deck_card_lost_data_response;
+pub mod generate_opponent_multiple_unit_death_data_response;
