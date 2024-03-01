@@ -1,9 +1,8 @@
+use std::collections::HashMap;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::game_card_item::service::request::summary_item_card_effect_request::SummaryItemCardEffectRequest;
 use crate::game_deck::service::request::draw_cards_from_deck_request::DrawCardsFromDeckRequest;
-use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
 use crate::game_field_unit::service::request::apply_catastrophic_damage_to_field_unit_request::ApplyCatastrophicDamageToFieldUnitRequest;
-use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_all_field_unit_request::GetCurrentHealthPointOfAllFieldUnitRequest;
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
@@ -18,15 +17,18 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
-use crate::game_winner_check::service::request::check_main_character_request::CheckMainCharacterRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_catastrophic_damage_item_card_request::NotifyToOpponentYouUseCatastrophicDamageItemCardRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_damage_main_character_item_card_request::NotifyToOpponentYouUseDamageMainCharacterItemCardRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_destroy_deck_item_card_request::NotifyToOpponentYouUseDestroyDeckItemCardRequest;
-use crate::notify_player_action_info::service::request::notice_apply_damage_to_every_opponent_unit_request::NoticeApplyDamageToEveryOpponentUnitRequest;
-use crate::notify_player_action_info::service::request::notice_apply_damage_to_opponent_main_character_request::NoticeApplyDamageToOpponentMainCharacterRequest;
-use crate::notify_player_action_info::service::request::notice_lost_deck_card_of_opponent_request::NoticeLostDeckCardOfOpponentRequest;
-use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_catastrophic_damage_item_card_request::NoticeUseCatastrophicDamageItemCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
+use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
+use crate::ui_data_generator::service::request::generate_opponent_deck_card_lost_data_request::GenerateOpponentDeckCardLostDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_main_character_health_point_data_request::GenerateOpponentMainCharacterHealthPointDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_main_character_survival_data_request::GenerateOpponentMainCharacterSurvivalDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_death_data_request::GenerateOpponentMultipleUnitDeathDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_health_point_data_request::GenerateOpponentMultipleUnitHealthPointDataRequest;
+use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
 
 #[derive(Debug)]
 pub struct CatastrophicDamageItemRequestForm {
@@ -145,63 +147,88 @@ impl CatastrophicDamageItemRequestForm {
         PlaceCardToLostZoneRequest::new(opponent_unique_id, will_be_lost_card)
     }
 
-    pub fn to_notice_use_hand_card_request(
+    pub fn to_generate_use_my_hand_card_data_request(
         &self,
-        opponent_unique_id: i32,
         used_hand_card_id: i32
-    ) -> NoticeUseHandCardRequest {
+    ) -> GenerateUseMyHandCardDataRequest {
 
-        NoticeUseHandCardRequest::new(
-            opponent_unique_id,
+        GenerateUseMyHandCardDataRequest::new(
             used_hand_card_id)
     }
 
-    pub fn to_notice_apply_damage_to_every_opponent_unit_request(
+    pub fn to_generate_opponent_multiple_unit_health_point_data_request(
         &self,
-        opponent_unique_id: i32,
-        damage: i32,
-        updated_health_point_list: Vec<i32>,
-        dead_unit_index_list: Vec<i32>
-    ) -> NoticeApplyDamageToEveryOpponentUnitRequest {
+        opponent_unit_health_point_tuple_list: Vec<(i32, i32)>
+    ) -> GenerateOpponentMultipleUnitHealthPointDataRequest {
 
-        NoticeApplyDamageToEveryOpponentUnitRequest::new(
-            opponent_unique_id,
-            damage,
-            updated_health_point_list,
+        GenerateOpponentMultipleUnitHealthPointDataRequest::new(
+            opponent_unit_health_point_tuple_list)
+    }
+
+    pub fn to_generate_opponent_multiple_health_point_data_request(
+        &self,
+        health_point_tuple_list: Vec<(i32, i32)>
+    ) -> GenerateOpponentMultipleUnitHealthPointDataRequest {
+
+        GenerateOpponentMultipleUnitHealthPointDataRequest::new(
+            health_point_tuple_list)
+    }
+
+    pub fn to_generate_opponent_multiple_unit_death_data_request(
+        &self,
+        dead_unit_index_list: Vec<i32>
+    ) -> GenerateOpponentMultipleUnitDeathDataRequest {
+
+        GenerateOpponentMultipleUnitDeathDataRequest::new(
             dead_unit_index_list)
     }
 
-    pub fn to_notice_apply_damage_to_opponent_main_character_request(
+    pub fn to_generate_opponent_main_character_health_point_data_request(
         &self,
-        opponent_unique_id: i32,
-        damage: i32,
-        updated_health_point: i32,
-        opponent_survival_status: StatusMainCharacterEnum,) -> NoticeApplyDamageToOpponentMainCharacterRequest {
+        main_character_health_point: i32
+    ) -> GenerateOpponentMainCharacterHealthPointDataRequest {
 
-        NoticeApplyDamageToOpponentMainCharacterRequest::new(
-            opponent_unique_id,
-            damage,
-            updated_health_point,
-            opponent_survival_status)
+        GenerateOpponentMainCharacterHealthPointDataRequest::new(
+            main_character_health_point)
     }
 
-    pub fn to_notice_lost_deck_card_of_opponent_request(
+    pub fn to_generate_opponent_main_character_survival_data_request(
         &self,
-        opponent_unique_id: i32,
-        lost_deck_card_list: Vec<i32>) -> NoticeLostDeckCardOfOpponentRequest {
+        main_character_status: StatusMainCharacterEnum
+    ) -> GenerateOpponentMainCharacterSurvivalDataRequest {
 
-        NoticeLostDeckCardOfOpponentRequest::new(
-            opponent_unique_id,
+        GenerateOpponentMainCharacterSurvivalDataRequest::new(
+            main_character_status)
+    }
+
+    pub fn to_generate_opponent_deck_card_lost_data_request(
+        &self,
+        lost_deck_card_list: Vec<i32>
+    ) -> GenerateOpponentDeckCardLostDataRequest {
+
+        GenerateOpponentDeckCardLostDataRequest::new(
             lost_deck_card_list)
     }
 
-    pub fn to_notify_opponent_you_use_catastrophic_damage_item_card_request(&self, opponent_unique_id: i32, item_card_id: i32, damage_for_field_unit: i32) -> NotifyToOpponentYouUseCatastrophicDamageItemCardRequest {
-        NotifyToOpponentYouUseCatastrophicDamageItemCardRequest::new(opponent_unique_id, item_card_id, damage_for_field_unit)
-    }
-    pub fn to_notify_opponent_you_use_damage_main_character_item_card_request(&self, opponent_unique_id: i32, item_card_id: i32, damage_for_main_character: i32) -> NotifyToOpponentYouUseDamageMainCharacterItemCardRequest {
-        NotifyToOpponentYouUseDamageMainCharacterItemCardRequest::new(opponent_unique_id, item_card_id, damage_for_main_character)
-    }
-    pub fn to_notify_opponent_you_use_destroy_deck_item_card_request(&self, opponent_unique_id: i32, item_card_id: i32, will_be_lost_card: i32) -> NotifyToOpponentYouUseDestroyDeckItemCardRequest {
-        NotifyToOpponentYouUseDestroyDeckItemCardRequest::new(opponent_unique_id, item_card_id, will_be_lost_card)
+    pub fn to_notice_use_catastrophic_item_card_request(
+        &self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+        player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+        player_deck_card_lost_list_map_for_notice: HashMap<PlayerIndex, Vec<i32>>,
+    ) -> NoticeUseCatastrophicDamageItemCardRequest {
+
+        NoticeUseCatastrophicDamageItemCardRequest::new(
+            opponent_unique_id,
+            player_hand_use_map_for_notice,
+            player_field_unit_health_point_map_for_notice,
+            player_field_unit_death_map_for_notice,
+            player_main_character_health_point_map_for_notice,
+            player_main_character_survival_map_for_notice,
+            player_deck_card_lost_list_map_for_notice
+        )
     }
 }
