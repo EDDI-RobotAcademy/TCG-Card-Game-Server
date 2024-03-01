@@ -179,14 +179,7 @@ impl GameFieldUnitCardList {
 
         -1
     }
-
-    pub fn get_unit_extra_effect_list(&mut self, unit_card_index: usize) -> Vec<ExtraEffect> {
-        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
-            return unit.get_extra_effect_list()
-        }
-
-        Vec::new()
-    }
+    
     pub fn reset_first_passive(&mut self, unit_card_index: usize, first_passive_default: bool) {
         self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_has_first_passive_skill(first_passive_default);
     }
