@@ -23,7 +23,7 @@ impl GameCardUnitHandler for UnitCard_26_Function {
     unsafe fn summary_unit_card(&self) -> GameCardUnitInfo {
         println!("UnitCard_26_Function: summary_unit_card()");
 
-        let mut game_card_unit_effect = GameCardUnitInfo::new(
+        let mut game_card_unit_info = GameCardUnitInfo::new(
             RaceEnum::Undead,
             GradeEnum::Uncommon,
             10,
@@ -39,9 +39,9 @@ impl GameCardUnitHandler for UnitCard_26_Function {
 
         let mut passive_status_list_of_26 = Vec::new();
         passive_status_list_of_26.push(PassiveStatus::PhysicalImmunity);
-        game_card_unit_effect.set_passive_status_list(passive_status_list_of_26);
+        game_card_unit_info.set_passive_status_list(passive_status_list_of_26);
 
-        return game_card_unit_effect;
+        return game_card_unit_info;
     }
 
     unsafe fn summary_unit_card_passive_default(&self) -> Vec<bool> {
