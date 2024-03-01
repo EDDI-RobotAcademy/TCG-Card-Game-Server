@@ -256,7 +256,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         let account_unique_id = get_current_health_point_of_field_unit_by_index_request.get_account_unique_id();
         let unit_index = get_current_health_point_of_field_unit_by_index_request.get_field_unit_index();
         let current_health_point_of_indexed_unit =
-            game_field_unit_repository_guard.acquire_current_health_point_of_all_unit(account_unique_id)[unit_index as usize];
+            game_field_unit_repository_guard.acquire_health_point_of_indexed_unit(account_unique_id, unit_index).get_current_health_point();
 
         GetCurrentHealthPointOfFieldUnitByIndexResponse::new(current_health_point_of_indexed_unit)
     }
@@ -266,10 +266,10 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let account_unique_id = get_current_health_point_of_all_field_unit_request.get_account_unique_id();
-        let current_health_point_of_indexed_unit =
+        let current_health_point_of_all_unit =
             game_field_unit_repository_guard.acquire_current_health_point_of_all_unit(account_unique_id);
 
-        GetCurrentHealthPointOfAllFieldUnitResponse::new(current_health_point_of_indexed_unit)
+        GetCurrentHealthPointOfAllFieldUnitResponse::new(current_health_point_of_all_unit)
     }
 
     async fn attach_special_energy_to_field_unit_index(&mut self, attach_special_energy_to_unit_index_request: AttachSpecialEnergyToUnitIndexRequest) -> AttachSpecialEnergyToUnitIndexResponse {

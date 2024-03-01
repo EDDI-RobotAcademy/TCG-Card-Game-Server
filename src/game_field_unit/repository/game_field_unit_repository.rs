@@ -173,7 +173,7 @@ pub trait GameFieldUnitRepository {
 
     fn acquire_current_health_point_of_all_unit(
         &mut self,
-        account_unique_id: i32) -> Vec<i32>;
+        account_unique_id: i32) -> Vec<(i32, i32)>;
 
     fn acquire_extra_effect_list_of_indexed_unit(
         &mut self,
