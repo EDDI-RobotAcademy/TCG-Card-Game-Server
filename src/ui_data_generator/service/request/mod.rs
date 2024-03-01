@@ -19,3 +19,4 @@ pub mod generate_my_main_character_survival_data_request;
 pub mod generate_opponent_main_character_survival_data_request;
 pub mod generate_my_specific_unit_extra_effect_data_request;
 pub mod generate_my_multiple_unit_extra_effect_data_request;
+pub mod generate_opponent_deck_card_lost_data_request;

@@ -698,4 +698,21 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_extra_effect_info_for_response,
          player_field_unit_extra_effect_info_for_notice)
     }
+
+    async fn generate_opponent_deck_card_lost_data(
+        &mut self,
+        opponent_lost_deck_card_list: Vec<i32>
+    ) -> (PlayerDeckCardLostListInfo,
+          PlayerDeckCardLostListInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_my_multiple_unit_extra_effect_data()");
+
+        let player_deck_card_lost_list_info_for_response =
+            self.get_player_deck_card_lost_list_info(Opponent, opponent_lost_deck_card_list.clone());
+        let player_deck_card_lost_list_info_for_notice =
+            self.get_player_deck_card_lost_list_info(You, opponent_lost_deck_card_list.clone());
+
+        (player_deck_card_lost_list_info_for_response,
+         player_deck_card_lost_list_info_for_notice)
+    }
 }
