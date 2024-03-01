@@ -541,15 +541,12 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let mut game_field_unit_service_guard =
             self.game_field_unit_service.lock().await;
 
-        let get_current_health_point_of_field_unit_by_index_response =
+        let current_health_point_of_field_unit =
             game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
                 add_field_energy_with_field_unit_health_point_request_form
                     .to_get_field_unit_health_point_request(
                         account_unique_id,
-                        field_unit_index)).await;
-
-        let current_health_point_of_field_unit =
-            get_current_health_point_of_field_unit_by_index_response.get_current_unit_health_point();
+                        field_unit_index)).await.get_current_unit_health_point();
 
         if current_health_point_of_field_unit == -1 {
             println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 당신도 해킹범입니다!");
@@ -608,27 +605,41 @@ impl GameCardItemController for GameCardItemControllerImpl {
             add_field_energy_with_field_unit_health_point_request_form
                 .to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
 
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_use_my_hand_card_data_response =
+            ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                add_field_energy_with_field_unit_health_point_request_form
+                    .to_generate_use_my_hand_card_data_request(usage_hand_card)).await;
+
+        let generate_my_field_energy_data_response =
+            ui_data_generator_service_guard.generate_my_field_energy_data(
+                add_field_energy_with_field_unit_health_point_request_form
+                    .to_generate_my_field_energy_data_request(updated_field_energy)).await;
+
+        drop(ui_data_generator_service_guard);
+
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        let notice_use_hand_card_response =
-            notify_player_action_info_service_guard.notice_use_hand_card(
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_field_energy_increase_item_card(
                 add_field_energy_with_field_unit_health_point_request_form
-                    .to_notice_use_hand_card_request(
+                    .to_notice_use_field_energy_increase_item_card_request(
                         opponent_unique_id,
-                        usage_hand_card)).await;
+                        generate_use_my_hand_card_data_response
+                            .get_player_hand_use_map_for_notice().clone(),
+                        generate_my_field_energy_data_response
+                            .get_player_field_energy_map_for_notice().clone())).await;
 
-        let notice_add_field_energy_response =
-            notify_player_action_info_service_guard.notice_add_field_energy(
-                add_field_energy_with_field_unit_health_point_request_form
-                    .to_notice_add_field_energy_request(
-                        opponent_unique_id,
-                        updated_field_energy)).await;
+        println!("notice_response: {:?}", notice_response);
 
         drop(notify_player_action_info_service_guard);
 
         AddFieldEnergyWithFieldUnitHealthPointResponseForm::from_response(
-            notice_use_hand_card_response, notice_add_field_energy_response)
+            generate_use_my_hand_card_data_response,
+            generate_my_field_energy_data_response)
     }
 
     async fn request_to_use_catastrophic_damage_item(

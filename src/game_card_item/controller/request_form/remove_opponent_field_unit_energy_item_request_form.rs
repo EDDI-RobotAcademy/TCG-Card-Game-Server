@@ -20,6 +20,7 @@ use crate::notify_player_action::service::request::notify_to_opponent_you_use_fi
 use crate::notify_player_action_info::service::request::notice_apply_damage_to_specific_opponent_unit_request::NoticeApplyDamageToSpecificOpponentUnitRequest;
 use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_opponent_unit_request::NoticeRemoveEnergyOfSpecificOpponentUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
+use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
 
 #[derive(Debug)]
 pub struct RemoveOpponentFieldUnitEnergyItemRequestForm {
@@ -152,6 +153,15 @@ impl RemoveOpponentFieldUnitEnergyItemRequestForm {
             opponent_target_unit_index,
             race_enum,
             quantity)
+    }
+
+    pub fn to_generate_use_my_hand_card_data_request(
+        &self,
+        used_hand_card_id: i32
+    ) -> GenerateUseMyHandCardDataRequest {
+
+        GenerateUseMyHandCardDataRequest::new(
+            used_hand_card_id)
     }
 
     pub fn to_notice_use_hand_card_request(

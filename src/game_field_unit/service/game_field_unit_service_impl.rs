@@ -255,6 +255,9 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let account_unique_id = get_current_health_point_of_field_unit_by_index_request.get_account_unique_id();
         let unit_index = get_current_health_point_of_field_unit_by_index_request.get_field_unit_index();
+        if game_field_unit_repository_guard.find_target_unit_id_by_index(account_unique_id, unit_index) == -1 {
+            return GetCurrentHealthPointOfFieldUnitByIndexResponse::new(-1)
+        }
         let current_health_point_of_indexed_unit =
             game_field_unit_repository_guard.acquire_health_point_of_indexed_unit(account_unique_id, unit_index).get_current_health_point();
 
