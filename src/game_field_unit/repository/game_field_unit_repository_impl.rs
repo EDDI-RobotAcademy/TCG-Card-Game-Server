@@ -136,11 +136,11 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             if game_field_unit.find_unit_by_index(unit_card_index as usize).get_card() != -1 {
                 game_field_unit.add_energy_to_indexed_unit(unit_card_index as usize, RaceEnumValue::from(race_enum as i32), quantity);
+                return true
             }
-            return true
         }
-
-        return false
+        println!("Failed to attach_multiple_energy_to_indexed_unit - index error");
+        false
     }
 
     fn increase_max_health_of_indexed_unit(&mut self, account_unique_id: i32, unit_card_index: usize, amount: i32) -> bool {
@@ -228,10 +228,9 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
             if unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
                 let maybe_dead_unit_id = game_field_unit.judge_death_of_unit(unit_index);
-                if maybe_dead_unit_id != -1 {
-                    game_field_unit.check_unit_alive(unit_index);
+                if maybe_dead_unit_id != -1 && game_field_unit.check_unit_alive(unit_index) == false {
+                    return (unit_card_index, maybe_dead_unit_id);
                 }
-                return (unit_card_index, maybe_dead_unit_id);
             }
         }
 
@@ -247,14 +246,14 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             let field_unit_list = game_field_unit.get_all_field_unit_list_mut();
             for unit_index in (0..field_unit_list.len()).rev() {
                 let dead_unit_id = game_field_unit.judge_death_of_unit(unit_index);
-                if dead_unit_id != -1 {
+                if dead_unit_id != -1 && game_field_unit.check_unit_alive(unit_index) == false {
                     dead_unit_tuple_list.push((unit_index as i32, dead_unit_id));
-                    game_field_unit.check_unit_alive(unit_index);
                 }
             }
 
             // 원래 순서대로 되돌림
             dead_unit_tuple_list.reverse();
+            println!("dead_unit_tuple_list : {:?}", dead_unit_tuple_list);
 
             return dead_unit_tuple_list
         }
