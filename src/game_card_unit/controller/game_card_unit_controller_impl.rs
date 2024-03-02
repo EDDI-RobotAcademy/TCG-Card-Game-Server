@@ -288,10 +288,24 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             attack_unit_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
+            println!("유효하지 않은 세션입니다.");
             return AttackUnitResponseForm::new(false)
         }
 
-        // TODO: 프로토콜 검증 (지금 이거 신경 쓸 때가 아님)
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                attack_unit_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return AttackUnitResponseForm::new(false)
+        }
+
+        drop(game_protocol_validation_service_guard);
 
         // Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
         let attacker_unit_card_index_string = attack_unit_request_form.get_attacker_unit_index();
@@ -307,6 +321,11 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     .to_find_unit_id_by_index_request(
                         account_unique_id,
                         attacker_unit_card_index)).await.get_found_opponent_unit_id();
+
+        if attacker_unit_id == -1 {
+            println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 해킹범입니다!");
+            return AttackUnitResponseForm::new(false)
+        }
 
         let mut game_card_unit_service_guard =
             self.game_card_unit_service.lock().await;
@@ -341,7 +360,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         attacker_unit_card_index)).await;
 
         // extra effect 가지고 있는지 여부
-        let mut attacker_unit_extra_effect_list =
+        let attacker_unit_extra_effect_list =
             game_field_unit_service_guard.acquire_unit_extra_effect(
                 attack_unit_request_form
                     .to_acquire_unit_extra_effect_request(
@@ -376,39 +395,6 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             return AttackUnitResponseForm::new(false)
         }
 
-        // 공격 유닛과 피격 유닛에게 효과 존재 유무 판정
-        // 공격받는 unit 의 harmful_status_effect 호출
-        let mut opponent_target_unit_harmful_status_effect_list =
-            game_field_unit_service_guard.acquire_unit_harmful_status_effect(
-                attack_unit_request_form
-                    .to_acquire_unit_harmful_status_effect_request(
-                        opponent_unique_id,
-                        opponent_target_unit_card_index)).await.get_harmful_status_effect_list().clone();
-
-        // 피격 유닛에게 Freeze 효과가 있고, 공격 유닛에게도 Freeze 가 있다면, attacker_extra_effect 에서 Freeze 제거
-        // (공격유닛:존재, 피격유닛:부재 시 빙결 공격 가능)
-        for harmful_effect_index in (0..opponent_target_unit_harmful_status_effect_list.len()).rev() {
-            if *opponent_target_unit_harmful_status_effect_list[harmful_effect_index].get_harmful_effect() == Freeze {
-                for attacker_index in (0..attacker_unit_extra_effect_list.len()).rev() {
-                    if *attacker_unit_extra_effect_list[attacker_index].get_extra_effect() == Freeze {
-                        attacker_unit_extra_effect_list.swap_remove(attacker_index);
-                    }
-                }
-            }
-        }
-
-
-        // 피격 유닛에게 DarkFire 효과가 있고, 공격 유닛에게도 DarkFire 가 있다면, opponent_target_unit_harmful_status_effect_list 에서 DarkFire 제거
-        for harmful_effect_index in (0..opponent_target_unit_harmful_status_effect_list.len()).rev() {
-            if *opponent_target_unit_harmful_status_effect_list[harmful_effect_index].get_harmful_effect() == DarkFire {
-                for attacker_index in (0..attacker_unit_extra_effect_list.len()).rev() {
-                    if *attacker_unit_extra_effect_list[attacker_index].get_extra_effect() == DarkFire {
-                        opponent_target_unit_harmful_status_effect_list.swap_remove(harmful_effect_index);
-                    }
-                }
-            }
-        }
-
         // 적 타겟 유닛을 효과를 가지고 공격
         let attack_opponent_target_unit_with_extra_effect_response =
             game_field_unit_service_guard.attack_target_unit_with_extra_effect(
@@ -423,6 +409,13 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             println!("적 유닛 공격에 실패했습니다.");
             return AttackUnitResponseForm::new(false)
         }
+
+        let opponent_target_unit_harmful_effect_list =
+            game_field_unit_service_guard.acquire_unit_harmful_status_effect(
+                attack_unit_request_form
+                    .to_acquire_unit_harmful_status_effect_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await.get_harmful_effect_list().clone();
 
         // 반격 이전 공격 유닛의 기본 지속 상태 확보
         let attacker_unit_passive_status_list =
@@ -496,6 +489,13 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     find_opponent_target_unit_attack_point_response.get_attack_point(),
                     &opponent_target_unit_extra_effect_list,
                     attacker_unit_card_index)).await;
+
+        let attacker_unit_harmful_effect_list =
+            game_field_unit_service_guard.acquire_unit_harmful_status_effect(
+                attack_unit_request_form
+                    .to_acquire_unit_harmful_status_effect_request(
+                        account_unique_id,
+                        attacker_unit_card_index)).await.get_harmful_effect_list().clone();
 
         // 액션 완료 설정
         game_field_unit_service_guard.execute_turn_action(
@@ -594,6 +594,11 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         account_unique_id,
                         attacker_unit_card_index)).await.get_found_opponent_unit_id();
 
+        if attacker_unit_id == -1 {
+            println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 해킹범입니다!");
+            return AttackGameMainCharacterResponseForm::new(false)
+        }
+
         let mut game_card_unit_service_guard =
             self.game_card_unit_service.lock().await;
 
@@ -606,7 +611,6 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         let mut game_field_unit_action_possibility_validator_service_guard =
             self.game_field_unit_action_possibility_validator_service.lock().await;
-
 
         let is_unit_basic_attack_possible_response =
             game_field_unit_action_possibility_validator_service_guard.is_unit_basic_attack_possible(
@@ -629,15 +633,6 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     .to_acquire_unit_attack_point_request(
                         account_unique_id,
                         attacker_unit_card_index)).await.get_attack_point();
-
-        // todo 메인캐릭터가 extra effect 에 영향을 받는 경우 추가
-        // extra effect 가지고 있는지 여부
-        // let attacker_unit_extra_effect_list =
-        //     game_field_unit_service_guard.acquire_unit_extra_effect(
-        //         attack_game_main_character_request_form
-        //             .to_acquire_unit_extra_effect_request(
-        //                 account_unique_id,
-        //                 attacker_unit_card_index)).await.get_extra_status_effect_list().clone();
 
         // 공격을 위해 상대방 고유값 획득
         let battle_room_service_guard =
@@ -667,11 +662,12 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                    .to_check_main_character_of_account_unique_id_request(
                        opponent_unique_id)).await;
         // 액션 완료 설정
-            game_field_unit_service_guard.execute_turn_action(
-                attack_game_main_character_request_form
-                    .to_execute_turn_action_request(
-                        account_unique_id,
-                        attacker_unit_card_index)).await;
+        game_field_unit_service_guard.execute_turn_action(
+            attack_game_main_character_request_form
+                .to_execute_turn_action_request(
+                    account_unique_id,
+                    attacker_unit_card_index)).await;
+
         drop(game_field_unit_service_guard);
         // TODO: 메인 캐릭터가 사망한 경우의 서비스 추가 필요
         // 사망하면 상대 패배 결정
