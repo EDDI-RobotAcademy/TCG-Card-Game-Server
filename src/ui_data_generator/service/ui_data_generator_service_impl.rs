@@ -31,6 +31,7 @@ use crate::ui_data_generator::service::request::generate_opponent_main_character
 use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_death_data_request::GenerateOpponentMultipleUnitDeathDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_health_point_data_request::GenerateOpponentMultipleUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_energy_data_request::GenerateOpponentSpecificUnitEnergyDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_extra_effect_data_request::GenerateOpponentSpecificUnitExtraEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_health_point_data_request::GenerateOpponentSpecificUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_search_my_deck_data_request::{GenerateSearchMyDeckDataRequest};
 use crate::ui_data_generator::service::response::generate_my_specific_unit_energy_data_response::{GenerateMySpecificUnitEnergyDataResponse};
@@ -57,6 +58,7 @@ use crate::ui_data_generator::service::response::generate_opponent_main_characte
 use crate::ui_data_generator::service::response::generate_opponent_multiple_unit_death_data_response::GenerateOpponentMultipleUnitDeathDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_multiple_unit_health_point_data_response::GenerateOpponentMultipleUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_energy_data_response::GenerateOpponentSpecificUnitEnergyDataResponse;
+use crate::ui_data_generator::service::response::generate_opponent_specific_unit_extra_effect_data_response::GenerateOpponentSpecificUnitExtraEffectDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_health_point_data_response::GenerateOpponentSpecificUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_search_my_deck_data_response::{GenerateSearchMyDeckDataResponse};
 use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
@@ -625,7 +627,7 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
         let my_unit_index =
             generate_my_specific_unit_extra_effect_data_request.get_my_unit_index();
         let my_unit_extra_effect_list=
-            generate_my_specific_unit_extra_effect_data_request.get_extra_effect_list();
+            generate_my_specific_unit_extra_effect_data_request.get_my_unit_extra_effect_list();
 
         let mut ui_data_generator_repository_guard =
             self.ui_data_generator_repository.lock().await;
@@ -639,6 +641,31 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
         drop(ui_data_generator_repository_guard);
 
         GenerateMySpecificUnitExtraEffectDataResponse::new(
+            info_tuple.0.get_player_field_unit_extra_effect_map().clone(),
+            info_tuple.1.get_player_field_unit_extra_effect_map().clone())
+    }
+    async fn generate_opponent_specific_unit_extra_effect_data(
+        &mut self, generate_opponent_specific_unit_extra_effect_data_request: GenerateOpponentSpecificUnitExtraEffectDataRequest)
+        -> GenerateOpponentSpecificUnitExtraEffectDataResponse {
+        println!("UiDataGeneratorServiceImpl: generate_opponent_specific_unit_extra_effect_data()");
+
+        let opponent_unit_index =
+            generate_opponent_specific_unit_extra_effect_data_request.get_opponent_unit_index();
+        let opponent_unit_extra_effect_list=
+            generate_opponent_specific_unit_extra_effect_data_request.get_opponent_unit_extra_effect_list();
+
+        let mut ui_data_generator_repository_guard =
+            self.ui_data_generator_repository.lock().await;
+
+        let info_tuple =
+            ui_data_generator_repository_guard.generate_opponent_specific_unit_extra_effect_data(
+                opponent_unit_index,
+                opponent_unit_extra_effect_list.clone()
+            ).await;
+
+        drop(ui_data_generator_repository_guard);
+
+        GenerateOpponentSpecificUnitExtraEffectDataResponse::new(
             info_tuple.0.get_player_field_unit_extra_effect_map().clone(),
             info_tuple.1.get_player_field_unit_extra_effect_map().clone())
     }
