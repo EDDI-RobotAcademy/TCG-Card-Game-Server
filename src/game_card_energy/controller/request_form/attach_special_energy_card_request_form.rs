@@ -1,17 +1,29 @@
+use std::collections::HashMap;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
-use crate::game_card_energy::service::request::summary_energy_card_effect_request::SummaryEnergyCardEffectRequest;
+
 use crate::game_card_energy::service::request::summary_special_energy_card_effect_request::SummarySpecialEnergyCardEffectRequest;
-use crate::game_field_unit::service::request::attach_single_energy_to_unit_index_request::AttachSingleEnergyToUnitIndexRequest;
+use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect;
+use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
 use crate::game_field_unit::service::request::attach_special_energy_to_unit_index_request::AttachSpecialEnergyToUnitIndexRequest;
+use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
 use crate::game_hand::service::request::use_game_hand_energy_card_request::UseGameHandEnergyCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_protocol_validation::service::request::is_it_energy_card_request::IsItEnergyCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_energy_card_request::{NotifyOpponentYouUseEnergyCardRequest};
+use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+use crate::notify_player_action_info::service::request::notice_use_special_energy_card_to_unit_request::NoticeUseSpecialEnergyCardToUnitRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::field_unit_extra_effect_info::FieldUnitExtraEffectInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_energy_data_request::GenerateMySpecificUnitEnergyDataRequest;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_extra_effect_data_request::GenerateMySpecificUnitExtraEffectDataRequest;
+use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
 
 pub struct AttachSpecialEnergyCardRequestForm {
     session_id: String,
@@ -66,26 +78,113 @@ impl AttachSpecialEnergyCardRequestForm {
             account_unique_id, energy_card_id)
     }
 
-    pub fn to_summary_special_energy_card_effect_request(&self, energy_card_id: i32) -> SummarySpecialEnergyCardEffectRequest {
+    pub fn to_place_to_tomb_request(
+        &self,
+        account_unique_id: i32,
+        used_card_id: i32) -> PlaceToTombRequest {
+
+        PlaceToTombRequest::new(
+            account_unique_id,
+            used_card_id)
+    }
+
+    pub fn to_summary_special_energy_card_effect_request(
+        &self,
+        energy_card_id: i32
+    ) -> SummarySpecialEnergyCardEffectRequest {
+
         SummarySpecialEnergyCardEffectRequest::new(
             energy_card_id)
     }
 
-    pub fn to_attach_special_energy_to_field_unit_request(&self,
-                                                          account_unique_id: i32,
-                                                          unit_card_index: i32,
-                                                          race_enum: RaceEnum,
-                                                          status_effect_list: Vec<StatusEffect>) -> AttachSpecialEnergyToUnitIndexRequest {
+    pub fn to_attach_special_energy_to_field_unit_request(
+        &self,
+        account_unique_id: i32,
+        unit_card_index: i32,
+        race_enum: RaceEnum,
+        status_effect_list: Vec<StatusEffect>
+    ) -> AttachSpecialEnergyToUnitIndexRequest {
 
-        AttachSpecialEnergyToUnitIndexRequest::new(account_unique_id, unit_card_index, race_enum, status_effect_list)
+        AttachSpecialEnergyToUnitIndexRequest::new(
+            account_unique_id,
+            unit_card_index,
+            race_enum,
+            status_effect_list)
     }
 
-    pub fn to_find_opponent_by_account_id_request(&self, account_unique_id: i32) -> FindOpponentByAccountIdRequest {
+    pub fn to_find_opponent_by_account_id_request(
+        &self,
+        account_unique_id: i32
+    ) -> FindOpponentByAccountIdRequest {
+
         FindOpponentByAccountIdRequest::new(
             account_unique_id)
     }
-    pub fn to_notify_opponent_you_use_special_energy_card(&self, opponent_unique_id: i32, usage_energy_card_id: i32, unit_card_index: i32, energy_race: i32, energy_count: i32) -> NotifyOpponentYouUseEnergyCardRequest {
-        NotifyOpponentYouUseEnergyCardRequest::new(
-            opponent_unique_id, usage_energy_card_id, unit_card_index, energy_race, energy_count)
+
+    pub fn to_get_current_attached_energy_of_unit_by_index_request(
+        &self,
+        account_unique_id: i32,
+        unit_index: i32,) -> GetCurrentAttachedEnergyOfFieldUnitByIndexRequest {
+
+        GetCurrentAttachedEnergyOfFieldUnitByIndexRequest::new(
+            account_unique_id,
+            unit_index)
+    }
+
+    pub fn to_acquire_unit_extra_effect_request(
+        &self,
+        account_unique_id: i32,
+        unit_index: i32
+    ) -> AcquireUnitExtraEffectRequest {
+
+        AcquireUnitExtraEffectRequest::new(
+            account_unique_id,
+            unit_index)
+    }
+
+    pub fn to_generate_use_my_hand_card_data_request(
+        &self,
+        used_hand_card_id: i32
+    ) -> GenerateUseMyHandCardDataRequest {
+
+        GenerateUseMyHandCardDataRequest::new(
+            used_hand_card_id)
+    }
+
+    pub fn to_generate_my_specific_unit_energy_data_request(
+        &self,
+        unit_index: i32,
+        updated_unit_energy_map: AttachedEnergyMap
+    ) -> GenerateMySpecificUnitEnergyDataRequest {
+
+        GenerateMySpecificUnitEnergyDataRequest::new(
+            unit_index,
+            updated_unit_energy_map)
+    }
+
+    pub fn to_generate_my_specific_unit_extra_effect_data_request(
+        &self,
+        my_unit_index: i32,
+        my_unit_extra_effect_list: Vec<ExtraEffect>
+    ) -> GenerateMySpecificUnitExtraEffectDataRequest {
+
+        GenerateMySpecificUnitExtraEffectDataRequest::new(
+            my_unit_index,
+            my_unit_extra_effect_list)
+    }
+
+    pub fn to_notice_use_special_energy_card_to_unit_request(
+        &self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>,
+        player_field_unit_extra_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitExtraEffectInfo>
+    ) -> NoticeUseSpecialEnergyCardToUnitRequest {
+
+        NoticeUseSpecialEnergyCardToUnitRequest::new(
+            opponent_unique_id,
+            player_hand_use_map_for_notice,
+            player_field_unit_energy_map_for_notice,
+            player_field_unit_extra_effect_map_for_notice)
     }
 }

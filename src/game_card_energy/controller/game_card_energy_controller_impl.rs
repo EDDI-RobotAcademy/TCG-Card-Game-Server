@@ -280,7 +280,7 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
             attach_special_energy_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return AttachSpecialEnergyCardResponseForm::new(false)
+            return AttachSpecialEnergyCardResponseForm::default()
         }
 
         let energy_card_id_string = attach_special_energy_request_form.get_energy_card_id();
@@ -297,7 +297,7 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return AttachSpecialEnergyCardResponseForm::new(false)
+            return AttachSpecialEnergyCardResponseForm::default()
         }
 
         let check_protocol_hacking_response =
@@ -307,7 +307,7 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         if !check_protocol_hacking_response.is_success() {
             println!("해킹범을 검거합니다!");
-            return AttachSpecialEnergyCardResponseForm::new(false)
+            return AttachSpecialEnergyCardResponseForm::default()
         }
 
         // 3. CardKinds Service 를 호출하여 실제 에너지 카드가 맞는지 확인
@@ -318,24 +318,10 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         if !is_it_energy_response.is_success() {
             println!("에너지 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
-            return AttachSpecialEnergyCardResponseForm::new(false)
+            return AttachSpecialEnergyCardResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
-
-        // 4. Hand Service 호출하여 에너지 카드 사용
-        let mut game_hand_service_guard =
-            self.game_hand_service.lock().await;
-
-        let use_game_hand_unit_card_response =
-            game_hand_service_guard.use_energy_card(
-                attach_special_energy_request_form
-                    .to_use_game_hand_energy_card_request(
-                        account_unique_id, energy_card_id)).await;
-
-        drop(game_hand_service_guard);
-
-        let usage_hand_card_id = use_game_hand_unit_card_response.get_found_energy_card_id();
 
         // 5. Special Energy 카드 Summarized Effect 산출
         let mut game_card_energy_service_guard =
@@ -366,36 +352,109 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         if !attach_energy_to_field_unit_response.is_success() {
             println!("필드에 유닛에게 에너지를 부착하는 과정에서 문제가 발생하였습니다.");
-            return AttachSpecialEnergyCardResponseForm::new(false)
+            return AttachSpecialEnergyCardResponseForm::default()
         }
+
+        let updated_energy_map_of_unit =
+            game_field_unit_service_guard.get_current_attached_energy_of_field_unit_by_index(
+                attach_special_energy_request_form
+                    .to_get_current_attached_energy_of_unit_by_index_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_current_attached_energy_map().clone();
+
+        let updated_extra_effect_list_of_unit =
+            game_field_unit_service_guard.acquire_unit_extra_effect(
+                attach_special_energy_request_form
+                    .to_acquire_unit_extra_effect_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_extra_effect_list();
+
+        drop(game_field_unit_service_guard);
+
+        // 4. Hand Service 호출하여 에너지 카드 사용
+        let mut game_hand_service_guard =
+            self.game_hand_service.lock().await;
+
+        let use_game_hand_unit_card_response =
+            game_hand_service_guard.use_energy_card(
+                attach_special_energy_request_form
+                    .to_use_game_hand_energy_card_request(
+                        account_unique_id, energy_card_id)).await;
+
+        drop(game_hand_service_guard);
+
+        let usage_hand_card_id = use_game_hand_unit_card_response.get_found_energy_card_id();
+
+        let mut game_tomb_service_guard =
+            self.game_tomb_service.lock().await;
+
+        game_tomb_service_guard.add_used_card_to_tomb(
+            attach_special_energy_request_form
+                .to_place_to_tomb_request(account_unique_id, usage_hand_card_id)).await;
+
+        drop(game_tomb_service_guard);
+
+
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_use_my_hand_card_data_response =
+            ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                attach_special_energy_request_form
+                    .to_generate_use_my_hand_card_data_request(
+                        usage_hand_card_id)).await;
+
+        let generate_my_specific_unit_energy_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_energy_data(
+                attach_special_energy_request_form
+                    .to_generate_my_specific_unit_energy_data_request(
+                        unit_card_index,
+                        updated_energy_map_of_unit)).await;
+
+        let generate_my_specific_unit_extra_effect_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_extra_effect_data(
+                attach_special_energy_request_form
+                    .to_generate_my_specific_unit_extra_effect_data_request(
+                        unit_card_index,
+                        updated_extra_effect_list_of_unit)).await;
+
+        drop(ui_data_generator_service_guard);
 
         // 7. 상대방의 고유 id 값을 확보
         let battle_room_service_guard =
             self.battle_room_service.lock().await;
 
-        let find_opponent_by_account_id_response =
+        let opponent_unique_id =
             battle_room_service_guard.find_opponent_by_account_unique_id(
                 attach_special_energy_request_form
-                    .to_find_opponent_by_account_id_request(account_unique_id)).await;
+                    .to_find_opponent_by_account_id_request(
+                        account_unique_id)).await.get_opponent_unique_id();
 
         drop(battle_room_service_guard);
 
         // 8. 상대방에게 당신이 무엇을 했는지 알려줘야 합니다
-        let mut notify_player_action_service_guard =
-            self.notify_player_action_service.lock().await;
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
 
-        let notify_to_opponent_you_attached_energy_to_field_unit_response =
-            notify_player_action_service_guard.notify_opponent_you_use_energy_card(
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_special_energy_card_to_unit(
                 attach_special_energy_request_form
-                    .to_notify_opponent_you_use_special_energy_card(
-                        find_opponent_by_account_id_response.get_opponent_unique_id(),
-                        usage_hand_card_id,
-                        unit_card_index,
-                        special_energy_card_effect_response.get_race() as i32,
-                        special_energy_card_effect_response.get_quantity())).await;
+                    .to_notice_use_special_energy_card_to_unit_request(
+                        opponent_unique_id,
+                        generate_use_my_hand_card_data_response
+                            .get_player_hand_use_map_for_notice().clone(),
+                        generate_my_specific_unit_energy_data_response
+                            .get_player_field_unit_energy_map_for_notice().clone(),
+                        generate_my_specific_unit_extra_effect_data_response
+                            .get_player_field_unit_extra_effect_map_for_notice().clone())).await;
 
-        drop(notify_player_action_service_guard);
+        println!("notice_response: {:?}", notice_response);
 
-        AttachSpecialEnergyCardResponseForm::new(true)
+        drop(notify_player_action_info_service_guard);
+
+        AttachSpecialEnergyCardResponseForm::from_response(
+            generate_use_my_hand_card_data_response,
+            generate_my_specific_unit_energy_data_response,
+            generate_my_specific_unit_extra_effect_data_response)
     }
 }
