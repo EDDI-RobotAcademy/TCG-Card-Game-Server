@@ -33,6 +33,7 @@ use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_
 use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_health_point_data_request::GenerateOpponentMultipleUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_energy_data_request::GenerateOpponentSpecificUnitEnergyDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_extra_effect_data_request::GenerateOpponentSpecificUnitExtraEffectDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_harmful_effect_data_request::GenerateOpponentSpecificUnitHarmfulEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_health_point_data_request::GenerateOpponentSpecificUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_search_my_deck_data_request::{GenerateSearchMyDeckDataRequest};
 use crate::ui_data_generator::service::response::generate_my_specific_unit_energy_data_response::{GenerateMySpecificUnitEnergyDataResponse};
@@ -61,6 +62,7 @@ use crate::ui_data_generator::service::response::generate_opponent_multiple_unit
 use crate::ui_data_generator::service::response::generate_opponent_multiple_unit_health_point_data_response::GenerateOpponentMultipleUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_energy_data_response::GenerateOpponentSpecificUnitEnergyDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_extra_effect_data_response::GenerateOpponentSpecificUnitExtraEffectDataResponse;
+use crate::ui_data_generator::service::response::generate_opponent_specific_unit_harmful_effect_data_response::GenerateOpponentSpecificUnitHarmfulEffectDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_health_point_data_response::GenerateOpponentSpecificUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_search_my_deck_data_response::{GenerateSearchMyDeckDataResponse};
 use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
@@ -696,6 +698,31 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
             info_tuple.0.get_player_field_unit_harmful_effect_map().clone(),
             info_tuple.1.get_player_field_unit_harmful_effect_map().clone())
 
+    }
+    async fn generate_opponent_specific_unit_harmful_effect_data(
+        &mut self, generate_opponent_specific_unit_harmful_effect_data_request: GenerateOpponentSpecificUnitHarmfulEffectDataRequest)
+        -> GenerateOpponentSpecificUnitHarmfulEffectDataResponse {
+        println!("UiDataGeneratorServiceImpl: generate_opponent_specific_unit_harmful_effect_data()");
+
+        let opponent_unit_index =
+            generate_opponent_specific_unit_harmful_effect_data_request.get_opponent_unit_index();
+        let opponent_unit_extra_effect_list=
+            generate_opponent_specific_unit_harmful_effect_data_request.get_opponent_unit_harmful_status_list();
+
+        let mut ui_data_generator_repository_guard =
+            self.ui_data_generator_repository.lock().await;
+
+        let info_tuple =
+            ui_data_generator_repository_guard.generate_opponent_specific_unit_harmful_effect_data(
+                opponent_unit_index,
+                opponent_unit_extra_effect_list.clone()
+            ).await;
+
+        drop(ui_data_generator_repository_guard);
+
+        GenerateOpponentSpecificUnitHarmfulEffectDataResponse::new(
+            info_tuple.0.get_player_field_unit_harmful_effect_map().clone(),
+            info_tuple.1.get_player_field_unit_harmful_effect_map().clone())
     }
 
     async fn generate_my_multiple_unit_extra_effect_data(

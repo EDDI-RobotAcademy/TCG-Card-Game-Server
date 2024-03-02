@@ -798,6 +798,25 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_unit_harmful_effect_info_for_response,
          player_unit_harmful_effect_info_for_notice)
     }
+    async fn generate_opponent_specific_unit_harmful_effect_data(
+        &mut self,
+        opponent_harmful_effect_unit_index:i32,
+        opponent_unit_harmful_effect_list:Vec<ExtraEffect>
+    ) -> (PlayerFieldUnitHarmfulEffectInfo,
+          PlayerFieldUnitHarmfulEffectInfo) {
+        println!("UiDataGeneratorRepositoryImpl: generate_my_specific_unit_harmful_effect_data()");
+
+        let field_unit_harmful_effect_info =
+            self.get_field_unit_harmful_effect_info(opponent_harmful_effect_unit_index, opponent_unit_harmful_effect_list);
+
+        let player_unit_harmful_effect_info_for_response =
+            self.get_player_field_unit_harmful_effect_info(Opponent, field_unit_harmful_effect_info.clone());
+        let player_unit_harmful_effect_info_for_notice =
+            self.get_player_field_unit_harmful_effect_info(You, field_unit_harmful_effect_info.clone());
+
+        (player_unit_harmful_effect_info_for_response,
+         player_unit_harmful_effect_info_for_notice)
+    }
 
     async fn generate_my_multiple_unit_extra_effect_data(
         &mut self,

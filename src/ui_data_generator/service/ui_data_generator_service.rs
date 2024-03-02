@@ -25,6 +25,7 @@ use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_
 use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_health_point_data_request::GenerateOpponentMultipleUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_energy_data_request::GenerateOpponentSpecificUnitEnergyDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_extra_effect_data_request::GenerateOpponentSpecificUnitExtraEffectDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_harmful_effect_data_request::GenerateOpponentSpecificUnitHarmfulEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_health_point_data_request::GenerateOpponentSpecificUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_search_my_deck_data_request::GenerateSearchMyDeckDataRequest;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_energy_data_response::GenerateMySpecificUnitEnergyDataResponse;
@@ -53,6 +54,7 @@ use crate::ui_data_generator::service::response::generate_opponent_multiple_unit
 use crate::ui_data_generator::service::response::generate_opponent_multiple_unit_health_point_data_response::GenerateOpponentMultipleUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_energy_data_response::GenerateOpponentSpecificUnitEnergyDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_extra_effect_data_response::GenerateOpponentSpecificUnitExtraEffectDataResponse;
+use crate::ui_data_generator::service::response::generate_opponent_specific_unit_harmful_effect_data_response::GenerateOpponentSpecificUnitHarmfulEffectDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_health_point_data_response::GenerateOpponentSpecificUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_search_my_deck_data_response::GenerateSearchMyDeckDataResponse;
 
@@ -148,6 +150,9 @@ pub trait UiDataGeneratorService {
     async fn generate_my_specific_unit_harmful_effect_data(
         &mut self, generate_my_specific_unit_harmful_effect_data_request: GenerateMySpecificUnitHarmfulEffectDataRequest)
         -> GenerateMySpecificUnitHarmfulEffectDataResponse;
+    async fn generate_opponent_specific_unit_harmful_effect_data(
+        &mut self, generate_opponent_specific_unit_harmful_effect_data_request: GenerateOpponentSpecificUnitHarmfulEffectDataRequest)
+        -> GenerateOpponentSpecificUnitHarmfulEffectDataResponse;
     async fn generate_my_multiple_unit_extra_effect_data(
         &mut self, generate_my_multiple_unit_extra_effect_data_request: GenerateMyMultipleUnitExtraEffectDataRequest)
         -> GenerateMyMultipleUnitExtraEffectDataResponse;
