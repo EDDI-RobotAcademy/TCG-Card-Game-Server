@@ -23,6 +23,7 @@ use crate::notify_player_action_info::service::request::notice_use_general_energ
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_instant_unit_death_item_card_request::NoticeUseInstantUnitDeathItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_search_deck_support_card_request::NoticeUseSearchDeckSupportCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_unit_energy_remove_item_card_request::NoticeUseUnitEnergyRemoveItemCardRequest;
 use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_multiple_opponent_unit_response::NoticeApplyDamageToMultipleOpponentUnitResponse;
@@ -48,6 +49,7 @@ use crate::notify_player_action_info::service::response::notice_use_general_ener
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_instant_unit_death_item_card_response::NoticeUseInstantUnitDeathItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_search_deck_support_card_response::NoticeUseSearchDeckSupportCardResponse;
+use crate::notify_player_action_info::service::response::notice_use_unit_energy_remove_item_card_response::NoticeUseUnitEnergyRemoveItemCardResponse;
 
 #[async_trait]
 pub trait NotifyPlayerActionInfoService {
@@ -147,4 +149,8 @@ pub trait NotifyPlayerActionInfoService {
         &mut self,
         notice_use_catastrophic_damage_item_card_request: NoticeUseCatastrophicDamageItemCardRequest)
         -> NoticeUseCatastrophicDamageItemCardResponse;
+    async fn notice_use_unit_energy_remove_item_card(
+        &mut self,
+        notice_use_unit_energy_remove_item_card_request: NoticeUseUnitEnergyRemoveItemCardRequest)
+        -> NoticeUseUnitEnergyRemoveItemCardResponse;
 }

@@ -41,6 +41,7 @@ use crate::notify_player_action_info::service::request::notice_use_general_energ
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_instant_unit_death_item_card_request::NoticeUseInstantUnitDeathItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_search_deck_support_card_request::{NoticeUseSearchDeckSupportCardRequest};
+use crate::notify_player_action_info::service::request::notice_use_unit_energy_remove_item_card_request::NoticeUseUnitEnergyRemoveItemCardRequest;
 use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_multiple_opponent_unit_response::NoticeApplyDamageToMultipleOpponentUnitResponse;
@@ -65,6 +66,7 @@ use crate::notify_player_action_info::service::response::notice_use_general_ener
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_instant_unit_death_item_card_response::NoticeUseInstantUnitDeathItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_search_deck_support_card_response::{NoticeUseSearchDeckSupportCardResponse};
+use crate::notify_player_action_info::service::response::notice_use_unit_energy_remove_item_card_response::NoticeUseUnitEnergyRemoveItemCardResponse;
 
 pub struct NotifyPlayerActionInfoServiceImpl {
     notify_player_action_info_repository: Arc<AsyncMutex<NotifyPlayerActionInfoRepositoryImpl>>,
@@ -732,5 +734,28 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         drop(notify_player_action_info_repository_guard);
 
         NoticeUseCatastrophicDamageItemCardResponse::new(response)
+    }
+
+    async fn notice_use_unit_energy_remove_item_card(
+        &mut self,
+        notice_use_unit_energy_remove_item_card_request: NoticeUseUnitEnergyRemoveItemCardRequest)
+        -> NoticeUseUnitEnergyRemoveItemCardResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_use_unit_energy_remove_item_card()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_use_unit_energy_remove_item(
+                notice_use_unit_energy_remove_item_card_request.get_opponent_unique_id(),
+                notice_use_unit_energy_remove_item_card_request.get_player_hand_use_map_for_notice().clone(),
+                notice_use_unit_energy_remove_item_card_request.get_player_field_unit_energy_map_for_notice().clone(),
+                notice_use_unit_energy_remove_item_card_request.get_player_field_unit_health_point_map_for_notice().clone(),
+                notice_use_unit_energy_remove_item_card_request.get_player_field_unit_death_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeUseUnitEnergyRemoveItemCardResponse::new(response)
     }
 }

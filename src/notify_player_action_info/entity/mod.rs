@@ -7,3 +7,4 @@ pub mod notify_form_use_instant_unit_death_item_card;
 pub mod notify_form_use_field_energy_to_unit;
 pub mod notify_form_use_field_energy_increase_item_card;
 pub mod notify_form_use_catastrophic_damage_item_card;
+pub mod notify_form_use_unit_energy_remove_item_card;
