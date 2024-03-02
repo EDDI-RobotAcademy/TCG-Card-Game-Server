@@ -169,8 +169,8 @@ pub fn build_card_race_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32
         if let (Ok(card_number), Ok(card_race)) = (card_number, card_race) {
             let race_enum = match card_race {
                 0 => RaceEnum::Dummy,
-                1 => RaceEnum::Undead,
-                2 => RaceEnum::Human,
+                1 => RaceEnum::Human,
+                2 => RaceEnum::Undead,
                 3 => RaceEnum::Trent,
                 4 => RaceEnum::Angel,
                 5 => RaceEnum::Machine,
@@ -201,8 +201,8 @@ pub fn build_shop_card_dictionary(csv_content: &Vec<Vec<String>>) -> HashMap<i32
         if let (Ok(card_number), Ok(card_race), Ok(card_grade)) = (card_number, card_race, card_grade) {
             let race_enum = match card_race {
                 0 => RaceEnum::Dummy,
-                1 => RaceEnum::Undead,
-                2 => RaceEnum::Human,
+                1 => RaceEnum::Human,
+                2 => RaceEnum::Undead,
                 3 => RaceEnum::Trent,
                 4 => RaceEnum::Angel,
                 5 => RaceEnum::Machine,
