@@ -24,6 +24,7 @@ use crate::notify_player_action_info::service::request::notice_use_hand_card_req
 use crate::notify_player_action_info::service::request::notice_use_instant_unit_death_item_card_request::NoticeUseInstantUnitDeathItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_multiple_unit_damage_item_card_request::NoticeUseMultipleUnitDamageItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_search_deck_support_card_request::NoticeUseSearchDeckSupportCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_special_energy_card_to_unit_request::NoticeUseSpecialEnergyCardToUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_unit_energy_remove_item_card_request::NoticeUseUnitEnergyRemoveItemCardRequest;
 use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
 use crate::notify_player_action_info::service::response::notice_apply_damage_to_every_opponent_unit_response::{NoticeApplyDamageToEveryOpponentUnitResponse};
@@ -51,6 +52,7 @@ use crate::notify_player_action_info::service::response::notice_use_hand_card_re
 use crate::notify_player_action_info::service::response::notice_use_instant_unit_death_item_card_response::NoticeUseInstantUnitDeathItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_multiple_unit_damage_item_card_response::NoticeUseMultipleUnitDamageItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_search_deck_support_card_response::NoticeUseSearchDeckSupportCardResponse;
+use crate::notify_player_action_info::service::response::notice_use_special_energy_card_to_unit_response::NoticeUseSpecialEnergyCardToUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_unit_energy_remove_item_card_response::NoticeUseUnitEnergyRemoveItemCardResponse;
 
 #[async_trait]
@@ -123,6 +125,9 @@ pub trait NotifyPlayerActionInfoService {
     async fn notice_use_general_energy_card_to_my_specific_unit(
         &mut self, notice_use_general_energy_card_to_my_specific_unit_request: NoticeUseGeneralEnergyCardToMySpecificUnitRequest)
         -> NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
+    async fn notice_use_special_energy_card_to_unit(
+        &mut self, notice_use_special_energy_card_to_unit_request: NoticeUseSpecialEnergyCardToUnitRequest)
+        -> NoticeUseSpecialEnergyCardToUnitResponse;
     async fn notice_use_energy_boost_support_card_to_my_specific_unit(
         &mut self,
         notice_use_energy_boost_support_card_to_specific_unit_request: NoticeUseEnergyBoostSupportCardToSpecificUnitRequest)
