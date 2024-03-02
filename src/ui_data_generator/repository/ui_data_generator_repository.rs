@@ -162,6 +162,11 @@ pub trait UiDataGeneratorRepository {
         my_unit_harmful_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
     ) -> (PlayerFieldUnitHarmfulEffectInfo,
           PlayerFieldUnitHarmfulEffectInfo);
+    async fn generate_opponent_multiple_unit_harmful_effect_data(
+        &mut self,
+        opponent_unit_harmful_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
+    ) -> (PlayerFieldUnitHarmfulEffectInfo,
+          PlayerFieldUnitHarmfulEffectInfo);
     async fn generate_my_multiple_unit_extra_effect_data(
         &mut self,
         my_unit_extra_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
