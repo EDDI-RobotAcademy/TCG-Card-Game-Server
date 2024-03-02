@@ -23,3 +23,4 @@ pub mod generate_opponent_deck_card_lost_data_response;
 pub mod generate_opponent_multiple_unit_death_data_response;
 pub mod generate_my_specific_unit_harmful_effect_data_response;
 pub mod generate_my_multiple_unit_harmful_effect_data_response;
+pub mod generate_my_multiple_unit_death_data_response;
