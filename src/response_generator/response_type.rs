@@ -70,21 +70,6 @@ use crate::notify_player_action_info::entity::notify_form_use_multiple_unit_dama
 use crate::notify_player_action_info::entity::notify_form_use_search_deck_support_card::NotifyFormUseSearchDeckSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_special_energy_card_to_unit::NotifyFormUseSpecialEnergyCardToUnit;
 use crate::notify_player_action_info::entity::notify_form_use_unit_energy_remove_item_card::NotifyFormUseUnitEnergyRemoveItemCard;
-use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
-use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
-use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
-use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
-use crate::ui_data_generator::entity::player_field_energy_info::PlayerFieldEnergyInfo;
-use crate::ui_data_generator::entity::player_field_unit_damage_info::PlayerFieldUnitDamageInfo;
-use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
-use crate::ui_data_generator::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
-use crate::ui_data_generator::entity::player_field_unit_death_info::{PlayerFieldUnitDeathInfo};
-use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
-use crate::ui_data_generator::entity::player_main_character_damage_info::PlayerMainCharacterDamageInfo;
-use crate::ui_data_generator::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
-use crate::ui_data_generator::entity::player_main_character_survival_info::PlayerMainCharacterSurvivalInfo;
-use crate::ui_data_generator::entity::player_search_card_list_info::PlayerSearchCardListInfo;
-use crate::ui_data_generator::entity::player_search_count_info::PlayerSearchCountInfo;
 use crate::rockpaperscissors::controller::response_form::check_rockpaperscissors_winner_response_form::CheckRockpaperscissorsWinnerResponseForm;
 use crate::rockpaperscissors::controller::response_form::rockpaperscissors_response_form::RockpaperscissorsResponseForm;
 use crate::shop::controller::response_form::event_distribute_cards_response_form::EventDistributeCardsResponseForm;
@@ -177,22 +162,6 @@ pub enum ResponseType {
     NOTIFY_OPPONENT_TO_DAMAGE_MAIN_CHARACTER_ITEM_USAGE(NotifyOpponentToDamageMainCharacterItemUsage),
     NOTIFY_OPPONENT_TO_DESTORY_DECK_ITEM_USAGE(NotifyOpponentToDestroyDeckItemUsage),
     NOTIFY_OPPONENT_TO_FIELD_UNIT_ENERGY_REMOVAL_ITEM_USAGE(NotifyOpponentToFieldUnitEnergyRemovalItemUsage),
-
-    NOTIFY_HAND_CARD_USE(PlayerHandCardUseInfo),
-    NOTIFY_DRAWN_CARD_LIST(PlayerDrawnCardListInfo),
-    NOTIFY_DRAW_COUNT(PlayerDrawCountInfo),
-    NOTIFY_FIELD_UNIT_ENERGY(PlayerFieldUnitEnergyInfo),
-    NOTIFY_DECK_CARD_USE_LIST(PlayerDeckCardUseListInfo),
-    NOTIFY_SEARCH_CARD_LIST(PlayerSearchCardListInfo),
-    NOTIFY_SEARCH_COUNT(PlayerSearchCountInfo),
-    NOTIFY_FIELD_ENERGY(PlayerFieldEnergyInfo),
-    NOTIFY_FIELD_UNIT_HEALTH_POINT(PlayerFieldUnitHealthPointInfo),
-    NOTIFY_FIELD_UNIT_DEATH(PlayerFieldUnitDeathInfo),
-    NOTIFY_FIELD_UNIT_DAMAGE(PlayerFieldUnitDamageInfo),
-    NOTIFY_DECK_CARD_LOST_LIST(PlayerDeckCardLostListInfo),
-    NOTIFY_MAIN_CHARACTER_DAMAGE(PlayerMainCharacterDamageInfo),
-    NOTIFY_MAIN_CHARACTER_HEALTH_POINT(PlayerMainCharacterHealthPointInfo),
-    NOTIFY_MAIN_CHARACTER_SURVIVAL(PlayerMainCharacterSurvivalInfo),
 
     NOTIFY_USE_GENERAL_ENERGY_CARD_TO_UNIT(NotifyFormUseGeneralEnergyCardToUnit),
     NOTIFY_USE_SPECIAL_ENERGY_CARD_TO_UNIT(NotifyFormUseSpecialEnergyCardToUnit),
