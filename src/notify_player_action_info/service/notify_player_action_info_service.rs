@@ -22,6 +22,7 @@ use crate::notify_player_action_info::service::request::notice_use_field_energy_
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_instant_unit_death_item_card_request::NoticeUseInstantUnitDeathItemCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_multiple_unit_damage_item_card_request::NoticeUseMultipleUnitDamageItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_search_deck_support_card_request::NoticeUseSearchDeckSupportCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_unit_energy_remove_item_card_request::NoticeUseUnitEnergyRemoveItemCardRequest;
 use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
@@ -48,6 +49,7 @@ use crate::notify_player_action_info::service::response::notice_use_field_energy
 use crate::notify_player_action_info::service::response::notice_use_general_energy_card_to_my_specific_unit_response::NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_instant_unit_death_item_card_response::NoticeUseInstantUnitDeathItemCardResponse;
+use crate::notify_player_action_info::service::response::notice_use_multiple_unit_damage_item_card_response::NoticeUseMultipleUnitDamageItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_search_deck_support_card_response::NoticeUseSearchDeckSupportCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_unit_energy_remove_item_card_response::NoticeUseUnitEnergyRemoveItemCardResponse;
 
@@ -153,4 +155,8 @@ pub trait NotifyPlayerActionInfoService {
         &mut self,
         notice_use_unit_energy_remove_item_card_request: NoticeUseUnitEnergyRemoveItemCardRequest)
         -> NoticeUseUnitEnergyRemoveItemCardResponse;
+    async fn notice_use_multiple_unit_damage_item_card(
+        &mut self,
+        notice_use_multiple_unit_damage_item_card_request: NoticeUseMultipleUnitDamageItemCardRequest)
+        -> NoticeUseMultipleUnitDamageItemCardResponse;
 }

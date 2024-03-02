@@ -19,6 +19,7 @@ use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHea
 use crate::ui_data_generator::entity::field_unit_death_info::{FieldUnitDeathInfo};
 use crate::notify_player_action_info::entity::notify_form_use_general_energy_card_to_unit::NotifyFormUseGeneralEnergyCardToUnit;
 use crate::notify_player_action_info::entity::notify_form_use_instant_unit_death_item_card::NotifyFormUseInstantUnitDeathItemCard;
+use crate::notify_player_action_info::entity::notify_form_use_multiple_unit_damage_item_card::NotifyFormUseMultipleUnitDamageItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_search_deck_support_card::NotifyFormUseSearchDeckSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_unit_energy_remove_item_card::NotifyFormUseUnitEnergyRemoveItemCard;
 use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
@@ -1062,6 +1063,43 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_USE_UNIT_ENERGY_REMOVE_ITEM_CARD(
                         notify_form_use_unit_energy_remove_item_card)))).await;
+
+        true
+    }
+
+    async fn notice_use_multiple_unit_damage_item(
+        &mut self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>
+    ) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_multiple_unit_damage_item()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_use_multiple_unit_damage_item_card =
+            NotifyFormUseMultipleUnitDamageItemCard::new(
+                player_hand_use_map_for_notice,
+                player_field_unit_health_point_map_for_notice,
+                player_field_unit_death_map_for_notice);
+
+        // 다중 대미지 아이템 사용 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_USE_MULTIPLE_UNIT_DAMAGE_ITEM_CARD(
+                        notify_form_use_multiple_unit_damage_item_card)))).await;
 
         true
     }
