@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_item::service::request::summary_item_card_effect_request::SummaryItemCardEffectRequest;
@@ -6,7 +7,6 @@ use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_
 use crate::game_field_unit::service::request::detach_multiple_energy_from_field_unit_request::DetachMultipleEnergyFromFieldUnitRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::get_current_attached_energy_of_field_unit_by_index_request::GetCurrentAttachedEnergyOfFieldUnitByIndexRequest;
-use crate::game_field_unit::service::request::get_current_health_point_of_all_field_unit_request::GetCurrentHealthPointOfAllFieldUnitRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
 use crate::game_hand::service::request::use_game_hand_item_card_request::UseGameHandItemCardRequest;
@@ -15,12 +15,18 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+use crate::notify_player_action_info::service::request::notice_use_unit_energy_remove_item_card_request::NoticeUseUnitEnergyRemoveItemCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_field_unit_energy_removal_item_card_request::NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardRequest;
-use crate::notify_player_action_info::service::request::notice_apply_damage_to_specific_opponent_unit_request::NoticeApplyDamageToSpecificOpponentUnitRequest;
-use crate::notify_player_action_info::service::request::notice_remove_energy_of_specific_opponent_unit_request::NoticeRemoveEnergyOfSpecificOpponentUnitRequest;
-use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
+use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
+use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
+use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_death_data_request::GenerateOpponentSpecificUnitDeathDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_energy_data_request::GenerateOpponentSpecificUnitEnergyDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_health_point_data_request::GenerateOpponentSpecificUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
+use crate::ui_data_generator::service::response::generate_opponent_specific_unit_health_point_data_response::GenerateOpponentSpecificUnitHealthPointDataResponse;
 
 #[derive(Debug)]
 pub struct RemoveOpponentFieldUnitEnergyItemRequestForm {
@@ -164,51 +170,51 @@ impl RemoveOpponentFieldUnitEnergyItemRequestForm {
             used_hand_card_id)
     }
 
-    pub fn to_notice_use_hand_card_request(
+    pub fn to_generate_opponent_specific_unit_energy_data_request(
         &self,
-        opponent_unique_id: i32,
-        used_hand_card_id: i32,) -> NoticeUseHandCardRequest {
-
-        NoticeUseHandCardRequest::new(
-            opponent_unique_id,
-            used_hand_card_id)
-    }
-
-    pub fn to_notice_apply_damage_to_specific_opponent_unit_request(
-        &self,
-        opponent_unique_id: i32,
         opponent_unit_index: i32,
-        damage: i32,
-        updated_health_point: i32,
-        dead_unit_index: i32,) -> NoticeApplyDamageToSpecificOpponentUnitRequest {
+        updated_opponent_unit_energy_map: AttachedEnergyMap) -> GenerateOpponentSpecificUnitEnergyDataRequest {
 
-        NoticeApplyDamageToSpecificOpponentUnitRequest::new(
-            opponent_unique_id,
-            opponent_unit_index,
-            damage,
-            updated_health_point,
-            dead_unit_index)
-    }
-
-    pub fn to_notice_remove_energy_of_specific_opponent_unit_request(
-        &self,
-        opponent_unique_id: i32,
-        opponent_unit_index: i32,
-        updated_opponent_unit_energy_map: AttachedEnergyMap
-    ) -> NoticeRemoveEnergyOfSpecificOpponentUnitRequest {
-
-        NoticeRemoveEnergyOfSpecificOpponentUnitRequest::new(
-            opponent_unique_id,
+        GenerateOpponentSpecificUnitEnergyDataRequest::new(
             opponent_unit_index,
             updated_opponent_unit_energy_map)
     }
 
-    pub fn to_notify_opponent_you_use_field_unit_energy_removal_item_card_request(&self,
-                                                                                  opponent_unique_id: i32,
-                                                                                  item_card_id: i32,
-                                                                                  energy_quantity: i32) -> NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardRequest {
-        NotifyOpponentYouUseFieldUnitEnergyRemovalItemCardRequest::new(opponent_unique_id,
-                                                                       item_card_id,
-                                                                       energy_quantity)
+    pub fn to_generate_opponent_specific_unit_health_point_data_request(
+        &self,
+        opponent_unit_index: i32,
+        updated_opponent_unit_health_point: i32
+    ) -> GenerateOpponentSpecificUnitHealthPointDataRequest {
+
+        GenerateOpponentSpecificUnitHealthPointDataRequest::new(
+            opponent_unit_index,
+            updated_opponent_unit_health_point)
+    }
+
+    pub fn to_generate_opponent_specific_unit_death_data_request(
+        &self,
+        opponent_dead_unit_index: i32
+    ) -> GenerateOpponentSpecificUnitDeathDataRequest {
+
+        GenerateOpponentSpecificUnitDeathDataRequest::new(
+            opponent_dead_unit_index)
+    }
+
+    pub fn to_notice_use_unit_energy_remove_item_card_request(
+        &self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>
+    ) -> NoticeUseUnitEnergyRemoveItemCardRequest {
+
+        NoticeUseUnitEnergyRemoveItemCardRequest::new(
+            opponent_unique_id,
+            player_hand_use_map_for_notice,
+            player_field_unit_energy_map_for_notice,
+            player_field_unit_health_point_map_for_notice,
+            player_field_unit_death_map_for_notice
+        )
     }
 }

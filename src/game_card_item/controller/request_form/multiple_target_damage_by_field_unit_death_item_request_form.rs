@@ -16,6 +16,8 @@ use crate::notify_player_action_info::service::request::notice_apply_damage_to_s
 use crate::notify_player_action_info::service::request::notice_instant_death_of_specific_unit_request::NoticeInstantDeathOfSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_death_data_request::GenerateMySpecificUnitDeathDataRequest;
+use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
 
 #[derive(Debug)]
 pub struct MultipleTargetDamageByFieldUnitDeathItemRequestForm {
@@ -134,46 +136,22 @@ impl MultipleTargetDamageByFieldUnitDeathItemRequestForm {
             unit_index)
     }
 
-    pub fn to_get_current_health_point_of_field_unit_by_index_request(&self,
-                                                                      account_unique_id: i32,
-                                                                      field_unit_index: i32) -> GetCurrentHealthPointOfFieldUnitByIndexRequest {
-        GetCurrentHealthPointOfFieldUnitByIndexRequest::new(account_unique_id,
-                                                            field_unit_index)
+    pub fn to_get_current_health_point_of_field_unit_by_index_request(
+        &self,
+        account_unique_id: i32,
+        field_unit_index: i32) -> GetCurrentHealthPointOfFieldUnitByIndexRequest {
+
+        GetCurrentHealthPointOfFieldUnitByIndexRequest::new(
+            account_unique_id,
+            field_unit_index)
     }
 
-    pub fn to_notice_use_hand_card_request(
+    pub fn to_generate_use_my_hand_card_data_request(
         &self,
-        opponent_unique_id: i32,
-        used_hand_card_id: i32,) -> NoticeUseHandCardRequest {
+        used_hand_card_id: i32
+    ) -> GenerateUseMyHandCardDataRequest {
 
-        NoticeUseHandCardRequest::new(
-            opponent_unique_id,
+        GenerateUseMyHandCardDataRequest::new(
             used_hand_card_id)
-    }
-
-    pub fn to_notice_instant_death_of_specific_unit_request(
-        &self,
-        opponent_unique_id: i32,
-        dead_unit_index: i32) -> NoticeInstantDeathOfSpecificUnitRequest {
-
-        NoticeInstantDeathOfSpecificUnitRequest::new(
-            opponent_unique_id,
-            dead_unit_index)
-    }
-
-    pub fn to_notice_apply_damage_to_multiple_opponent_unit_request(
-        &self,
-        opponent_unique_id: i32,
-        damage: i32,
-        target_unit_index_list: Vec<i32>,
-        updated_health_point_list: Vec<i32>,
-        dead_unit_index_list: Vec<i32>) -> NoticeApplyDamageToMultipleOpponentUnitRequest {
-
-        NoticeApplyDamageToMultipleOpponentUnitRequest::new(
-            opponent_unique_id,
-            damage,
-            target_unit_index_list,
-            updated_health_point_list,
-            dead_unit_index_list)
     }
 }
