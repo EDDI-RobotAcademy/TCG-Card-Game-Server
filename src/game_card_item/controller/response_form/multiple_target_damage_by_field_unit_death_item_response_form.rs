@@ -1,68 +1,53 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::ui_data_generator::entity::field_unit_damage_info::FieldUnitDamageInfo;
 use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
-use crate::notify_player_action_info::service::response::notice_apply_damage_to_multiple_opponent_unit_response::NoticeApplyDamageToMultipleOpponentUnitResponse;
-use crate::notify_player_action_info::service::response::notice_instant_death_of_specific_unit_response::NoticeInstantDeathOfSpecificUnitResponse;
-use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
+use crate::ui_data_generator::service::response::generate_my_specific_unit_death_data_response::GenerateMySpecificUnitDeathDataResponse;
+use crate::ui_data_generator::service::response::generate_opponent_multiple_unit_death_data_response::GenerateOpponentMultipleUnitDeathDataResponse;
+use crate::ui_data_generator::service::response::generate_opponent_multiple_unit_health_point_data_response::GenerateOpponentMultipleUnitHealthPointDataResponse;
+use crate::ui_data_generator::service::response::generate_use_my_hand_card_data_response::GenerateUseMyHandCardDataResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MultipleTargetDamageByFieldUnitDeathItemResponseForm {
     is_success: bool,
-    player_field_unit_damage_map: HashMap<PlayerIndex, FieldUnitDamageInfo>,
     player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
     player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
 }
 
 impl MultipleTargetDamageByFieldUnitDeathItemResponseForm {
     pub fn new(is_success: bool,
-               player_field_unit_damage_map: HashMap<PlayerIndex, FieldUnitDamageInfo>,
                player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
                player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>
     ) -> Self {
         MultipleTargetDamageByFieldUnitDeathItemResponseForm {
             is_success,
-            player_field_unit_damage_map,
             player_field_unit_health_point_map,
             player_field_unit_death_map
         }
     }
 
     pub fn from_response(
-        notice_use_hand_card_response: NoticeUseHandCardResponse,
-        notice_instant_death_of_specific_unit_response: NoticeInstantDeathOfSpecificUnitResponse,
-        notice_apply_damage_to_multiple_opponent_unit_response: NoticeApplyDamageToMultipleOpponentUnitResponse
+        generate_use_my_hand_card_data_response: GenerateUseMyHandCardDataResponse,
+        generate_opponent_multiple_unit_health_point_data_response: GenerateOpponentMultipleUnitHealthPointDataResponse,
+        generate_opponent_multiple_unit_death_data_response: GenerateOpponentMultipleUnitDeathDataResponse,
+        generate_my_specific_unit_death_data_response: GenerateMySpecificUnitDeathDataResponse,
     ) -> MultipleTargetDamageByFieldUnitDeathItemResponseForm {
 
-        let mut field_unit_death_map =
-            notice_instant_death_of_specific_unit_response
-                .get_player_field_unit_death_info()
-                .get_player_field_unit_death_map().clone();
-
-        let opponent_field_unit_death_map =
-            notice_apply_damage_to_multiple_opponent_unit_response
-                .get_player_field_unit_death_info()
-                .get_player_field_unit_death_map().clone();
-
-        field_unit_death_map.extend(opponent_field_unit_death_map);
+        let mut unit_death_map_for_response = HashMap::new();
+        unit_death_map_for_response.extend(generate_opponent_multiple_unit_death_data_response.get_player_field_unit_death_map_for_response().clone());
+        unit_death_map_for_response.extend(generate_my_specific_unit_death_data_response.get_player_field_unit_death_map_for_response().clone());
 
         MultipleTargetDamageByFieldUnitDeathItemResponseForm::new(
-            notice_use_hand_card_response.is_success(),
-            notice_apply_damage_to_multiple_opponent_unit_response
-                .get_player_field_unit_damage_info()
-                .get_player_field_unit_damage_map().clone(),
-            notice_apply_damage_to_multiple_opponent_unit_response
-                .get_player_field_unit_health_point_info()
-                .get_player_field_unit_health_point_map().clone(),
-            field_unit_death_map)
+            generate_use_my_hand_card_data_response.is_success_for_response(),
+            generate_opponent_multiple_unit_health_point_data_response
+                .get_player_field_unit_health_point_map_for_response().clone(),
+            unit_death_map_for_response)
     }
 
     pub fn default() -> MultipleTargetDamageByFieldUnitDeathItemResponseForm {
         MultipleTargetDamageByFieldUnitDeathItemResponseForm::new(
             false,
-            HashMap::new(),
             HashMap::new(),
             HashMap::new())
     }
