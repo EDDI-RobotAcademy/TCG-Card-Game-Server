@@ -161,6 +161,11 @@ pub trait UiDataGeneratorRepository {
         my_unit_extra_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
     ) -> (PlayerFieldUnitExtraEffectInfo,
           PlayerFieldUnitExtraEffectInfo);
+    async fn generate_opponent_multiple_unit_extra_effect_data(
+        &mut self,
+        opponent_unit_extra_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
+    ) -> (PlayerFieldUnitExtraEffectInfo,
+          PlayerFieldUnitExtraEffectInfo);
     async fn generate_opponent_deck_card_lost_data(
         &mut self,
         opponent_lost_deck_card_list: Vec<i32>

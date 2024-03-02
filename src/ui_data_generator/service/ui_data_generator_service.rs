@@ -21,6 +21,7 @@ use crate::ui_data_generator::service::request::generate_opponent_field_energy_d
 use crate::ui_data_generator::service::request::generate_opponent_main_character_health_point_data_request::GenerateOpponentMainCharacterHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_main_character_survival_data_request::GenerateOpponentMainCharacterSurvivalDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_death_data_request::GenerateOpponentMultipleUnitDeathDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_extra_effect_data_request::GenerateOpponentMultipleUnitExtraEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_health_point_data_request::GenerateOpponentMultipleUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_energy_data_request::GenerateOpponentSpecificUnitEnergyDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_extra_effect_data_request::GenerateOpponentSpecificUnitExtraEffectDataRequest;
@@ -48,6 +49,7 @@ use crate::ui_data_generator::service::response::generate_opponent_field_energy_
 use crate::ui_data_generator::service::response::generate_opponent_main_character_health_point_data_response::GenerateOpponentMainCharacterHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_main_character_survival_data_response::GenerateOpponentMainCharacterSurvivalDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_multiple_unit_death_data_response::GenerateOpponentMultipleUnitDeathDataResponse;
+use crate::ui_data_generator::service::response::generate_opponent_multiple_unit_extra_effect_data_response::GenerateOpponentMultipleUnitExtraEffectDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_multiple_unit_health_point_data_response::GenerateOpponentMultipleUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_energy_data_response::GenerateOpponentSpecificUnitEnergyDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_specific_unit_extra_effect_data_response::GenerateOpponentSpecificUnitExtraEffectDataResponse;
@@ -149,6 +151,9 @@ pub trait UiDataGeneratorService {
     async fn generate_my_multiple_unit_extra_effect_data(
         &mut self, generate_my_multiple_unit_extra_effect_data_request: GenerateMyMultipleUnitExtraEffectDataRequest)
         -> GenerateMyMultipleUnitExtraEffectDataResponse;
+    async fn generate_opponent_multiple_unit_extra_effect_data(
+        &mut self, generate_opponent_multiple_unit_extra_effect_data_request: GenerateOpponentMultipleUnitExtraEffectDataRequest)
+        -> GenerateOpponentMultipleUnitExtraEffectDataResponse;
     async fn generate_my_multiple_unit_harmful_effect_data(
         &mut self, generate_my_multiple_unit_harmful_effect_data_request: GenerateMyMultipleUnitHarmfulEffectDataRequest)
         -> GenerateMyMultipleUnitHarmfulEffectDataResponse;

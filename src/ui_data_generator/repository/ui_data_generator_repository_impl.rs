@@ -818,6 +818,24 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         (player_field_unit_extra_effect_info_for_response,
          player_field_unit_extra_effect_info_for_notice)
     }
+    async fn generate_opponent_multiple_unit_extra_effect_data(
+        &mut self,
+        opponent_unit_extra_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
+    ) -> (PlayerFieldUnitExtraEffectInfo,
+          PlayerFieldUnitExtraEffectInfo) {
+        println!("UiDataGeneratorRepositoryImpl: generate_opponent_multiple_unit_extra_effect_data()");
+
+        let field_unit_extra_effect_info =
+            self.get_field_unit_extra_effect_from_tuple_list(opponent_unit_extra_effect_tuple_list);
+
+        let player_field_unit_extra_effect_info_for_response =
+            self.get_player_field_unit_extra_effect_info(Opponent, field_unit_extra_effect_info.clone());
+        let player_field_unit_extra_effect_info_for_notice =
+            self.get_player_field_unit_extra_effect_info(You, field_unit_extra_effect_info.clone());
+
+        (player_field_unit_extra_effect_info_for_response,
+         player_field_unit_extra_effect_info_for_notice)
+    }
     async fn generate_my_multiple_unit_harmful_effect_data(
         &mut self,
         my_unit_harmful_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
