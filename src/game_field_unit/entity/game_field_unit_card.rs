@@ -151,6 +151,14 @@ impl GameFieldUnitCard {
         self.harmful_status_effect_list.push(harmful_status_effect);
     }
 
+    pub fn remove_harmful_effect(&mut self, extra_effect: &ExtraEffect) {
+        if self.harmful_status_effect_list.iter()
+            .any(|v| v.get_harmful_effect() == extra_effect) {
+            self.harmful_status_effect_list
+                .retain(|v| v.get_harmful_effect() != extra_effect);
+        }
+    }
+
     pub fn impose_harmful_state_list(&mut self, harmful_states: Vec<ExtraStatusEffect>) {
         for harmful_state in harmful_states {
             self.impose_harmful_state(harmful_state);

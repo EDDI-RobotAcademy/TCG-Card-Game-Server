@@ -1,6 +1,7 @@
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
 use crate::game_card_passive_skill::entity::summary_passive_skill_effect::SummaryPassiveSkillEffect;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
@@ -95,6 +96,14 @@ impl GameFieldUnit {
         self.game_field_unit.impose_harmful_state_to_indexed_unit(unit_card_index, harmful_state);
     }
 
+    pub fn impose_harmful_states_to_indexed_unit(&mut self, unit_card_index: usize, harmful_states: Vec<ExtraStatusEffect>) {
+        self.game_field_unit.impose_harmful_state_list_to_indexed_unit(unit_card_index, harmful_states);
+    }
+
+    pub fn remove_harmful_status_of_indexed_unit(&mut self, unit_card_index: usize, extra_effect: &ExtraEffect) {
+        self.game_field_unit.remove_harmful_status_of_indexed_unit(unit_card_index, extra_effect)
+    }
+
     pub fn apply_status_effect_damage_iteratively(&mut self) {
         self.game_field_unit.apply_status_effect_damage_iteratively();
     }
@@ -125,6 +134,11 @@ impl GameFieldUnit {
     pub fn get_unit_deployed_round(&mut self, unit_card_index: usize) -> i32 {
         return self.game_field_unit.get_unit_deployed_round(unit_card_index)
     }
+
+    pub fn set_unit_passive_status_list(&mut self, unit_card_index: usize, passive_status_list: Vec<PassiveStatus>) {
+        self.game_field_unit.set_unit_passive_status_list(unit_card_index, passive_status_list)
+    }
+
     pub fn reset_first_passive_of_unit(&mut self, unit_card_index: usize, first_passive_default: bool) {
         self.game_field_unit.reset_first_passive(unit_card_index, first_passive_default)
     }

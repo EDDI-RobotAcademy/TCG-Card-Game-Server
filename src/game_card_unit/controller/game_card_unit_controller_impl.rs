@@ -284,8 +284,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         println!("GameCardUnitControllerImpl: request_to_attack_unit()");
 
         // 세션 아이디를 검증합니다.
-        let account_unique_id =
-            self.is_valid_session(attack_unit_request_form.to_session_validation_request()).await;
+        let account_unique_id = self.is_valid_session(
+            attack_unit_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
             return AttackUnitResponseForm::new(false)
