@@ -677,6 +677,15 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let item_card_id_string = catastrophic_damage_item_request_form.get_item_card_id();
         let item_card_id = item_card_id_string.parse::<i32>().unwrap();
 
+        let check_protocol_hacking_response = self.is_valid_protocol(
+            catastrophic_damage_item_request_form
+                .to_check_protocol_hacking_request(account_unique_id, item_card_id)).await;
+
+        if !check_protocol_hacking_response {
+            println!("해킹범을 검거합니다!");
+            return CatastrophicDamageItemResponseForm::default()
+        }
+
         let is_it_item_response = self.is_it_item_card(
             catastrophic_damage_item_request_form
                 .to_is_it_item_card_request(item_card_id)).await;
@@ -935,6 +944,33 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let item_card_id =
             item_card_id_string.to_string().parse::<i32>().unwrap();
 
+        let check_protocol_hacking_response = self.is_valid_protocol(
+            multiple_target_damage_by_field_unit_death_item_request_form
+                .to_check_protocol_hacking_request(account_unique_id, item_card_id)).await;
+
+        if !check_protocol_hacking_response {
+            println!("해킹범을 검거합니다!");
+            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::default()
+        }
+
+        let is_it_item_response = self.is_it_item_card(
+            multiple_target_damage_by_field_unit_death_item_request_form
+                .to_is_it_item_card_request(item_card_id)).await;
+
+        if !is_it_item_response {
+            println!("아이템 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
+            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::default()
+        }
+
+        let can_use_card_response = self.is_able_to_use(
+            multiple_target_damage_by_field_unit_death_item_request_form
+                .to_can_use_card_request(account_unique_id, item_card_id)).await;
+
+        if !can_use_card_response {
+            println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
+            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::default()
+        }
+
         let my_field_unit_index_string =
             multiple_target_damage_by_field_unit_death_item_request_form.get_unit_index();
         let my_field_unit_index =
@@ -1030,15 +1066,15 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
             updated_health_point_list.push((opponent_unit_index, health_point_of_damaged_unit));
 
-            let maybe_dead_unit_index =
+            let judge_death_of_unit_response =
                 game_field_unit_service_guard.judge_death_of_unit(
                     multiple_target_damage_by_field_unit_death_item_request_form
                         .to_judge_death_of_unit_request(
                             opponent_unique_id,
-                            opponent_unit_index)).await.get_dead_unit_index();
+                            opponent_unit_index)).await;
 
-            if maybe_dead_unit_index != -1 {
-                dead_unit_index_list.push(maybe_dead_unit_index);
+            if judge_death_of_unit_response.get_dead_unit_id() != -1 {
+                dead_unit_index_list.push(judge_death_of_unit_response.get_dead_unit_index());
             }
         }
 
@@ -1238,6 +1274,8 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let found_opponent_unit_race =
             card_race_service_guard.get_card_race(&found_opponent_unit_id).await;
 
+        println!("found_opponent_unit_race: {:?}", found_opponent_unit_race);
+
         drop(card_race_service_guard);
 
         let current_attached_energy_of_opponent_unit =
@@ -1246,6 +1284,8 @@ impl GameCardItemController for GameCardItemControllerImpl {
                     .to_get_current_attached_energy_of_unit_by_index_request(
                         opponent_unique_id,
                         opponent_field_unit_index)).await.get_current_attached_energy_map().clone();
+
+        println!("current_attached_energy_of_opponent_unit: {:?}", current_attached_energy_of_opponent_unit);
 
         if current_attached_energy_of_opponent_unit
             .get_energy_quantity(&RaceEnumValue::from(found_opponent_unit_race as i32)).is_none() {
