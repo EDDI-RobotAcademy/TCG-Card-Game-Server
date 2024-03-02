@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
 use diesel::IntoSql;
@@ -900,7 +901,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
         &self, multiple_target_damage_by_field_unit_death_item_request_form: MultipleTargetDamageByFieldUnitDeathItemRequestForm)
         -> MultipleTargetDamageByFieldUnitDeathItemResponseForm {
 
-        println!("GameCardItemControllerImpl: request_to_use_catastrophic_damage_by_field_unit_death_item()");
+        println!("GameCardItemControllerImpl: request_to_use_applying_multiple_target_damage_by_field_unit_death_item()");
 
         let account_unique_id = self.is_valid_session(
             multiple_target_damage_by_field_unit_death_item_request_form
@@ -974,23 +975,23 @@ impl GameCardItemController for GameCardItemControllerImpl {
                         account_unique_id,
                         my_field_unit_index)).await.get_found_opponent_unit_id();
 
+        if fount_unit_card_id == -1 {
+            println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 당신도 해킹범입니다!");
+            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::default()
+        }
+
         if !can_be_sacrificed_unit_list.contains(&fount_unit_card_id) {
             println!("제물로 사용할 수 없는 유닛입니다!");
             return MultipleTargetDamageByFieldUnitDeathItemResponseForm::default()
         }
 
+        // 위에서 타겟 검증 했으므로 패스
         let health_point_of_sacrifice =
             game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
                 multiple_target_damage_by_field_unit_death_item_request_form
                     .to_get_current_health_point_of_field_unit_by_index_request(
                         account_unique_id,
                         my_field_unit_index)).await.get_current_unit_health_point();
-
-       game_field_unit_service_guard.apply_instant_death_to_target_unit_index(
-           multiple_target_damage_by_field_unit_death_item_request_form
-               .to_apply_instant_death_to_target_unit_index_request(
-                   account_unique_id,
-                   my_field_unit_index)).await;
 
         let mut battle_room_service_guard =
             self.battle_room_service.lock().await;
@@ -1007,12 +1008,18 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let mut dead_unit_index_list = Vec::new();
 
         for opponent_unit_index in reversed_opponent_target_unit_index_list {
-            game_field_unit_service_guard.apply_damage_to_target_unit_index(
-                multiple_target_damage_by_field_unit_death_item_request_form
-                    .to_apply_damage_to_target_unit_request(
-                        opponent_unique_id,
-                        opponent_unit_index,
-                        health_point_of_sacrifice)).await;
+            let apply_damage_to_target_unit_index_response =
+                game_field_unit_service_guard.apply_damage_to_target_unit_index(
+                    multiple_target_damage_by_field_unit_death_item_request_form
+                        .to_apply_damage_to_target_unit_request(
+                            opponent_unique_id,
+                            opponent_unit_index,
+                            health_point_of_sacrifice)).await;
+
+            if !apply_damage_to_target_unit_index_response.is_success() {
+                println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 당신도 해킹범입니다!");
+                return MultipleTargetDamageByFieldUnitDeathItemResponseForm::default()
+            }
 
             let health_point_of_damaged_unit =
                 game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
@@ -1035,6 +1042,12 @@ impl GameCardItemController for GameCardItemControllerImpl {
             }
         }
 
+        game_field_unit_service_guard.apply_instant_death_to_target_unit_index(
+            multiple_target_damage_by_field_unit_death_item_request_form
+                .to_apply_instant_death_to_target_unit_index_request(
+                    account_unique_id,
+                    my_field_unit_index)).await;
+
         updated_health_point_list.reverse();
         dead_unit_index_list.reverse();
 
@@ -1055,36 +1068,11 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        let notice_use_hand_card_response =
-            notify_player_action_info_service_guard.notice_use_hand_card(
-                multiple_target_damage_by_field_unit_death_item_request_form
-                    .to_notice_use_hand_card_request(
-                        opponent_unique_id,
-                        usage_hand_item_card)).await;
-
-        let notice_instant_death_of_specific_unit_response =
-            notify_player_action_info_service_guard.notice_instant_death_of_specific_unit(
-                multiple_target_damage_by_field_unit_death_item_request_form
-                    .to_notice_instant_death_of_specific_unit_request(
-                        opponent_unique_id,
-                        my_field_unit_index)).await;
-
-        let notice_apply_damage_to_multiple_opponent_unit_response =
-            notify_player_action_info_service_guard.notice_apply_damage_to_multiple_opponent_unit(
-                multiple_target_damage_by_field_unit_death_item_request_form
-                    .to_notice_apply_damage_to_multiple_opponent_unit_request(
-                        opponent_unique_id,
-                        health_point_of_sacrifice,
-                        opponent_target_unit_index_list.clone(),
-                        updated_health_point_list,
-                        dead_unit_index_list)).await;
+        
 
         drop(notify_player_action_info_service_guard);
 
-        MultipleTargetDamageByFieldUnitDeathItemResponseForm::from_response(
-            notice_use_hand_card_response,
-            notice_instant_death_of_specific_unit_response,
-            notice_apply_damage_to_multiple_opponent_unit_response)
+        MultipleTargetDamageByFieldUnitDeathItemResponseForm::default()
     }
 
     async fn request_to_use_opponent_field_unit_energy_removal_item(
@@ -1183,6 +1171,11 @@ impl GameCardItemController for GameCardItemControllerImpl {
                         opponent_unique_id,
                         opponent_field_unit_index)).await.get_found_opponent_unit_id();
 
+        if found_opponent_unit_id == -1 {
+            println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 당신도 해킹범입니다!");
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::default()
+        }
+
         let mut card_race_service_guard =
             self.card_race_service.lock().await;
 
@@ -1234,31 +1227,50 @@ impl GameCardItemController for GameCardItemControllerImpl {
                 remove_opponent_field_unit_energy_item_request_form
                     .to_place_to_tomb_request(account_unique_id, used_hand_card_id)).await;
 
+            let mut ui_data_generator_service_guard =
+                self.ui_data_generator_service.lock().await;
+
+            let generate_use_my_hand_card_data_response =
+                ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                    remove_opponent_field_unit_energy_item_request_form
+                        .to_generate_use_my_hand_card_data_request(used_hand_card_id)).await;
+
+            let generate_opponent_specific_unit_health_point_data_response =
+                ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
+                    remove_opponent_field_unit_energy_item_request_form
+                        .to_generate_opponent_specific_unit_health_point_data_request(
+                            opponent_field_unit_index,
+                            updated_health_point_of_damaged_unit)).await;
+
+            let generate_opponent_specific_unit_death_data_response =
+                ui_data_generator_service_guard.generate_opponent_specific_unit_death_data(
+                    remove_opponent_field_unit_energy_item_request_form
+                        .to_generate_opponent_specific_unit_death_data_request(
+                            maybe_dead_unit_index)).await;
+
+            drop(ui_data_generator_service_guard);
 
             let mut notify_player_action_info_service_guard =
                 self.notify_player_action_info_service.lock().await;
 
-            let notice_use_hand_card_response =
-                notify_player_action_info_service_guard.notice_use_hand_card(
+            let notice_response =
+                notify_player_action_info_service_guard.notice_use_unit_energy_remove_item_card(
                     remove_opponent_field_unit_energy_item_request_form
-                        .to_notice_use_hand_card_request(
+                        .to_notice_use_unit_energy_remove_item_card_request(
                             opponent_unique_id,
-                            used_hand_card_id)).await;
+                            generate_use_my_hand_card_data_response.get_player_hand_use_map_for_notice().clone(),
+                            HashMap::new(),
+                            generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_notice().clone(),
+                            generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_notice().clone())).await;
 
-            let notice_apply_damage_response =
-                notify_player_action_info_service_guard.notice_apply_damage_to_specific_opponent_unit(
-                    remove_opponent_field_unit_energy_item_request_form
-                        .to_notice_apply_damage_to_specific_opponent_unit_request(
-                            opponent_unique_id,
-                            opponent_field_unit_index,
-                            alternative_damage,
-                            updated_health_point_of_damaged_unit,
-                            maybe_dead_unit_index)).await;
+            println!("notice_response: {:?}", notice_response);
 
             drop(notify_player_action_info_service_guard);
 
             return RemoveOpponentFieldUnitEnergyItemResponseForm::from_alternative_response(
-                notice_use_hand_card_response, notice_apply_damage_response)
+                generate_use_my_hand_card_data_response,
+                generate_opponent_specific_unit_health_point_data_response,
+                generate_opponent_specific_unit_death_data_response)
         }
 
         game_field_unit_service_guard.detach_multiple_energy_from_field_unit(
@@ -1286,25 +1298,42 @@ impl GameCardItemController for GameCardItemControllerImpl {
             remove_opponent_field_unit_energy_item_request_form
                 .to_place_to_tomb_request(account_unique_id, used_hand_card_id)).await;
 
-        let mut notify_player_action_info_service_guard =
-            self.notify_player_action_info_service.lock().await;
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
 
-        let notice_use_hand_card_response =
-            notify_player_action_info_service_guard.notice_use_hand_card(
+        let generate_use_my_hand_card_data_response =
+            ui_data_generator_service_guard.generate_use_my_hand_card_data(
                 remove_opponent_field_unit_energy_item_request_form
-                    .to_notice_use_hand_card_request(opponent_unique_id, used_hand_card_id)).await;
+                    .to_generate_use_my_hand_card_data_request(used_hand_card_id)).await;
 
-        let notice_remove_energy_of_specific_opponent_unit_response =
-            notify_player_action_info_service_guard.notice_remove_energy_of_specific_opponent_unit(
+        let generate_opponent_field_unit_energy_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_energy_data(
                 remove_opponent_field_unit_energy_item_request_form
-                    .to_notice_remove_energy_of_specific_opponent_unit_request(
-                        opponent_unique_id,
+                    .to_generate_opponent_specific_unit_energy_data_request(
                         opponent_field_unit_index,
                         updated_attached_energy_map)).await;
 
+        drop(ui_data_generator_service_guard);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_unit_energy_remove_item_card(
+                remove_opponent_field_unit_energy_item_request_form
+                    .to_notice_use_unit_energy_remove_item_card_request(
+                        opponent_unique_id,
+                        generate_use_my_hand_card_data_response.get_player_hand_use_map_for_notice().clone(),
+                        generate_opponent_field_unit_energy_data_response.get_player_field_unit_energy_map_for_notice().clone(),
+                        HashMap::new(),
+                        HashMap::new())).await;
+
         drop(notify_player_action_info_service_guard);
 
+        println!("notice_response: {:?}", notice_response);
+
         RemoveOpponentFieldUnitEnergyItemResponseForm::from_response(
-            notice_use_hand_card_response, notice_remove_energy_of_specific_opponent_unit_response)
+            generate_use_my_hand_card_data_response,
+            generate_opponent_field_unit_energy_data_response)
     }
 }
