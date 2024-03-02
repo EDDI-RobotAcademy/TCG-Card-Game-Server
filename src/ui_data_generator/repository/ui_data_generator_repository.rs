@@ -11,6 +11,7 @@ use crate::ui_data_generator::entity::player_field_energy_info::PlayerFieldEnerg
 use crate::ui_data_generator::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
 use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::player_field_unit_extra_effect_info::PlayerFieldUnitExtraEffectInfo;
+use crate::ui_data_generator::entity::player_field_unit_harmful_effect_info::PlayerFieldUnitHarmfulEffectInfo;
 use crate::ui_data_generator::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::ui_data_generator::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
@@ -133,6 +134,12 @@ pub trait UiDataGeneratorRepository {
         my_unit_extra_effect_list:Vec<ExtraEffect>
     ) -> (PlayerFieldUnitExtraEffectInfo,
           PlayerFieldUnitExtraEffectInfo);
+    async fn generate_my_specific_unit_harmful_effect_data(
+        &mut self,
+        my_harmful_effect_unit_index:i32,
+        my_unit_harmful_effect_list:Vec<ExtraEffect>
+    ) -> (PlayerFieldUnitHarmfulEffectInfo,
+          PlayerFieldUnitHarmfulEffectInfo);
     async fn generate_my_multiple_unit_extra_effect_data(
         &mut self,
         my_unit_extra_effect_tuple_list: Vec<(i32, Vec<ExtraEffect>)>

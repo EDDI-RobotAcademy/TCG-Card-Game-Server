@@ -27,3 +27,4 @@ pub mod player_main_character_health_point_info;
 pub mod player_main_character_damage_info;
 pub mod player_main_character_survival_info;
 pub mod player_field_unit_extra_effect_info;
+pub mod player_field_unit_harmful_effect_info;

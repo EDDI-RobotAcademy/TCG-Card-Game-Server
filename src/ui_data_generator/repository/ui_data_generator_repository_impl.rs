@@ -13,7 +13,9 @@ use crate::ui_data_generator::entity::field_unit_damage_info::FieldUnitDamageInf
 use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
 use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::field_unit_extra_effect_info::FieldUnitExtraEffectInfo;
+use crate::ui_data_generator::entity::field_unit_harmful_status_info::FieldUnitHarmfulStatusInfo;
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
+use crate::ui_data_generator::entity::harmful_effect_info::HarmfulStatusInfo;
 use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
@@ -23,6 +25,7 @@ use crate::ui_data_generator::entity::player_field_unit_damage_info::PlayerField
 use crate::ui_data_generator::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
 use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::player_field_unit_extra_effect_info::PlayerFieldUnitExtraEffectInfo;
+use crate::ui_data_generator::entity::player_field_unit_harmful_effect_info::PlayerFieldUnitHarmfulEffectInfo;
 use crate::ui_data_generator::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
@@ -303,6 +306,18 @@ impl UiDataGeneratorRepositoryImpl {
 
         FieldUnitExtraEffectInfo::new(map)
     }
+    fn get_field_unit_harmful_effect_info(
+        &self,
+        unit_index: i32,
+        unit_harmful_effect_list: Vec<ExtraEffect>) -> FieldUnitHarmfulStatusInfo {
+
+        let extra_effect_info = HarmfulStatusInfo::new(unit_harmful_effect_list);
+
+        let mut map = HashMap::new();
+        map.insert(unit_index, extra_effect_info);
+
+        FieldUnitHarmfulStatusInfo::new(map)
+    }
     fn get_player_field_unit_extra_effect_info(&self,
                                                notify_player_index: PlayerIndex,
                                                field_unit_extra_effect_info: FieldUnitExtraEffectInfo
@@ -312,6 +327,16 @@ impl UiDataGeneratorRepositoryImpl {
         player_field_unit_extra_effect_map.insert(notify_player_index, field_unit_extra_effect_info);
 
         PlayerFieldUnitExtraEffectInfo::new(player_field_unit_extra_effect_map)
+    }
+    fn get_player_field_unit_harmful_effect_info(&self,
+                                               notify_player_index: PlayerIndex,
+                                              field_unit_harmful_effect_info: FieldUnitHarmfulStatusInfo
+    ) -> PlayerFieldUnitHarmfulEffectInfo {
+
+        let mut player_field_unit_harmful_effect_map = HashMap::new();
+        player_field_unit_harmful_effect_map.insert(notify_player_index, field_unit_harmful_effect_info);
+
+        PlayerFieldUnitHarmfulEffectInfo::new(player_field_unit_harmful_effect_map)
     }
 }
 
@@ -697,13 +722,32 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
         let field_unit_extra_effect_info =
             self.get_field_unit_extra_effect_info(my_extra_effect_unit_index, my_unit_extra_effect_list);
 
-        let player_main_character_survival_info_for_response =
+        let player_unit_extra_effect_info_for_response =
             self.get_player_field_unit_extra_effect_info(You, field_unit_extra_effect_info.clone());
-        let player_main_character_survival_info_for_notice =
+        let player_unit_extra_effect_info_for_notice =
             self.get_player_field_unit_extra_effect_info(Opponent, field_unit_extra_effect_info.clone());
 
-        (player_main_character_survival_info_for_response,
-         player_main_character_survival_info_for_notice)
+        (player_unit_extra_effect_info_for_response,
+         player_unit_extra_effect_info_for_notice)
+    }
+    async fn generate_my_specific_unit_harmful_effect_data(
+        &mut self,
+        my_harmful_effect_unit_index:i32,
+        my_unit_harmful_effect_list:Vec<ExtraEffect>
+    ) -> (PlayerFieldUnitHarmfulEffectInfo,
+          PlayerFieldUnitHarmfulEffectInfo) {
+        println!("UiDataGeneratorRepositoryImpl: generate_my_specific_unit_harmful_effect_data()");
+
+        let field_unit_harmful_effect_info =
+            self.get_field_unit_harmful_effect_info(my_harmful_effect_unit_index, my_unit_harmful_effect_list);
+
+        let player_unit_harmful_effect_info_for_response =
+            self.get_player_field_unit_harmful_effect_info(You, field_unit_harmful_effect_info.clone());
+        let player_unit_harmful_effect_info_for_notice =
+            self.get_player_field_unit_harmful_effect_info(Opponent, field_unit_harmful_effect_info.clone());
+
+        (player_unit_harmful_effect_info_for_response,
+         player_unit_harmful_effect_info_for_notice)
     }
 
     async fn generate_my_multiple_unit_extra_effect_data(

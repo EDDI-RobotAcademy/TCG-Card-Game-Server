@@ -21,3 +21,4 @@ pub mod generate_my_specific_unit_extra_effect_data_request;
 pub mod generate_my_multiple_unit_extra_effect_data_request;
 pub mod generate_opponent_deck_card_lost_data_request;
 pub mod generate_opponent_multiple_unit_death_data_request;
+pub mod generate_my_specific_unit_harmful_effect_data_request;
