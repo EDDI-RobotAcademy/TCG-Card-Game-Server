@@ -15,6 +15,7 @@ use crate::account_deck_card::controller::response_form::account_deck_configurat
 use crate::account_point::service::response::gain_gold_response::GainGoldResponse;
 use crate::account_point::service::response::pay_gold_response::PayGoldResponse;
 use crate::battle_field_info::service::response::remain_deck_card_count_response::RemainDeckCardCountResponse;
+use crate::battle_finish::service::response::battle_finish_response::BattleFinishResponse;
 use crate::battle_ready_account_hash::service::response::battle_ready_account_hash_response::BattleReadyAccountHashResponse;
 use crate::battle_ready_account_hash::service::response::check_battle_prepare_response::CheckBattlePrepareResponse;
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
@@ -178,6 +179,9 @@ pub enum ResponseType {
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),
+
+    // Battle Finish
+    BATTLE_FINISH(BattleFinishResponse),
 
     // Game Surrender
     GAME_SURRENDER(SurrenderResponse),
