@@ -105,7 +105,7 @@ pub trait GameFieldUnitRepository {
         account_unique_id: i32,
         attacker_unit_index: i32
     ) -> i32;
-    fn acquire_unit_extra_effect_by_index(
+    fn acquire_unit_extra_status_effect_by_index(
         &mut self,
         account_unique_id: i32,
         attacker_unit_index: i32
@@ -173,17 +173,7 @@ pub trait GameFieldUnitRepository {
 
     fn acquire_current_health_point_of_all_unit(
         &mut self,
-        account_unique_id: i32) -> Vec<i32>;
-
-    fn acquire_extra_effect_list_of_indexed_unit(
-        &mut self,
-        account_unique_id: i32,
-        unit_index: i32) -> Vec<ExtraEffect>;
-
-    fn acquire_survival_of_indexed_unit(
-        &mut self,
-        account_unique_id: i32,
-        unit_index: i32) -> bool;
+        account_unique_id: i32) -> Vec<(i32, i32)>;
 
     fn acquire_unit_harmful_status_effect_list_by_index(
         &mut self,

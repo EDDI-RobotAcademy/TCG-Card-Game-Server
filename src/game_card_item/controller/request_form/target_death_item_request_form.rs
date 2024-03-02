@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::game_card_item::service::request::summary_item_card_effect_request::SummaryItemCardEffectRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
@@ -11,12 +12,12 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_instant_death_request::NotifyToOpponentYouUseItemInstantDeathRequest;
-use crate::notify_player_action::service::request::notify_to_opponent_you_use_item_instant_death_alternatives_request::NotifyToOpponentYouUseItemInstantDeathAlternativesRequest;
-use crate::notify_player_action_info::service::request::notice_apply_damage_to_specific_opponent_unit_request::NoticeApplyDamageToSpecificOpponentUnitRequest;
-use crate::notify_player_action_info::service::request::notice_instant_death_of_specific_opponent_unit_request::NoticeInstantDeathOfSpecificOpponentUnitRequest;
-use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_instant_unit_death_item_card_request::NoticeUseInstantUnitDeathItemCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
+use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_death_data_request::GenerateOpponentSpecificUnitDeathDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_specific_unit_health_point_data_request::GenerateOpponentSpecificUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
@@ -150,57 +151,18 @@ impl TargetDeathItemRequestForm {
             opponent_dead_unit_index)
     }
 
-    pub fn to_notice_use_hand_card_request(
+    pub fn to_notice_use_instant_unit_death_item_card_request(
         &self,
         opponent_unique_id: i32,
-        used_hand_card_id: i32,) -> NoticeUseHandCardRequest {
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>
+    ) -> NoticeUseInstantUnitDeathItemCardRequest {
 
-        NoticeUseHandCardRequest::new(
+        NoticeUseInstantUnitDeathItemCardRequest::new(
             opponent_unique_id,
-            used_hand_card_id)
-    }
-
-    pub fn to_notice_apply_damage_to_specific_opponent_unit_request(
-        &self,
-        opponent_unique_id: i32,
-        opponent_unit_index: i32,
-        damage: i32,
-        updated_health_point: i32,
-        dead_unit_index: i32) -> NoticeApplyDamageToSpecificOpponentUnitRequest {
-
-        NoticeApplyDamageToSpecificOpponentUnitRequest::new(
-            opponent_unique_id,
-            opponent_unit_index,
-            damage,
-            updated_health_point,
-            dead_unit_index)
-    }
-
-    pub fn to_notice_instant_death_of_specific_opponent_unit_request(
-        &self,
-        opponent_unique_id: i32,
-        dead_unit_index: i32) -> NoticeInstantDeathOfSpecificOpponentUnitRequest {
-
-        NoticeInstantDeathOfSpecificOpponentUnitRequest::new(
-            opponent_unique_id,
-            dead_unit_index)
-    }
-
-    // TODO: Hand 에너지, 필드 에너지 사용 여부도 필요함
-    pub fn to_notify_to_opponent_you_use_item_instant_death_request(&self,
-                                                                    opponent_unique_id: i32,
-                                                                    opponent_target_unit_index: i32,
-                                                                    usage_hand_card: i32) -> NotifyToOpponentYouUseItemInstantDeathRequest {
-        NotifyToOpponentYouUseItemInstantDeathRequest::new(
-            opponent_unique_id, opponent_target_unit_index, usage_hand_card)
-    }
-
-    pub fn to_notify_to_opponent_you_use_item_instant_death_alternatives_request(&self,
-                                                                                 opponent_unique_id: i32,
-                                                                                 opponent_target_unit_index: i32,
-                                                                                 usage_hand_card: i32,
-                                                                                 alternatives_damage: i32) -> NotifyToOpponentYouUseItemInstantDeathAlternativesRequest {
-        NotifyToOpponentYouUseItemInstantDeathAlternativesRequest::new(
-            opponent_unique_id, opponent_target_unit_index, usage_hand_card, alternatives_damage)
+            player_hand_use_map_for_notice,
+            player_field_unit_health_point_map_for_notice,
+            player_field_unit_death_map_for_notice)
     }
 }

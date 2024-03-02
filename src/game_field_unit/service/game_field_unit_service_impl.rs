@@ -157,7 +157,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             attach_energy_to_unit_index_request.get_race_enum(),
             attach_energy_to_unit_index_request.get_quantity());
 
-        AttachSingleEnergyToUnitIndexResponse::new(true)
+        AttachSingleEnergyToUnitIndexResponse::new(response)
     }
 
     async fn attach_multiple_energy_to_field_unit_index(&mut self, attach_multiple_energy_to_unit_index_request: AttachMultipleEnergyToUnitIndexRequest) -> AttachMultipleEnergyToUnitIndexResponse {
@@ -170,7 +170,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
             attach_multiple_energy_to_unit_index_request.get_race_enum(),
             attach_multiple_energy_to_unit_index_request.get_quantity());
 
-        AttachMultipleEnergyToUnitIndexResponse::new(true)
+        AttachMultipleEnergyToUnitIndexResponse::new(response)
     }
 
     async fn find_target_unit_id_by_index(&mut self, find_target_unit_id_by_index_request: FindTargetUnitIdByIndexRequest) -> FindTargetUnitIdByIndexResponse {
@@ -255,8 +255,11 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let account_unique_id = get_current_health_point_of_field_unit_by_index_request.get_account_unique_id();
         let unit_index = get_current_health_point_of_field_unit_by_index_request.get_field_unit_index();
+        if game_field_unit_repository_guard.find_target_unit_id_by_index(account_unique_id, unit_index) == -1 {
+            return GetCurrentHealthPointOfFieldUnitByIndexResponse::new(-1)
+        }
         let current_health_point_of_indexed_unit =
-            game_field_unit_repository_guard.acquire_current_health_point_of_all_unit(account_unique_id)[unit_index as usize];
+            game_field_unit_repository_guard.acquire_health_point_of_indexed_unit(account_unique_id, unit_index).get_current_health_point();
 
         GetCurrentHealthPointOfFieldUnitByIndexResponse::new(current_health_point_of_indexed_unit)
     }
@@ -266,10 +269,10 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let account_unique_id = get_current_health_point_of_all_field_unit_request.get_account_unique_id();
-        let current_health_point_of_indexed_unit =
+        let current_health_point_of_all_unit =
             game_field_unit_repository_guard.acquire_current_health_point_of_all_unit(account_unique_id);
 
-        GetCurrentHealthPointOfAllFieldUnitResponse::new(current_health_point_of_indexed_unit)
+        GetCurrentHealthPointOfAllFieldUnitResponse::new(current_health_point_of_all_unit)
     }
 
     async fn attach_special_energy_to_field_unit_index(&mut self, attach_special_energy_to_unit_index_request: AttachSpecialEnergyToUnitIndexRequest) -> AttachSpecialEnergyToUnitIndexResponse {
@@ -323,22 +326,11 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         println!("GameFieldUnitServiceImpl: acquire_unit_extra_effect()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        let extra_effect_list = game_field_unit_repository_guard.acquire_unit_extra_effect_by_index(
+        let extra_effect_list = game_field_unit_repository_guard.acquire_unit_extra_status_effect_by_index(
             acquire_unit_extra_effect_request.get_account_unique_id(),
             acquire_unit_extra_effect_request.get_attacker_unit_index());
 
         AcquireUnitExtraEffectResponse::new(extra_effect_list.clone())
-    }
-
-    async fn acquire_unit_harmful_status_effect(&mut self, acquire_unit_harmful_status_effect_request: AcquireUnitHarmfulStatusEffectRequest) -> AcquireUnitHarmfulStatusEffectResponse {
-        println!("GameFieldUnitServiceImpl: acquire_unit_harmful_status_effect()");
-
-        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        let harmful_effect_list = game_field_unit_repository_guard.acquire_unit_harmful_status_effect_list_by_index(
-            acquire_unit_harmful_status_effect_request.get_opponent_unique_id(),
-            acquire_unit_harmful_status_effect_request.get_opponent_unit_index());
-
-        AcquireUnitHarmfulStatusEffectResponse::new(harmful_effect_list.clone())
     }
 
     async fn attack_target_unit_with_extra_effect(&mut self, attack_target_unit_with_extra_effect_request: AttackTargetUnitWithExtraEffectRequest) -> AttackTargetUnitWithExtraEffectResponse {
@@ -465,6 +457,17 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
                 acquire_unit_passive_status_list_request.get_unit_index());
 
         AcquireUnitPassiveStatusListResponse::new(passive_status_list)
+    }
+
+    async fn acquire_unit_harmful_status_effect(&mut self, acquire_unit_harmful_status_effect_request: AcquireUnitHarmfulStatusEffectRequest) -> AcquireUnitHarmfulStatusEffectResponse {
+        println!("GameFieldUnitServiceImpl: acquire_unit_harmful_status_effect()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let harmful_effect_list = game_field_unit_repository_guard.acquire_unit_harmful_status_effect_list_by_index(
+            acquire_unit_harmful_status_effect_request.get_opponent_unique_id(),
+            acquire_unit_harmful_status_effect_request.get_opponent_unit_index());
+
+        AcquireUnitHarmfulStatusEffectResponse::new(harmful_effect_list.clone())
     }
     async fn reset_all_passive_of_unit(&mut self, reset_all_passive_of_unit: ResetAllPassiveOfUnitRequest) -> ResetAllPassiveOfUnitResponse {
         println!("GameFieldUnitServiceImpl: reset_all_passive_of_unit()");

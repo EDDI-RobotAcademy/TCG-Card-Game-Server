@@ -65,7 +65,7 @@ impl GameFieldEnergyService for GameFieldEnergyServiceImpl {
     }
 
     async fn check_field_energy_enough_to_use(&self, check_field_energy_enough_to_use_request: CheckFieldEnergyEnoughToUseRequest) -> CheckFieldEnergyEnoughToUseResponse {
-        println!("GameFieldEnergyServiceImpl: remove_field_energy_with_amount()");
+        println!("GameFieldEnergyServiceImpl: check_field_energy_enough_to_use()");
 
         let mut game_field_energy_repository_guard = self.game_field_energy_repository.lock().await;
 

@@ -21,6 +21,14 @@ impl GameFieldUnitCardList {
         (self.game_field_unit_card_list.len() - 1) as i32
     }
 
+    pub fn get_unit_card_id(&mut self, unit_card_index: usize) -> i32 {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            return unit.get_card()
+        }
+
+        -1
+    }
+
     pub fn get_attached_race_energy_count_of_field_unit(&mut self, unit_card_index: usize, race_enum: RaceEnum) -> i32 {
         if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
             return *unit.get_attached_energy().get_energy_quantity(&RaceEnumValue::from(race_enum as i32)).unwrap_or(&-1)
@@ -82,15 +90,15 @@ impl GameFieldUnitCardList {
         if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
             let unit_health_point = unit.get_mut_unit_health_point();
             unit_health_point.set_current_health_point(0);
-            unit.set_is_alive(false);
         }
     }
 
     // TODO: 불퇴전 특성에 대한 예외 처리 필요
     pub fn judge_death_of_unit(&mut self, unit_card_index: usize) -> i32 {
         if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
-            let unit_health_point = unit.get_unit_health_point().get_current_health_point();
-            if unit_health_point <= 0 {
+            let is_alive = unit.is_alive();
+            let current_unit_health_point = unit.get_unit_health_point().get_current_health_point();
+            if is_alive && current_unit_health_point <= 0 {
                 unit.set_is_alive(false);
                 return unit.get_card()
             }
@@ -101,15 +109,12 @@ impl GameFieldUnitCardList {
 
     pub fn check_unit_alive(&mut self, unit_card_index: usize) -> bool {
         if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
-            let is_alive = unit.is_alive();
-            if !is_alive {
-                self.game_field_unit_card_list.remove(unit_card_index);
-                return false
-            }
+            return unit.is_alive()
         }
 
-        true
+        false
     }
+
     pub fn check_turn_action(&mut self, unit_card_index: usize) -> bool {
         self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().get_turn_action()
     }
@@ -143,7 +148,9 @@ impl GameFieldUnitCardList {
 
     pub fn apply_status_effect_damage_iteratively(&mut self) {
         for unit in &mut self.game_field_unit_card_list {
-            unit.apply_status_effect_damage();
+            if unit.is_alive() {
+                unit.apply_status_effect_damage();
+            }
         }
     }
 
@@ -173,13 +180,6 @@ impl GameFieldUnitCardList {
         -1
     }
 
-    pub fn get_unit_extra_effect_list(&mut self, unit_card_index: usize) -> Vec<ExtraEffect> {
-        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
-            return unit.get_extra_effect_list()
-        }
-
-        Vec::new()
-    }
     pub fn reset_first_passive(&mut self, unit_card_index: usize, first_passive_default: bool) {
         self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_has_first_passive_skill(first_passive_default);
     }

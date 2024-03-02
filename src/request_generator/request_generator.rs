@@ -11,10 +11,12 @@ use crate::account_point::service::account_point_service::AccountPointService;
 use crate::account_point::service::account_point_service_impl::AccountPointServiceImpl;
 use crate::battle_field_info::service::battle_field_info_service::BattleFieldInfoService;
 use crate::battle_field_info::service::battle_field_info_service_impl::BattleFieldInfoServiceImpl;
+use crate::battle_finish::service::battle_finish_service::BattleFinishService;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service::BattleReadyAccountHashService;
 use crate::battle_ready_account_hash::service::battle_ready_account_hash_service_impl::BattleReadyAccountHashServiceImpl;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::battle_finish::service::battle_finish_service_impl::BattleFinishServiceImpl;
 
 use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueueService;
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
@@ -64,6 +66,7 @@ use crate::request_generator::attach_field_energy_to_field_unit_request_form_gen
 use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
 use crate::request_generator::attack_game_main_character_request_form_generator::create_attack_game_main_character_request_form;
+use crate::request_generator::battle_finish_generator::create_battle_finish_request;
 use crate::request_generator::battle_match_cancel_request_generator::create_battle_match_cancel_request;
 use crate::request_generator::check_rockpaperscissors_winner_request_generator::create_check_rockpaperscissors_winner_request_form;
 use crate::request_generator::fake_battle_room_create_request_form_generator::create_fake_battle_room_create_request_form;
@@ -790,6 +793,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = game_turn_controller.request_turn_end(request).await;
                     let response_type = Some(ResponseType::GAME_NEXT_TURN(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            4442 => {
+                // Battle finish
+                if let Some(request) = create_battle_finish_request(&data) {
+                    let battle_finish_service_mutex = BattleFinishServiceImpl::get_instance();
+                    let mut battle_finish_service = battle_finish_service_mutex.lock().await;
+
+                    let response = battle_finish_service.battle_finish_for_player_battle(request).await;
+                    let response_type = Some(ResponseType::BATTLE_FINISH(response));
 
                     response_type
                 } else {

@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
-use crate::notify_player_action_info::service::response::notice_add_field_energy_response::NoticeAddFieldEnergyResponse;
-use crate::notify_player_action_info::service::response::notice_use_hand_card_response::NoticeUseHandCardResponse;
+
+use crate::ui_data_generator::service::response::generate_my_field_energy_data_response::GenerateMyFieldEnergyDataResponse;
+use crate::ui_data_generator::service::response::generate_use_my_hand_card_data_response::GenerateUseMyHandCardDataResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AddFieldEnergyWithFieldUnitHealthPointResponseForm {
@@ -20,15 +21,14 @@ impl AddFieldEnergyWithFieldUnitHealthPointResponseForm {
     }
 
     pub fn from_response(
-        notice_use_hand_card_response: NoticeUseHandCardResponse,
-        notice_add_field_energy_response: NoticeAddFieldEnergyResponse
+        generate_use_my_hand_card_data_response: GenerateUseMyHandCardDataResponse,
+        generate_my_field_energy_data_response: GenerateMyFieldEnergyDataResponse
     ) -> AddFieldEnergyWithFieldUnitHealthPointResponseForm {
 
         AddFieldEnergyWithFieldUnitHealthPointResponseForm::new(
-            notice_use_hand_card_response.is_success(),
-            notice_add_field_energy_response
-                .get_player_field_energy_info()
-                .get_player_field_energy_map().clone())
+            generate_use_my_hand_card_data_response.is_success_for_response(),
+            generate_my_field_energy_data_response
+                .get_player_field_energy_map_for_response().clone())
     }
 
     pub fn default() -> AddFieldEnergyWithFieldUnitHealthPointResponseForm {

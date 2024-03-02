@@ -16,7 +16,7 @@ impl GenerateMySpecificUnitExtraEffectDataRequest {
 
     pub fn get_my_unit_index(&self) -> i32 { self.my_unit_index }
 
-    pub fn get_extra_effect_list(&self) -> &Vec<ExtraEffect>{
+    pub fn get_my_unit_extra_effect_list(&self) -> &Vec<ExtraEffect>{
         &self.my_unit_extra_effect_list
     }
 }

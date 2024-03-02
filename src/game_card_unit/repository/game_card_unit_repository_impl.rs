@@ -155,6 +155,7 @@ impl GameCardUnitRepository for GameCardUnitRepositoryImpl {
         unit_card_summary_handler.unwrap().summary_unit_card()
     }
     unsafe fn call_unit_card_passive_default_repository_handler(&self, unit_card_id: i32) -> Vec<bool> {
+        println!("GameCardUnitRepositoryImpl: call_unit_card_passive_default_repository_handler()");
 
         let unit_card_summary_handler = self.unit_card_functions.get(&unit_card_id);
         unit_card_summary_handler.unwrap().summary_unit_card_passive_default()

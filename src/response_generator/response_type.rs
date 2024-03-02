@@ -15,6 +15,7 @@ use crate::account_deck_card::controller::response_form::account_deck_configurat
 use crate::account_point::service::response::gain_gold_response::GainGoldResponse;
 use crate::account_point::service::response::pay_gold_response::PayGoldResponse;
 use crate::battle_field_info::service::response::remain_deck_card_count_response::RemainDeckCardCountResponse;
+use crate::battle_finish::service::response::battle_finish_response::BattleFinishResponse;
 use crate::battle_ready_account_hash::service::response::battle_ready_account_hash_response::BattleReadyAccountHashResponse;
 use crate::battle_ready_account_hash::service::response::check_battle_prepare_response::CheckBattlePrepareResponse;
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
@@ -58,27 +59,18 @@ use crate::notify_player_action::entity::notify_opponent_to_damage_main_characte
 use crate::notify_player_action::entity::notify_opponent_to_destroy_deck_item_usage::NotifyOpponentToDestroyDeckItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::NotifyOpponentToFieldEnergyUsage;
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
+use crate::notify_player_action_info::entity::notify_form_use_catastrophic_damage_item_card::NotifyFormUseCatastrophicDamageItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_draw_support_card::NotifyFormUseDrawSupportCard;
-use crate::notify_player_action_info::entity::notify_form_use_energy_boost_support_card_to_specific_unit::NotifyFormUseEnergyBoostSupportCardToSpecificUnit;
+use crate::notify_player_action_info::entity::notify_form_use_field_energy_increase_item_card::NotifyFormUseFieldEnergyIncreaseItemCard;
+use crate::notify_player_action_info::entity::notify_form_use_unit_energy_boost_support_card::NotifyFormUseUnitEnergyBoostSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_field_energy_remove_support_card::NotifyFormUseFieldEnergyRemoveSupportCard;
-use crate::notify_player_action_info::entity::notify_form_use_general_energy_card_to_specific_unit::NotifyFormUseGeneralEnergyCardToSpecificUnit;
-use crate::notify_player_action_info::entity::notify_form_use_instant_death_item_card_to_specific_unit::NotifyFormUseInstantDeathItemCardToSpecificUnit;
+use crate::notify_player_action_info::entity::notify_form_use_field_energy_to_unit::NotifyFormUseFieldEnergyToUnit;
+use crate::notify_player_action_info::entity::notify_form_use_general_energy_card_to_unit::NotifyFormUseGeneralEnergyCardToUnit;
+use crate::notify_player_action_info::entity::notify_form_use_instant_unit_death_item_card::NotifyFormUseInstantUnitDeathItemCard;
+use crate::notify_player_action_info::entity::notify_form_use_multiple_unit_damage_item_card::NotifyFormUseMultipleUnitDamageItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_search_deck_support_card::NotifyFormUseSearchDeckSupportCard;
-use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
-use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
-use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
-use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
-use crate::ui_data_generator::entity::player_field_energy_info::PlayerFieldEnergyInfo;
-use crate::ui_data_generator::entity::player_field_unit_damage_info::PlayerFieldUnitDamageInfo;
-use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
-use crate::ui_data_generator::entity::player_field_unit_health_point_info::PlayerFieldUnitHealthPointInfo;
-use crate::ui_data_generator::entity::player_field_unit_death_info::{PlayerFieldUnitDeathInfo};
-use crate::ui_data_generator::entity::player_hand_card_use_info::PlayerHandCardUseInfo;
-use crate::ui_data_generator::entity::player_main_character_damage_info::PlayerMainCharacterDamageInfo;
-use crate::ui_data_generator::entity::player_main_character_health_point_info::PlayerMainCharacterHealthPointInfo;
-use crate::ui_data_generator::entity::player_main_character_survival_info::PlayerMainCharacterSurvivalInfo;
-use crate::ui_data_generator::entity::player_search_card_list_info::PlayerSearchCardListInfo;
-use crate::ui_data_generator::entity::player_search_count_info::PlayerSearchCountInfo;
+use crate::notify_player_action_info::entity::notify_form_use_special_energy_card_to_unit::NotifyFormUseSpecialEnergyCardToUnit;
+use crate::notify_player_action_info::entity::notify_form_use_unit_energy_remove_item_card::NotifyFormUseUnitEnergyRemoveItemCard;
 use crate::rockpaperscissors::controller::response_form::check_rockpaperscissors_winner_response_form::CheckRockpaperscissorsWinnerResponseForm;
 use crate::rockpaperscissors::controller::response_form::rockpaperscissors_response_form::RockpaperscissorsResponseForm;
 use crate::shop::controller::response_form::event_distribute_cards_response_form::EventDistributeCardsResponseForm;
@@ -172,31 +164,24 @@ pub enum ResponseType {
     NOTIFY_OPPONENT_TO_DESTORY_DECK_ITEM_USAGE(NotifyOpponentToDestroyDeckItemUsage),
     NOTIFY_OPPONENT_TO_FIELD_UNIT_ENERGY_REMOVAL_ITEM_USAGE(NotifyOpponentToFieldUnitEnergyRemovalItemUsage),
 
-    NOTIFY_HAND_CARD_USE(PlayerHandCardUseInfo),
-    NOTIFY_DRAWN_CARD_LIST(PlayerDrawnCardListInfo),
-    NOTIFY_DRAW_COUNT(PlayerDrawCountInfo),
-    NOTIFY_FIELD_UNIT_ENERGY(PlayerFieldUnitEnergyInfo),
-    NOTIFY_DECK_CARD_USE_LIST(PlayerDeckCardUseListInfo),
-    NOTIFY_SEARCH_CARD_LIST(PlayerSearchCardListInfo),
-    NOTIFY_SEARCH_COUNT(PlayerSearchCountInfo),
-    NOTIFY_FIELD_ENERGY(PlayerFieldEnergyInfo),
-    NOTIFY_FIELD_UNIT_HEALTH_POINT(PlayerFieldUnitHealthPointInfo),
-    NOTIFY_FIELD_UNIT_DEATH(PlayerFieldUnitDeathInfo),
-    NOTIFY_FIELD_UNIT_DAMAGE(PlayerFieldUnitDamageInfo),
-    NOTIFY_DECK_CARD_LOST_LIST(PlayerDeckCardLostListInfo),
-    NOTIFY_MAIN_CHARACTER_DAMAGE(PlayerMainCharacterDamageInfo),
-    NOTIFY_MAIN_CHARACTER_HEALTH_POINT(PlayerMainCharacterHealthPointInfo),
-    NOTIFY_MAIN_CHARACTER_SURVIVAL(PlayerMainCharacterSurvivalInfo),
-
-    NOTIFY_USE_GENERAL_ENERGY_CARD_TO_SPECIFIC_UNIT(NotifyFormUseGeneralEnergyCardToSpecificUnit),
-    NOTIFY_USE_ENERGY_BOOST_SUPPORT_CARD_TO_SPECIFIC_UNIT(NotifyFormUseEnergyBoostSupportCardToSpecificUnit),
+    NOTIFY_USE_GENERAL_ENERGY_CARD_TO_UNIT(NotifyFormUseGeneralEnergyCardToUnit),
+    NOTIFY_USE_SPECIAL_ENERGY_CARD_TO_UNIT(NotifyFormUseSpecialEnergyCardToUnit),
+    NOTIFY_USE_UNIT_ENERGY_BOOST_SUPPORT_CARD(NotifyFormUseUnitEnergyBoostSupportCard),
     NOTIFY_USE_DRAW_SUPPORT_CARD(NotifyFormUseDrawSupportCard),
     NOTIFY_USE_SEARCH_DECK_SUPPORT_CARD(NotifyFormUseSearchDeckSupportCard),
     NOTIFY_USE_FIELD_ENERGY_REMOVE_SUPPORT_CARD(NotifyFormUseFieldEnergyRemoveSupportCard),
-    NOTIFY_USE_INSTANT_DEATH_ITEM_CARD_TO_UNIT(NotifyFormUseInstantDeathItemCardToSpecificUnit),
+    NOTIFY_USE_INSTANT_UNIT_DEATH_ITEM_CARD(NotifyFormUseInstantUnitDeathItemCard),
+    NOTIFY_USE_FIELD_ENERGY_TO_UNIT(NotifyFormUseFieldEnergyToUnit),
+    NOTIFY_USE_FIELD_ENERGY_INCREASE_ITEM_CARD(NotifyFormUseFieldEnergyIncreaseItemCard),
+    NOTIFY_USE_CATASTROPHIC_DAMAGE_ITEM_CARD(NotifyFormUseCatastrophicDamageItemCard),
+    NOTIFY_USE_UNIT_ENERGY_REMOVE_ITEM_CARD(NotifyFormUseUnitEnergyRemoveItemCard),
+    NOTIFY_USE_MULTIPLE_UNIT_DAMAGE_ITEM_CARD(NotifyFormUseMultipleUnitDamageItemCard),
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),
+
+    // Battle Finish
+    BATTLE_FINISH(BattleFinishResponse),
 
     // Game Surrender
     GAME_SURRENDER(SurrenderResponse),

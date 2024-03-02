@@ -197,29 +197,31 @@ impl GameTurnController for GameTurnControllerImpl {
                 turn_end_request_form
                     .to_get_game_field_unit_card_of_account_unique_id_request(account_unique_id)).await;
 
-        let mut game_card_unit_service_gurad =
+        let mut game_card_unit_service_guard =
             self.game_card_unit_service.lock().await;
 
-        let mut unit_index_for_reset_passive = 0 ;
-        for field_unit in field_unit_list.get_game_field_unit_card() {
+        // TODO: 일단 예외 처리로 마무리
+        for (unit_index, field_unit) in field_unit_list.get_game_field_unit_card().iter().enumerate() {
             let unit_card_id = field_unit.get_card();
-            let get_summary_passive_default =
-                game_card_unit_service_gurad.summary_unit_card_passive_default(
+            if unit_card_id != -1 {
+                println!("Passive Skill Reset Target: index - {}, card_id - {}", unit_index, unit_card_id);
+                let get_summary_passive_default =
+                    game_card_unit_service_guard.summary_unit_card_passive_default(
+                        turn_end_request_form
+                            .to_summary_unit_card_passive_default_request(unit_card_id)).await;
+
+                let passive_default_list = get_summary_passive_default.get_passive_default_list().clone();
+
+                game_field_unit_service_guard.reset_all_passive_of_unit(
                     turn_end_request_form
-                        .to_summary_unit_card_passive_default_request(unit_card_id)).await;
-
-            let passive_default_list = get_summary_passive_default.get_passive_default_list().clone();
-
-            game_field_unit_service_guard.reset_all_passive_of_unit(
-                turn_end_request_form
-                    .to_reset_all_passive_of_unit(
-                        account_unique_id,
-                        unit_index_for_reset_passive,
-                        passive_default_list)).await;
-            unit_index_for_reset_passive = unit_index_for_reset_passive + 1;
+                        .to_reset_all_passive_of_unit(
+                            account_unique_id,
+                            unit_index as i32,
+                            passive_default_list)).await;
+            }
         }
 
-        drop(game_card_unit_service_gurad);
+        drop(game_card_unit_service_guard);
         drop(game_field_unit_service_guard);
 
         let mut game_card_support_usage_counter_service_guard =

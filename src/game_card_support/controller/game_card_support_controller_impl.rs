@@ -363,7 +363,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             self.notify_player_action_info_service.lock().await;
 
         let notice_response =
-            notify_player_action_info_service_guard.notice_use_energy_boost_support_card_to_specific_unit(
+            notify_player_action_info_service_guard.notice_use_energy_boost_support_card_to_my_specific_unit(
                 energy_boost_support_request_form
                     .to_notice_energy_boost_support_card_to_specific_unit_request(
                         opponent_unique_id,

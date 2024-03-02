@@ -69,7 +69,6 @@ mod tests {
     use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
     use super::*;
 
-
     #[tokio::test]
     async fn test_game_card_unit_service() {
         let service = GameCardUnitServiceImpl::get_instance();
@@ -82,5 +81,17 @@ mod tests {
         assert_eq!(unit_effect_result.get_unit_race(), RaceEnum::Human);
 
         println!("unit_effect_result: {:?}", unit_effect_result);
+    }
+
+    #[tokio::test]
+    async fn test_summary_unit_card_passive_default() {
+        let service = GameCardUnitServiceImpl::get_instance();
+        let mut service_guard = service.lock().await;
+
+        let unit_id = 26;
+        let request = SummaryUnitCardPassiveDefaultRequest::new(unit_id);
+        let response = service_guard.summary_unit_card_passive_default(request).await;
+
+        println!("{:?}", response.get_passive_default_list())
     }
 }
