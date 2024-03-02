@@ -68,6 +68,7 @@ use crate::notify_player_action_info::entity::notify_form_use_general_energy_car
 use crate::notify_player_action_info::entity::notify_form_use_instant_unit_death_item_card::NotifyFormUseInstantUnitDeathItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_multiple_unit_damage_item_card::NotifyFormUseMultipleUnitDamageItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_search_deck_support_card::NotifyFormUseSearchDeckSupportCard;
+use crate::notify_player_action_info::entity::notify_form_use_special_energy_card_to_unit::NotifyFormUseSpecialEnergyCardToUnit;
 use crate::notify_player_action_info::entity::notify_form_use_unit_energy_remove_item_card::NotifyFormUseUnitEnergyRemoveItemCard;
 use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
@@ -194,6 +195,7 @@ pub enum ResponseType {
     NOTIFY_MAIN_CHARACTER_SURVIVAL(PlayerMainCharacterSurvivalInfo),
 
     NOTIFY_USE_GENERAL_ENERGY_CARD_TO_UNIT(NotifyFormUseGeneralEnergyCardToUnit),
+    NOTIFY_USE_SPECIAL_ENERGY_CARD_TO_UNIT(NotifyFormUseSpecialEnergyCardToUnit),
     NOTIFY_USE_UNIT_ENERGY_BOOST_SUPPORT_CARD(NotifyFormUseUnitEnergyBoostSupportCard),
     NOTIFY_USE_DRAW_SUPPORT_CARD(NotifyFormUseDrawSupportCard),
     NOTIFY_USE_SEARCH_DECK_SUPPORT_CARD(NotifyFormUseSearchDeckSupportCard),

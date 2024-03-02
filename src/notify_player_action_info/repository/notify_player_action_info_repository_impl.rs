@@ -21,6 +21,7 @@ use crate::notify_player_action_info::entity::notify_form_use_general_energy_car
 use crate::notify_player_action_info::entity::notify_form_use_instant_unit_death_item_card::NotifyFormUseInstantUnitDeathItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_multiple_unit_damage_item_card::NotifyFormUseMultipleUnitDamageItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_search_deck_support_card::NotifyFormUseSearchDeckSupportCard;
+use crate::notify_player_action_info::entity::notify_form_use_special_energy_card_to_unit::NotifyFormUseSpecialEnergyCardToUnit;
 use crate::notify_player_action_info::entity::notify_form_use_unit_energy_remove_item_card::NotifyFormUseUnitEnergyRemoveItemCard;
 use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
@@ -42,6 +43,7 @@ use crate::ui_data_generator::entity::player_search_count_info::PlayerSearchCoun
 use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
 use crate::response_generator::response_type::ResponseType::*;
+use crate::ui_data_generator::entity::field_unit_extra_effect_info::FieldUnitExtraEffectInfo;
 
 pub struct NotifyPlayerActionInfoRepositoryImpl;
 
@@ -771,6 +773,43 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_USE_GENERAL_ENERGY_CARD_TO_UNIT(
                         notify_form_use_general_energy_card_to_unit)))).await;
+
+        true
+    }
+
+    async fn notice_use_special_energy_to_unit(
+        &mut self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>,
+        player_field_unit_extra_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitExtraEffectInfo>,
+    ) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_special_energy_to_unit()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_use_special_energy_to_unit =
+            NotifyFormUseSpecialEnergyCardToUnit::new(
+                player_hand_use_map_for_notice,
+                player_field_unit_energy_map_for_notice,
+                player_field_unit_extra_effect_map_for_notice);
+
+        // 상대에게 특수 에너지 카드 사용 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_USE_SPECIAL_ENERGY_CARD_TO_UNIT(
+                        notify_form_use_special_energy_to_unit)))).await;
 
         true
     }

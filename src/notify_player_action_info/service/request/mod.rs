@@ -24,3 +24,4 @@ pub mod notice_use_field_energy_increase_item_card_request;
 pub mod notice_use_catastrophic_damage_item_card_request;
 pub mod notice_use_unit_energy_remove_item_card_request;
 pub mod notice_use_multiple_unit_damage_item_card_request;
+pub mod notice_use_special_energy_card_to_unit_request;
