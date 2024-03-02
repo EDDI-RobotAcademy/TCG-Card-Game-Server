@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::game_card_item::service::request::summary_item_card_effect_request::SummaryItemCardEffectRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
@@ -11,12 +12,15 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
-use crate::notify_player_action_info::service::request::notice_apply_damage_to_multiple_opponent_unit_request::NoticeApplyDamageToMultipleOpponentUnitRequest;
-use crate::notify_player_action_info::service::request::notice_apply_damage_to_specific_opponent_unit_request::NoticeApplyDamageToSpecificOpponentUnitRequest;
-use crate::notify_player_action_info::service::request::notice_instant_death_of_specific_unit_request::NoticeInstantDeathOfSpecificUnitRequest;
-use crate::notify_player_action_info::service::request::notice_use_hand_card_request::NoticeUseHandCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_multiple_unit_damage_item_card_request::NoticeUseMultipleUnitDamageItemCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
+use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_death_data_request::GenerateMySpecificUnitDeathDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_death_data_request::GenerateOpponentMultipleUnitDeathDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_health_point_data_request::GenerateOpponentMultipleUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
 
 #[derive(Debug)]
@@ -153,5 +157,43 @@ impl MultipleTargetDamageByFieldUnitDeathItemRequestForm {
 
         GenerateUseMyHandCardDataRequest::new(
             used_hand_card_id)
+    }
+
+    pub fn to_generate_opponent_multiple_unit_health_point_data_request(
+        &self,
+        opponent_unit_health_point_tuple_list: Vec<(i32, i32)>) -> GenerateOpponentMultipleUnitHealthPointDataRequest {
+
+        GenerateOpponentMultipleUnitHealthPointDataRequest::new(
+            opponent_unit_health_point_tuple_list)
+    }
+
+    pub fn to_generate_opponent_multiple_unit_death_data_request(
+        &self,
+        opponent_dead_unit_index_list: Vec<i32>) -> GenerateOpponentMultipleUnitDeathDataRequest {
+        GenerateOpponentMultipleUnitDeathDataRequest::new(
+            opponent_dead_unit_index_list)
+    }
+
+    pub fn to_generate_my_specific_unit_death_data_request(
+        &self,
+        dead_unit_index: i32) -> GenerateMySpecificUnitDeathDataRequest {
+
+        GenerateMySpecificUnitDeathDataRequest::new(
+            dead_unit_index)
+    }
+
+    pub fn to_notice_use_multiple_unit_damage_item_card_request(
+        &self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>
+    ) -> NoticeUseMultipleUnitDamageItemCardRequest {
+
+        NoticeUseMultipleUnitDamageItemCardRequest::new(
+            opponent_unique_id,
+            player_hand_use_map_for_notice,
+            player_field_unit_health_point_map_for_notice,
+            player_field_unit_death_map_for_notice)
     }
 }
