@@ -24,78 +24,12 @@ use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 
 #[async_trait]
 pub trait NotifyPlayerActionInfoRepository {
-    async fn notify_player_use_hand_card(
-        &mut self,
-        opponent_unique_id: i32,
-        used_hand_card_id: i32,
-        used_hand_card_type: KindsEnum) -> bool;
-    // TODO: Fix Completed
     async fn notice_use_field_energy_to_unit(
         &mut self,
         opponent_unique_id: i32,
         player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
         player_field_unit_energy_map_for_notice: HashMap<PlayerIndex, FieldUnitEnergyInfo>
     ) -> bool;
-    async fn notify_player_use_deck_card_list(
-        &mut self,
-        opponent_unique_id: i32,
-        found_card_id_list_form_deck: Vec<i32>) -> PlayerDeckCardUseListInfo;
-    async fn notify_player_energy_of_unit(
-        &mut self,
-        opponent_unique_id: i32,
-        field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo;
-    async fn notify_player_draw_card(
-        &mut self,
-        opponent_unique_id: i32,
-        drawn_card_list: Vec<i32>) -> PlayerDrawnCardListInfo;
-    async fn notify_player_search_card(
-        &mut self,
-        opponent_unique_id: i32,
-        searched_card_list_from_deck: Vec<i32>) -> PlayerSearchCardListInfo;
-    async fn notify_player_field_energy(
-        &mut self,
-        opponent_unique_id: i32,
-        remaining_field_energy_count: i32) -> PlayerFieldEnergyInfo;
-    async fn notify_player_opponent_field_energy(
-        &mut self,
-        opponent_unique_id: i32,
-        remaining_field_energy_count: i32) -> PlayerFieldEnergyInfo;
-    async fn notify_player_energy_of_specific_opponent_unit(
-        &mut self,
-        opponent_unique_id: i32,
-        field_unit_energy_info: FieldUnitEnergyInfo) -> PlayerFieldUnitEnergyInfo;
-    async fn notify_player_apply_damage_to_opponent_unit(
-        &mut self,
-        opponent_unique_id: i32,
-        field_unit_damage_info: FieldUnitDamageInfo,
-        field_unit_health_point_info: FieldUnitHealthPointInfo,
-        field_unit_death_info: FieldUnitDeathInfo
-    ) -> (PlayerFieldUnitDamageInfo, PlayerFieldUnitHealthPointInfo, PlayerFieldUnitDeathInfo);
-    async fn notify_player_apply_damage_to_opponent_main_character(
-        &mut self,
-        opponent_unique_id: i32,
-        opponent_main_character_damage: i32,
-        opponent_health_point: i32,
-        opponent_survival: StatusMainCharacterEnum
-    ) -> (PlayerMainCharacterDamageInfo, PlayerMainCharacterHealthPointInfo, PlayerMainCharacterSurvivalInfo);
-    async fn notify_player_attach_energy_to_specific_unit(
-        &mut self,
-        opponent_unique_id: i32,
-        field_unit_energy_info: FieldUnitEnergyInfo)-> PlayerFieldUnitEnergyInfo;
-    async fn notify_player_death_of_unit(
-        &mut self,
-        opponent_unique_id: i32,
-        field_unit_death_info: FieldUnitDeathInfo) -> PlayerFieldUnitDeathInfo;
-    async fn notify_player_death_of_opponent_unit(
-        &mut self,
-        opponent_unique_id: i32,
-        field_unit_death_info: FieldUnitDeathInfo) -> PlayerFieldUnitDeathInfo;
-    async fn notify_player_lost_deck_card(
-        &mut self,
-        opponent_unique_id: i32,
-        lost_deck_card_list: Vec<i32>) -> PlayerDeckCardLostListInfo;
-
-    // 뭉쳐서 날리는 notify
     async fn notice_use_general_energy_to_unit(
         &mut self,
         opponent_unique_id: i32,
