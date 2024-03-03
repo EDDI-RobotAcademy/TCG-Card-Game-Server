@@ -50,7 +50,8 @@ impl GameMainCharacterService for GameMainCharacterServiceImpl {
     }
 
     async fn check_main_character_of_account_unique_id(&mut self, check_main_character_of_account_unique_id_request: CheckMainCharacterOfAccountUniqueIdRequest) -> CheckMainCharacterOfAccountUniqueIdResponse {
-        println!("GameFieldUnitServiceImpl: check_main_character_of_account_unique_id()");
+
+        println!("GameMainCharacterServiceImpl: check_main_character_of_account_unique_id()");
 
         let account_unique_id = check_main_character_of_account_unique_id_request.get_account_unique_id();
 
@@ -58,13 +59,13 @@ impl GameMainCharacterService for GameMainCharacterServiceImpl {
         let mut health_point_of_main_character =  game_main_character_repository_guard.get_health_point_of_main_character_by_account_unique_id(account_unique_id);
 
         if health_point_of_main_character <= 0 {
-            let mut game_main_character_repository_guard = self.game_main_character_repository.lock().await;
-            let mut main_character_map_by_account_unique_id = game_main_character_repository_guard.get_game_main_character_map();
-            let mut main_character_account_unique_id = main_character_map_by_account_unique_id.get_mut(&account_unique_id).unwrap();
-            main_character_account_unique_id.set_status(Death);
-            return CheckMainCharacterOfAccountUniqueIdResponse::new(Death);
+            game_main_character_repository_guard.set_main_character_status_death(account_unique_id);
+            return CheckMainCharacterOfAccountUniqueIdResponse::new(0, Death);
         }
-        return CheckMainCharacterOfAccountUniqueIdResponse::new(Survival);
+
+        drop(game_main_character_repository_guard);
+
+        CheckMainCharacterOfAccountUniqueIdResponse::new(health_point_of_main_character, Survival)
     }
 
     async fn get_current_main_character_health_point(
