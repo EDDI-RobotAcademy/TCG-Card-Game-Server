@@ -25,3 +25,4 @@ pub mod attack_every_unit_with_extra_effect_response;
 pub mod get_current_health_point_of_all_field_unit_response;
 pub mod acquire_unit_harmful_status_effect_response;
 pub mod reset_all_passive_of_unit_response;
+pub mod execute_index_passive_of_unit_response;

@@ -192,4 +192,10 @@ pub trait GameFieldUnitRepository {
         account_unique_id: i32,
         unit_card_index: i32,
         passive_default_list: Vec<bool>) -> bool;
+
+    fn execute_index_passive_skill_of_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_card_index: i32,
+        passive_skill_index: i32) -> bool;
 }

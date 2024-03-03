@@ -208,6 +208,22 @@ impl GameFieldUnitCardList {
     pub fn reset_third_passive(&mut self, unit_card_index: usize, third_passive_default: bool) {
         self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_has_third_passive_skill(third_passive_default);
     }
+    pub fn get_index_passive(&self, unit_card_index: usize, passive_index: usize) -> bool {
+        match passive_index {
+            1 => self.game_field_unit_card_list.get(unit_card_index).unwrap().get_has_first_passive_skill(),
+            2 => self.game_field_unit_card_list.get(unit_card_index).unwrap().get_has_second_passive_skill(),
+            3 => self.game_field_unit_card_list.get(unit_card_index).unwrap().get_has_third_passive_skill(),
+            _ => false
+        }
+    }
+    pub fn execute_index_passive(&mut self, unit_card_index: usize, passive_index: usize) {
+        match passive_index {
+            1 => self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_has_first_passive_skill(false),
+            2 => self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_has_second_passive_skill(false),
+            3 => self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_has_third_passive_skill(false),
+            _ => {}
+        }
+    }
 }
 
 #[cfg(test)]

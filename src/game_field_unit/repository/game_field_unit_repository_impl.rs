@@ -635,6 +635,22 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         }
         false
     }
+    fn execute_index_passive_skill_of_unit(
+        &mut self,
+        account_unique_id: i32,
+        unit_card_index: i32,
+        passive_skill_index: i32) -> bool {
+        println!("GameFieldUnitRepositoryImpl: execute_index_passive_skill_of_unit()");
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            let unit_card_index = unit_card_index as usize;
+            let passive_skill_index = passive_skill_index as usize;
+            game_field_unit.execute_index_passive_of_unit(unit_card_index, passive_skill_index);
+            return true
+        }
+
+        false
+    }
 }
 
 #[cfg(test)]
