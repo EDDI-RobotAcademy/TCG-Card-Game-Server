@@ -6,6 +6,7 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use crate::connection_context::repository::connection_context_repository_impl::ConnectionContextRepositoryImpl;
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
+use crate::notify_player_action_info::entity::notify_form_basic_attack_to_main_character::NotifyFormBasicAttackToMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_unit::NotifyFormBasicAttackToUnit;
 use crate::notify_player_action_info::entity::notify_form_use_catastrophic_damage_item_card::NotifyFormUseCatastrophicDamageItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_draw_support_card::NotifyFormUseDrawSupportCard;
@@ -493,8 +494,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
     ) -> bool {
 
-
-        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_multiple_unit_damage_item()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_basic_attack_to_unit()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -519,6 +519,40 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_BASIC_ATTACK_TO_UNIT(
                         notify_form_basic_attack_to_unit)))).await;
+
+        true
+    }
+
+    async fn notice_basic_attack_to_main_character(
+        &mut self,
+        opponent_unique_id: i32,
+        player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+    ) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_basic_attack_to_main_character()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_basic_attack_to_main_character =
+            NotifyFormBasicAttackToMainCharacter::new(
+                player_main_character_health_point_map, player_main_character_survival_map);
+
+        // 상대 본체 대상 기본 공격 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_BASIC_ATTACK_TO_MAIN_CHARACTER(
+                        notify_form_basic_attack_to_main_character)))).await;
 
         true
     }

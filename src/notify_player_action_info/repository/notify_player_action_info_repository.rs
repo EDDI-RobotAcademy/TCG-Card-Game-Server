@@ -114,4 +114,10 @@ pub trait NotifyPlayerActionInfoRepository {
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
     ) -> bool;
+    async fn notice_basic_attack_to_main_character(
+        &mut self,
+        opponent_unique_id: i32,
+        player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+    ) -> bool;
 }
