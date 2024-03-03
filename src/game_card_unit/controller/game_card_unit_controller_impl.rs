@@ -731,7 +731,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
     }
 
     async fn request_to_attack_game_main_character(
-        &self, attack_game_main_character_request_form: AttackGameMainCharacterRequestForm) -> AttackGameMainCharacterResponseForm {
+        &self, attack_game_main_character_request_form: AttackGameMainCharacterRequestForm)
+        -> AttackGameMainCharacterResponseForm {
 
         println!("GameCardUnitControllerImpl: request_to_attack_game_main_character()");
 
@@ -740,7 +741,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             attack_game_main_character_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return AttackGameMainCharacterResponseForm::new(false)
+            println!("유효하지 않은 세션입니다.");
+            return AttackGameMainCharacterResponseForm::default()
         }
 
         let mut game_protocol_validation_service_guard =
@@ -753,7 +755,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return AttackGameMainCharacterResponseForm::new(false)
+            return AttackGameMainCharacterResponseForm::default()
         }
 
         // Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
@@ -773,7 +775,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if attacker_unit_id == -1 {
             println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 해킹범입니다!");
-            return AttackGameMainCharacterResponseForm::new(false)
+            return AttackGameMainCharacterResponseForm::default()
         }
 
         let mut game_card_unit_service_guard =
@@ -798,7 +800,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         attacker_unit_required_energy)).await;
 
         if !is_unit_basic_attack_possible_response.is_possible() {
-            return AttackGameMainCharacterResponseForm::new(false)
+            return AttackGameMainCharacterResponseForm::default()
         }
 
         drop(game_field_unit_action_possibility_validator_service_guard);
@@ -823,21 +825,15 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         drop(battle_room_service_guard);
 
-       let mut game_main_character_service_guard =
-           self.game_main_character_service.lock().await;
+        let mut game_main_character_service_guard =
+            self.game_main_character_service.lock().await;
 
-       let is_apply_damage_to_main_character_response =
-           game_main_character_service_guard.apply_damage_to_main_character(
-               attack_game_main_character_request_form
-                   .to_apply_damage_to_main_character_request(
-                       opponent_unique_id,
-                       attacker_unit_attack_point)).await;
+        game_main_character_service_guard.apply_damage_to_main_character(
+           attack_game_main_character_request_form
+               .to_apply_damage_to_main_character_request(
+                   opponent_unique_id,
+                   attacker_unit_attack_point)).await;
 
-       let is_check_main_character_of_account_unique_id_response =
-           game_main_character_service_guard.check_main_character_of_account_unique_id(
-               attack_game_main_character_request_form
-                   .to_check_main_character_of_account_unique_id_request(
-                       opponent_unique_id)).await;
         // 액션 완료 설정
         game_field_unit_service_guard.execute_turn_action(
             attack_game_main_character_request_form
@@ -846,22 +842,62 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     attacker_unit_card_index)).await;
 
         drop(game_field_unit_service_guard);
-        // TODO: 메인 캐릭터가 사망한 경우의 서비스 추가 필요
+
+        let check_main_character_of_account_unique_id_response =
+            game_main_character_service_guard.check_main_character_of_account_unique_id(
+                attack_game_main_character_request_form
+                    .to_check_main_character_of_account_unique_id_request(opponent_unique_id)).await;
+
         // 사망하면 상대 패배 결정
-        if is_check_main_character_of_account_unique_id_response.get_status_main_character() == &StatusMainCharacterEnum::Death {
-            let mut game_winner_check_service_guard = self.game_winner_check_service.lock().await;
-            let _set_game_winner = game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
-                attack_game_main_character_request_form.to_check_health_of_main_character_for_setting_game_winner_request(
-                    account_unique_id,
-                    opponent_unique_id)).await;
-            // 승패가 결정됐으니 양쪽에 알리고 마무리
+        if check_main_character_of_account_unique_id_response.get_status_main_character() == &StatusMainCharacterEnum::Death {
+            let mut game_winner_check_service_guard =
+                self.game_winner_check_service.lock().await;
+
+            game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
+                attack_game_main_character_request_form
+                    .to_check_main_character_for_setting_game_winner_request(
+                        account_unique_id,
+                        opponent_unique_id)).await;
+
+            drop(game_winner_check_service_guard);
         }
 
-        // 사망 안하면 체력 notify
+        drop(game_main_character_service_guard);
 
-       drop(game_main_character_service_guard);
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
 
-       AttackGameMainCharacterResponseForm::new(true)
+        let generate_opponent_main_character_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_main_character_health_point_data(
+                attack_game_main_character_request_form
+                    .to_generate_opponent_main_character_health_point_data_request(
+                        check_main_character_of_account_unique_id_response.get_current_health_point())).await;
+
+        let generate_opponent_main_character_survival_data_response =
+            ui_data_generator_service_guard.generate_opponent_main_character_survival_data(
+                attack_game_main_character_request_form
+                    .to_generate_opponent_main_character_survival_data_request(
+                        check_main_character_of_account_unique_id_response.get_status_main_character().clone())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_basic_attack_to_main_character(
+            attack_game_main_character_request_form
+                .to_notice_basic_attack_to_main_character_request(
+                    opponent_unique_id,
+                    generate_opponent_main_character_health_point_data_response
+                        .get_player_main_character_health_point_map_for_notice().clone(),
+                    generate_opponent_main_character_survival_data_response
+                        .get_player_main_character_survival_map_for_notice().clone())).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        AttackGameMainCharacterResponseForm::from_response(
+            generate_opponent_main_character_health_point_data_response,
+            generate_opponent_main_character_survival_data_response)
     }
 }
 
