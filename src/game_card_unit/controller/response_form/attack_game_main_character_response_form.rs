@@ -1,11 +1,46 @@
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::service::response::generate_opponent_main_character_health_point_data_response::GenerateOpponentMainCharacterHealthPointDataResponse;
+use crate::ui_data_generator::service::response::generate_opponent_main_character_survival_data_response::GenerateOpponentMainCharacterSurvivalDataResponse;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AttackGameMainCharacterResponseForm {
     is_success: bool,
+    player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
+    player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>
 }
 
 impl AttackGameMainCharacterResponseForm {
-    pub fn new(is_success: bool) -> Self { AttackGameMainCharacterResponseForm { is_success } }
-    pub fn get_is_success(&self) -> bool { self.is_success }
+    pub fn new(
+        is_success: bool,
+        player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>
+    ) -> Self {
+
+        AttackGameMainCharacterResponseForm {
+            is_success,
+            player_main_character_health_point_map_for_notice,
+            player_main_character_survival_map_for_notice
+        }
+    }
+
+    pub fn from_response(
+        generate_opponent_main_character_health_point_data_response: GenerateOpponentMainCharacterHealthPointDataResponse,
+        generate_opponent_main_character_survival_data_response: GenerateOpponentMainCharacterSurvivalDataResponse
+    ) -> AttackGameMainCharacterResponseForm {
+
+        AttackGameMainCharacterResponseForm::new(
+            true,
+            generate_opponent_main_character_health_point_data_response
+                .get_player_main_character_health_point_map_for_response().clone(),
+            generate_opponent_main_character_survival_data_response
+                .get_player_main_character_survival_map_for_response().clone())
+    }
+
+    pub fn default() -> AttackGameMainCharacterResponseForm {
+
+        AttackGameMainCharacterResponseForm::new(false, HashMap::new(), HashMap::new())
+    }
 }
