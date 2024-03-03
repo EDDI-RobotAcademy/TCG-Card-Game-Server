@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
-use diesel::IntoSql;
+
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
@@ -57,9 +57,6 @@ use crate::game_protocol_validation::service::request::is_it_item_card_request::
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
-use crate::game_turn::controller::response_form::turn_end_response_form::TurnEndResponseForm;
-use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
-use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
 use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
@@ -77,7 +74,6 @@ pub struct GameCardItemControllerImpl {
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
-    notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
     game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
     game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
     game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
@@ -96,7 +92,6 @@ impl GameCardItemControllerImpl {
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
-               notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
                game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
                game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
                game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
@@ -114,7 +109,6 @@ impl GameCardItemControllerImpl {
             game_field_unit_service,
             game_protocol_validation_service,
             redis_in_memory_service,
-            notify_player_action_service,
             game_field_energy_service,
             game_main_character_service,
             game_deck_service,
@@ -138,7 +132,6 @@ impl GameCardItemControllerImpl {
                             GameFieldUnitServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
-                            NotifyPlayerActionServiceImpl::get_instance(),
                             GameFieldEnergyServiceImpl::get_instance(),
                             GameMainCharacterServiceImpl::get_instance(),
                             GameDeckServiceImpl::get_instance(),
