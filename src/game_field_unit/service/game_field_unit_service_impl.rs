@@ -337,7 +337,7 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
         println!("GameFieldUnitServiceImpl: attack_target_unit_with_extra_effect()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
-        let attack_target_unit_with_extra_effect_response = game_field_unit_repository_guard.attack_target_unit_with_extra_effect(
+        let attack_target_unit_with_extra_effect_response = game_field_unit_repository_guard.attack_target_unit_with_extra_status_effect(
             attack_target_unit_with_extra_effect_request.get_opponent_unique_id(),
             attack_target_unit_with_extra_effect_request.get_target_unit_index(),
             attack_target_unit_with_extra_effect_request.get_damage(),

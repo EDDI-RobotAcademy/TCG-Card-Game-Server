@@ -7,6 +7,7 @@ use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInf
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::field_unit_death_info::{FieldUnitDeathInfo};
 use crate::ui_data_generator::entity::field_unit_extra_effect_info::FieldUnitExtraEffectInfo;
+use crate::ui_data_generator::entity::field_unit_harmful_status_info::FieldUnitHarmfulStatusInfo;
 use crate::ui_data_generator::entity::player_deck_card_lost_list_info::PlayerDeckCardLostListInfo;
 use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeckCardUseListInfo;
 use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
@@ -105,5 +106,18 @@ pub trait NotifyPlayerActionInfoRepository {
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>
+    ) -> bool;
+    async fn notice_basic_attack_to_unit(
+        &mut self,
+        opponent_unique_id: i32,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    ) -> bool;
+    async fn notice_basic_attack_to_main_character(
+        &mut self,
+        opponent_unique_id: i32,
+        player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> bool;
 }

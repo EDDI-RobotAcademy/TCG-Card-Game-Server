@@ -6,6 +6,7 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 
 use crate::game_main_character::entity::game_main_character::GameMainCharacter;
+use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum::Death;
 use crate::game_main_character::repository::game_main_character_repository::GameMainCharacterRepository;
 
 pub struct GameMainCharacterRepositoryImpl {
@@ -61,6 +62,17 @@ impl GameMainCharacterRepository for GameMainCharacterRepositoryImpl {
         let health_point_main_character = main_character_of_account_unique_id.get_health_point();
 
         return health_point_main_character;
+    }
+
+    fn set_main_character_status_death(&mut self, account_unique_id: i32) -> bool {
+        println!("GameMainCharacterRepositoryImpl: set_main_character_status_death()");
+
+        if let Some(game_main_character) = self.game_main_character_map.get_mut(&account_unique_id) {
+            game_main_character.set_status(Death);
+            return true
+        }
+
+        false
     }
 
     fn remove_game_main_character_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {

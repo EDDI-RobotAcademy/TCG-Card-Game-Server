@@ -11,7 +11,7 @@ use crate::game_card_passive_skill::entity::summary_passive_skill_effect::Summar
 use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
-use crate::game_field_unit::entity::extra_effect::ExtraEffect::DarkFire;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect::{DarkFire, Freeze};
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 
 use crate::game_field_unit::entity::game_field_unit::GameFieldUnit;
@@ -209,8 +209,8 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: reset_turn_action_of_all_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            for unit_card in game_field_unit.get_all_field_unit_list_mut() {
-                unit_card.set_turn_action(false)
+            for unit_index in 0..game_field_unit.get_all_field_unit_list_mut().len() {
+                game_field_unit.reset_turn_action_of_unit(unit_index);
             }
             return true
         }
@@ -245,7 +245,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             }
         }
 
-        (unit_card_index, -1)
+        (-1, -1)
     }
 
     fn judge_death_of_every_unit(&mut self, account_unique_id: i32) -> Vec<(i32, i32)> {
@@ -264,7 +264,6 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
             // 원래 순서대로 되돌림
             dead_unit_tuple_list.reverse();
-            println!("dead_unit_tuple_list : {:?}", dead_unit_tuple_list);
 
             return dead_unit_tuple_list
         }
@@ -337,6 +336,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         return indexed_unit_reference.get_extra_status_effect_list();
     }
 
+    // TODO: aggregate 를 타지 않아 문제가 발생할 수 있어, 바로 아래 feature 로 대체하였습니다
     fn attack_target_unit_with_extra_effect(
         &mut self,
         opponent_unique_id: i32,
@@ -367,6 +367,62 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         false
     }
 
+    fn attack_target_unit_with_extra_status_effect(
+        &mut self,
+        opponent_unique_id: i32,
+        opponent_unit_index: i32,
+        damage: i32,
+        extra_status_effect_list: Vec<ExtraStatusEffect>
+    ) -> bool {
+
+        println!("GameFieldUnitRepositoryImpl: attack_target_unit_with_extra_status_effect()");
+
+        let mut will_be_applied_effect_list = extra_status_effect_list.clone();
+
+        if let Some(opponent_game_field_unit) = self.game_field_unit_map.get_mut(&opponent_unique_id) {
+            let opponent_unit_index_usize = opponent_unit_index as usize;
+
+            if opponent_game_field_unit.check_unit_alive(opponent_unit_index_usize) {
+                let opponent_field_unit_list =
+                    opponent_game_field_unit.get_all_field_unit_list_mut();
+                let current_opponent_target_unit_harmful_status_effect_list =
+                    opponent_field_unit_list[opponent_unit_index_usize].get_harmful_status_effect_list_mut();
+
+                let target_has_freeze_as_harmful =
+                    current_opponent_target_unit_harmful_status_effect_list.iter()
+                    .any(|effect| effect.get_harmful_effect() == &Freeze);
+
+                if target_has_freeze_as_harmful {
+                    will_be_applied_effect_list
+                        .retain(|effect| effect.get_extra_effect() != &Freeze);
+                }
+
+                let target_has_dark_fire_as_harmful = current_opponent_target_unit_harmful_status_effect_list
+                    .iter()
+                    .any(|effect| effect.get_harmful_effect() == &DarkFire);
+                let attacker_has_dark_fire_as_extra = will_be_applied_effect_list
+                    .iter()
+                    .any(|effect| effect.get_extra_effect() == &DarkFire);
+
+                if target_has_dark_fire_as_harmful && attacker_has_dark_fire_as_extra {
+                    opponent_game_field_unit
+                        .remove_harmful_status_of_indexed_unit(opponent_unit_index_usize, &DarkFire);
+                }
+
+                opponent_game_field_unit
+                    .apply_damage_to_indexed_unit(
+                        opponent_unit_index_usize, damage);
+                opponent_game_field_unit
+                    .impose_harmful_states_to_indexed_unit(
+                        opponent_unit_index_usize, will_be_applied_effect_list);
+
+                return true
+            }
+        }
+
+        false
+    }
+
     fn attack_every_unit_with_extra_effect(
         &mut self,
         opponent_unique_id: i32,
@@ -376,12 +432,9 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: attack_every_unit_with_extra_effect()");
 
         if let Some(game_field_unit) = self.get_game_field_unit_map().get_mut(&opponent_unique_id) {
-            let game_field_unit_list_mut = game_field_unit.get_all_field_unit_list_mut();
-            for unit in game_field_unit_list_mut {
-                if unit.is_alive() {
-                    unit.apply_damage(damage);
-                    unit.impose_harmful_state_list(extra_status_effect_list.clone());
-                }
+            for unit_index in (0..game_field_unit.get_all_unit_list_in_game_field().len()).rev() {
+                game_field_unit.apply_damage_to_indexed_unit(unit_index, damage);
+                game_field_unit.impose_harmful_states_to_indexed_unit(unit_index, extra_status_effect_list.clone())
             }
             return true
         }
@@ -395,18 +448,13 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         damage: i32,
     ) -> bool {
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&opponent_unique_id) {
-            let all_units = game_field_unit.get_all_field_unit_list_mut();
-
-            for unit in all_units.iter_mut() {
-                if unit.is_alive() {
-                    unit.apply_damage(damage);
-                }
+            for unit_index in (0..game_field_unit.get_all_unit_list_in_game_field().len()).rev() {
+                game_field_unit.apply_damage_to_indexed_unit(unit_index, damage);
             }
-
-            true
-        } else {
-            false
+            return true
         }
+
+        false
     }
 
     fn impose_extra_effect_state_to_indexed_unit(
@@ -431,21 +479,20 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         unit_card_index: i32,
         race_enum: RaceEnum,
         quantity: i32) -> bool {
+
         println!("GameFieldUnitRepositoryImpl: detach_multiple_energy_from_indexed_unit()");
 
-        return if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
             if game_field_unit.check_unit_alive(unit_card_index as usize) {
                 game_field_unit.detach_energy_from_unit(
                     unit_card_index as usize,
                     RaceEnumValue::from(race_enum as i32),
                     quantity);
-                true
-            } else {
-                false
+                return true
             }
-        } else {
-            false
         }
+
+        false
     }
 
     fn set_field_unit_deployed_round(
@@ -482,7 +529,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             }
             for target_unit_index in (0..field_unit_list_mut.len()).rev() {
                 if target_unit_index == attack_unit_index as usize {
-                    field_unit_list_mut[target_unit_index].apply_damage(damage);
+                    game_field_unit.apply_damage_to_indexed_unit(target_unit_index, damage);
                 }
             }
             return true
@@ -500,8 +547,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         println!("GameFieldUnitRepositoryImpl: set_passive_status_list_of_unit()");
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
-            let game_field_unit_card_list = game_field_unit.get_all_field_unit_list_mut();
-            game_field_unit_card_list[unit_index as usize].set_passive_status_list(passive_status_list);
+            game_field_unit.set_unit_passive_status_list(unit_index as usize, passive_status_list);
             return true
         }
 

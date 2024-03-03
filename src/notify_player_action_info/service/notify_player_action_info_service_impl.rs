@@ -1,18 +1,13 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
-
 use lazy_static::lazy_static;
-
 use tokio::sync::Mutex as AsyncMutex;
-
-use crate::card_kinds::repository::card_kinds_repository_impl::CardKindsRepositoryImpl;
-use crate::game_field_energy::repository::game_field_energy_repository_impl::GameFieldEnergyRepositoryImpl;
-use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
 
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository_impl::NotifyPlayerActionInfoRepositoryImpl;
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
+use crate::notify_player_action_info::service::request::notice_basic_attack_to_main_character_request::NoticeBasicAttackToMainCharacterRequest;
+use crate::notify_player_action_info::service::request::notice_basic_attack_to_unit_request::NoticeBasicAttackToUnitRequest;
 
 use crate::notify_player_action_info::service::request::notice_use_catastrophic_damage_item_card_request::NoticeUseCatastrophicDamageItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_draw_support_card_request::NoticeUseDrawSupportCardRequest;
@@ -21,12 +16,13 @@ use crate::notify_player_action_info::service::request::notice_use_field_energy_
 use crate::notify_player_action_info::service::request::notice_use_field_energy_remove_support_card_request::NoticeUseFieldEnergyRemoveSupportCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_field_energy_to_my_specific_unit_request::NoticeUseFieldEnergyToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
-
 use crate::notify_player_action_info::service::request::notice_use_instant_unit_death_item_card_request::NoticeUseInstantUnitDeathItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_multiple_unit_damage_item_card_request::NoticeUseMultipleUnitDamageItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_search_deck_support_card_request::{NoticeUseSearchDeckSupportCardRequest};
 use crate::notify_player_action_info::service::request::notice_use_special_energy_card_to_unit_request::NoticeUseSpecialEnergyCardToUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_unit_energy_remove_item_card_request::NoticeUseUnitEnergyRemoveItemCardRequest;
+use crate::notify_player_action_info::service::response::notice_basic_attack_to_main_character_response::NoticeBasicAttackToMainCharacterResponse;
+use crate::notify_player_action_info::service::response::notice_basic_attack_to_unit_response::NoticeBasicAttackToUnitResponse;
 
 use crate::notify_player_action_info::service::response::notice_use_catastrophic_damage_item_card_response::NoticeUseCatastrophicDamageItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_draw_support_card_response::NoticeUseDrawSupportCardResponse;
@@ -35,7 +31,6 @@ use crate::notify_player_action_info::service::response::notice_use_field_energy
 use crate::notify_player_action_info::service::response::notice_use_field_energy_remove_support_card_response::NoticeUseFieldEnergyRemoveSupportCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_field_energy_to_my_specific_unit_response::NoticeUseFieldEnergyToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_general_energy_card_to_my_specific_unit_response::NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
-
 use crate::notify_player_action_info::service::response::notice_use_instant_unit_death_item_card_response::NoticeUseInstantUnitDeathItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_multiple_unit_damage_item_card_response::NoticeUseMultipleUnitDamageItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_search_deck_support_card_response::{NoticeUseSearchDeckSupportCardResponse};
@@ -329,5 +324,46 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         drop(notify_player_action_info_repository_guard);
 
         NoticeUseMultipleUnitDamageItemCardResponse::new(response)
+    }
+
+    async fn notice_basic_attack_to_unit(
+        &mut self, notice_basic_attack_to_unit_request: NoticeBasicAttackToUnitRequest)
+        -> NoticeBasicAttackToUnitResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_basic_attack_to_unit()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_basic_attack_to_unit(
+                notice_basic_attack_to_unit_request.get_opponent_unique_id(),
+                notice_basic_attack_to_unit_request.get_player_field_unit_health_point_map_for_notice().clone(),
+                notice_basic_attack_to_unit_request.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                notice_basic_attack_to_unit_request.get_player_field_unit_death_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeBasicAttackToUnitResponse::new(response)
+    }
+
+    async fn notice_basic_attack_to_main_character(
+        &mut self, notice_basic_attack_to_main_character_request: NoticeBasicAttackToMainCharacterRequest)
+        -> NoticeBasicAttackToMainCharacterResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_basic_attack_to_main_character()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_basic_attack_to_main_character(
+                notice_basic_attack_to_main_character_request.get_opponent_unique_id(),
+                notice_basic_attack_to_main_character_request.get_player_main_character_health_point_map_for_notice().clone(),
+                notice_basic_attack_to_main_character_request.get_player_main_character_survival_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeBasicAttackToMainCharacterResponse::new(response)
     }
 }

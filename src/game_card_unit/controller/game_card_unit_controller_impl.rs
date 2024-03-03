@@ -1,17 +1,16 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
 use diesel::IntoSql;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
-use crate::battle_finish::service::battle_finish_service_impl::BattleFinishServiceImpl;
 
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
-use crate::game_card_passive_skill::entity::passive_skill_type::PassiveSkillType;
+
 use crate::game_card_passive_skill::service::game_card_passive_skill_service::GameCardPassiveSkillService;
 use crate::game_card_passive_skill::service::game_card_passive_skill_service_impl::GameCardPassiveSkillServiceImpl;
-use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_card_unit::controller::game_card_unit_controller::GameCardUnitController;
 use crate::game_card_unit::controller::request_form::attack_game_main_character_request_form::AttackGameMainCharacterRequestForm;
 use crate::game_card_unit::controller::request_form::attack_unit_request_form::AttackUnitRequestForm;
@@ -35,20 +34,22 @@ use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
 use crate::game_main_character::service::game_main_character_service::GameMainCharacterService;
 use crate::game_main_character::service::game_main_character_service_impl::GameMainCharacterServiceImpl;
-use crate::game_main_character::service::response::apply_damage_to_main_character_response::ApplyDamageToMainCharacterResponse;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
-use crate::game_turn::controller::response_form::turn_end_response_form::TurnEndResponseForm;
 use crate::game_winner_check::service::game_winner_check_service::GameWinnerCheckService;
 use crate::game_winner_check::service::game_winner_check_service_impl::GameWinnerCheckServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service::NotifyPlayerActionService;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
+use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
+use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
+use crate::ui_data_generator::service::ui_data_generator_service_impl::UiDataGeneratorServiceImpl;
 
 pub struct GameCardUnitControllerImpl {
     game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
@@ -63,6 +64,8 @@ pub struct GameCardUnitControllerImpl {
     game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
     game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
     game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,
+    notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
+    ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
 }
 
 impl GameCardUnitControllerImpl {
@@ -77,7 +80,10 @@ impl GameCardUnitControllerImpl {
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
                game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
                game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
-               game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,) -> Self {
+               game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,
+               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
+               ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
+    ) -> Self {
 
         GameCardUnitControllerImpl {
             game_hand_service,
@@ -92,6 +98,8 @@ impl GameCardUnitControllerImpl {
             game_field_unit_action_possibility_validator_service,
             game_main_character_service,
             game_winner_check_service,
+            notify_player_action_info_service,
+            ui_data_generator_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardUnitControllerImpl>> {
@@ -111,7 +119,9 @@ impl GameCardUnitControllerImpl {
                             GameProtocolValidationServiceImpl::get_instance(),
                             GameFieldUnitActionPossibilityValidatorServiceImpl::get_instance(),
                             GameMainCharacterServiceImpl::get_instance(),
-                            GameWinnerCheckServiceImpl::get_instance())));
+                            GameWinnerCheckServiceImpl::get_instance(),
+                            NotifyPlayerActionInfoServiceImpl::get_instance(),
+                            UiDataGeneratorServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -284,14 +294,28 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         println!("GameCardUnitControllerImpl: request_to_attack_unit()");
 
         // 세션 아이디를 검증합니다.
-        let account_unique_id =
-            self.is_valid_session(attack_unit_request_form.to_session_validation_request()).await;
+        let account_unique_id = self.is_valid_session(
+            attack_unit_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return AttackUnitResponseForm::new(false)
+            println!("유효하지 않은 세션입니다.");
+            return AttackUnitResponseForm::default()
         }
 
-        // TODO: 프로토콜 검증 (지금 이거 신경 쓸 때가 아님)
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                attack_unit_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return AttackUnitResponseForm::default()
+        }
+
+        drop(game_protocol_validation_service_guard);
 
         // Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
         let attacker_unit_card_index_string = attack_unit_request_form.get_attacker_unit_index();
@@ -307,6 +331,11 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     .to_find_unit_id_by_index_request(
                         account_unique_id,
                         attacker_unit_card_index)).await.get_found_opponent_unit_id();
+
+        if attacker_unit_id == -1 {
+            println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 해킹범입니다!");
+            return AttackUnitResponseForm::default()
+        }
 
         let mut game_card_unit_service_guard =
             self.game_card_unit_service.lock().await;
@@ -327,7 +356,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     account_unique_id, attacker_unit_card_index, attacker_unit_required_energy)).await;
 
         if !is_unit_basic_attack_possible_response.is_possible() {
-            return AttackUnitResponseForm::new(false)
+            return AttackUnitResponseForm::default()
         }
 
         drop(game_field_unit_action_possibility_validator_service_guard);
@@ -341,7 +370,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         attacker_unit_card_index)).await;
 
         // extra effect 가지고 있는지 여부
-        let mut attacker_unit_extra_effect_list =
+        let attacker_unit_extra_effect_list =
             game_field_unit_service_guard.acquire_unit_extra_effect(
                 attack_unit_request_form
                     .to_acquire_unit_extra_effect_request(
@@ -373,40 +402,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if opponent_target_unit_passive_status_list.contains(&PassiveStatus::PhysicalImmunity) {
             println!("기본 공격 면역 패시브로 인해 공격을 가할 수 없습니다.");
-            return AttackUnitResponseForm::new(false)
-        }
-
-        // 공격 유닛과 피격 유닛에게 효과 존재 유무 판정
-        // 공격받는 unit 의 harmful_status_effect 호출
-        let mut opponent_target_unit_harmful_status_effect_list =
-            game_field_unit_service_guard.acquire_unit_harmful_status_effect(
-                attack_unit_request_form
-                    .to_acquire_unit_harmful_status_effect_request(
-                        opponent_unique_id,
-                        opponent_target_unit_card_index)).await.get_harmful_status_effect_list().clone();
-
-        // 피격 유닛에게 Freeze 효과가 있고, 공격 유닛에게도 Freeze 가 있다면, attacker_extra_effect 에서 Freeze 제거
-        // (공격유닛:존재, 피격유닛:부재 시 빙결 공격 가능)
-        for harmful_effect_index in (0..opponent_target_unit_harmful_status_effect_list.len()).rev() {
-            if *opponent_target_unit_harmful_status_effect_list[harmful_effect_index].get_harmful_effect() == Freeze {
-                for attacker_index in (0..attacker_unit_extra_effect_list.len()).rev() {
-                    if *attacker_unit_extra_effect_list[attacker_index].get_extra_effect() == Freeze {
-                        attacker_unit_extra_effect_list.swap_remove(attacker_index);
-                    }
-                }
-            }
-        }
-
-
-        // 피격 유닛에게 DarkFire 효과가 있고, 공격 유닛에게도 DarkFire 가 있다면, opponent_target_unit_harmful_status_effect_list 에서 DarkFire 제거
-        for harmful_effect_index in (0..opponent_target_unit_harmful_status_effect_list.len()).rev() {
-            if *opponent_target_unit_harmful_status_effect_list[harmful_effect_index].get_harmful_effect() == DarkFire {
-                for attacker_index in (0..attacker_unit_extra_effect_list.len()).rev() {
-                    if *attacker_unit_extra_effect_list[attacker_index].get_extra_effect() == DarkFire {
-                        opponent_target_unit_harmful_status_effect_list.swap_remove(harmful_effect_index);
-                    }
-                }
-            }
+            return AttackUnitResponseForm::default()
         }
 
         // 적 타겟 유닛을 효과를 가지고 공격
@@ -420,9 +416,23 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         opponent_target_unit_card_index)).await;
 
         if !attack_opponent_target_unit_with_extra_effect_response.is_success() {
-            println!("적 유닛 공격에 실패했습니다.");
-            return AttackUnitResponseForm::new(false)
+            println!("필드에 존재하지 않는 유닛을 공격 대상으로 지정하여 공격에 실패했습니다.");
+            return AttackUnitResponseForm::default()
         }
+
+        let opponent_target_unit_health_point =
+            game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
+                attack_unit_request_form
+                    .to_get_current_health_point_of_field_unit_by_index_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await.get_current_unit_health_point();
+
+        let opponent_target_unit_harmful_effect_list =
+            game_field_unit_service_guard.acquire_unit_harmful_status_effect(
+                attack_unit_request_form
+                    .to_acquire_unit_harmful_status_effect_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await.get_harmful_effect_list().clone();
 
         // 반격 이전 공격 유닛의 기본 지속 상태 확보
         let attacker_unit_passive_status_list =
@@ -444,32 +454,80 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         attacker_unit_card_index)).await;
 
             // 피격 유닛이 죽었는지 판정
-            let maybe_dead_opponent_unit_id =
+            let judge_death_of_opponent_unit_response =
                 game_field_unit_service_guard.judge_death_of_unit(
                     attack_unit_request_form
                         .to_judge_death_of_unit_request(
                             opponent_unique_id,
-                            opponent_target_unit_card_index)).await.get_dead_unit_id();
+                            opponent_target_unit_card_index)).await;
+
+            drop(game_field_unit_service_guard);
 
             // 죽은 경우 묘지에 추가
             let mut game_tomb_service_guard =
                 self.game_tomb_service.lock().await;
 
-            if maybe_dead_opponent_unit_id != -1 {
+            if judge_death_of_opponent_unit_response.get_dead_unit_id() != -1 {
                 println!("공격 당한 유닛이 사망했으므로 묘지로 이동합니다.");
 
                 game_tomb_service_guard.add_used_card_to_tomb(
                     attack_unit_request_form
                         .to_place_dead_unit_to_tomb_request(
                             opponent_unique_id,
-                            maybe_dead_opponent_unit_id)).await;
+                            judge_death_of_opponent_unit_response.get_dead_unit_id())).await;
             }
 
             drop(game_tomb_service_guard);
 
-            // TODO: 여기서 걸리는 경우에도 Notify 할 수 있어야 함
+            let mut ui_data_generator_service_guard =
+                self.ui_data_generator_service.lock().await;
 
-            return AttackUnitResponseForm::new(true)
+            let generate_opponent_specific_unit_health_point_data_response =
+                ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
+                    attack_unit_request_form
+                        .to_generate_opponent_specific_unit_health_point_data_request(
+                            opponent_target_unit_card_index,
+                            opponent_target_unit_health_point)).await;
+
+            let generate_opponent_specific_unit_harmful_effect_data_response =
+                ui_data_generator_service_guard.generate_opponent_specific_unit_harmful_effect_data(
+                    attack_unit_request_form
+                        .to_generate_opponent_specific_unit_harmful_effect_data_request(
+                            opponent_target_unit_card_index,
+                            opponent_target_unit_harmful_effect_list)).await;
+
+            let generate_opponent_specific_unit_death_data_response =
+                ui_data_generator_service_guard.generate_opponent_specific_unit_death_data(
+                    attack_unit_request_form
+                        .to_generate_opponent_specific_unit_death_data_request(
+                            judge_death_of_opponent_unit_response.get_dead_unit_index())).await;
+
+            drop(ui_data_generator_service_guard);
+
+            let mut notify_player_action_info_service_guard =
+                self.notify_player_action_info_service.lock().await;
+
+            notify_player_action_info_service_guard.notice_basic_attack_to_unit(
+                attack_unit_request_form
+                    .to_notice_basic_attack_to_unit_request(
+                        opponent_unique_id,
+                        generate_opponent_specific_unit_health_point_data_response
+                            .get_player_field_unit_health_point_map_for_notice().clone(),
+                        generate_opponent_specific_unit_harmful_effect_data_response
+                            .get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                        generate_opponent_specific_unit_death_data_response
+                            .get_player_field_unit_death_map_for_notice().clone())).await;
+
+            drop(notify_player_action_info_service_guard);
+
+            return AttackUnitResponseForm::new(
+                true,
+                generate_opponent_specific_unit_health_point_data_response
+                    .get_player_field_unit_health_point_map_for_response().clone(),
+                generate_opponent_specific_unit_harmful_effect_data_response
+                    .get_player_field_unit_harmful_effect_map_for_response().clone(),
+                generate_opponent_specific_unit_death_data_response
+                    .get_player_field_unit_death_map_for_response().clone())
         }
 
         // 반격을 위해 피격 유닛의 공격력 확보
@@ -497,6 +555,20 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     &opponent_target_unit_extra_effect_list,
                     attacker_unit_card_index)).await;
 
+        let attacker_unit_health_point =
+            game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
+                attack_unit_request_form
+                    .to_get_current_health_point_of_field_unit_by_index_request(
+                        account_unique_id,
+                        attacker_unit_card_index)).await.get_current_unit_health_point();
+
+        let attacker_unit_harmful_effect_list =
+            game_field_unit_service_guard.acquire_unit_harmful_status_effect(
+                attack_unit_request_form
+                    .to_acquire_unit_harmful_status_effect_request(
+                        account_unique_id,
+                        attacker_unit_card_index)).await.get_harmful_effect_list().clone();
+
         // 액션 완료 설정
         game_field_unit_service_guard.execute_turn_action(
             attack_unit_request_form
@@ -505,56 +577,162 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     attacker_unit_card_index)).await;
 
         // 유닛들이 죽었는지 판정
-        let maybe_dead_opponent_unit_id =
+        let judge_death_of_opponent_unit_response =
             game_field_unit_service_guard.judge_death_of_unit(
                 attack_unit_request_form
                     .to_judge_death_of_unit_request(
                         opponent_unique_id,
-                        opponent_target_unit_card_index)).await.get_dead_unit_id();
+                        opponent_target_unit_card_index)).await;
 
 
         // 죽은 유닛의 경우 묘지에 추가
         let mut game_tomb_service_guard =
             self.game_tomb_service.lock().await;
 
-        if maybe_dead_opponent_unit_id != -1 {
+        if judge_death_of_opponent_unit_response.get_dead_unit_id() != -1 {
             println!("공격 당한 유닛이 사망했으므로 묘지로 이동합니다.");
 
             game_tomb_service_guard.add_used_card_to_tomb(
                 attack_unit_request_form
                     .to_place_dead_unit_to_tomb_request(
                         opponent_unique_id,
-                        maybe_dead_opponent_unit_id)).await;
+                        judge_death_of_opponent_unit_response.get_dead_unit_id())).await;
         }
 
-        let maybe_dead_attacker_unit_id =
+        let judge_death_of_attacker_unit_response =
             game_field_unit_service_guard.judge_death_of_unit(
                 attack_unit_request_form
                     .to_judge_death_of_unit_request(
                         account_unique_id,
-                        attacker_unit_card_index)).await.get_dead_unit_id();
+                        attacker_unit_card_index)).await;
 
-        if maybe_dead_attacker_unit_id != -1 {
+        if judge_death_of_attacker_unit_response.get_dead_unit_id() != -1 {
             println!("반격 당한 유닛이 사망했으므로 묘지로 이동합니다.");
 
             game_tomb_service_guard.add_used_card_to_tomb(
                 attack_unit_request_form
                     .to_place_dead_unit_to_tomb_request(
                         account_unique_id,
-                        maybe_dead_attacker_unit_id)).await;
+                        judge_death_of_attacker_unit_response.get_dead_unit_id())).await;
         }
 
         drop(game_field_unit_service_guard);
-
         drop(game_tomb_service_guard);
 
-        // TODO: 상대방 알림
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
 
-        AttackUnitResponseForm::new(true)
+        let generate_opponent_specific_unit_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
+                attack_unit_request_form
+                    .to_generate_opponent_specific_unit_health_point_data_request(
+                        opponent_target_unit_card_index,
+                        opponent_target_unit_health_point)).await;
+
+        let generate_opponent_specific_unit_harmful_effect_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_harmful_effect_data(
+                attack_unit_request_form
+                    .to_generate_opponent_specific_unit_harmful_effect_data_request(
+                        opponent_target_unit_card_index,
+                        opponent_target_unit_harmful_effect_list)).await;
+
+        let generate_opponent_specific_unit_death_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_death_data(
+                attack_unit_request_form
+                    .to_generate_opponent_specific_unit_death_data_request(
+                        judge_death_of_opponent_unit_response.get_dead_unit_index())).await;
+
+        let generate_my_specific_unit_health_point_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_health_point_data(
+                attack_unit_request_form
+                    .to_generate_my_specific_unit_health_point_data_request(
+                        attacker_unit_card_index,
+                        attacker_unit_health_point)).await;
+
+        let generate_my_specific_unit_harmful_effect_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_harmful_effect_data(
+                attack_unit_request_form
+                    .to_generate_my_specific_unit_harmful_effect_data_request(
+                        attacker_unit_card_index,
+                        attacker_unit_harmful_effect_list)).await;
+
+        let generate_my_specific_unit_death_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_death_data(
+                attack_unit_request_form
+                    .to_generate_my_specific_unit_death_data_request(
+                        judge_death_of_attacker_unit_response.get_dead_unit_index())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        // TODO: Need Refactor
+        let mut combined_unit_health_point_data_for_response = HashMap::new();
+        let mut combined_unit_harmful_effect_data_for_response = HashMap::new();
+        let mut combined_unit_death_data_for_response = HashMap::new();
+        let mut combined_unit_health_point_data_for_notice = HashMap::new();
+        let mut combined_unit_harmful_effect_data_for_notice = HashMap::new();
+        let mut combined_unit_death_data_for_notice = HashMap::new();
+
+        combined_unit_health_point_data_for_response.extend(
+            generate_opponent_specific_unit_health_point_data_response
+                .get_player_field_unit_health_point_map_for_response().clone());
+        combined_unit_health_point_data_for_response.extend(
+            generate_my_specific_unit_health_point_data_response
+                .get_player_field_unit_health_point_map_for_response().clone());
+        combined_unit_harmful_effect_data_for_response.extend(
+            generate_opponent_specific_unit_harmful_effect_data_response
+                .get_player_field_unit_harmful_effect_map_for_response().clone());
+        combined_unit_harmful_effect_data_for_response.extend(
+            generate_my_specific_unit_harmful_effect_data_response
+                .get_player_field_unit_harmful_effect_map_for_response().clone());
+        combined_unit_death_data_for_response.extend(
+            generate_opponent_specific_unit_death_data_response
+                .get_player_field_unit_death_map_for_response().clone());
+        combined_unit_death_data_for_response.extend(
+            generate_my_specific_unit_death_data_response
+                .get_player_field_unit_death_map_for_response().clone());
+
+        combined_unit_health_point_data_for_notice.extend(
+            generate_opponent_specific_unit_health_point_data_response
+                .get_player_field_unit_health_point_map_for_notice().clone());
+        combined_unit_health_point_data_for_notice.extend(
+            generate_my_specific_unit_health_point_data_response
+                .get_player_field_unit_health_point_map_for_notice().clone());
+        combined_unit_harmful_effect_data_for_notice.extend(
+            generate_opponent_specific_unit_harmful_effect_data_response
+                .get_player_field_unit_harmful_effect_map_for_notice().clone());
+        combined_unit_harmful_effect_data_for_notice.extend(
+            generate_my_specific_unit_harmful_effect_data_response
+                .get_player_field_unit_harmful_effect_map_for_notice().clone());
+        combined_unit_death_data_for_notice.extend(
+            generate_opponent_specific_unit_death_data_response
+                .get_player_field_unit_death_map_for_notice().clone());
+        combined_unit_death_data_for_notice.extend(
+            generate_my_specific_unit_death_data_response
+                .get_player_field_unit_death_map_for_notice().clone());
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_basic_attack_to_unit(
+            attack_unit_request_form
+                .to_notice_basic_attack_to_unit_request(
+                    opponent_unique_id,
+                    combined_unit_health_point_data_for_notice,
+                    combined_unit_harmful_effect_data_for_notice,
+                    combined_unit_death_data_for_notice)).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        AttackUnitResponseForm::new(
+            true,
+            combined_unit_health_point_data_for_response,
+            combined_unit_harmful_effect_data_for_response,
+            combined_unit_death_data_for_response)
     }
 
     async fn request_to_attack_game_main_character(
-        &self, attack_game_main_character_request_form: AttackGameMainCharacterRequestForm) -> AttackGameMainCharacterResponseForm {
+        &self, attack_game_main_character_request_form: AttackGameMainCharacterRequestForm)
+        -> AttackGameMainCharacterResponseForm {
 
         println!("GameCardUnitControllerImpl: request_to_attack_game_main_character()");
 
@@ -563,7 +741,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             attack_game_main_character_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return AttackGameMainCharacterResponseForm::new(false)
+            println!("유효하지 않은 세션입니다.");
+            return AttackGameMainCharacterResponseForm::default()
         }
 
         let mut game_protocol_validation_service_guard =
@@ -576,7 +755,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return AttackGameMainCharacterResponseForm::new(false)
+            return AttackGameMainCharacterResponseForm::default()
         }
 
         // Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
@@ -594,6 +773,11 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         account_unique_id,
                         attacker_unit_card_index)).await.get_found_opponent_unit_id();
 
+        if attacker_unit_id == -1 {
+            println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 해킹범입니다!");
+            return AttackGameMainCharacterResponseForm::default()
+        }
+
         let mut game_card_unit_service_guard =
             self.game_card_unit_service.lock().await;
 
@@ -607,7 +791,6 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let mut game_field_unit_action_possibility_validator_service_guard =
             self.game_field_unit_action_possibility_validator_service.lock().await;
 
-
         let is_unit_basic_attack_possible_response =
             game_field_unit_action_possibility_validator_service_guard.is_unit_basic_attack_possible(
                 attack_game_main_character_request_form
@@ -617,7 +800,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         attacker_unit_required_energy)).await;
 
         if !is_unit_basic_attack_possible_response.is_possible() {
-            return AttackGameMainCharacterResponseForm::new(false)
+            return AttackGameMainCharacterResponseForm::default()
         }
 
         drop(game_field_unit_action_possibility_validator_service_guard);
@@ -629,15 +812,6 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     .to_acquire_unit_attack_point_request(
                         account_unique_id,
                         attacker_unit_card_index)).await.get_attack_point();
-
-        // todo 메인캐릭터가 extra effect 에 영향을 받는 경우 추가
-        // extra effect 가지고 있는지 여부
-        // let attacker_unit_extra_effect_list =
-        //     game_field_unit_service_guard.acquire_unit_extra_effect(
-        //         attack_game_main_character_request_form
-        //             .to_acquire_unit_extra_effect_request(
-        //                 account_unique_id,
-        //                 attacker_unit_card_index)).await.get_extra_status_effect_list().clone();
 
         // 공격을 위해 상대방 고유값 획득
         let battle_room_service_guard =
@@ -651,44 +825,79 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         drop(battle_room_service_guard);
 
-       let mut game_main_character_service_guard =
-           self.game_main_character_service.lock().await;
+        let mut game_main_character_service_guard =
+            self.game_main_character_service.lock().await;
 
-       let is_apply_damage_to_main_character_response =
-           game_main_character_service_guard.apply_damage_to_main_character(
-               attack_game_main_character_request_form
-                   .to_apply_damage_to_main_character_request(
-                       opponent_unique_id,
-                       attacker_unit_attack_point)).await;
+        game_main_character_service_guard.apply_damage_to_main_character(
+           attack_game_main_character_request_form
+               .to_apply_damage_to_main_character_request(
+                   opponent_unique_id,
+                   attacker_unit_attack_point)).await;
 
-       let is_check_main_character_of_account_unique_id_response =
-           game_main_character_service_guard.check_main_character_of_account_unique_id(
-               attack_game_main_character_request_form
-                   .to_check_main_character_of_account_unique_id_request(
-                       opponent_unique_id)).await;
         // 액션 완료 설정
-            game_field_unit_service_guard.execute_turn_action(
-                attack_game_main_character_request_form
-                    .to_execute_turn_action_request(
-                        account_unique_id,
-                        attacker_unit_card_index)).await;
-        drop(game_field_unit_service_guard);
-        // TODO: 메인 캐릭터가 사망한 경우의 서비스 추가 필요
-        // 사망하면 상대 패배 결정
-        if is_check_main_character_of_account_unique_id_response.get_status_main_character() == &StatusMainCharacterEnum::Death {
-            let mut game_winner_check_service_guard = self.game_winner_check_service.lock().await;
-            let _set_game_winner = game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
-                attack_game_main_character_request_form.to_check_health_of_main_character_for_setting_game_winner_request(
+        game_field_unit_service_guard.execute_turn_action(
+            attack_game_main_character_request_form
+                .to_execute_turn_action_request(
                     account_unique_id,
-                    opponent_unique_id)).await;
-            // 승패가 결정됐으니 양쪽에 알리고 마무리
+                    attacker_unit_card_index)).await;
+
+        drop(game_field_unit_service_guard);
+
+        let check_main_character_of_account_unique_id_response =
+            game_main_character_service_guard.check_main_character_of_account_unique_id(
+                attack_game_main_character_request_form
+                    .to_check_main_character_of_account_unique_id_request(opponent_unique_id)).await;
+
+        // 사망하면 상대 패배 결정
+        if check_main_character_of_account_unique_id_response.get_status_main_character() == &StatusMainCharacterEnum::Death {
+            let mut game_winner_check_service_guard =
+                self.game_winner_check_service.lock().await;
+
+            game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
+                attack_game_main_character_request_form
+                    .to_check_main_character_for_setting_game_winner_request(
+                        account_unique_id,
+                        opponent_unique_id)).await;
+
+            drop(game_winner_check_service_guard);
         }
 
-        // 사망 안하면 체력 notify
+        drop(game_main_character_service_guard);
 
-       drop(game_main_character_service_guard);
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
 
-       AttackGameMainCharacterResponseForm::new(true)
+        let generate_opponent_main_character_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_main_character_health_point_data(
+                attack_game_main_character_request_form
+                    .to_generate_opponent_main_character_health_point_data_request(
+                        check_main_character_of_account_unique_id_response.get_current_health_point())).await;
+
+        let generate_opponent_main_character_survival_data_response =
+            ui_data_generator_service_guard.generate_opponent_main_character_survival_data(
+                attack_game_main_character_request_form
+                    .to_generate_opponent_main_character_survival_data_request(
+                        check_main_character_of_account_unique_id_response.get_status_main_character().clone())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_basic_attack_to_main_character(
+            attack_game_main_character_request_form
+                .to_notice_basic_attack_to_main_character_request(
+                    opponent_unique_id,
+                    generate_opponent_main_character_health_point_data_response
+                        .get_player_main_character_health_point_map_for_notice().clone(),
+                    generate_opponent_main_character_survival_data_response
+                        .get_player_main_character_survival_map_for_notice().clone())).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        AttackGameMainCharacterResponseForm::from_response(
+            generate_opponent_main_character_health_point_data_response,
+            generate_opponent_main_character_survival_data_response)
     }
 }
 

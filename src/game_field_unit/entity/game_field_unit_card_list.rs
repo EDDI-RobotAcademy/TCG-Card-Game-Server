@@ -1,6 +1,7 @@
 use std::ops::Deref;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_energy::entity::status_effect::StatusEffect;
+use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
@@ -137,6 +138,18 @@ impl GameFieldUnitCardList {
         }
     }
 
+    pub fn impose_harmful_state_list_to_indexed_unit(&mut self, unit_card_index: usize, harmful_states: Vec<ExtraStatusEffect>) {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            unit.impose_harmful_state_list(harmful_states);
+        }
+    }
+
+    pub fn remove_harmful_status_of_indexed_unit(&mut self, unit_card_index: usize, extra_effect: &ExtraEffect) {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            unit.remove_harmful_effect(extra_effect);
+        }
+    }
+
     // 해로운 효과 전역에 뿌리기
     pub fn impose_harmful_state_list_iteratively(&mut self, harmful_state_list: Vec<ExtraStatusEffect>) {
         for unit in &mut self.game_field_unit_card_list {
@@ -178,6 +191,12 @@ impl GameFieldUnitCardList {
         }
 
         -1
+    }
+
+    pub fn set_unit_passive_status_list(&mut self, unit_card_index: usize, passive_status_list: Vec<PassiveStatus>) {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            unit.set_passive_status_list(passive_status_list);
+        }
     }
 
     pub fn reset_first_passive(&mut self, unit_card_index: usize, first_passive_default: bool) {
