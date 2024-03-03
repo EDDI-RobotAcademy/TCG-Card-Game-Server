@@ -32,8 +32,8 @@ impl SummaryPassiveSkillEffectByIndexResponse {
     pub fn from_summary_passive_skill_effect(summary_passive_skill_effect: SummaryPassiveSkillEffect) -> SummaryPassiveSkillEffectByIndexResponse {
 
         SummaryPassiveSkillEffectByIndexResponse::new(
-            summary_passive_skill_effect.get_skill_type().clone(),
-            summary_passive_skill_effect.get_passive_skill_casting_condition(),
+            summary_passive_skill_effect.get_passive_skill_type().clone(),
+            summary_passive_skill_effect.clone().get_passive_skill_casting_condition(),
             summary_passive_skill_effect.get_skill_damage())
     }
 

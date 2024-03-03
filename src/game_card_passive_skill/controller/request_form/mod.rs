@@ -1,2 +1,2 @@
-pub mod targeting_passive_skill_request_form;
-pub mod non_targeting_passive_skill_request_form;
+pub mod deploy_targeting_attack_passive_skill_request_form;
+pub mod deploy_non_targeting_attack_passive_skill_request_form;

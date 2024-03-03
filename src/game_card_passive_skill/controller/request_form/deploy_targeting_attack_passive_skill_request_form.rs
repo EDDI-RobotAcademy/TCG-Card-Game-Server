@@ -11,6 +11,7 @@ use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::attack_target_unit_with_extra_effect_request::AttackTargetUnitWithExtraEffectRequest;
+use crate::game_field_unit::service::request::execute_index_passive_of_unit_request::ExecuteIndexPassiveOfUnitRequest;
 use crate::game_field_unit::service::request::execute_turn_action_request::ExecuteTurnActionRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
@@ -21,20 +22,20 @@ use crate::game_protocol_validation::service::request::is_this_your_turn_request
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
-pub struct TargetingPassiveSkillRequestForm {
+pub struct DeployTargetingAttackPassiveSkillRequestForm {
     session_id: String,
     unit_card_index: String,
     opponent_target_card_index: String,
     usage_skill_index: String,
 }
 
-impl TargetingPassiveSkillRequestForm {
+impl DeployTargetingAttackPassiveSkillRequestForm {
     pub fn new(session_id: String,
                unit_card_index: String,
                opponent_target_card_index: String,
                usage_skill_index: String) -> Self {
 
-        TargetingPassiveSkillRequestForm {
+        DeployTargetingAttackPassiveSkillRequestForm {
             session_id: session_id.to_string(),
             unit_card_index: unit_card_index.to_string(),
             opponent_target_card_index: opponent_target_card_index.to_string(),
@@ -68,18 +69,14 @@ impl TargetingPassiveSkillRequestForm {
             account_unique_id)
     }
 
-    pub fn to_execute_turn_action_request(&self,
+    pub fn to_execute_index_passive_of_unit_request(&self,
                                           account_unique_id: i32,
-                                          attacker_unit_card_index: i32) -> ExecuteTurnActionRequest {
-        ExecuteTurnActionRequest::new(
+                                          unit_card_index: i32,
+                                          passive_skill_index: i32) -> ExecuteIndexPassiveOfUnitRequest {
+        ExecuteIndexPassiveOfUnitRequest::new(
             account_unique_id,
-            attacker_unit_card_index)
-    }
-
-    pub fn to_find_active_skill_usage_unit_id_by_index_request(&self, account_unique_id: i32, unit_card_index: i32) -> FindActiveSkillUsageUnitIdByIndexRequest {
-        FindActiveSkillUsageUnitIdByIndexRequest::new(
-            account_unique_id,
-            unit_card_index)
+            unit_card_index,
+            passive_skill_index)
     }
 
     pub fn to_summary_passive_skill_effect_by_index_request(&self, unit_card_index: i32, usage_skill_index: i32) -> SummaryPassiveSkillEffectByIndexRequest {
@@ -87,17 +84,6 @@ impl TargetingPassiveSkillRequestForm {
             unit_card_index,
             usage_skill_index)
     }
-
-    pub fn to_is_using_active_skill_possible_request(&self,
-                                                     account_unique_id: i32,
-                                                     field_unit_index: i32,
-                                                     skill_required_energy_map: HashMap<RaceEnum, i32>) -> IsUsingActiveSkillPossibleRequest {
-        IsUsingActiveSkillPossibleRequest::new(
-            account_unique_id,
-            field_unit_index,
-            skill_required_energy_map)
-    }
-
     pub fn to_acquire_unit_extra_effect_request(&self,
                                            account_unique_id: i32,
                                            unit_index: i32) -> AcquireUnitExtraEffectRequest {
@@ -152,10 +138,12 @@ impl TargetingPassiveSkillRequestForm {
     pub fn to_is_using_deploy_passive_skill_possible_request(&self,
                                                         account_unique_id: i32,
                                                         unit_index: i32,
+                                                        usage_skill_index: i32,
                                                         passive_skill_casting_condition: Vec<PassiveSkillCastingCondition>) -> IsUsingDeployPassiveSkillPossibleRequest {
         IsUsingDeployPassiveSkillPossibleRequest::new(
             account_unique_id,
             unit_index,
+            usage_skill_index,
             passive_skill_casting_condition
         )
     }
