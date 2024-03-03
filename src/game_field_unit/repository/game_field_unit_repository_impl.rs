@@ -245,7 +245,7 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
             }
         }
 
-        (unit_card_index, -1)
+        (-1, -1)
     }
 
     fn judge_death_of_every_unit(&mut self, account_unique_id: i32) -> Vec<(i32, i32)> {

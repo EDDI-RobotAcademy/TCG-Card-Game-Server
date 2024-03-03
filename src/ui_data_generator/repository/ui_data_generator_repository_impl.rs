@@ -72,7 +72,9 @@ impl UiDataGeneratorRepositoryImpl {
         unit_index: i32,) -> FieldUnitDeathInfo {
 
         let mut list = Vec::new();
-        list.push(unit_index);
+        if unit_index != -1 {
+            list.push(unit_index);
+        }
 
         FieldUnitDeathInfo::new(list)
     }
@@ -80,8 +82,10 @@ impl UiDataGeneratorRepositoryImpl {
     fn get_field_unit_death_info_by_list(
         &self,
         dead_unit_index_list: Vec<i32>) -> FieldUnitDeathInfo {
+        let mut dead_unit_index_list_mut = dead_unit_index_list.clone();
+        dead_unit_index_list_mut.retain(|index| index != &-1);
 
-        FieldUnitDeathInfo::new(dead_unit_index_list)
+        FieldUnitDeathInfo::new(dead_unit_index_list_mut)
     }
 
     fn get_field_unit_health_info(
