@@ -57,6 +57,8 @@ use crate::game_protocol_validation::service::request::is_it_item_card_request::
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+use crate::game_winner_check::service::game_winner_check_service::GameWinnerCheckService;
+use crate::game_winner_check::service::game_winner_check_service_impl::GameWinnerCheckServiceImpl;
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
 use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
@@ -81,6 +83,7 @@ pub struct GameCardItemControllerImpl {
     card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>,
     notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
     ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
+    game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,
 }
 
 impl GameCardItemControllerImpl {
@@ -98,7 +101,8 @@ impl GameCardItemControllerImpl {
                game_lost_zone_service: Arc<AsyncMutex<GameLostZoneServiceImpl>>,
                card_race_service: Arc<AsyncMutex<CardRaceServiceImpl>>,
                notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
-               ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,) -> Self {
+               ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
+               game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,) -> Self {
 
         GameCardItemControllerImpl {
             game_hand_service,
@@ -115,7 +119,8 @@ impl GameCardItemControllerImpl {
             game_lost_zone_service,
             card_race_service,
             notify_player_action_info_service,
-            ui_data_generator_service
+            ui_data_generator_service,
+            game_winner_check_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardItemControllerImpl>> {
@@ -138,7 +143,8 @@ impl GameCardItemControllerImpl {
                             GameLostZoneServiceImpl::get_instance(),
                             CardRaceServiceImpl::get_instance(),
                             NotifyPlayerActionInfoServiceImpl::get_instance(),
-                            UiDataGeneratorServiceImpl::get_instance())));
+                            UiDataGeneratorServiceImpl::get_instance(),
+                            GameWinnerCheckServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -785,6 +791,19 @@ impl GameCardItemController for GameCardItemControllerImpl {
                     catastrophic_damage_item_request_form
                         .to_check_main_character_survival_request(
                             opponent_unique_id)).await.get_status_main_character().clone();
+
+            if opponent_survival_status == StatusMainCharacterEnum::Death {
+                let mut game_winner_check_service_guard =
+                    self.game_winner_check_service.lock().await;
+
+                game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
+                    catastrophic_damage_item_request_form
+                        .to_check_main_character_for_setting_game_winner_request(
+                            account_unique_id,
+                            opponent_unique_id)).await;
+
+                drop(game_winner_check_service_guard);
+            }
 
             current_opponent_health_point_to_notice = current_opponent_health_point;
             opponent_survival_status_to_notice = opponent_survival_status;

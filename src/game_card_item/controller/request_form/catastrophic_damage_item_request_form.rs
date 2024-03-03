@@ -17,6 +17,7 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
+use crate::game_winner_check::service::request::check_main_character_request::CheckMainCharacterRequest;
 use crate::notify_player_action_info::service::request::notice_use_catastrophic_damage_item_card_request::NoticeUseCatastrophicDamageItemCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
@@ -141,6 +142,14 @@ impl CatastrophicDamageItemRequestForm {
         account_unique_id: i32) -> CheckMainCharacterOfAccountUniqueIdRequest {
 
         CheckMainCharacterOfAccountUniqueIdRequest::new(account_unique_id)
+    }
+
+    pub fn to_check_main_character_for_setting_game_winner_request(
+        &self,
+        account_unique_id: i32,
+        opponent_unique_id: i32) -> CheckMainCharacterRequest {
+
+        CheckMainCharacterRequest::new(account_unique_id, opponent_unique_id)
     }
 
     pub fn to_place_card_to_lost_zone_request(&self, opponent_unique_id: i32, will_be_lost_card: i32) -> PlaceCardToLostZoneRequest {
