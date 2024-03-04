@@ -81,10 +81,10 @@ impl TurnStartNonTargetingAttackPassiveSkillRequestForm {
     }
 
     pub fn to_summary_passive_skill_effect_request(&self,
-                                                   unit_card_index: i32,
+                                                   unit_card_id: i32,
                                                    usage_skill_index: i32) -> SummaryActiveSkillEffectRequest {
         SummaryActiveSkillEffectRequest::new(
-            unit_card_index,
+            unit_card_id,
             usage_skill_index)
     }
 

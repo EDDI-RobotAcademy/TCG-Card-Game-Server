@@ -81,9 +81,9 @@ impl DeployTargetingAttackPassiveSkillRequestForm {
             passive_skill_index)
     }
 
-    pub fn to_summary_passive_skill_effect_by_index_request(&self, unit_card_index: i32, usage_skill_index: i32) -> SummaryPassiveSkillEffectByIndexRequest {
+    pub fn to_summary_passive_skill_effect_by_index_request(&self, unit_card_id: i32, usage_skill_index: i32) -> SummaryPassiveSkillEffectByIndexRequest {
         SummaryPassiveSkillEffectByIndexRequest::new(
-            unit_card_index,
+            unit_card_id,
             usage_skill_index)
     }
     pub fn to_summary_deploy_passive_skill_effect_request(&self, unit_card_id: i32) -> SummaryDeployPassiveSkillEffectRequest {
