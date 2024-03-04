@@ -34,7 +34,7 @@ use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
-pub struct GameCardActiveSkillControllerImpl {
+pub struct GameCardPassiveSkillControllerImpl {
     game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
     battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
@@ -45,7 +45,7 @@ pub struct GameCardActiveSkillControllerImpl {
     game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
 }
 
-impl GameCardActiveSkillControllerImpl {
+impl GameCardPassiveSkillControllerImpl {
     pub fn new(game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
                battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
@@ -55,7 +55,7 @@ impl GameCardActiveSkillControllerImpl {
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
                game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,) -> Self {
 
-        GameCardActiveSkillControllerImpl {
+        GameCardPassiveSkillControllerImpl {
             game_tomb_service,
             battle_room_service,
             game_field_unit_service,
@@ -66,12 +66,12 @@ impl GameCardActiveSkillControllerImpl {
             game_field_unit_action_possibility_validator_service,
         }
     }
-    pub fn get_instance() -> Arc<AsyncMutex<GameCardActiveSkillControllerImpl>> {
+    pub fn get_instance() -> Arc<AsyncMutex<GameCardPassiveSkillControllerImpl>> {
         lazy_static! {
-            static ref INSTANCE: Arc<AsyncMutex<GameCardActiveSkillControllerImpl>> =
+            static ref INSTANCE: Arc<AsyncMutex<GameCardPassiveSkillControllerImpl>> =
                 Arc::new(
                     AsyncMutex::new(
-                        GameCardActiveSkillControllerImpl::new(
+                        GameCardPassiveSkillControllerImpl::new(
                             GameTombServiceImpl::get_instance(),
                             BattleRoomServiceImpl::get_instance(),
                             GameFieldUnitServiceImpl::get_instance(),
@@ -94,7 +94,7 @@ impl GameCardActiveSkillControllerImpl {
 }
 
 #[async_trait]
-impl GameCardPassiveSkillController for GameCardActiveSkillControllerImpl {
+impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
     async fn request_deploy_targeting_attack_passive_skill(
         &self, deploy_targeting_attack_passive_skill_request_form: DeployTargetingAttackPassiveSkillRequestForm) -> DeployTargetingAttackPassiveSkillResponseForm {
 
