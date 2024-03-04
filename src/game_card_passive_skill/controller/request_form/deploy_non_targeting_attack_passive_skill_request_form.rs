@@ -3,6 +3,7 @@ use crate::battle_room::service::request::find_opponent_by_account_id_request::F
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_active_skill::service::request::summary_active_skill_effect_request::SummaryActiveSkillEffectRequest;
 use crate::game_card_passive_skill::entity::passive_skill_casting_condition::PassiveSkillCastingCondition;
+use crate::game_card_passive_skill::service::request::summary_deploy_passive_skill_effect_request::SummaryDeployPassiveSkillEffectRequest;
 use crate::game_card_passive_skill::service::request::summary_passive_skill_effect_by_index_request::SummaryPassiveSkillEffectByIndexRequest;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
@@ -13,6 +14,7 @@ use crate::game_field_unit::service::request::execute_index_passive_of_unit_requ
 use crate::game_field_unit::service::request::execute_turn_action_request::ExecuteTurnActionRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
+use crate::game_field_unit::service::request::get_passive_skill_usable_request::GetPassiveSkillUsableRequest;
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
 use crate::game_field_unit_action_possibility_validator::service::request::is_using_active_skill_possible_request::IsUsingActiveSkillPossibleRequest;
 use crate::game_field_unit_action_possibility_validator::service::request::is_using_deploy_passive_skill_possible_request::IsUsingDeployPassiveSkillPossibleRequest;
@@ -77,14 +79,6 @@ impl DeployNonTargetingAttackPassiveSkillRequestForm {
             unit_card_index)
     }
 
-    pub fn to_summary_passive_skill_effect_request(&self,
-                                                  unit_card_index: i32,
-                                                  usage_skill_index: i32) -> SummaryActiveSkillEffectRequest {
-        SummaryActiveSkillEffectRequest::new(
-            unit_card_index,
-            usage_skill_index)
-    }
-
     pub fn to_find_target_unit_id_by_index_request(&self,
                                                    account_unique_id: i32,
                                                    unit_card_index: i32) -> FindTargetUnitIdByIndexRequest {
@@ -112,10 +106,13 @@ impl DeployNonTargetingAttackPassiveSkillRequestForm {
             passive_skill_index)
     }
 
-    pub fn to_summary_passive_skill_effect_by_index_request(&self, unit_card_index: i32, usage_skill_index: i32) -> SummaryPassiveSkillEffectByIndexRequest {
+    pub fn to_summary_passive_skill_effect_by_index_request(&self, unit_card_id: i32, usage_skill_index: i32) -> SummaryPassiveSkillEffectByIndexRequest {
         SummaryPassiveSkillEffectByIndexRequest::new(
-            unit_card_index,
+            unit_card_id,
             usage_skill_index)
+    }
+    pub fn to_summary_deploy_passive_skill_effect_request(&self, unit_card_id: i32) -> SummaryDeployPassiveSkillEffectRequest {
+        SummaryDeployPassiveSkillEffectRequest::new(unit_card_id)
     }
     pub fn to_find_opponent_by_account_id_request(&self,
                                                   account_unique_id: i32) -> FindOpponentByAccountIdRequest {
@@ -185,6 +182,12 @@ impl DeployNonTargetingAttackPassiveSkillRequestForm {
             unit_index,
             usage_skill_index,
             passive_skill_casting_condition
+        )
+    }
+    pub fn to_get_passive_skill_usable_list_request(&self, account_unique_id: i32, unit_index: i32) -> GetPassiveSkillUsableRequest {
+        GetPassiveSkillUsableRequest::new(
+            account_unique_id,
+            unit_index
         )
     }
 }

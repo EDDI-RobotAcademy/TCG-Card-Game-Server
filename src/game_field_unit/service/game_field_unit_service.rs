@@ -25,6 +25,7 @@ use crate::game_field_unit::service::request::get_current_attached_energy_of_fie
 use crate::game_field_unit::service::request::get_current_health_point_of_all_field_unit_request::GetCurrentHealthPointOfAllFieldUnitRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
+use crate::game_field_unit::service::request::get_passive_skill_usable_request::GetPassiveSkillUsableRequest;
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
 use crate::game_field_unit::service::request::reset_all_passive_of_unit_request::ResetAllPassiveOfUnitRequest;
 use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
@@ -54,6 +55,7 @@ use crate::game_field_unit::service::response::get_current_attached_energy_of_fi
 use crate::game_field_unit::service::response::get_current_health_point_of_all_field_unit_response::GetCurrentHealthPointOfAllFieldUnitResponse;
 use crate::game_field_unit::service::response::get_current_health_point_of_field_unit_by_index_response::GetCurrentHealthPointOfFieldUnitByIndexResponse;
 use crate::game_field_unit::service::response::get_game_field_unit_card_of_account_unique_id_response::GetGameFieldUnitCardOfAccountUniqueIdResponse;
+use crate::game_field_unit::service::response::get_passive_skill_usable_response::GetPassiveSkillUsableResponse;
 use crate::game_field_unit::service::response::judge_death_of_every_unit_response::JudgeDeathOfEveryUnitResponse;
 use crate::game_field_unit::service::response::reset_all_passive_of_unit_response::ResetAllPassiveOfUnitResponse;
 use crate::game_field_unit::service::response::reset_turn_action_of_all_field_unit_response::ResetTurnActionOfAllFieldUnitResponse;
@@ -88,4 +90,5 @@ pub trait GameFieldUnitService {
     async fn acquire_unit_harmful_status_effect(&mut self, acquire_unit_harmful_status_effect_request: AcquireUnitHarmfulStatusEffectRequest) -> AcquireUnitHarmfulStatusEffectResponse;
     async fn reset_all_passive_of_unit(&mut self, reset_all_passive_of_unit_request: ResetAllPassiveOfUnitRequest) -> ResetAllPassiveOfUnitResponse;
     async fn execute_index_passive_of_unit(&mut self, execute_index_passive_of_unit_request: ExecuteIndexPassiveOfUnitRequest) -> ExecuteIndexPassiveOfUnitResponse;
+    async fn get_passive_skill_usable(&self, get_passive_skill_usable_request: GetPassiveSkillUsableRequest) -> GetPassiveSkillUsableResponse;
 }

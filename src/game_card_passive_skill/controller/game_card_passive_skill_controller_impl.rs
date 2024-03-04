@@ -34,7 +34,7 @@ use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
-pub struct GameCardActiveSkillControllerImpl {
+pub struct GameCardPassiveSkillControllerImpl {
     game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
     battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
     game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
@@ -45,7 +45,7 @@ pub struct GameCardActiveSkillControllerImpl {
     game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
 }
 
-impl GameCardActiveSkillControllerImpl {
+impl GameCardPassiveSkillControllerImpl {
     pub fn new(game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
                battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
                game_field_unit_service: Arc<AsyncMutex<GameFieldUnitServiceImpl>>,
@@ -55,7 +55,7 @@ impl GameCardActiveSkillControllerImpl {
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
                game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,) -> Self {
 
-        GameCardActiveSkillControllerImpl {
+        GameCardPassiveSkillControllerImpl {
             game_tomb_service,
             battle_room_service,
             game_field_unit_service,
@@ -66,12 +66,12 @@ impl GameCardActiveSkillControllerImpl {
             game_field_unit_action_possibility_validator_service,
         }
     }
-    pub fn get_instance() -> Arc<AsyncMutex<GameCardActiveSkillControllerImpl>> {
+    pub fn get_instance() -> Arc<AsyncMutex<GameCardPassiveSkillControllerImpl>> {
         lazy_static! {
-            static ref INSTANCE: Arc<AsyncMutex<GameCardActiveSkillControllerImpl>> =
+            static ref INSTANCE: Arc<AsyncMutex<GameCardPassiveSkillControllerImpl>> =
                 Arc::new(
                     AsyncMutex::new(
-                        GameCardActiveSkillControllerImpl::new(
+                        GameCardPassiveSkillControllerImpl::new(
                             GameTombServiceImpl::get_instance(),
                             BattleRoomServiceImpl::get_instance(),
                             GameFieldUnitServiceImpl::get_instance(),
@@ -94,7 +94,7 @@ impl GameCardActiveSkillControllerImpl {
 }
 
 #[async_trait]
-impl GameCardPassiveSkillController for GameCardActiveSkillControllerImpl {
+impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
     async fn request_deploy_targeting_attack_passive_skill(
         &self, deploy_targeting_attack_passive_skill_request_form: DeployTargetingAttackPassiveSkillRequestForm) -> DeployTargetingAttackPassiveSkillResponseForm {
 
@@ -252,9 +252,37 @@ impl GameCardPassiveSkillController for GameCardActiveSkillControllerImpl {
                     unit_card_index,
                     usage_skill_index)).await;
 
+        // 13. 해당 유닛의 소환시 발동되는 패시브 스킬이 더 있는지 알려줘야함 .
+
+        let passive_usable_list =
+            game_field_unit_service_guard.get_passive_skill_usable(
+                deploy_targeting_attack_passive_skill_request_form
+                    .to_get_passive_skill_usable_list_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_passive_skill_usable_list();
+
         drop(game_field_unit_service_guard);
 
-        // 13. 해당 유닛의 소환시 발동되는 패시브 스킬이 더 있는지 알려줘야함 .
+        let mut game_card_passive_skill_service_guard =
+            self.game_card_passive_skill_service.lock().await;
+
+        let summary_deploy_passive_skill_effect_list =
+            game_card_passive_skill_service_guard.summary_deploy_passive_skill(
+                deploy_targeting_attack_passive_skill_request_form
+                    .to_summary_deploy_passive_skill_effect_request(
+                        unit_card_id)).await.get_passive_skill_effect_list();
+
+        let mut passive_type_list = Vec::new();
+
+        for i in 0..3 {
+            if passive_usable_list[i] == true && summary_deploy_passive_skill_effect_list[i].get_passive_skill_type() != &PassiveSkillType::Dummy {
+                passive_type_list.push(summary_deploy_passive_skill_effect_list[i].get_passive_skill_type());
+            }
+            else {
+                passive_type_list.push(&PassiveSkillType::Dummy);
+            }
+        }
+        drop(game_card_passive_skill_service_guard);
 
         DeployTargetingAttackPassiveSkillResponseForm::new(true)
     }
@@ -410,9 +438,37 @@ impl GameCardPassiveSkillController for GameCardActiveSkillControllerImpl {
                     unit_card_index,
                     usage_skill_index)).await;
 
+        // 13. 해당 유닛의 소환시 발동되는 패시브 스킬이 더 있는지 알려줘야함 .
+        let passive_usable_list =
+            game_field_unit_service_guard.get_passive_skill_usable(
+                deploy_non_targeting_attack_passive_skill_request_form
+                    .to_get_passive_skill_usable_list_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_passive_skill_usable_list();
+
         drop(game_field_unit_service_guard);
 
-        // 13. 해당 유닛의 소환시 발동되는 패시브 스킬이 더 있는지 알려줘야함 .
+        let mut game_card_passive_skill_service_guard =
+            self.game_card_passive_skill_service.lock().await;
+
+        let summary_deploy_passive_skill_effect_list =
+            game_card_passive_skill_service_guard.summary_deploy_passive_skill(
+                deploy_non_targeting_attack_passive_skill_request_form
+                    .to_summary_deploy_passive_skill_effect_request(
+                        unit_card_id)).await.get_passive_skill_effect_list();
+
+        let mut passive_type_list = Vec::new();
+
+        for i in 0..3 {
+            if passive_usable_list[i] == true && summary_deploy_passive_skill_effect_list[i].get_passive_skill_type() != &PassiveSkillType::Dummy {
+                passive_type_list.push(summary_deploy_passive_skill_effect_list[i].get_passive_skill_type());
+            }
+            else {
+                passive_type_list.push(&PassiveSkillType::Dummy);
+
+            }
+        }
+        drop(game_card_passive_skill_service_guard);
 
         DeployNonTargetingAttackPassiveSkillResponseForm::new(true)
     }
@@ -573,9 +629,39 @@ impl GameCardPassiveSkillController for GameCardActiveSkillControllerImpl {
                     unit_card_index,
                     usage_skill_index)).await;
 
-        drop(game_field_unit_service_guard);
 
         // 13. 해당 유닛의 소환시 발동되는 패시브 스킬이 더 있는지 알려줘야함 .
+        let passive_usable_list =
+            game_field_unit_service_guard.get_passive_skill_usable(
+                turn_start_targeting_attack_passive_skill_request_form
+                    .to_get_passive_skill_usable_list_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_passive_skill_usable_list();
+
+        drop(game_field_unit_service_guard);
+
+        let mut game_card_passive_skill_service_guard =
+            self.game_card_passive_skill_service.lock().await;
+
+        let summary_turn_start_passive_skill_effect_list =
+            game_card_passive_skill_service_guard.summary_turn_start_passive_skill(
+                turn_start_targeting_attack_passive_skill_request_form
+                    .to_summary_turn_start_passive_skill_effect_request(
+                        unit_card_id)).await.get_passive_skill_effect_list();
+
+        let mut passive_type_list = Vec::new();
+
+        for i in 0..3 {
+            if passive_usable_list[i] == true && summary_turn_start_passive_skill_effect_list[i].get_passive_skill_type() != &PassiveSkillType::Dummy {
+                passive_type_list.push(summary_turn_start_passive_skill_effect_list[i].get_passive_skill_type());
+            }
+            else {
+                passive_type_list.push(&PassiveSkillType::Dummy);
+
+            }
+        }
+        drop(game_card_passive_skill_service_guard);
+
 
         TurnStartTargetingAttackPassiveSkillResponseForm::new(true)
     }
@@ -611,7 +697,7 @@ impl GameCardPassiveSkillController for GameCardActiveSkillControllerImpl {
 
         // TODO: 프로토콜 검증 할 때가 아니라 패스
 
-        // Active Skill Summary 획득
+        // Passive Skill Summary 획득
         let unit_card_index_string = turn_start_non_targeting_attack_passive_skill_request_form.get_unit_card_index();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
 
@@ -733,9 +819,40 @@ impl GameCardPassiveSkillController for GameCardActiveSkillControllerImpl {
                     unit_card_index,
                     usage_skill_index)).await;
 
-        drop(game_field_unit_service_guard);
+
 
         // 13. 해당 유닛의 소환시 발동되는 패시브 스킬이 더 있는지 알려줘야함 .
+        let passive_usable_list =
+            game_field_unit_service_guard.get_passive_skill_usable(
+                turn_start_non_targeting_attack_passive_skill_request_form
+                    .to_get_passive_skill_usable_list_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_passive_skill_usable_list();
+
+        drop(game_field_unit_service_guard);
+
+
+        let mut game_card_passive_skill_service_guard =
+            self.game_card_passive_skill_service.lock().await;
+
+        let summary_turn_start_passive_skill_effect_list =
+            game_card_passive_skill_service_guard.summary_turn_start_passive_skill(
+                turn_start_non_targeting_attack_passive_skill_request_form
+                    .to_summary_turn_start_passive_skill_effect_request(
+                        unit_card_id)).await.get_passive_skill_effect_list();
+
+        let mut passive_type_list = Vec::new();
+
+        for i in 0..3 {
+            if passive_usable_list[i] == true && summary_turn_start_passive_skill_effect_list[i].get_passive_skill_type() != &PassiveSkillType::Dummy {
+                passive_type_list.push(summary_turn_start_passive_skill_effect_list[i].get_passive_skill_type());
+            }
+            else {
+                passive_type_list.push(&PassiveSkillType::Dummy);
+
+            }
+        }
+        drop(game_card_passive_skill_service_guard);
 
         TurnStartNonTargetingAttackPassiveSkillResponseForm::new(true)
     }
