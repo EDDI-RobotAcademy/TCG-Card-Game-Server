@@ -16,22 +16,23 @@ use crate::game_field_unit::service::request::find_target_unit_id_by_index_reque
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
 use crate::game_field_unit_action_possibility_validator::service::request::is_using_active_skill_possible_request::IsUsingActiveSkillPossibleRequest;
 use crate::game_field_unit_action_possibility_validator::service::request::is_using_deploy_passive_skill_possible_request::IsUsingDeployPassiveSkillPossibleRequest;
+use crate::game_field_unit_action_possibility_validator::service::request::is_using_turn_start_passive_skill_request::IsUsingTurnStartPassiveSkillPossibleRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::add_dead_unit_list_to_tomb_request::AddDeadUnitListToTombRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 
-pub struct DeployNonTargetingAttackPassiveSkillRequestForm {
+pub struct TurnStartNonTargetingAttackPassiveSkillRequestForm {
     session_id: String,
     unit_card_index: String,
     usage_skill_index: String,
 }
 
-impl DeployNonTargetingAttackPassiveSkillRequestForm {
+impl TurnStartNonTargetingAttackPassiveSkillRequestForm {
     pub fn new(session_id: String,
                unit_card_index: String,
                usage_skill_index: String) -> Self {
 
-        DeployNonTargetingAttackPassiveSkillRequestForm {
+        TurnStartNonTargetingAttackPassiveSkillRequestForm {
             session_id: session_id.to_string(),
             unit_card_index: unit_card_index.to_string(),
             usage_skill_index: usage_skill_index.to_string(),
@@ -70,16 +71,16 @@ impl DeployNonTargetingAttackPassiveSkillRequestForm {
     }
 
     pub fn to_find_passive_skill_usage_unit_id_by_index_request(&self,
-                                                               account_unique_id: i32,
-                                                               unit_card_index: i32) -> FindActiveSkillUsageUnitIdByIndexRequest {
+                                                                account_unique_id: i32,
+                                                                unit_card_index: i32) -> FindActiveSkillUsageUnitIdByIndexRequest {
         FindActiveSkillUsageUnitIdByIndexRequest::new(
             account_unique_id,
             unit_card_index)
     }
 
     pub fn to_summary_passive_skill_effect_request(&self,
-                                                  unit_card_index: i32,
-                                                  usage_skill_index: i32) -> SummaryActiveSkillEffectRequest {
+                                                   unit_card_index: i32,
+                                                   usage_skill_index: i32) -> SummaryActiveSkillEffectRequest {
         SummaryActiveSkillEffectRequest::new(
             unit_card_index,
             usage_skill_index)
@@ -175,12 +176,12 @@ impl DeployNonTargetingAttackPassiveSkillRequestForm {
         FindTargetUnitIdByIndexRequest::new(
             account_unique_id, unit_index)
     }
-    pub fn to_is_using_deploy_passive_skill_possible_request(&self,
+    pub fn to_is_using_turn_start_passive_skill_possible_request(&self,
                                                              account_unique_id: i32,
                                                              unit_index: i32,
                                                              usage_skill_index: i32,
-                                                             passive_skill_casting_condition: Vec<PassiveSkillCastingCondition>) -> IsUsingDeployPassiveSkillPossibleRequest {
-        IsUsingDeployPassiveSkillPossibleRequest::new(
+                                                             passive_skill_casting_condition: Vec<PassiveSkillCastingCondition>) -> IsUsingTurnStartPassiveSkillPossibleRequest {
+        IsUsingTurnStartPassiveSkillPossibleRequest::new(
             account_unique_id,
             unit_index,
             usage_skill_index,
