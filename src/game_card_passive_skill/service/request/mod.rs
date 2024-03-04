@@ -1,2 +1,4 @@
 pub mod summary_passive_skill_effect_request;
 pub mod summary_passive_skill_effect_by_index_request;
+pub mod summary_deploy_passive_skill_effect_request;
+pub mod summary_turn_start_passive_skill_effect_request;

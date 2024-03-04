@@ -39,7 +39,7 @@ pub mod fake_battle_room_create_request_form_generator;
 mod fake_create_game_deck_card_list_request_generator;
 mod test_muligan_reqeust_generator;
 pub mod battle_finish_generator;
-
-
-
-
+pub mod deploy_targeting_attack_passive_skill_request_generator;
+pub mod deploy_non_targeting_attack_passive_skill_request_generator;
+pub mod turn_start_targeting_attack_passive_skill_request_generator;
+pub mod turn_start_non_targeting_attack_passive_skill_request_generator;

@@ -651,6 +651,24 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         false
     }
+    fn get_passive_skill_usable(
+        &self,
+        account_unique_id: i32,
+        unit_card_index: i32,) -> Vec<bool> {
+        println!("GameFieldUnitRepositoryImpl: get_passive_skill_usable()");
+        if let Some(game_field_unit) = self.game_field_unit_map.get(&account_unique_id) {
+            let unit_card_index = unit_card_index as usize;
+            let passive_skill_usable_list = vec![
+                game_field_unit.get_index_passive_of_unit(unit_card_index, 1),
+                game_field_unit.get_index_passive_of_unit(unit_card_index, 2),
+                game_field_unit.get_index_passive_of_unit(unit_card_index, 3)];
+
+
+            return passive_skill_usable_list
+        }
+        vec![false, false, false]
+
+    }
 }
 
 #[cfg(test)]
