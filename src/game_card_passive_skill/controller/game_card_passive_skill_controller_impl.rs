@@ -11,12 +11,16 @@ use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl
 use crate::game_card_passive_skill::controller::game_card_passive_skill_controller::GameCardPassiveSkillController;
 use crate::game_card_passive_skill::controller::request_form::deploy_non_targeting_attack_passive_skill_request_form::DeployNonTargetingAttackPassiveSkillRequestForm;
 use crate::game_card_passive_skill::controller::request_form::deploy_targeting_attack_passive_skill_request_form::DeployTargetingAttackPassiveSkillRequestForm;
+use crate::game_card_passive_skill::controller::request_form::deploy_targeting_attack_to_game_main_character_request_form::DeployTargetingAttackToGameMainCharacterRequestForm;
 use crate::game_card_passive_skill::controller::request_form::turn_start_non_targeting_attack_passive_skill_request_form::TurnStartNonTargetingAttackPassiveSkillRequestForm;
 use crate::game_card_passive_skill::controller::request_form::turn_start_targeting_attack_passive_skill_request_form::TurnStartTargetingAttackPassiveSkillRequestForm;
+use crate::game_card_passive_skill::controller::request_form::turn_start_targeting_attack_to_game_main_character_request_form::TurnStartTargetingAttackToGameMainCharacterRequestForm;
 use crate::game_card_passive_skill::controller::response_form::deploy_non_targeting_attack_passive_skill_response_form::DeployNonTargetingAttackPassiveSkillResponseForm;
 use crate::game_card_passive_skill::controller::response_form::deploy_targeting_attack_passive_skill_response_form::DeployTargetingAttackPassiveSkillResponseForm;
+use crate::game_card_passive_skill::controller::response_form::deploy_targeting_attack_to_game_main_character_response_form::DeployTargetingAttackToGameMainCharacterResponseForm;
 use crate::game_card_passive_skill::controller::response_form::turn_start_non_targeting_attack_passive_skill_response_form::TurnStartNonTargetingAttackPassiveSkillResponseForm;
 use crate::game_card_passive_skill::controller::response_form::turn_start_targeting_attack_passive_skill_response_form::TurnStartTargetingAttackPassiveSkillResponseForm;
+use crate::game_card_passive_skill::controller::response_form::turn_start_targeting_attack_to_game_main_character_response_form::TurnStartTargetingAttackToGameMainCharacterResponseForm;
 
 use crate::game_card_passive_skill::entity::passive_skill_type::PassiveSkillType;
 use crate::game_card_passive_skill::service::game_card_passive_skill_service::GameCardPassiveSkillService;
@@ -25,14 +29,24 @@ use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitServi
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionPossibilityValidatorService;
 use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service_impl::GameFieldUnitActionPossibilityValidatorServiceImpl;
+use crate::game_main_character::entity::game_main_character::GameMainCharacter;
+use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
+use crate::game_main_character::service::game_main_character_service::GameMainCharacterService;
+use crate::game_main_character::service::game_main_character_service_impl::GameMainCharacterServiceImpl;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
+use crate::game_winner_check::service::game_winner_check_service::GameWinnerCheckService;
+use crate::game_winner_check::service::game_winner_check_service_impl::GameWinnerCheckServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
+use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
+use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
+use crate::ui_data_generator::service::ui_data_generator_service_impl::UiDataGeneratorServiceImpl;
 
 pub struct GameCardPassiveSkillControllerImpl {
     game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
@@ -43,6 +57,10 @@ pub struct GameCardPassiveSkillControllerImpl {
     game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
     game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
+    game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
+    game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,
+    ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
+    notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
 }
 
 impl GameCardPassiveSkillControllerImpl {
@@ -53,7 +71,11 @@ impl GameCardPassiveSkillControllerImpl {
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
                game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
-               game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,) -> Self {
+               game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
+               game_main_character_service: Arc<AsyncMutex<GameMainCharacterServiceImpl>>,
+               game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,
+               ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
+               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,) -> Self {
 
         GameCardPassiveSkillControllerImpl {
             game_tomb_service,
@@ -64,6 +86,10 @@ impl GameCardPassiveSkillControllerImpl {
             game_card_passive_skill_service,
             game_protocol_validation_service,
             game_field_unit_action_possibility_validator_service,
+            game_main_character_service,
+            game_winner_check_service,
+            ui_data_generator_service,
+            notify_player_action_info_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardPassiveSkillControllerImpl>> {
@@ -79,7 +105,11 @@ impl GameCardPassiveSkillControllerImpl {
                             NotifyPlayerActionServiceImpl::get_instance(),
                             GameCardPassiveSkillServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance(),
-                            GameFieldUnitActionPossibilityValidatorServiceImpl::get_instance())));
+                            GameFieldUnitActionPossibilityValidatorServiceImpl::get_instance(),
+                            GameMainCharacterServiceImpl::get_instance(),
+                            GameWinnerCheckServiceImpl::get_instance(),
+                            UiDataGeneratorServiceImpl::get_instance(),
+                            NotifyPlayerActionInfoServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -473,6 +503,185 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         DeployNonTargetingAttackPassiveSkillResponseForm::new(true)
     }
 
+    async fn request_deploy_targeting_attack_to_game_main_character(
+        &self, deploy_targeting_attack_to_game_main_character_request_form: DeployTargetingAttackToGameMainCharacterRequestForm)
+        -> DeployTargetingAttackToGameMainCharacterResponseForm {
+
+        println!("GameCardUnitControllerImpl: request_to_attack_game_main_character()");
+
+        // 세션 아이디를 검증합니다.
+        let account_unique_id = self.is_valid_session(
+            deploy_targeting_attack_to_game_main_character_request_form.to_session_validation_request()).await;
+
+        if account_unique_id == -1 {
+            println!("유효하지 않은 세션입니다.");
+            return DeployTargetingAttackToGameMainCharacterResponseForm::default()
+        }
+
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return DeployTargetingAttackToGameMainCharacterResponseForm::default()
+        }
+
+        // Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
+        let unit_card_index_string = deploy_targeting_attack_to_game_main_character_request_form.get_attacker_unit_index();
+        let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
+
+        let usage_skill_index_string = deploy_targeting_attack_to_game_main_character_request_form.get_usage_skill_index();
+        let usage_skill_index = usage_skill_index_string.parse::<i32>().unwrap();
+
+
+        // 액션 가능한 턴인지 검증
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
+
+        let unit_card_id =
+            game_field_unit_service_guard.find_target_unit_id_by_index(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_find_unit_id_by_index_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_found_opponent_unit_id();
+
+        if unit_card_id == -1 {
+            println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 해킹범입니다!");
+            return DeployTargetingAttackToGameMainCharacterResponseForm::default()
+        }
+
+        let mut game_card_passive_skill_service_guard =
+            self.game_card_passive_skill_service.lock().await;
+
+        let summary_passive_skill_effect_by_index_response =
+            game_card_passive_skill_service_guard.summary_passive_skill_by_index(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_summary_passive_skill_effect_by_index_request(
+                        unit_card_id,
+                        usage_skill_index)).await;
+
+        if summary_passive_skill_effect_by_index_response.get_passive_skill_type() != &PassiveSkillType::SingleTarget {
+            println!("단일 공격 패시브가 아닙니다.");
+            return DeployTargetingAttackToGameMainCharacterResponseForm::default()
+        }
+
+        drop(game_card_passive_skill_service_guard);
+
+        let mut game_field_unit_action_possibility_validator_service_guard =
+            self.game_field_unit_action_possibility_validator_service.lock().await;
+
+        let is_using_deploy_passive_skill_possible_response =
+            game_field_unit_action_possibility_validator_service_guard.is_using_deploy_passive_skill_possible(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_is_using_deploy_passive_skill_possible_request(
+                        account_unique_id,
+                        unit_card_index,
+                        usage_skill_index,
+                        summary_passive_skill_effect_by_index_response.get_passive_skill_casting_condition().clone())).await;
+
+        if !is_using_deploy_passive_skill_possible_response.is_possible() {
+            return DeployTargetingAttackToGameMainCharacterResponseForm::default()
+        }
+
+        drop(game_field_unit_action_possibility_validator_service_guard);
+
+        // 패시브 정보 에서 공격력 정보 확보
+        let attacker_unit_attack_point =
+            summary_passive_skill_effect_by_index_response.get_skill_damage();
+
+        // 공격을 위해 상대방 고유값 획득
+        let battle_room_service_guard =
+            self.battle_room_service.lock().await;
+
+        let opponent_unique_id =
+            battle_room_service_guard.find_opponent_by_account_unique_id(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_find_opponent_by_account_id_request(
+                        account_unique_id)).await.get_opponent_unique_id();
+
+        drop(battle_room_service_guard);
+
+        let mut game_main_character_service_guard =
+            self.game_main_character_service.lock().await;
+
+        game_main_character_service_guard.apply_damage_to_main_character(
+            deploy_targeting_attack_to_game_main_character_request_form
+                .to_apply_damage_to_main_character_request(
+                    opponent_unique_id,
+                    attacker_unit_attack_point)).await;
+
+        // 액션 완료 설정
+        game_field_unit_service_guard.execute_index_passive_of_unit(
+            deploy_targeting_attack_to_game_main_character_request_form
+                .to_execute_index_passive_of_unit_request(
+                    account_unique_id,
+                    unit_card_index,
+                    usage_skill_index)).await;
+
+        drop(game_field_unit_service_guard);
+
+        let check_main_character_of_account_unique_id_response =
+            game_main_character_service_guard.check_main_character_of_account_unique_id(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_check_main_character_of_account_unique_id_request(opponent_unique_id)).await;
+
+        // 사망하면 상대 패배 결정
+        if check_main_character_of_account_unique_id_response.get_status_main_character() == &StatusMainCharacterEnum::Death {
+            let mut game_winner_check_service_guard =
+                self.game_winner_check_service.lock().await;
+
+            game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_check_main_character_for_setting_game_winner_request(
+                        account_unique_id,
+                        opponent_unique_id)).await;
+
+            drop(game_winner_check_service_guard);
+        }
+
+        drop(game_main_character_service_guard);
+
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_opponent_main_character_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_main_character_health_point_data(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_generate_opponent_main_character_health_point_data_request(
+                        check_main_character_of_account_unique_id_response.get_current_health_point())).await;
+
+        let generate_opponent_main_character_survival_data_response =
+            ui_data_generator_service_guard.generate_opponent_main_character_survival_data(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_generate_opponent_main_character_survival_data_request(
+                        check_main_character_of_account_unique_id_response.get_status_main_character().clone())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_basic_attack_to_main_character(
+            deploy_targeting_attack_to_game_main_character_request_form
+                .to_notice_basic_attack_to_main_character_request(
+                    opponent_unique_id,
+                    generate_opponent_main_character_health_point_data_response
+                        .get_player_main_character_health_point_map_for_notice().clone(),
+                    generate_opponent_main_character_survival_data_response
+                        .get_player_main_character_survival_map_for_notice().clone())).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        DeployTargetingAttackToGameMainCharacterResponseForm::from_response(
+            generate_opponent_main_character_health_point_data_response,
+            generate_opponent_main_character_survival_data_response)
+    }
+
     async fn request_turn_start_targeting_attack_passive_skill(
         &self, turn_start_targeting_attack_passive_skill_request_form: TurnStartTargetingAttackPassiveSkillRequestForm) -> TurnStartTargetingAttackPassiveSkillResponseForm {
         println!("GameCardPassiveSkillControllerImpl: request_deploy_targeting_passive_skill()");
@@ -855,5 +1064,183 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         drop(game_card_passive_skill_service_guard);
 
         TurnStartNonTargetingAttackPassiveSkillResponseForm::new(true)
+    }
+    async fn request_turn_start_targeting_attack_to_game_main_character(
+        &self, turn_start_targeting_attack_to_game_main_character_request_form: TurnStartTargetingAttackToGameMainCharacterRequestForm)
+        -> TurnStartTargetingAttackToGameMainCharacterResponseForm {
+
+        println!("GameCardUnitControllerImpl: request_to_attack_game_main_character()");
+
+        // 세션 아이디를 검증합니다.
+        let account_unique_id = self.is_valid_session(
+            turn_start_targeting_attack_to_game_main_character_request_form.to_session_validation_request()).await;
+
+        if account_unique_id == -1 {
+            println!("유효하지 않은 세션입니다.");
+            return TurnStartTargetingAttackToGameMainCharacterResponseForm::default()
+        }
+
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return TurnStartTargetingAttackToGameMainCharacterResponseForm::default()
+        }
+
+        // Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
+        let unit_card_index_string = turn_start_targeting_attack_to_game_main_character_request_form.get_attacker_unit_index();
+        let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
+
+        let usage_skill_index_string = turn_start_targeting_attack_to_game_main_character_request_form.get_usage_skill_index();
+        let usage_skill_index = usage_skill_index_string.parse::<i32>().unwrap();
+
+
+        // 액션 가능한 턴인지 검증
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
+
+        let unit_card_id =
+            game_field_unit_service_guard.find_target_unit_id_by_index(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_find_unit_id_by_index_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_found_opponent_unit_id();
+
+        if unit_card_id == -1 {
+            println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 해킹범입니다!");
+            return TurnStartTargetingAttackToGameMainCharacterResponseForm::default()
+        }
+
+        let mut game_card_passive_skill_service_guard =
+            self.game_card_passive_skill_service.lock().await;
+
+        let summary_passive_skill_effect_by_index_response =
+            game_card_passive_skill_service_guard.summary_passive_skill_by_index(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_summary_passive_skill_effect_by_index_request(
+                        unit_card_id,
+                        usage_skill_index)).await;
+
+        if summary_passive_skill_effect_by_index_response.get_passive_skill_type() != &PassiveSkillType::SingleTarget {
+            println!("단일 공격 패시브가 아닙니다.");
+            return TurnStartTargetingAttackToGameMainCharacterResponseForm::default()
+        }
+
+        drop(game_card_passive_skill_service_guard);
+
+        let mut game_field_unit_action_possibility_validator_service_guard =
+            self.game_field_unit_action_possibility_validator_service.lock().await;
+
+        let is_using_turn_start_passive_skill_possible_response =
+            game_field_unit_action_possibility_validator_service_guard.is_using_turn_start_passive_skill_possible(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_is_using_turn_start_passive_skill_possible_request(
+                        account_unique_id,
+                        unit_card_index,
+                        usage_skill_index,
+                        summary_passive_skill_effect_by_index_response.get_passive_skill_casting_condition().clone())).await;
+
+        if !is_using_turn_start_passive_skill_possible_response.is_possible() {
+            return TurnStartTargetingAttackToGameMainCharacterResponseForm::default()
+        }
+
+        drop(game_field_unit_action_possibility_validator_service_guard);
+
+        // 패시브 정보 에서 공격력 정보 확보
+        let attacker_unit_attack_point =
+            summary_passive_skill_effect_by_index_response.get_skill_damage();
+
+        // 공격을 위해 상대방 고유값 획득
+        let battle_room_service_guard =
+            self.battle_room_service.lock().await;
+
+        let opponent_unique_id =
+            battle_room_service_guard.find_opponent_by_account_unique_id(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_find_opponent_by_account_id_request(
+                        account_unique_id)).await.get_opponent_unique_id();
+
+        drop(battle_room_service_guard);
+
+        let mut game_main_character_service_guard =
+            self.game_main_character_service.lock().await;
+
+        game_main_character_service_guard.apply_damage_to_main_character(
+            turn_start_targeting_attack_to_game_main_character_request_form
+                .to_apply_damage_to_main_character_request(
+                    opponent_unique_id,
+                    attacker_unit_attack_point)).await;
+
+        // 액션 완료 설정
+        game_field_unit_service_guard.execute_index_passive_of_unit(
+            turn_start_targeting_attack_to_game_main_character_request_form
+                .to_execute_index_passive_of_unit_request(
+                    account_unique_id,
+                    unit_card_index,
+                    usage_skill_index)).await;
+
+        drop(game_field_unit_service_guard);
+
+        let check_main_character_of_account_unique_id_response =
+            game_main_character_service_guard.check_main_character_of_account_unique_id(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_check_main_character_of_account_unique_id_request(opponent_unique_id)).await;
+
+        // 사망하면 상대 패배 결정
+        if check_main_character_of_account_unique_id_response.get_status_main_character() == &StatusMainCharacterEnum::Death {
+            let mut game_winner_check_service_guard =
+                self.game_winner_check_service.lock().await;
+
+            game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_check_main_character_for_setting_game_winner_request(
+                        account_unique_id,
+                        opponent_unique_id)).await;
+
+            drop(game_winner_check_service_guard);
+        }
+
+        drop(game_main_character_service_guard);
+
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_opponent_main_character_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_main_character_health_point_data(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_generate_opponent_main_character_health_point_data_request(
+                        check_main_character_of_account_unique_id_response.get_current_health_point())).await;
+
+        let generate_opponent_main_character_survival_data_response =
+            ui_data_generator_service_guard.generate_opponent_main_character_survival_data(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_generate_opponent_main_character_survival_data_request(
+                        check_main_character_of_account_unique_id_response.get_status_main_character().clone())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_basic_attack_to_main_character(
+            turn_start_targeting_attack_to_game_main_character_request_form
+                .to_notice_basic_attack_to_main_character_request(
+                    opponent_unique_id,
+                    generate_opponent_main_character_health_point_data_response
+                        .get_player_main_character_health_point_map_for_notice().clone(),
+                    generate_opponent_main_character_survival_data_response
+                        .get_player_main_character_survival_map_for_notice().clone())).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        TurnStartTargetingAttackToGameMainCharacterResponseForm::from_response(
+            generate_opponent_main_character_health_point_data_response,
+            generate_opponent_main_character_survival_data_response)
     }
 }
