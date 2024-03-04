@@ -38,6 +38,7 @@ use crate::game_field_unit::service::request::judge_death_of_every_unit_request:
 use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
 use crate::game_field_unit::service::request::acquire_unit_harmful_status_effect_request::AcquireUnitHarmfulStatusEffectRequest;
 use crate::game_field_unit::service::request::execute_index_passive_of_unit_request::ExecuteIndexPassiveOfUnitRequest;
+use crate::game_field_unit::service::request::get_passive_skill_usable_request::GetPassiveSkillUsableRequest;
 use crate::game_field_unit::service::request::reset_all_passive_of_unit_request::ResetAllPassiveOfUnitRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
@@ -67,6 +68,7 @@ use crate::game_field_unit::service::response::judge_death_of_every_unit_respons
 use crate::game_field_unit::service::response::reset_turn_action_of_all_field_unit_response::ResetTurnActionOfAllFieldUnitResponse;
 use crate::game_field_unit::service::response::acquire_unit_harmful_status_effect_response::AcquireUnitHarmfulStatusEffectResponse;
 use crate::game_field_unit::service::response::execute_index_passive_of_unit_response::ExecuteIndexPassiveOfUnitResponse;
+use crate::game_field_unit::service::response::get_passive_skill_usable_response::GetPassiveSkillUsableResponse;
 use crate::game_field_unit::service::response::reset_all_passive_of_unit_response::ResetAllPassiveOfUnitResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 
@@ -493,5 +495,16 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
         ExecuteIndexPassiveOfUnitResponse::new(response)
     }
+    async fn get_passive_skill_usable(&self, get_passive_skill_usable_request: GetPassiveSkillUsableRequest) -> GetPassiveSkillUsableResponse {
+        println!("GameFieldUnitServiceImpl: get_passive_skill_usable()");
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let response = game_field_unit_repository_guard.get_passive_skill_usable(
+            get_passive_skill_usable_request.get_account_unique_id(),
+            get_passive_skill_usable_request.get_unit_card_index());
+
+        GetPassiveSkillUsableResponse::new(response)
+
+    }
+
 
 }

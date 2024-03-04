@@ -2,12 +2,14 @@ use std::collections::HashMap;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::game_card_passive_skill::entity::passive_skill_casting_condition::PassiveSkillCastingCondition;
 use crate::game_card_passive_skill::service::request::summary_passive_skill_effect_by_index_request::SummaryPassiveSkillEffectByIndexRequest;
+use crate::game_card_passive_skill::service::request::summary_turn_start_passive_skill_effect_request::SummaryTurnStartPassiveSkillEffectRequest;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
 use crate::game_field_unit::service::request::apply_damage_to_target_unit_index_request::ApplyDamageToTargetUnitIndexRequest;
 use crate::game_field_unit::service::request::attack_target_unit_with_extra_effect_request::AttackTargetUnitWithExtraEffectRequest;
 use crate::game_field_unit::service::request::execute_index_passive_of_unit_request::ExecuteIndexPassiveOfUnitRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
+use crate::game_field_unit::service::request::get_passive_skill_usable_request::GetPassiveSkillUsableRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
 use crate::game_field_unit_action_possibility_validator::service::request::is_using_deploy_passive_skill_possible_request::IsUsingDeployPassiveSkillPossibleRequest;
 use crate::game_field_unit_action_possibility_validator::service::request::is_using_turn_start_passive_skill_request::IsUsingTurnStartPassiveSkillPossibleRequest;
@@ -77,6 +79,9 @@ impl TurnStartTargetingAttackPassiveSkillRequestForm {
             unit_card_index,
             usage_skill_index)
     }
+    pub fn to_summary_turn_start_passive_skill_effect_request(&self, unit_card_id: i32) -> SummaryTurnStartPassiveSkillEffectRequest {
+        SummaryTurnStartPassiveSkillEffectRequest::new(unit_card_id)
+    }
     pub fn to_acquire_unit_extra_effect_request(&self,
                                                 account_unique_id: i32,
                                                 unit_index: i32) -> AcquireUnitExtraEffectRequest {
@@ -138,6 +143,12 @@ impl TurnStartTargetingAttackPassiveSkillRequestForm {
             unit_index,
             usage_skill_index,
             passive_skill_casting_condition
+        )
+    }
+    pub fn to_get_passive_skill_usable_list_request(&self, account_unique_id: i32, unit_index: i32) -> GetPassiveSkillUsableRequest {
+        GetPassiveSkillUsableRequest::new(
+            account_unique_id,
+            unit_index
         )
     }
 }

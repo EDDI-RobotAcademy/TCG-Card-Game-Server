@@ -4,6 +4,8 @@ use diesel::IntoSql;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
+use crate::action_wating_timer::service::action_waiting_timer_service::ActionWaitingTimerService;
+use crate::action_wating_timer::service::action_waiting_timer_service_impl::ActionWaitingTimerServiceImpl;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::game_card_support_usage_counter::service::game_card_support_usage_counter_service::GameCardSupportUsageCounterService;
@@ -54,6 +56,8 @@ pub struct GameTurnControllerImpl {
     game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
     game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
     game_card_unit_service: Arc<AsyncMutex<GameCardUnitServiceImpl>>,
+    action_waiting_timer_service: Arc<AsyncMutex<ActionWaitingTimerServiceImpl>>,
+
 }
 
 impl GameTurnControllerImpl {
@@ -70,6 +74,7 @@ impl GameTurnControllerImpl {
                game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
                game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
                game_card_unit_service: Arc<AsyncMutex<GameCardUnitServiceImpl>>,
+               action_waiting_timer_service: Arc<AsyncMutex<ActionWaitingTimerServiceImpl>>,
              ) -> Self {
 
         GameTurnControllerImpl {
@@ -86,6 +91,7 @@ impl GameTurnControllerImpl {
             game_hand_service,
             game_card_support_usage_counter_service,
             game_card_unit_service,
+            action_waiting_timer_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameTurnControllerImpl>> {
@@ -106,7 +112,8 @@ impl GameTurnControllerImpl {
                             GameTombServiceImpl::get_instance(),
                             GameHandServiceImpl::get_instance(),
                             GameCardSupportUsageCounterServiceImpl::get_instance(),
-                            GameCardUnitServiceImpl::get_instance())));
+                            GameCardUnitServiceImpl::get_instance(),
+                            ActionWaitingTimerServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -282,6 +289,9 @@ impl GameTurnController for GameTurnControllerImpl {
 
         drop(game_field_energy_service_guard);
 
+        // let action_waiting_timer_service_guard=
+        //     self.action_waiting_timer_service.lock().await;
+        // action_waiting_timer_service_guard.set_action_waiting_time(turn_end_request_form.to_action_waiting_timer(opponent_unique_id)).await;
         //  TODO: 턴 종료 상황에서 상태 이상으로 죽은 유닛들, 데미지 및 상대 턴 시작 등등을 알려줘야함 (Notify)
 
         TurnEndResponseForm::new(true)
