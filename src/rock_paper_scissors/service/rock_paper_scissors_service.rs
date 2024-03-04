@@ -13,5 +13,4 @@ use crate::rock_paper_scissors::service::response::register_rock_paper_scissors_
 pub trait RockPaperScissorsService {
     async fn register_rock_paper_scissors_wait_hash(&self, register_rock_paper_scissors_wait_hash_request: RegisterRockPaperScissorsWaitHashRequest) -> RegisterRockPaperScissorsWaitHashResponse;
     async fn check_rock_paper_scissors_winner(&self, check_rock_paper_scissors_winner_request: CheckRockPaperScissorsWinnerRequest) -> CheckRockPaperScissorsWinnerResponse;
-    async fn check_opponent_choice(&self, check_opponent_choice_request: CheckOpponentChoiceRequest) -> CheckOpponentHashmapResponse;
 }

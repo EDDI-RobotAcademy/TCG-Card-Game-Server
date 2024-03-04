@@ -15,6 +15,7 @@ use crate::rock_paper_scissors::controller::request_form::rock_paper_scissors_re
 use crate::rock_paper_scissors::controller::response_form::check_rock_paper_scissors_winner_response_form::CheckRockPaperScissorsWinnerResponseForm;
 use crate::rock_paper_scissors::controller::response_form::rock_paper_scissors_response_form::RockPaperScissorsResponseForm;
 use crate::rock_paper_scissors::controller::rock_paper_scissors_controller::RockPaperScissorsController;
+use crate::rock_paper_scissors::entity::rock_paper_scissors_result::RockPaperScissorsResult::WAIT;
 use crate::rock_paper_scissors::service::request::check_opponent_choice_request::CheckOpponentChoiceRequest;
 use crate::rock_paper_scissors::service::request::check_rock_paper_scissors_winner_request::CheckRockPaperScissorsWinnerRequest;
 use crate::rock_paper_scissors::service::request::register_rock_paper_scissors_wait_hash_request::RegisterRockPaperScissorsWaitHashRequest;
@@ -123,7 +124,7 @@ impl RockPaperScissorsController for RockPaperScissorsControllerImpl {
 
         if account_unique_id == -1 {
             println!("Invalid session");
-            return CheckRockPaperScissorsWinnerResponseForm::new("WAIT".to_string())
+            return CheckRockPaperScissorsWinnerResponseForm::new(WAIT)
         }
 
         let opponent_unique_id =
@@ -134,16 +135,6 @@ impl RockPaperScissorsController for RockPaperScissorsControllerImpl {
         let mut rock_paper_scissors_service_guard =
             self.rock_paper_scissors_service.lock().await;
 
-        let has_opponent_choice =
-            rock_paper_scissors_service_guard.check_opponent_choice(
-                check_winner_rock_paper_scissors_request_form
-                    .to_check_opponent_choice_request(opponent_unique_id)).await.get_opponent_check();
-
-        if !has_opponent_choice {
-            println!("상대가 아직 가위바위보를 실행하지 않았습니다.");
-            return CheckRockPaperScissorsWinnerResponseForm::new("WAIT".to_string())
-        }
-
         let check_rock_paper_scissors_winner_response =
             rock_paper_scissors_service_guard.check_rock_paper_scissors_winner(
                 check_winner_rock_paper_scissors_request_form
@@ -152,7 +143,7 @@ impl RockPaperScissorsController for RockPaperScissorsControllerImpl {
         drop(rock_paper_scissors_service_guard);
 
         CheckRockPaperScissorsWinnerResponseForm::new(
-            check_rock_paper_scissors_winner_response.get_am_i_winner().to_string())
+            check_rock_paper_scissors_winner_response.get_am_i_winner())
     }
 }
 
