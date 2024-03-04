@@ -39,8 +39,8 @@ impl RockPaperScissorsWaitHash {
         None
     }
 
-    pub async fn clear_choice(&mut self, account_unique_id: i32) {
-        println!("RockPaperScissorsWaitHash: get_choice");
+    pub async fn remove_choice(&mut self, account_unique_id: i32) {
+        println!("RockPaperScissorsWaitHash: remove_choice");
 
         let mut guard = self.player_choice_hash.lock().await;
         guard.retain(|key, _| key != &account_unique_id);
@@ -88,30 +88,13 @@ impl RockPaperScissorsWaitHash {
         println!("RockPaperScissorsWaitHash: check_opponent_choice");
 
         let mut guard = self.player_choice_hash.lock().await;
-        let mut opponent_choice = None;
 
         for (key, value) in guard.iter() {
-            if key == &opponent_unique_id {
-                // 특정 키에 대한 값을 찾았을 때, 해당 값을 반환
-                opponent_choice = Some(value.clone());
+            if key == &opponent_unique_id && value != "Dummy" {
+                return Some(true);
             }
-        }
-
-        if opponent_choice != None {
-            return Some(true);
         }
 
         Some(false)
     }
 }
-
-
-
-
-
-
-
-
-
-
-

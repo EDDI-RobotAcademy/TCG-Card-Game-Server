@@ -3,6 +3,9 @@ use std::error::Error;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
+use crate::rock_paper_scissors::entity::rock_paper_scissors_result::RockPaperScissorsResult;
+use crate::rock_paper_scissors::entity::rock_paper_scissors_result::RockPaperScissorsResult::{LOSE, WAIT, WIN};
+use crate::rock_paper_scissors::entity::rock_paper_scissors_result_hash::RockPaperScissorsResultHash;
 
 use crate::rock_paper_scissors::entity::rock_paper_scissors_wait_hash::RockPaperScissorsWaitHash;
 use crate::rock_paper_scissors::repository::rock_paper_scissors_repository::RockPaperScissorsRepository;
@@ -10,17 +13,23 @@ use crate::rock_paper_scissors::repository::rock_paper_scissors_repository::Rock
 
 pub struct RockPaperScissorsRepositoryImpl {
     wait_hashmap: Arc<AsyncMutex<RockPaperScissorsWaitHash>>,
+    result_hashmap: Arc<AsyncMutex<RockPaperScissorsResultHash>>,
 }
 
 impl RockPaperScissorsRepositoryImpl {
     pub fn new() -> Self {
         RockPaperScissorsRepositoryImpl {
             wait_hashmap: Arc::new(AsyncMutex::new(RockPaperScissorsWaitHash::new())),
+            result_hashmap: Arc::new(AsyncMutex::new(RockPaperScissorsResultHash::new())),
         }
     }
 
     pub fn get_wait_hashmap(&self) -> Arc<AsyncMutex<RockPaperScissorsWaitHash>> {
         Arc::clone(&self.wait_hashmap)
+    }
+
+    pub fn get_result_hashmap(&self) -> Arc<AsyncMutex<RockPaperScissorsResultHash>> {
+        Arc::clone(&self.result_hashmap)
     }
 
     pub fn get_instance() -> Arc<AsyncMutex<RockPaperScissorsRepositoryImpl>> {
@@ -44,6 +53,12 @@ impl RockPaperScissorsRepository for RockPaperScissorsRepositoryImpl {
 
         drop(waiting_hashmap_guard);
 
+        // 과거 가위바위보 결과 기록 삭제
+        let mut result_hashmap_guard = self.result_hashmap.lock().await;
+        result_hashmap_guard.remove_result(account_unique_id).await;
+
+        drop(result_hashmap_guard);
+
         true
     }
 
@@ -58,26 +73,38 @@ impl RockPaperScissorsRepository for RockPaperScissorsRepositoryImpl {
         true
     }
 
-    async fn check_opponent_choice_repo(&self, opponent_unique_id: i32) -> Result<bool, Box<dyn Error>> {
-        println!("RockPaperScissorsRepositoryImpl: check_opponent_choice_repo()");
+    async fn check_result_repo(&self, account_unique_id: i32, opponent_unique_id: i32) -> RockPaperScissorsResult {
+        println!("RockPaperScissorsRepositoryImpl: check_result_repo()");
 
-        let waiting_hashmap_guard = self.wait_hashmap.lock().await;
-        let mut check_result = waiting_hashmap_guard.check_opponent_choice(opponent_unique_id).await;
+        let mut result_hashmap_guard = self.result_hashmap.lock().await;
+        let my_result = result_hashmap_guard.get_result(account_unique_id).await;
 
-        drop(waiting_hashmap_guard);
+        // 1. 내 결과가 이미 나와 있는 경우
+        if my_result.is_some() {
+            return my_result.unwrap()
+        }
 
-        Ok(check_result.unwrap())
-    }
-
-    async fn clear_choices_repo(&self, account_unique_id: i32) -> bool {
-        println!("RockPaperScissorsRepositoryImpl: clear_choices_repo()");
-
+        // 2. 상대와 내 가위바위보 choice 가 모두 존재하는 경우
         let mut waiting_hashmap_guard = self.wait_hashmap.lock().await;
-        waiting_hashmap_guard.clear_choice(account_unique_id).await;
+        let my_choice = waiting_hashmap_guard.get_choice(account_unique_id).await;
+        let opponent_choice = waiting_hashmap_guard.get_choice(opponent_unique_id).await;
 
-        drop(waiting_hashmap_guard);
+        if opponent_choice.is_none() {
+            return WAIT
+        }
 
-        true
+        return match (my_choice.unwrap().as_str(), opponent_choice.unwrap().as_str()) {
+            ("Rock", "Scissors") | ("Paper", "Rock") | ("Scissors", "Paper") => {
+                waiting_hashmap_guard.remove_choice(opponent_unique_id).await;
+                result_hashmap_guard.save_result(opponent_unique_id, LOSE).await;
+                WIN
+            },
+            ("Scissors", "Rock") | ("Rock", "Paper") | ("Paper", "Scissors") => {
+                waiting_hashmap_guard.remove_choice(opponent_unique_id).await;
+                result_hashmap_guard.save_result(opponent_unique_id, WIN).await;
+                LOSE
+            },
+            _ => WAIT
+        }
     }
 }
-

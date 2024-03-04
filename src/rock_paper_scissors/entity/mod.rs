@@ -1,2 +1,3 @@
 pub mod rock_paper_scissors_wait_hash;
 pub mod rock_paper_scissors_result;
+pub mod rock_paper_scissors_result_hash;
