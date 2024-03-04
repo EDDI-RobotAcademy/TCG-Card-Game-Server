@@ -51,7 +51,7 @@ impl ActionWaitingTimerService for ActionWaitingTimerServiceImpl {
         let mut action_waiting_timer_repository = self.action_waiting_timer_repository.lock().await;
 
 
-        let mut response=action_waiting_timer_repository.check_action_waiting_timer_expired(account_unique_id, Duration::from_secs(60)).await;
+        let mut response=action_waiting_timer_repository.set_action_waiting_timer(account_unique_id, Duration::from_secs(60)).await;
 
 
 
