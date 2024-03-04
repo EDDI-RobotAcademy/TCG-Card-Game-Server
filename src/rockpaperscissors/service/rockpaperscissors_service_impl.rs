@@ -16,6 +16,8 @@ use rand::seq::index::sample;
 
 
 use crate::account_card::entity::account_card::account_cards::account_id;
+use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
+use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
 use crate::game_field_energy::repository::game_field_energy_repository::GameFieldEnergyRepository;
 use crate::game_field_energy::repository::game_field_energy_repository_impl::GameFieldEnergyRepositoryImpl;
 use crate::game_turn::repository::game_turn_repository::GameTurnRepository;
@@ -44,6 +46,7 @@ pub struct RockpaperscissorsServiceImpl {
     match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
     game_turn_repository:Arc<AsyncMutex<GameTurnRepositoryImpl>>,
     game_field_energy_repository: Arc<AsyncMutex<GameFieldEnergyRepositoryImpl>>,
+    game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>
 }
 
 impl RockpaperscissorsServiceImpl {
@@ -52,6 +55,7 @@ impl RockpaperscissorsServiceImpl {
                match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
                game_turn_repository:Arc<AsyncMutex<GameTurnRepositoryImpl>>,
                game_field_energy_repository: Arc<AsyncMutex<GameFieldEnergyRepositoryImpl>>,
+               game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>
 
     ) -> Self {
 
@@ -60,7 +64,8 @@ impl RockpaperscissorsServiceImpl {
             rockpaperscissors_repository,
             match_waiting_timer_repository,
             game_turn_repository,
-            game_field_energy_repository
+            game_field_energy_repository,
+            game_deck_repository
         }
     }
 
@@ -74,7 +79,8 @@ impl RockpaperscissorsServiceImpl {
                             RockpaperscissorsRepositoryImpl::get_instance(),
                             MatchWaitingTimerRepositoryImpl::get_instance(),
                             GameTurnRepositoryImpl::get_instance(),
-                            GameFieldEnergyRepositoryImpl::get_instance())));
+                            GameFieldEnergyRepositoryImpl::get_instance(),
+                            GameDeckRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -130,6 +136,7 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
 
         rockpaperscissors_repository_guard.change_draw_choice_repo(account_unique_id,opponent_id).await;
 
+
     }
 
     async fn check_rockpaperscissors_winner(&self, check_rockpaperscissors_winner_request: CheckRockpaperscissorsWinnerRequest) -> CheckRockpaperscissorsWinnerResponse {
@@ -153,6 +160,7 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
         drop(rockpaperscissors_repository_guard);
         let mut game_turn_repository_guard = self.game_turn_repository.lock().await;
         let mut game_field_energy_repository_guard = self.game_field_energy_repository.lock().await;
+        let mut game_deck_repository_guard=self.game_deck_repository.lock().await;
 
         if am_i_win==true
         {
@@ -160,6 +168,8 @@ impl RockpaperscissorsService for RockpaperscissorsServiceImpl {
             drop(game_turn_repository_guard);
             game_field_energy_repository_guard.add_field_energy_with_amount(account_unique_id,1);
             drop(game_field_energy_repository_guard);
+            game_deck_repository_guard.draw_deck_card(account_unique_id,1);
+            drop(game_deck_repository_guard);
             return CheckRockpaperscissorsWinnerResponse::new("WIN".to_string())
         }
 
