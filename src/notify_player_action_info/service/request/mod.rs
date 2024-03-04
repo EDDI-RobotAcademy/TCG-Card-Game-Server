@@ -12,3 +12,4 @@ pub mod notice_use_multiple_unit_damage_item_card_request;
 pub mod notice_use_special_energy_card_to_unit_request;
 pub mod notice_basic_attack_to_unit_request;
 pub mod notice_basic_attack_to_main_character_request;
+pub mod notice_use_unit_card_request;

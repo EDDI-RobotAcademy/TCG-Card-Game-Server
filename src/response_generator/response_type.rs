@@ -65,6 +65,7 @@ use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_main_character::NotifyFormBasicAttackToMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_unit::NotifyFormBasicAttackToUnit;
+use crate::notify_player_action_info::entity::notify_form_deploy_unit::NotifyFormDeployUnit;
 use crate::notify_player_action_info::entity::notify_form_use_catastrophic_damage_item_card::NotifyFormUseCatastrophicDamageItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_draw_support_card::NotifyFormUseDrawSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_field_energy_increase_item_card::NotifyFormUseFieldEnergyIncreaseItemCard;
@@ -174,6 +175,7 @@ pub enum ResponseType {
     NOTIFY_OPPONENT_TO_DESTORY_DECK_ITEM_USAGE(NotifyOpponentToDestroyDeckItemUsage),
     NOTIFY_OPPONENT_TO_FIELD_UNIT_ENERGY_REMOVAL_ITEM_USAGE(NotifyOpponentToFieldUnitEnergyRemovalItemUsage),
 
+    NOTIFY_DEPLOY_UNIT(NotifyFormDeployUnit),
     NOTIFY_USE_GENERAL_ENERGY_CARD_TO_UNIT(NotifyFormUseGeneralEnergyCardToUnit),
     NOTIFY_USE_SPECIAL_ENERGY_CARD_TO_UNIT(NotifyFormUseSpecialEnergyCardToUnit),
     NOTIFY_USE_UNIT_ENERGY_BOOST_SUPPORT_CARD(NotifyFormUseUnitEnergyBoostSupportCard),

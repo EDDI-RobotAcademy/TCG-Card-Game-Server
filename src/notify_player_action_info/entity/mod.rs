@@ -12,3 +12,4 @@ pub mod notify_form_use_multiple_unit_damage_item_card;
 pub mod notify_form_use_special_energy_card_to_unit;
 pub mod notify_form_basic_attack_to_unit;
 pub mod notify_form_basic_attack_to_main_character;
+pub mod notify_form_deploy_unit;

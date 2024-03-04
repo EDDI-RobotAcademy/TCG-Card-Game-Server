@@ -20,6 +20,7 @@ use crate::notify_player_action_info::service::request::notice_use_instant_unit_
 use crate::notify_player_action_info::service::request::notice_use_multiple_unit_damage_item_card_request::NoticeUseMultipleUnitDamageItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_search_deck_support_card_request::{NoticeUseSearchDeckSupportCardRequest};
 use crate::notify_player_action_info::service::request::notice_use_special_energy_card_to_unit_request::NoticeUseSpecialEnergyCardToUnitRequest;
+use crate::notify_player_action_info::service::request::notice_use_unit_card_request::NoticeUseUnitCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_unit_energy_remove_item_card_request::NoticeUseUnitEnergyRemoveItemCardRequest;
 use crate::notify_player_action_info::service::response::notice_basic_attack_to_main_character_response::NoticeBasicAttackToMainCharacterResponse;
 use crate::notify_player_action_info::service::response::notice_basic_attack_to_unit_response::NoticeBasicAttackToUnitResponse;
@@ -35,6 +36,7 @@ use crate::notify_player_action_info::service::response::notice_use_instant_unit
 use crate::notify_player_action_info::service::response::notice_use_multiple_unit_damage_item_card_response::NoticeUseMultipleUnitDamageItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_search_deck_support_card_response::{NoticeUseSearchDeckSupportCardResponse};
 use crate::notify_player_action_info::service::response::notice_use_special_energy_card_to_unit_response::NoticeUseSpecialEnergyCardToUnitResponse;
+use crate::notify_player_action_info::service::response::notice_use_unit_card_response::NoticeUseUnitCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_unit_energy_remove_item_card_response::NoticeUseUnitEnergyRemoveItemCardResponse;
 
 pub struct NotifyPlayerActionInfoServiceImpl {
@@ -65,6 +67,25 @@ impl NotifyPlayerActionInfoServiceImpl {
 
 #[async_trait]
 impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
+
+    async fn notice_use_unit_card(
+        &mut self, notice_use_unit_card_request: NoticeUseUnitCardRequest)
+        -> NoticeUseUnitCardResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_use_unit_card()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_deploy_unit(
+                notice_use_unit_card_request.get_opponent_unique_id(),
+                notice_use_unit_card_request.get_player_hand_use_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeUseUnitCardResponse::new(response)
+    }
 
     async fn notice_use_field_energy_to_my_specific_unit(
         &mut self,
