@@ -34,8 +34,10 @@ use crate::game_card_item::controller::response_form::remove_opponent_field_unit
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_card_passive_skill::controller::response_form::deploy_non_targeting_attack_passive_skill_response_form::DeployNonTargetingAttackPassiveSkillResponseForm;
 use crate::game_card_passive_skill::controller::response_form::deploy_targeting_attack_passive_skill_response_form::DeployTargetingAttackPassiveSkillResponseForm;
+use crate::game_card_passive_skill::controller::response_form::deploy_targeting_attack_to_game_main_character_response_form::DeployTargetingAttackToGameMainCharacterResponseForm;
 use crate::game_card_passive_skill::controller::response_form::turn_start_non_targeting_attack_passive_skill_response_form::TurnStartNonTargetingAttackPassiveSkillResponseForm;
 use crate::game_card_passive_skill::controller::response_form::turn_start_targeting_attack_passive_skill_response_form::TurnStartTargetingAttackPassiveSkillResponseForm;
+use crate::game_card_passive_skill::controller::response_form::turn_start_targeting_attack_to_game_main_character_response_form::TurnStartTargetingAttackToGameMainCharacterResponseForm;
 use crate::game_card_support::controller::response_form::draw_support_response_form::DrawSupportResponseForm;
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_card_support::controller::response_form::remove_opponent_field_energy_support_response_form::RemoveOpponentFieldEnergySupportResponseForm;
@@ -152,10 +154,14 @@ pub enum ResponseType {
     NON_TARGETING_ACTIVE_SKILL(NonTargetingActiveSkillResponseForm),
     ATTACH_FIELD_ENERGY_TO_UNIT(AttachFieldEnergyToFieldUnitResponseForm),
     ATTACK_MAIN_CHARACTER(AttackGameMainCharacterResponseForm),
+
+    // Battle Field Passive Controll
     DEPLOY_TARGETING_ATTACK_PASSIVE_SKILL(DeployTargetingAttackPassiveSkillResponseForm),
     DEPLOY_NON_TARGETING_ATTACK_PASSIVE_SKILL(DeployNonTargetingAttackPassiveSkillResponseForm),
+    DEPLOY_TARGETING_ATTACK_TO_MAIN_CHARACTER(DeployTargetingAttackToGameMainCharacterResponseForm),
     TURN_START_TARGETING_ATTACK_PASSIVE_SKILL(TurnStartTargetingAttackPassiveSkillResponseForm),
     TURN_START_NON_TARGETING_ATTACK_PASSIVE_SKILL(TurnStartNonTargetingAttackPassiveSkillResponseForm),
+    TURN_START_TARGETING_ATTACK_TO_MAIN_CHARACTER(TurnStartTargetingAttackToGameMainCharacterResponseForm),
 
     // Notification to players
     NOTIFY_OPPONENT_TO_UNIT_DEPLOY(NotifyOpponentToUnitDeploy),

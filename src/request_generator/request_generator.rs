@@ -73,6 +73,7 @@ use crate::request_generator::battle_match_cancel_request_generator::create_batt
 use crate::request_generator::check_rockpaperscissors_winner_request_generator::create_check_rockpaperscissors_winner_request_form;
 use crate::request_generator::deploy_non_targeting_attack_passive_skill_request_generator::create_deploy_non_targeting_attack_passive_skill_request_form;
 use crate::request_generator::deploy_targeting_attack_passive_skill_request_generator::create_deploy_targeting_attack_passive_skill_request_form;
+use crate::request_generator::deploy_targeting_attack_to_game_main_character_request_generator::create_deploy_targeting_attack_to_game_main_character_request_form;
 use crate::request_generator::fake_battle_room_create_request_form_generator::create_fake_battle_room_create_request_form;
 use crate::request_generator::game_card_item_request_form_generator::{create_add_field_energy_by_field_unit_health_point_item_request_form, create_catastrophic_damage_item_request_form, create_multiple_target_damage_by_field_unit_sacrifice_item_request_form, create_opponent_field_unit_energy_removal_item_request_form, create_target_death_item_request_form};
 use crate::request_generator::game_next_turn_request_generator::create_game_turn_request_form;
@@ -89,6 +90,7 @@ use crate::request_generator::fake_create_game_deck_card_list_request_generator:
 use crate::request_generator::test_muligan_reqeust_generator::test_create_mulligan_request_form;
 use crate::request_generator::turn_start_non_targeting_attack_passive_skill_request_generator::create_turn_start_non_targeting_attack_passive_skill_request_form;
 use crate::request_generator::turn_start_targeting_attack_passive_skill_request_generator::create_turn_start_targeting_attack_passive_skill_request_form;
+use crate::request_generator::turn_start_targeting_attack_to_game_main_character_request_generator::create_turn_start_targeting_attack_to_game_main_character_request_form;
 use crate::response_generator::response_type::ResponseType;
 use crate::rockpaperscissors::controller::rockpaperscissors_controller::RockpaperscissorsController;
 use crate::rockpaperscissors::controller::rockpaperscissors_controller_impl::RockpaperscissorsControllerImpl;
@@ -805,7 +807,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            // 2001 => Deploy Passive Targeting Attack Main Character
+            2001 => {
+                // Deploy Passive Targeting Attack To Game Main Character
+                if let Some(request_form) = create_deploy_targeting_attack_to_game_main_character_request_form(&data) {
+                    let game_card_passive_skill_controller_mutex = GameCardPassiveSkillControllerImpl::get_instance();
+                    let game_card_passive_skill_controller = game_card_passive_skill_controller_mutex.lock().await;
+
+                    let response_form = game_card_passive_skill_controller.request_deploy_targeting_attack_to_game_main_character(request_form).await;
+                    let response_type = Some(ResponseType::DEPLOY_TARGETING_ATTACK_TO_MAIN_CHARACTER(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             2002 => {
                 // Deploy Passive Non Targeting Attack
                 if let Some(request_form) = create_deploy_non_targeting_attack_passive_skill_request_form(&data) {
@@ -834,7 +849,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-            // 2011 => Turn Start Passive Targeting Attack Main Character
+            2011 => {
+                // Turn Start Passive Targeting Attack To Game Main Character
+                if let Some(request_form) = create_turn_start_targeting_attack_to_game_main_character_request_form(&data) {
+                    let game_card_passive_skill_controller_mutex = GameCardPassiveSkillControllerImpl::get_instance();
+                    let game_card_passive_skill_controller = game_card_passive_skill_controller_mutex.lock().await;
+
+                    let response_form = game_card_passive_skill_controller.request_turn_start_targeting_attack_to_game_main_character(request_form).await;
+                    let response_type = Some(ResponseType::TURN_START_TARGETING_ATTACK_TO_MAIN_CHARACTER(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
             2012 => {
                 // Turn Start Passive Non Targeting Attack
                 if let Some(request_form) = create_turn_start_non_targeting_attack_passive_skill_request_form(&data) {
