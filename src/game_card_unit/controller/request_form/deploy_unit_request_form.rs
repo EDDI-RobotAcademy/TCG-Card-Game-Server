@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
@@ -13,7 +14,11 @@ use crate::game_protocol_validation::service::request::check_protocol_hacking_re
 use crate::game_protocol_validation::service::request::is_it_unit_card_request::IsItUnitCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::notify_player_action::service::request::notify_to_opponent_you_deploy_unit_request::NotifyToOpponentYouDeployUnitRequest;
+use crate::notify_player_action_info::service::request::notice_use_unit_card_request::NoticeUseUnitCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
+use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
 
 pub struct DeployUnitRequestForm{
     session_id: String,
@@ -114,8 +119,23 @@ impl DeployUnitRequestForm {
                                           summary_passive_skill_effect_list)
     }
 
-    pub fn to_notify_to_opponent_what_you_do_request(&self, opponent_unique_id: i32, usage_hand_card_id: i32) -> NotifyToOpponentYouDeployUnitRequest {
-        NotifyToOpponentYouDeployUnitRequest::new(
-            opponent_unique_id, usage_hand_card_id)
+    pub fn to_generate_use_my_hand_card_data_request(
+        &self,
+        used_hand_card_id: i32
+    ) -> GenerateUseMyHandCardDataRequest {
+
+        GenerateUseMyHandCardDataRequest::new(
+            used_hand_card_id)
+    }
+
+    pub fn to_notice_use_unit_card_request(
+        &self,
+        opponent_unique_id: i32,
+        player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>
+    ) -> NoticeUseUnitCardRequest {
+
+        NoticeUseUnitCardRequest::new(
+            opponent_unique_id,
+            player_hand_use_map_for_notice)
     }
 }
