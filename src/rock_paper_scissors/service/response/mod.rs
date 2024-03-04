@@ -1,0 +1,4 @@
+pub mod register_rock_paper_scissors_wait_hash_response;
+pub mod check_rock_paper_scissors_winner_response;
+pub mod check_opponent_choice_response;
+pub mod check_draw_choice_response;
