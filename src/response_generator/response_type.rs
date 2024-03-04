@@ -77,8 +77,8 @@ use crate::notify_player_action_info::entity::notify_form_use_multiple_unit_dama
 use crate::notify_player_action_info::entity::notify_form_use_search_deck_support_card::NotifyFormUseSearchDeckSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_special_energy_card_to_unit::NotifyFormUseSpecialEnergyCardToUnit;
 use crate::notify_player_action_info::entity::notify_form_use_unit_energy_remove_item_card::NotifyFormUseUnitEnergyRemoveItemCard;
-use crate::rockpaperscissors::controller::response_form::check_rockpaperscissors_winner_response_form::CheckRockpaperscissorsWinnerResponseForm;
-use crate::rockpaperscissors::controller::response_form::rockpaperscissors_response_form::RockpaperscissorsResponseForm;
+use crate::rock_paper_scissors::controller::response_form::check_rock_paper_scissors_winner_response_form::CheckRockPaperScissorsWinnerResponseForm;
+use crate::rock_paper_scissors::controller::response_form::rock_paper_scissors_response_form::RockPaperScissorsResponseForm;
 use crate::shop::controller::response_form::event_distribute_cards_response_form::EventDistributeCardsResponseForm;
 use crate::shop::controller::response_form::execute_free_gacha_response_form::ExecuteFreeGachaResponseForm;
 use crate::shop::controller::response_form::execute_shop_gacha_response_form::ExecuteShopGachaResponseForm;
@@ -106,8 +106,8 @@ pub enum ResponseType {
     BATTLE_MATCH_CANCEL(BattleMatchCancelResponse),
 
     // First Turn Decision
-    ROCKPAPERSCISSORS(RockpaperscissorsResponseForm),
-    CHECK_ROCKPAPERSCISSORS_WINNER(CheckRockpaperscissorsWinnerResponseForm),
+    ROCKPAPERSCISSORS(RockPaperScissorsResponseForm),
+    CHECK_ROCKPAPERSCISSORS_WINNER(CheckRockPaperScissorsWinnerResponseForm),
     // Battle Info Remain Deck card count
     REMAIN_DECK_CARD_COUNT(RemainDeckCardCountResponse),
     // Account Card

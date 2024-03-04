@@ -1,0 +1,5 @@
+pub(crate) mod register_rock_paper_scissors_wait_hash_request;
+pub mod check_rock_paper_scissors_winner_request;
+pub mod check_draw_choice_request;
+
+pub mod check_opponent_choice_request;

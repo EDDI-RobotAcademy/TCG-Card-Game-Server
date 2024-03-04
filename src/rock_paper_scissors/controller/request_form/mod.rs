@@ -1,0 +1,2 @@
+pub mod rock_paper_scissors_request_form;
+pub mod check_rock_paper_scissors_winner_request_form;

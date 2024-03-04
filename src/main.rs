@@ -88,7 +88,7 @@ mod card_health_point;
 mod game_card_active_skill;
 mod game_card_passive_skill;
 mod game_card_tool;
-mod rockpaperscissors;
+mod rock_paper_scissors;
 mod game_card_support_usage_counter;
 mod game_field_unit_action_possibility_validator;
 mod game_winner_check;
