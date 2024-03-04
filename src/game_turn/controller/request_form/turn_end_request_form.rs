@@ -1,3 +1,6 @@
+use crate::action_wating_timer::service::action_waiting_timer_service::ActionWaitingTimerService;
+use crate::action_wating_timer::service::request::action_waiting_timer_request::ActionWaitingTimerRequest;
+use crate::action_wating_timer::service::response::action_waiting_timer_response::ActionWaitingTimerResponse;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::game_card_support_usage_counter::service::request::reset_support_card_usage_count_request::ResetSupportCardUsageCountRequest;
 use crate::game_card_unit::service::request::summary_unit_card_passive_default_request::SummaryUnitCardPassiveDefaultRequest;
@@ -96,5 +99,8 @@ impl TurnEndRequestForm {
     }
     pub fn to_reset_all_passive_of_unit(&self, account_unique_id: i32, unit_card_index: i32, passive_default_list: Vec<bool>) -> ResetAllPassiveOfUnitRequest {
         ResetAllPassiveOfUnitRequest::new(account_unique_id, unit_card_index, passive_default_list)
+    }
+    pub fn to_action_waiting_timer(&self, opponent_account_unique_id: i32) -> ActionWaitingTimerRequest {
+        ActionWaitingTimerRequest::new(opponent_account_unique_id)
     }
 }

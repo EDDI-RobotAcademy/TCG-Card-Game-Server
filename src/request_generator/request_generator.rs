@@ -92,8 +92,8 @@ use crate::request_generator::turn_start_non_targeting_attack_passive_skill_requ
 use crate::request_generator::turn_start_targeting_attack_passive_skill_request_generator::create_turn_start_targeting_attack_passive_skill_request_form;
 use crate::request_generator::turn_start_targeting_attack_to_game_main_character_request_generator::create_turn_start_targeting_attack_to_game_main_character_request_form;
 use crate::response_generator::response_type::ResponseType;
-use crate::rockpaperscissors::controller::rockpaperscissors_controller::RockpaperscissorsController;
-use crate::rockpaperscissors::controller::rockpaperscissors_controller_impl::RockpaperscissorsControllerImpl;
+use crate::rock_paper_scissors::controller::rock_paper_scissors_controller::RockPaperScissorsController;
+use crate::rock_paper_scissors::controller::rock_paper_scissors_controller_impl::RockPaperScissorsControllerImpl;
 use crate::shop::controller::shop_controller::ShopController;
 use crate::shop::controller::shop_controller_impl::ShopControllerImpl;
 use crate::shop::service::shop_service::ShopService;
@@ -312,14 +312,13 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-
             19 => {
                 // First Turn wait queue 최신 버전
                 if let Some(request_form) = create_rockpaperscissors_request_form(&data) {
-                    let rockpaperscissors_controller_mutex = RockpaperscissorsControllerImpl::get_instance();
-                    let mut rockpaperscissors_controller_mutex_guard = rockpaperscissors_controller_mutex.lock().await;
+                    let rock_paper_scissors_controller_mutex = RockPaperScissorsControllerImpl::get_instance();
+                    let mut rock_paper_scissors_controller_mutex_guard = rock_paper_scissors_controller_mutex.lock().await;
 
-                    let response_form = rockpaperscissors_controller_mutex_guard.execute_rockpaperscissors_procedure(request_form).await;
+                    let response_form = rock_paper_scissors_controller_mutex_guard.execute_rock_paper_scissors_procedure(request_form).await;
                     let response_type = Some(ResponseType::ROCKPAPERSCISSORS(response_form));
 
                     response_type
@@ -330,10 +329,10 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             20 => {
                 // First Turn Decision 최신 버전
                 if let Some(request_form) = create_check_rockpaperscissors_winner_request_form(&data) {
-                    let rockpaperscissors_controller_mutex = RockpaperscissorsControllerImpl::get_instance();
-                    let mut rockpaperscissors_controller_mutex_guard = rockpaperscissors_controller_mutex.lock().await;
+                    let rock_paper_scissors_controller_mutex = RockPaperScissorsControllerImpl::get_instance();
+                    let mut rock_paper_scissors_controller_mutex_guard = rock_paper_scissors_controller_mutex.lock().await;
 
-                    let response_form = rockpaperscissors_controller_mutex_guard.execute_check_winner_procedure(request_form).await;
+                    let response_form = rock_paper_scissors_controller_mutex_guard.execute_check_rock_paper_scissors_winner_procedure(request_form).await;
                     let response_type = Some(ResponseType::CHECK_ROCKPAPERSCISSORS_WINNER(response_form));
 
                     response_type
