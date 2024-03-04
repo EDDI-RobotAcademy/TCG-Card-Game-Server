@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 use async_trait::async_trait;
+use chrono::{Timelike, Utc};
 use futures::SinkExt;
 use ipc_channel::ipc::IpcSender;
 use lazy_static::lazy_static;
@@ -187,6 +188,7 @@ async fn handle_client(stream: Arc<Mutex<TcpStream>>, receiver_transmitter_tx: A
                 match serde_json::from_slice::<serde_json::Value>(stored_data) {
                     Ok(decoded_object) => {
                         println!("Received content: {:?}", decoded_object);
+                        println!("Received time: {}.{} sec", Utc::now().second(), Utc::now().timestamp_subsec_millis());
 
                         // TODO: This part could be cleaner; the loop logic should ideally go to the controller
                         // Option<ResponseType>

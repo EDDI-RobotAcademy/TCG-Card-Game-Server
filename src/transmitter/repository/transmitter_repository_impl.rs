@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 use async_trait::async_trait;
+use chrono::{Timelike, Utc};
 use ipc_channel::ipc::IpcReceiver;
 use lazy_static::lazy_static;
 use tokio::io::AsyncWriteExt;
@@ -142,6 +143,7 @@ impl TransmitterRepository for TransmitterRepositoryImpl {
                                     let json_data = serde_json::to_string(&*response_data).expect("Failed to serialize to JSON");
 
                                     println!("Transmitting data: {}", json_data);
+                                    println!("Transmitted time: {}.{} sec", Utc::now().second(), Utc::now().timestamp_subsec_millis());
 
                                     client_socket_stream.write_all(json_data.as_bytes()).await.expect("Failed to write to client");
 
