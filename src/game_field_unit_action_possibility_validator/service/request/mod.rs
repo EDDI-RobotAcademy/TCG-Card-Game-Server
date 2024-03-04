@@ -1,2 +1,4 @@
 pub mod is_unit_basic_attack_possible_request;
 pub mod is_using_active_skill_possible_request;
+pub mod is_using_deploy_passive_skill_possible_request;
+pub mod is_using_turn_start_passive_skill_request;

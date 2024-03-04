@@ -4,13 +4,18 @@ use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::game_card_passive_skill::entity::passive_skill_casting_condition::PassiveSkillCastingCondition;
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
 use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionPossibilityValidatorService;
 use crate::game_field_unit_action_possibility_validator::service::request::is_unit_basic_attack_possible_request::{IsUnitBasicAttackPossibleRequest};
 use crate::game_field_unit_action_possibility_validator::service::request::is_using_active_skill_possible_request::IsUsingActiveSkillPossibleRequest;
+use crate::game_field_unit_action_possibility_validator::service::request::is_using_deploy_passive_skill_possible_request::IsUsingDeployPassiveSkillPossibleRequest;
+use crate::game_field_unit_action_possibility_validator::service::request::is_using_turn_start_passive_skill_request::IsUsingTurnStartPassiveSkillPossibleRequest;
 use crate::game_field_unit_action_possibility_validator::service::response::is_unit_basic_attack_possible_response::{IsUnitBasicAttackPossibleResponse};
 use crate::game_field_unit_action_possibility_validator::service::response::is_using_active_skill_possible_response::IsUsingActiveSkillPossibleResponse;
+use crate::game_field_unit_action_possibility_validator::service::response::is_using_deploy_passive_skill_possible_response::IsUsingDeployPassiveSkillPossibleResponse;
+use crate::game_field_unit_action_possibility_validator::service::response::is_using_turn_start_passive_skill_response::IsUsingTurnStartPassiveSkillPossibleResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 
 pub struct GameFieldUnitActionPossibilityValidatorServiceImpl {
@@ -103,6 +108,19 @@ impl GameFieldUnitActionPossibilityValidatorServiceImpl {
             .get_game_round_map()
             .get(&account_unique_id)
             .map(|user_round| user_round.get_round())
+    }
+    async fn get_field_unit_index_passive_possible(&self,
+                                        account_unique_id: i32,
+                                        field_unit_index: i32,
+                                        passive_index: i32) -> Option<bool> {
+        let mut game_field_unit_repository_guard =
+            self.game_field_unit_repository.lock().await;
+
+        game_field_unit_repository_guard
+            .get_game_field_unit_map()
+            .get_mut(&account_unique_id)
+            .map(|mut field_unit| field_unit
+                .get_index_passive_of_unit(field_unit_index as usize, passive_index as usize))
     }
 }
 
@@ -197,5 +215,90 @@ impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossi
         }
 
         IsUsingActiveSkillPossibleResponse::new(true)
+    }
+
+    async fn is_using_deploy_passive_skill_possible(
+        &self, is_using_deploy_passive_skill_possible_request: IsUsingDeployPassiveSkillPossibleRequest)
+        -> IsUsingDeployPassiveSkillPossibleResponse {
+
+        println!("GameFieldUnitActionValidatorServiceImpl: is_using_deploy_passive_skill_possible()");
+
+        // 1. check round
+        let field_unit_deployed_round = self.get_field_unit_deployed_round(
+            is_using_deploy_passive_skill_possible_request.get_account_unique_id(),
+            is_using_deploy_passive_skill_possible_request.get_field_unit_index()).await.unwrap_or(-1);
+
+        let player_current_round = self.get_player_round(
+            is_using_deploy_passive_skill_possible_request.get_account_unique_id()).await.unwrap_or(-1);
+
+        if !player_current_round == field_unit_deployed_round {
+            println!("소환된 턴에만 사용할 수 있습니다.");
+            return IsUsingDeployPassiveSkillPossibleResponse::new(false)
+        }
+
+        // 2. check passive index is true
+
+        let index_passive_possible = self.get_field_unit_index_passive_possible(
+            is_using_deploy_passive_skill_possible_request.get_account_unique_id(),
+            is_using_deploy_passive_skill_possible_request.get_field_unit_index(),
+            is_using_deploy_passive_skill_possible_request.get_passive_skill_index()).await.unwrap();
+
+        if !index_passive_possible {
+            println!("해당 패시브는 사용할 수 없습니다.");
+            return IsUsingDeployPassiveSkillPossibleResponse::new(false)
+        }
+
+        // 3. is casting condition deploy
+        let casting_condition = is_using_deploy_passive_skill_possible_request.get_passive_skill_casting_condition().
+            iter().find(|x| x == &&PassiveSkillCastingCondition::Deploy).is_some();
+
+        if !casting_condition {
+            println!("소환시 사용되는 패시브가 아닙니다.");
+            return IsUsingDeployPassiveSkillPossibleResponse::new(false)
+        }
+
+        IsUsingDeployPassiveSkillPossibleResponse::new(true)
+    }
+
+    async fn is_using_turn_start_passive_skill_possible(
+        &self, is_using_turn_start_passive_skill_possible_request: IsUsingTurnStartPassiveSkillPossibleRequest)
+        -> IsUsingTurnStartPassiveSkillPossibleResponse {
+        println!("GameFieldUnitActionValidatorServiceImpl: is_using_deploy_passive_skill_possible()");
+
+        // 1. check round
+        let field_unit_deployed_round = self.get_field_unit_deployed_round(
+            is_using_turn_start_passive_skill_possible_request.get_account_unique_id(),
+            is_using_turn_start_passive_skill_possible_request.get_field_unit_index()).await.unwrap_or(-1);
+
+        let player_current_round = self.get_player_round(
+            is_using_turn_start_passive_skill_possible_request.get_account_unique_id()).await.unwrap_or(-1);
+
+        if player_current_round == field_unit_deployed_round {
+            println!("소환된 턴에는 사용할 수 없습니다.");
+            return IsUsingTurnStartPassiveSkillPossibleResponse::new(false)
+        }
+
+        // 2. check passive index is true
+
+        let index_passive_possible = self.get_field_unit_index_passive_possible(
+            is_using_turn_start_passive_skill_possible_request.get_account_unique_id(),
+            is_using_turn_start_passive_skill_possible_request.get_field_unit_index(),
+            is_using_turn_start_passive_skill_possible_request.get_passive_skill_index()).await.unwrap();
+
+        if !index_passive_possible {
+            println!("해당 패시브는 사용할 수 없습니다.");
+            return IsUsingTurnStartPassiveSkillPossibleResponse::new(false)
+        }
+
+        // 3. is casting condition deploy
+        let casting_condition = is_using_turn_start_passive_skill_possible_request.get_passive_skill_casting_condition().
+            iter().find(|x| x == &&PassiveSkillCastingCondition::TurnStart).is_some();
+
+        if !casting_condition {
+            println!("턴 시작 시 사용되는 패시브가 아닙니다.");
+            return IsUsingTurnStartPassiveSkillPossibleResponse::new(false)
+        }
+
+        IsUsingTurnStartPassiveSkillPossibleResponse::new(true)
     }
 }

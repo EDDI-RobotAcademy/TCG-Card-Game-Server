@@ -37,6 +37,7 @@ use crate::game_field_unit::service::request::get_game_field_unit_card_of_accoun
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
 use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
 use crate::game_field_unit::service::request::acquire_unit_harmful_status_effect_request::AcquireUnitHarmfulStatusEffectRequest;
+use crate::game_field_unit::service::request::execute_index_passive_of_unit_request::ExecuteIndexPassiveOfUnitRequest;
 use crate::game_field_unit::service::request::reset_all_passive_of_unit_request::ResetAllPassiveOfUnitRequest;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
@@ -65,6 +66,7 @@ use crate::game_field_unit::service::response::get_game_field_unit_card_of_accou
 use crate::game_field_unit::service::response::judge_death_of_every_unit_response::JudgeDeathOfEveryUnitResponse;
 use crate::game_field_unit::service::response::reset_turn_action_of_all_field_unit_response::ResetTurnActionOfAllFieldUnitResponse;
 use crate::game_field_unit::service::response::acquire_unit_harmful_status_effect_response::AcquireUnitHarmfulStatusEffectResponse;
+use crate::game_field_unit::service::response::execute_index_passive_of_unit_response::ExecuteIndexPassiveOfUnitResponse;
 use crate::game_field_unit::service::response::reset_all_passive_of_unit_response::ResetAllPassiveOfUnitResponse;
 use crate::game_round::repository::game_round_repository_impl::GameRoundRepositoryImpl;
 
@@ -469,15 +471,27 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
         AcquireUnitHarmfulStatusEffectResponse::new(harmful_effect_list.clone())
     }
-    async fn reset_all_passive_of_unit(&mut self, reset_all_passive_of_unit: ResetAllPassiveOfUnitRequest) -> ResetAllPassiveOfUnitResponse {
+    async fn reset_all_passive_of_unit(&mut self, reset_all_passive_of_unit_request: ResetAllPassiveOfUnitRequest) -> ResetAllPassiveOfUnitResponse {
         println!("GameFieldUnitServiceImpl: reset_all_passive_of_unit()");
 
         let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
         let reset_all_passive = game_field_unit_repository_guard.reset_all_passive_of_unit(
-            reset_all_passive_of_unit.get_account_unique_id(),
-            reset_all_passive_of_unit.get_unit_card_index(),
-            reset_all_passive_of_unit.get_passive_default_list());
+            reset_all_passive_of_unit_request.get_account_unique_id(),
+            reset_all_passive_of_unit_request.get_unit_card_index(),
+            reset_all_passive_of_unit_request.get_passive_default_list());
 
         ResetAllPassiveOfUnitResponse::new(reset_all_passive)
     }
+    async fn execute_index_passive_of_unit(&mut self, execute_index_passive_of_unit_request: ExecuteIndexPassiveOfUnitRequest) -> ExecuteIndexPassiveOfUnitResponse {
+        println!("GameFieldUnitServiceImpl: execute_index_passive_of_unit()");
+
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let response = game_field_unit_repository_guard.execute_index_passive_skill_of_unit(
+            execute_index_passive_of_unit_request.get_account_unique_id(),
+            execute_index_passive_of_unit_request.get_unit_card_index(),
+            execute_index_passive_of_unit_request.get_passive_skill_index());
+
+        ExecuteIndexPassiveOfUnitResponse::new(response)
+    }
+
 }

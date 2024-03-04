@@ -17,6 +17,7 @@ use crate::game_field_unit::service::request::attack_every_unit_with_extra_effec
 use crate::game_field_unit::service::request::attack_target_unit_with_extra_effect_request::AttackTargetUnitWithExtraEffectRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
 use crate::game_field_unit::service::request::detach_multiple_energy_from_field_unit_request::DetachMultipleEnergyFromFieldUnitRequest;
+use crate::game_field_unit::service::request::execute_index_passive_of_unit_request::ExecuteIndexPassiveOfUnitRequest;
 use crate::game_field_unit::service::request::execute_turn_action_request::ExecuteTurnActionRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
@@ -45,6 +46,7 @@ use crate::game_field_unit::service::response::attack_every_unit_with_extra_effe
 use crate::game_field_unit::service::response::attack_target_unit_with_extra_effect_response::AttackTargetUnitWithExtraEffectResponse;
 use crate::game_field_unit::service::response::judge_death_of_unit_response::JudgeDeathOfUnitResponse;
 use crate::game_field_unit::service::response::detach_multiple_energy_from_field_unit_response::DetachMultipleEnergyFromFieldUnitResponse;
+use crate::game_field_unit::service::response::execute_index_passive_of_unit_response::ExecuteIndexPassiveOfUnitResponse;
 use crate::game_field_unit::service::response::execute_turn_action_response::ExecuteTurnActionResponse;
 use crate::game_field_unit::service::response::find_active_skill_usage_unit_id_by_index_response::FindActiveSkillUsageUnitIdByIndexResponse;
 use crate::game_field_unit::service::response::find_target_unit_id_by_index_response::FindTargetUnitIdByIndexResponse;
@@ -84,5 +86,6 @@ pub trait GameFieldUnitService {
     async fn get_game_field_unit_card_of_account_unique_id(&mut self, get_game_field_unit_map_to_service_request: GetGameFieldUnitCardOfAccountUniqueIdRequest) -> GetGameFieldUnitCardOfAccountUniqueIdResponse;
     async fn acquire_unit_passive_status_list(&mut self, acquire_unit_passive_status_list_request: AcquireUnitPassiveStatusListRequest) -> AcquireUnitPassiveStatusListResponse;
     async fn acquire_unit_harmful_status_effect(&mut self, acquire_unit_harmful_status_effect_request: AcquireUnitHarmfulStatusEffectRequest) -> AcquireUnitHarmfulStatusEffectResponse;
-    async fn reset_all_passive_of_unit(&mut self, reset_all_passive_of_unit: ResetAllPassiveOfUnitRequest) -> ResetAllPassiveOfUnitResponse;
+    async fn reset_all_passive_of_unit(&mut self, reset_all_passive_of_unit_request: ResetAllPassiveOfUnitRequest) -> ResetAllPassiveOfUnitResponse;
+    async fn execute_index_passive_of_unit(&mut self, execute_index_passive_of_unit_request: ExecuteIndexPassiveOfUnitRequest) -> ExecuteIndexPassiveOfUnitResponse;
 }

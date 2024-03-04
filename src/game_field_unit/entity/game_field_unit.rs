@@ -148,6 +148,12 @@ impl GameFieldUnit {
     pub fn reset_third_passive_of_unit(&mut self, unit_card_index: usize, third_passive_default: bool) {
         self.game_field_unit.reset_third_passive(unit_card_index, third_passive_default)
     }
+    pub fn get_index_passive_of_unit(&self, unit_card_index: usize, passive_index: usize) -> bool {
+        return self.game_field_unit.get_index_passive(unit_card_index, passive_index)
+    }
+    pub fn execute_index_passive_of_unit(&mut self, unit_card_index: usize, passive_index: usize) {
+        self.game_field_unit.execute_index_passive(unit_card_index, passive_index)
+    }
 }
 
 #[cfg(test)]
