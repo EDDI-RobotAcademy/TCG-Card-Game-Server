@@ -64,6 +64,8 @@ use crate::game_turn::service::game_turn_service::GameTurnService;
 use crate::game_turn::service::game_turn_service_impl::GameTurnServiceImpl;
 use crate::game_winner_check::service::game_winner_check_service::GameWinnerCheckService;
 use crate::game_winner_check::service::game_winner_check_service_impl::GameWinnerCheckServiceImpl;
+use crate::mulligan::controller::mulligan_controller::MulliganController;
+use crate::mulligan::controller::mulligan_controller_impl::MulliganControllerImpl;
 use crate::request_generator::attach_field_energy_to_field_unit_request_form_generator::create_attach_field_energy_to_field_unit_request_form;
 use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
@@ -301,10 +303,10 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             18 => {
                 // Mulligan
                 if let Some(request_form) = create_mulligan_request_form(&data) {
-                    let game_hand_controller_mutex = GameHandControllerImpl::get_instance();
-                    let game_hand_controller = game_hand_controller_mutex.lock().await;
+                    let mulligan_controller_mutex = MulliganControllerImpl::get_instance();
+                    let mulligan_controller = mulligan_controller_mutex.lock().await;
 
-                    let response_form = game_hand_controller.execute_mulligan_procedure(request_form).await;
+                    let response_form = mulligan_controller.execute_mulligan_procedure(request_form).await;
                     let response_type = Some(ResponseType::CHANGE_FIRST_HAND(response_form));
 
                     response_type
