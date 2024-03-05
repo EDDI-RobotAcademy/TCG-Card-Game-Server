@@ -164,6 +164,9 @@ impl GameDeckService for GameDeckServiceImpl {
 
         self.initialize_game_deck(account_unique_id, deck_id).await;
         let result_validation = self.validate_game_deck_card(account_unique_id).await;
+        if result_validation == false {
+            GameDeckStartCardListResponse::default();
+        }
 
         self.shuffle_game_deck(account_unique_id).await;
 
@@ -172,7 +175,7 @@ impl GameDeckService for GameDeckServiceImpl {
 
         self.add_drawn_cards_to_hand(account_unique_id, drawn_card_list).await;
 
-        GameDeckStartCardListResponse::new(drawn_card_list_clone)
+        GameDeckStartCardListResponse::new(true, drawn_card_list_clone)
     }
 
     async fn shuffle_deck(&self, game_deck_card_shuffle_request: GameDeckCardShuffleRequest) -> GameDeckCardShuffleResponse {
@@ -273,7 +276,7 @@ impl GameDeckService for GameDeckServiceImpl {
 
         self.add_drawn_cards_to_hand(account_unique_id, drawn_card_list).await;
 
-        GameDeckStartCardListResponse::new(drawn_card_list_clone)
+        GameDeckStartCardListResponse::new(true, drawn_card_list_clone)
     }
 }
 
