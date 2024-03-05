@@ -97,7 +97,10 @@ mod notify_player_action_info;
 mod battle_field_info;
 mod fake_battle_room;
 mod ui_data_generator;
-mod action_wating_timer;
+mod action_waiting_timer;
+mod mulligan;
+mod rock_paper_scissors_waiting_timer;
+mod battle_start;
 
 #[tokio::main]
 async fn main() {

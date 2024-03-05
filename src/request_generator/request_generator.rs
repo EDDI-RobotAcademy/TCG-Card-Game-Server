@@ -17,7 +17,8 @@ use crate::battle_ready_account_hash::service::battle_ready_account_hash_service
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::battle_finish::service::battle_finish_service_impl::BattleFinishServiceImpl;
-
+use crate::battle_start::controller::battle_start_controller::BattleStartController;
+use crate::battle_start::controller::battle_start_controller_impl::BattleStartControllerImpl;
 use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueueService;
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
@@ -40,8 +41,6 @@ use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
 use crate::game_field_energy::controller::game_field_energy_controller::GameFieldEnergyController;
 use crate::game_field_energy::controller::game_field_energy_controller_impl::GameFieldEnergyControllerImpl;
-use crate::game_hand::controller::game_hand_controller::GameHandController;
-use crate::game_hand::controller::game_hand_controller_impl::GameHandControllerImpl;
 use crate::game_turn::controller::game_turn_controller_impl::GameTurnControllerImpl;
 use crate::request_generator::account_card_request_generator::create_account_card_list_request;
 use crate::request_generator::account_deck_request_generator::{create_deck_delete_request, create_deck_list_request, create_deck_modify_request, create_deck_register_request};
@@ -60,16 +59,17 @@ use crate::request_generator::shop_request_generator::{create_data_to_display_in
 use crate::request_generator::deploy_unit_request_form_generator::create_deploy_unit_request_form;
 use crate::request_generator::energy_boost_support_request_form_generator::create_energy_boost_support_request_form;
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
-use crate::game_turn::service::game_turn_service::GameTurnService;
-use crate::game_turn::service::game_turn_service_impl::GameTurnServiceImpl;
 use crate::game_winner_check::service::game_winner_check_service::GameWinnerCheckService;
 use crate::game_winner_check::service::game_winner_check_service_impl::GameWinnerCheckServiceImpl;
+use crate::mulligan::controller::mulligan_controller::MulliganController;
+use crate::mulligan::controller::mulligan_controller_impl::MulliganControllerImpl;
 use crate::request_generator::attach_field_energy_to_field_unit_request_form_generator::create_attach_field_energy_to_field_unit_request_form;
 use crate::request_generator::attach_special_energy_card_request_form_generator::create_attach_special_energy_card_request_form;
 use crate::request_generator::attack_unit_request_form_generator::create_attack_unit_request_form;
 use crate::request_generator::attack_game_main_character_request_form_generator::create_attack_game_main_character_request_form;
 use crate::request_generator::battle_finish_generator::create_battle_finish_request;
 use crate::request_generator::battle_match_cancel_request_generator::create_battle_match_cancel_request;
+use crate::request_generator::battle_start_request_form_generator::create_battle_start_request_form;
 use crate::request_generator::check_rockpaperscissors_winner_request_generator::create_check_rockpaperscissors_winner_request_form;
 use crate::request_generator::deploy_non_targeting_attack_passive_skill_request_generator::create_deploy_non_targeting_attack_passive_skill_request_form;
 use crate::request_generator::deploy_targeting_attack_passive_skill_request_generator::create_deploy_targeting_attack_passive_skill_request_form;
@@ -87,7 +87,6 @@ use crate::request_generator::targeting_active_skill_request_form_generator::cre
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::request_generator::surrender_request_generator::create_surrender_request;
 use crate::request_generator::fake_create_game_deck_card_list_request_generator::fake_create_game_deck_card_list_request;
-use crate::request_generator::test_muligan_reqeust_generator::test_create_mulligan_request_form;
 use crate::request_generator::turn_start_non_targeting_attack_passive_skill_request_generator::create_turn_start_non_targeting_attack_passive_skill_request_form;
 use crate::request_generator::turn_start_targeting_attack_passive_skill_request_generator::create_turn_start_targeting_attack_passive_skill_request_form;
 use crate::request_generator::turn_start_targeting_attack_to_game_main_character_request_generator::create_turn_start_targeting_attack_to_game_main_character_request_form;
@@ -301,10 +300,10 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
             18 => {
                 // Mulligan
                 if let Some(request_form) = create_mulligan_request_form(&data) {
-                    let game_hand_controller_mutex = GameHandControllerImpl::get_instance();
-                    let game_hand_controller = game_hand_controller_mutex.lock().await;
+                    let mulligan_controller_mutex = MulliganControllerImpl::get_instance();
+                    let mulligan_controller = mulligan_controller_mutex.lock().await;
 
-                    let response_form = game_hand_controller.execute_mulligan_procedure(request_form).await;
+                    let response_form = mulligan_controller.execute_mulligan_procedure(request_form).await;
                     let response_type = Some(ResponseType::CHANGE_FIRST_HAND(response_form));
 
                     response_type
@@ -334,6 +333,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = rock_paper_scissors_controller_mutex_guard.execute_check_rock_paper_scissors_winner_procedure(request_form).await;
                     let response_type = Some(ResponseType::CHECK_ROCKPAPERSCISSORS_WINNER(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            21 => {
+                // Battle Start
+                if let Some(request_form) = create_battle_start_request_form(&data) {
+                    let battle_start_controller_mutex = BattleStartControllerImpl::get_instance();
+                    let mut battle_start_controller_mutex_guard = battle_start_controller_mutex.lock().await;
+
+                    let response_form = battle_start_controller_mutex_guard.request_to_start_battle(request_form).await;
+                    let response_type = Some(ResponseType::BATTLE_START(response_form));
 
                     response_type
                 } else {

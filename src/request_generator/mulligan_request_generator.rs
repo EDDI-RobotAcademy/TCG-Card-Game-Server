@@ -1,5 +1,5 @@
 use serde_json::Value as JsonValue;
-use crate::game_hand::controller::request_form::mulligan_request_form::MulliganRequestForm;
+use crate::mulligan::controller::request_form::mulligan_request_form::MulliganRequestForm;
 
 pub fn create_mulligan_request_form(data: &JsonValue) -> Option<MulliganRequestForm> {
     if let (Some(session_id), Some(hand_card_list)) = (

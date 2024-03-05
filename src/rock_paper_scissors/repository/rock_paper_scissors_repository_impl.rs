@@ -1,10 +1,10 @@
 use std::sync::Arc;
-use std::error::Error;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
+
 use crate::rock_paper_scissors::entity::rock_paper_scissors_result::RockPaperScissorsResult;
-use crate::rock_paper_scissors::entity::rock_paper_scissors_result::RockPaperScissorsResult::{LOSE, WAIT, WIN};
+use crate::rock_paper_scissors::entity::rock_paper_scissors_result::RockPaperScissorsResult::*;
 use crate::rock_paper_scissors::entity::rock_paper_scissors_result_hash::RockPaperScissorsResultHash;
 
 use crate::rock_paper_scissors::entity::rock_paper_scissors_wait_hash::RockPaperScissorsWaitHash;
@@ -81,7 +81,17 @@ impl RockPaperScissorsRepository for RockPaperScissorsRepositoryImpl {
 
         // 1. 내 결과가 이미 나와 있는 경우
         if my_result.is_some() {
-            return my_result.unwrap()
+            match my_result.unwrap() {
+                WIN => {
+                    result_hashmap_guard.save_result(opponent_unique_id, LOSE).await;
+                    return WIN
+                },
+                LOSE => {
+                    result_hashmap_guard.save_result(opponent_unique_id, WIN).await;
+                    return LOSE
+                }
+                _ => {}
+            }
         }
 
         // 2. 상대와 내 가위바위보 choice 가 모두 존재하는 경우

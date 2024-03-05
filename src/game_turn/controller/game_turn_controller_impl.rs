@@ -4,8 +4,8 @@ use diesel::IntoSql;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
-use crate::action_wating_timer::service::action_waiting_timer_service::ActionWaitingTimerService;
-use crate::action_wating_timer::service::action_waiting_timer_service_impl::ActionWaitingTimerServiceImpl;
+use crate::action_waiting_timer::service::action_waiting_timer_service::ActionWaitingTimerService;
+use crate::action_waiting_timer::service::action_waiting_timer_service_impl::ActionWaitingTimerServiceImpl;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::game_card_support_usage_counter::service::game_card_support_usage_counter_service::GameCardSupportUsageCounterService;
