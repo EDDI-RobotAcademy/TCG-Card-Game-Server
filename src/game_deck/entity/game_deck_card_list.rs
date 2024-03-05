@@ -22,6 +22,10 @@ impl GameDeckCardList {
         &self.card_list
     }
 
+    pub fn get_all_card_list_mut(&mut self) -> &mut Vec<GameDeckCard> {
+        &mut self.card_list
+    }
+
     pub fn set_card_list(&mut self, card_list: Vec<GameDeckCard>) {
         self.card_list = card_list;
     }
