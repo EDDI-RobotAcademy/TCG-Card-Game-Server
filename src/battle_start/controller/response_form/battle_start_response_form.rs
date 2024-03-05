@@ -49,7 +49,7 @@ impl BattleStartResponseForm {
     ) -> BattleStartResponseForm {
 
         BattleStartResponseForm::new(
-            true,
+            false,
             HashMap::new(),
             generate_draw_opponent_deck_data_response
                 .get_player_drawn_card_count_map_for_response().clone(),
