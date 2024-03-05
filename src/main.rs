@@ -98,6 +98,7 @@ mod battle_field_info;
 mod fake_battle_room;
 mod ui_data_generator;
 mod action_wating_timer;
+mod mulligan;
 
 #[tokio::main]
 async fn main() {
