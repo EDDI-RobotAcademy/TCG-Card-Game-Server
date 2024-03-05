@@ -8,6 +8,7 @@ use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardLi
 use crate::game_hand::service::request::put_cards_on_deck_request::PutCardsOnDeckRequest;
 use crate::game_protocol_validation::service::request::check_cards_from_hand_request::CheckCardsFromHandRequest;
 use crate::game_turn::service::request::next_turn_request::NextTurnRequest;
+use crate::mulligan::service::request::record_mulligan_finish_request::RecordMulliganFinishRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::rock_paper_scissors::service::request::check_rock_paper_scissors_winner_request::CheckRockPaperScissorsWinnerRequest;
 use crate::ui_data_generator::service::request::generate_draw_my_deck_data_request::GenerateDrawMyDeckDataRequest;
@@ -129,5 +130,13 @@ impl MulliganRequestForm {
 
         GenerateMyFieldEnergyDataRequest::new(
             remaining_field_energy)
+    }
+
+    pub fn to_record_mulligan_finish_request(
+        &self,
+        account_unique_id: i32) -> RecordMulliganFinishRequest {
+
+        RecordMulliganFinishRequest::new(
+            account_unique_id)
     }
 }
