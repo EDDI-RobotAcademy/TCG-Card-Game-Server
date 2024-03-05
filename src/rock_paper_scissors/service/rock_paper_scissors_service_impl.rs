@@ -120,7 +120,7 @@ impl RockPaperScissorsService for RockPaperScissorsServiceImpl {
                 account_unique_id, opponent_unique_id).await;
 
         RegisterRockPaperScissorsWaitHashResponse::new(response)
-        }
+    }
 
 
     async fn check_rock_paper_scissors_winner(
