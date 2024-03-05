@@ -13,6 +13,8 @@ use crate::common::env::env_detector::EnvDetector;
 use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
 
 use crate::account_deck_card::entity::account_deck_card::AccountDeckCard;
+use crate::account_deck_card::entity::account_deck_card_list::AccountDeckCardList;
+use crate::account_deck_card::entity::deck_card::DeckCard;
 use crate::account_deck_card::repository::account_deck_card_repository::AccountDeckCardRepository;
 
 pub struct AccountDeckCardRepositoryImpl {
@@ -82,6 +84,35 @@ impl AccountDeckCardRepository for AccountDeckCardRepositoryImpl {
         }
 
         Ok(Option::from(card_list))
+    }
+
+    async fn get_account_deck_card_list(&self, request_deck_id: i32) -> AccountDeckCardList {
+        use crate::account_deck_card::entity::account_deck_card::deck_cards::dsl::*;
+        use diesel::query_dsl::filter_dsl::FilterDsl;
+        use diesel::prelude::*;
+
+        println!("AccountDeckCardRepositoryImpl: get_account_deck_card_list()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        let where_clause = FilterDsl::filter(deck_cards, deck_id.eq(deck_id));
+        let found_cards = where_clause
+            .select((deck_id, card_id, card_count))
+            .load::<AccountDeckCard>(&mut connection);
+
+        let found_cards_unwrap = found_cards.unwrap();
+
+        let found_card = found_cards_unwrap.into_iter()
+            .filter(|deck_card| deck_card.deck_id == request_deck_id);
+
+        let mut account_card_hashmap = AccountDeckCardList::new();
+        for card in found_card {
+            let card_list = DeckCard::new(card.card_id, card.card_count);
+            account_card_hashmap.add_card(card_list);
+        }
+        account_card_hashmap
     }
 
     async fn delete_deck_cards(&self, deck_unique_id: i32) -> Result<(), Error> {
