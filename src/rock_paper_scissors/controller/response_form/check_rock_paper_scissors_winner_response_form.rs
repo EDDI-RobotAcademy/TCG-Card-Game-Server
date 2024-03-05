@@ -9,6 +9,7 @@ pub struct CheckRockPaperScissorsWinnerResponseForm {
 impl CheckRockPaperScissorsWinnerResponseForm {
     pub fn new(
         am_i_first_turn: RockPaperScissorsResult,
+
     ) -> Self {
 
         CheckRockPaperScissorsWinnerResponseForm {
