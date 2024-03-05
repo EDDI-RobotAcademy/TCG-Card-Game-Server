@@ -19,6 +19,7 @@ use crate::battle_finish::service::response::battle_finish_response::BattleFinis
 use crate::battle_ready_account_hash::service::response::battle_ready_account_hash_response::BattleReadyAccountHashResponse;
 use crate::battle_ready_account_hash::service::response::check_battle_prepare_response::CheckBattlePrepareResponse;
 use crate::battle_room::service::response::what_is_the_room_number_response::WhatIsTheRoomNumberResponse;
+use crate::battle_start::controller::response_form::battle_start_response_form::BattleStartResponseForm;
 use crate::battle_wait_queue::service::response::battle_match_cancel_response::BattleMatchCancelResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
@@ -199,6 +200,9 @@ pub enum ResponseType {
 
     // Game Next Turn
     GAME_NEXT_TURN(TurnEndResponseForm),
+
+    // Battle Start
+    BATTLE_START(BattleStartResponseForm),
 
     // Battle Finish
     BATTLE_FINISH(BattleFinishResponse),
