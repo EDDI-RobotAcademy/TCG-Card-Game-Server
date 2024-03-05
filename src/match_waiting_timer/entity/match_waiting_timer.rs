@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::time::{Instant, Duration};
 
 pub struct MatchWaitingTimer {
-    timers: HashMap<i32, Instant>,
+    pub(crate) timers: HashMap<i32, Instant>,
 }
 
 impl MatchWaitingTimer {

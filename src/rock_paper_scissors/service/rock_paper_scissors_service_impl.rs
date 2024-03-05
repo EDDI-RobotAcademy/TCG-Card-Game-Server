@@ -5,6 +5,10 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use std::time::Duration;
 use diesel::row::NamedRow;
+use rand::prelude::{SliceRandom, StdRng};
+use rand::SeedableRng;
+use crate::account_card::entity::account_card::account_cards::account_id;
+use crate::battle_ready_account_hash::entity::battle_ready_account_hash_status::BattleReadyAccountHashStatus;
 
 use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
 use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
@@ -28,6 +32,8 @@ use crate::rock_paper_scissors::service::request::check_rock_paper_scissors_winn
 
 use crate::rock_paper_scissors::service::response::check_opponent_choice_response::CheckOpponentHashmapResponse;
 use crate::rock_paper_scissors::service::response::check_rock_paper_scissors_winner_response::CheckRockPaperScissorsWinnerResponse;
+use crate::rock_paper_scissors_waiting_timer::repository::rock_paper_scissors_waiting_timer_repository::RockPaperScissorsWaitingTimerRepository;
+use crate::rock_paper_scissors_waiting_timer::repository::rock_paper_scissors_waiting_timer_repository_impl::RockPaperScissorsWaitingTimerRepositoryImpl;
 
 pub struct RockPaperScissorsServiceImpl {
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
@@ -35,7 +41,8 @@ pub struct RockPaperScissorsServiceImpl {
     match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
     game_turn_repository:Arc<AsyncMutex<GameTurnRepositoryImpl>>,
     game_field_energy_repository: Arc<AsyncMutex<GameFieldEnergyRepositoryImpl>>,
-    game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>
+    game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>,
+    rock_paper_scissors_waiting_timer_repository: Arc<AsyncMutex<RockPaperScissorsWaitingTimerRepositoryImpl>>
 }
 
 impl RockPaperScissorsServiceImpl {
@@ -44,7 +51,8 @@ impl RockPaperScissorsServiceImpl {
                match_waiting_timer_repository: Arc<AsyncMutex<MatchWaitingTimerRepositoryImpl>>,
                game_turn_repository:Arc<AsyncMutex<GameTurnRepositoryImpl>>,
                game_field_energy_repository: Arc<AsyncMutex<GameFieldEnergyRepositoryImpl>>,
-               game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>
+               game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>,
+               rock_paper_scissors_waiting_timer_repository: Arc<AsyncMutex<RockPaperScissorsWaitingTimerRepositoryImpl>>
 
     ) -> Self {
 
@@ -54,7 +62,8 @@ impl RockPaperScissorsServiceImpl {
             match_waiting_timer_repository,
             game_turn_repository,
             game_field_energy_repository,
-            game_deck_repository
+            game_deck_repository,
+            rock_paper_scissors_waiting_timer_repository
         }
     }
 
@@ -69,7 +78,8 @@ impl RockPaperScissorsServiceImpl {
                             MatchWaitingTimerRepositoryImpl::get_instance(),
                             GameTurnRepositoryImpl::get_instance(),
                             GameFieldEnergyRepositoryImpl::get_instance(),
-                            GameDeckRepositoryImpl::get_instance())));
+                            GameDeckRepositoryImpl::get_instance(),
+                            RockPaperScissorsWaitingTimerRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -80,9 +90,11 @@ impl RockPaperScissorsServiceImpl {
         let account_unique_id_string = account_unique_id_option_string.unwrap();
         account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32")
     }
-    async fn is_match_waiting_timer_expired(&self, account_unique_id: i32) -> bool {
-        let mut match_waiting_timer_repository_mutex = self.match_waiting_timer_repository.lock().await;
-        match_waiting_timer_repository_mutex.check_match_waiting_timer_expired(account_unique_id, Duration::from_secs(60)).await
+    async fn is_rock_paper_scissors_waiting_timer_expired(&self, account_unique_id: i32) -> bool {
+        let mut rock_paper_scissors_waiting_timer_repository_mutex =
+            self.rock_paper_scissors_waiting_timer_repository.lock().await;
+        rock_paper_scissors_waiting_timer_repository_mutex.
+            check_rock_paper_scissors_waiting_timer_expired(account_unique_id, Duration::from_secs(60)).await
     }
 }
 
@@ -110,7 +122,8 @@ impl RockPaperScissorsService for RockPaperScissorsServiceImpl {
                 account_unique_id, opponent_unique_id).await;
 
         RegisterRockPaperScissorsWaitHashResponse::new(response)
-    }
+        }
+
 
     async fn check_rock_paper_scissors_winner(
         &self, check_rock_paper_scissors_winner_request: CheckRockPaperScissorsWinnerRequest)

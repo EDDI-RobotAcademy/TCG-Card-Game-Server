@@ -4,8 +4,8 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
-use crate::action_wating_timer::entity::action_waiting_timer::ActionWaitingTimer;
-use crate::action_wating_timer::repository::action_waiting_timer_repository::ActionWaitingTimerRepository;
+use crate::action_waiting_timer::entity::action_waiting_timer::ActionWaitingTimer;
+use crate::action_waiting_timer::repository::action_waiting_timer_repository::ActionWaitingTimerRepository;
 
 
 pub struct ActionWaitingTimerRepositoryImpl {

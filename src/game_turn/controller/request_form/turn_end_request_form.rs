@@ -1,6 +1,6 @@
-use crate::action_wating_timer::service::action_waiting_timer_service::ActionWaitingTimerService;
-use crate::action_wating_timer::service::request::action_waiting_timer_request::ActionWaitingTimerRequest;
-use crate::action_wating_timer::service::response::action_waiting_timer_response::ActionWaitingTimerResponse;
+use crate::action_waiting_timer::service::action_waiting_timer_service::ActionWaitingTimerService;
+use crate::action_waiting_timer::service::request::action_waiting_timer_request::ActionWaitingTimerRequest;
+use crate::action_waiting_timer::service::response::action_waiting_timer_response::ActionWaitingTimerResponse;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::game_card_support_usage_counter::service::request::reset_support_card_usage_count_request::ResetSupportCardUsageCountRequest;
 use crate::game_card_unit::service::request::summary_unit_card_passive_default_request::SummaryUnitCardPassiveDefaultRequest;
