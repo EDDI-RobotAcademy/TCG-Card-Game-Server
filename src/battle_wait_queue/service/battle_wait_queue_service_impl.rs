@@ -57,7 +57,7 @@ impl BattleWaitQueueServiceImpl {
     async fn parse_account_unique_id(&self, session_id: &str) -> i32 {
         let mut redis_in_memory_repository = self.redis_in_memory_repository.lock().await;
         let account_unique_id_option_string = redis_in_memory_repository.get(session_id).await;
-        let account_unique_id_string = account_unique_id_option_string.unwrap();
+        let account_unique_id_string = account_unique_id_option_string.unwrap_or("-1".to_string());
         account_unique_id_string.parse().expect("Failed to parse account_unique_id_string as i32")
     }
 }
