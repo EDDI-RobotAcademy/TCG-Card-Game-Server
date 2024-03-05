@@ -1,0 +1,1 @@
+pub mod battle_start_response_form;

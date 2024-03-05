@@ -1,0 +1,1 @@
+pub mod battle_start_request_form;
