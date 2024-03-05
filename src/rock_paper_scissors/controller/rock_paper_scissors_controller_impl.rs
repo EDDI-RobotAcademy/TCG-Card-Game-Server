@@ -6,7 +6,11 @@ use crate::battle_room::service::battle_room_service::BattleRoomService;
 
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
-use crate::game_protocol_validation::service::game_protocol_validation_service_impl::GameProtocolValidationServiceImpl;
+use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
+use crate::game_field_energy::service::game_field_energy_service_impl::GameFieldEnergyServiceImpl;
+use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
+use crate::game_turn::service::game_turn_service_impl::GameTurnServiceImpl;
+use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
@@ -15,31 +19,39 @@ use crate::rock_paper_scissors::controller::request_form::rock_paper_scissors_re
 use crate::rock_paper_scissors::controller::response_form::check_rock_paper_scissors_winner_response_form::CheckRockPaperScissorsWinnerResponseForm;
 use crate::rock_paper_scissors::controller::response_form::rock_paper_scissors_response_form::RockPaperScissorsResponseForm;
 use crate::rock_paper_scissors::controller::rock_paper_scissors_controller::RockPaperScissorsController;
-use crate::rock_paper_scissors::entity::rock_paper_scissors_result::RockPaperScissorsResult::WAIT;
-use crate::rock_paper_scissors::service::request::check_opponent_choice_request::CheckOpponentChoiceRequest;
-use crate::rock_paper_scissors::service::request::check_rock_paper_scissors_winner_request::CheckRockPaperScissorsWinnerRequest;
-use crate::rock_paper_scissors::service::request::register_rock_paper_scissors_wait_hash_request::RegisterRockPaperScissorsWaitHashRequest;
+use crate::rock_paper_scissors::entity::rock_paper_scissors_result::RockPaperScissorsResult::*;
 use crate::rock_paper_scissors::service::rock_paper_scissors_service::RockPaperScissorsService;
 use crate::rock_paper_scissors::service::rock_paper_scissors_service_impl::{RockPaperScissorsServiceImpl};
+use crate::ui_data_generator::service::ui_data_generator_service_impl::UiDataGeneratorServiceImpl;
 
 pub struct RockPaperScissorsControllerImpl {
     battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
-    game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
     rock_paper_scissors_service: Arc<AsyncMutex<RockPaperScissorsServiceImpl>>,
+    game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
+    game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
+    game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
+    game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
 }
 
 impl RockPaperScissorsControllerImpl {
     pub fn new(battle_room_service: Arc<AsyncMutex<BattleRoomServiceImpl>>,
-               game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
-               rock_paper_scissors_service: Arc<AsyncMutex<RockPaperScissorsServiceImpl>>,) -> Self {
+               rock_paper_scissors_service: Arc<AsyncMutex<RockPaperScissorsServiceImpl>>,
+               game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
+               game_deck_service: Arc<AsyncMutex<GameDeckServiceImpl>>,
+               game_hand_service: Arc<AsyncMutex<GameHandServiceImpl>>,
+               game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
+    ) -> Self {
 
         RockPaperScissorsControllerImpl {
             battle_room_service,
-            game_protocol_validation_service,
             redis_in_memory_service,
             rock_paper_scissors_service,
+            game_turn_service,
+            game_deck_service,
+            game_hand_service,
+            game_field_energy_service,
         }
     }
 
@@ -50,9 +62,12 @@ impl RockPaperScissorsControllerImpl {
                     AsyncMutex::new(
                         RockPaperScissorsControllerImpl::new(
                             BattleRoomServiceImpl::get_instance(),
-                            GameProtocolValidationServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
-                            RockPaperScissorsServiceImpl::get_instance())));
+                            RockPaperScissorsServiceImpl::get_instance(),
+                            GameTurnServiceImpl::get_instance(),
+                            GameDeckServiceImpl::get_instance(),
+                            GameHandServiceImpl::get_instance(),
+                            GameFieldEnergyServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -74,6 +89,7 @@ impl RockPaperScissorsControllerImpl {
 
 #[async_trait]
 impl RockPaperScissorsController for RockPaperScissorsControllerImpl {
+    // TODO: 결론적으로 놓고 보니 단순 enqueue 는 Service 에 있는게 더 좋았음
     async fn execute_rock_paper_scissors_procedure(
         &self, rock_paper_scissors_request_form: RockPaperScissorsRequestForm)
         -> RockPaperScissorsResponseForm {

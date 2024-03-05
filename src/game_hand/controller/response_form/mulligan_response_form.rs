@@ -13,6 +13,12 @@ impl MulliganResponseForm {
             updated_deck_card_list
         }
     }
+
+    pub fn default() -> MulliganResponseForm {
+        MulliganResponseForm::new(Vec::new(), Vec::new())
+    }
+
     pub fn get_redrawn_hand_card_list(&self) -> &Vec<i32> { &self.redrawn_hand_card_list }
+
     pub fn get_updated_deck_card_list(&self) -> &Vec<i32> { &self.updated_deck_card_list }
 }
