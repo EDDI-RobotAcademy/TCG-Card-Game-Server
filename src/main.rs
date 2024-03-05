@@ -100,7 +100,7 @@ mod ui_data_generator;
 mod action_waiting_timer;
 mod mulligan;
 mod rock_paper_scissors_waiting_timer;
-
+mod battle_start;
 
 #[tokio::main]
 async fn main() {

@@ -92,6 +92,6 @@ impl BattleRoomService for BattleRoomServiceImpl {
         let maybe_opponent_unique_id = battle_room_repository_guard.find_opponent_unique_id(
             find_opponent_by_account_id_request.get_account_unique_id()).await;
 
-        return FindOpponentByAccountIdResponse::new(maybe_opponent_unique_id.unwrap())
+        return FindOpponentByAccountIdResponse::new(maybe_opponent_unique_id.unwrap_or(-1))
     }
 }
