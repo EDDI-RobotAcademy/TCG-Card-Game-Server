@@ -58,9 +58,9 @@ impl BattleReadyAccountHashRepository for BattleReadyAccountHashRepositoryImpl {
     }
 
     fn remove_battle_ready_account_hash_status_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
-        if let Some(battle_ready_account_hash_status_some) = self.battle_ready_account_hash_status.get_user_ready_state(account_unique_id) {
-            // TODO :: hash 제거 기능 구현
-            // self.battle_ready_account_hash_status.remove(account_unique_id);
+        println!("BattleReadyAccountHashRepositoryImpl: remove_battle_ready_account_hash_status_hash()");
+        if let Some(_) = self.battle_ready_account_hash_status.get_user_ready_state(account_unique_id) {
+            self.battle_ready_account_hash_status.remove_battle_read_account_hash_status(account_unique_id);
             return true
         }
         return false

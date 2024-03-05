@@ -24,6 +24,10 @@ impl BattleReadyAccountHash {
     pub fn get_status_map(&self) -> &HashMap<i32, BattleReadyAccountHashStatus> {
         &self.battle_ready_account_hash_status
     }
+
+    pub fn remove_battle_read_account_hash_status(&mut self, user_id: i32) {
+        &mut self.battle_ready_account_hash_status.remove(&user_id);
+    }
 }
 
 #[cfg(test)]
@@ -40,5 +44,15 @@ mod tests {
         assert_eq!(battle_room_ready_hash.get_user_ready_state(1), Some(&BattleReadyAccountHashStatus::WAIT));
         assert_eq!(battle_room_ready_hash.get_user_ready_state(2), Some(&BattleReadyAccountHashStatus::SUCCESS));
         assert_eq!(battle_room_ready_hash.get_user_ready_state(3), None);
+    }
+
+    #[test]
+    fn test_remove() {
+        let mut battle_room_ready_hash = BattleReadyAccountHash::new();
+
+        battle_room_ready_hash.set_user_ready_state(1, BattleReadyAccountHashStatus::WAIT);
+        battle_room_ready_hash.remove_battle_read_account_hash_status(1);
+
+        assert_eq!(battle_room_ready_hash.get_user_ready_state(1), None);
     }
 }
