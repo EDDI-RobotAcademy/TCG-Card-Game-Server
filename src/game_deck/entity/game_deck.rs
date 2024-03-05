@@ -21,6 +21,10 @@ impl GameDeck {
         self.game_deck.get_all_card_list()
     }
 
+    pub fn get_all_cards_in_game_deck_mut(&mut self) -> &mut Vec<GameDeckCard>{
+        self.game_deck.get_all_card_list_mut()
+    }
+
     pub fn shuffle_game_deck(&mut self) {
         self.game_deck.shuffle();
     }
