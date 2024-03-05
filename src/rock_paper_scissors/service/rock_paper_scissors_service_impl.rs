@@ -26,7 +26,7 @@ use crate::match_waiting_timer::repository::match_waiting_timer_repository::Matc
 use crate::match_waiting_timer::repository::match_waiting_timer_repository_impl::MatchWaitingTimerRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
-use crate::rock_paper_scissors::entity::rock_paper_scissors_result::RockPaperScissorsResult::WIN;
+use crate::rock_paper_scissors::entity::rock_paper_scissors_result::RockPaperScissorsResult::{WAIT, WIN};
 use crate::rock_paper_scissors::service::request::check_opponent_choice_request::CheckOpponentChoiceRequest;
 use crate::rock_paper_scissors::service::request::check_rock_paper_scissors_winner_request::{CheckRockPaperScissorsWinnerRequest};
 
@@ -103,13 +103,11 @@ impl RockPaperScissorsService for RockPaperScissorsServiceImpl {
     async fn register_rock_paper_scissors_wait_hash(
         &self, register_rock_paper_scissors_wait_hash_request: RegisterRockPaperScissorsWaitHashRequest)
         -> RegisterRockPaperScissorsWaitHashResponse {
-
         println!("RockPaperScissorsServiceImpl: register_rock_paper_scissors_wait_hash()");
 
         let account_unique_id = register_rock_paper_scissors_wait_hash_request.get_account_unique_id();
         let opponent_unique_id = register_rock_paper_scissors_wait_hash_request.get_opponent_unique_id();
         let choice = register_rock_paper_scissors_wait_hash_request.get_choice().to_string();
-
         let rock_paper_scissors_repository_guard =
             self.rock_paper_scissors_repository.lock().await;
 
@@ -136,30 +134,28 @@ impl RockPaperScissorsService for RockPaperScissorsServiceImpl {
 
         let rock_paper_scissors_repository_guard =
             self.rock_paper_scissors_repository.lock().await;
-
+        let mut rock_paper_scissors_waiting_timer_repository =
+            self.rock_paper_scissors_waiting_timer_repository.lock().await;
+        let mut is_expired=
+            rock_paper_scissors_waiting_timer_repository.
+            check_rock_paper_scissors_waiting_timer_expired(opponent_unique_id,Duration::from_secs(60)).await;
         let rock_paper_scissors_result =
             rock_paper_scissors_repository_guard
                 .check_result_repo(account_unique_id, opponent_unique_id).await;
+        if rock_paper_scissors_result==WAIT
+        {
+            if is_expired==true
+            {
+                drop(rock_paper_scissors_repository_guard);
+                drop(rock_paper_scissors_waiting_timer_repository);
+                return CheckRockPaperScissorsWinnerResponse::new(WIN)
+
+            }
+        }
 
         drop(rock_paper_scissors_repository_guard);
+        drop(rock_paper_scissors_waiting_timer_repository);
 
-        // let mut game_turn_repository_guard =
-        //     self.game_turn_repository.lock().await;
-        // let mut game_field_energy_repository_guard =
-        //     self.game_field_energy_repository.lock().await;
-        // let mut game_deck_repository_guard=
-        //     self.game_deck_repository.lock().await;
-
-        // TODO: 여기서 진행하는 것이 아닌 Service 로 진행해야 함 (to notify)
-        // if rock_paper_scissors_result == WIN {
-        //     game_turn_repository_guard.next_game_turn(account_unique_id);
-        //     drop(game_turn_repository_guard);
-        //     game_field_energy_repository_guard.add_field_energy_with_amount(account_unique_id,1);
-        //     drop(game_field_energy_repository_guard);
-        //     game_deck_repository_guard.draw_deck_card(account_unique_id,1);
-        //     drop(game_deck_repository_guard);
-        //     return CheckRockPaperScissorsWinnerResponse::new(rock_paper_scissors_result)
-        // }
 
         CheckRockPaperScissorsWinnerResponse::new(rock_paper_scissors_result)
     }

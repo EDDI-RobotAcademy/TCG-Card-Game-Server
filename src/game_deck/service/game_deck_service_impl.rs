@@ -31,25 +31,30 @@ use crate::game_hand::repository::game_hand_repository::GameHandRepository;
 use crate::game_hand::repository::game_hand_repository_impl::GameHandRepositoryImpl;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
+use crate::rock_paper_scissors_waiting_timer::repository::rock_paper_scissors_waiting_timer_repository::RockPaperScissorsWaitingTimerRepository;
+use crate::rock_paper_scissors_waiting_timer::repository::rock_paper_scissors_waiting_timer_repository_impl::RockPaperScissorsWaitingTimerRepositoryImpl;
 
 pub struct GameDeckServiceImpl {
     game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>,
     game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
     account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>,
-    redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>
+    redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+    rock_paper_scissors_waiting_timer_repository: Arc<AsyncMutex<RockPaperScissorsWaitingTimerRepositoryImpl>>
 }
 
 impl GameDeckServiceImpl {
     pub fn new(game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>,
                game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
                account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>,
-               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>) -> Self {
+               redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+               rock_paper_scissors_waiting_timer_repository: Arc<AsyncMutex<RockPaperScissorsWaitingTimerRepositoryImpl>>) -> Self {
 
         GameDeckServiceImpl {
             game_deck_repository,
             game_hand_repository,
             account_deck_card_repository,
-            redis_in_memory_repository
+            redis_in_memory_repository,
+            rock_paper_scissors_waiting_timer_repository
         }
     }
 
@@ -62,7 +67,8 @@ impl GameDeckServiceImpl {
                             GameDeckRepositoryImpl::get_instance(),
                             GameHandRepositoryImpl::get_instance(),
                             AccountDeckCardRepositoryImpl::get_instance(),
-                            RedisInMemoryRepositoryImpl::get_instance())));
+                            RedisInMemoryRepositoryImpl::get_instance(),
+                            RockPaperScissorsWaitingTimerRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -174,7 +180,8 @@ impl GameDeckService for GameDeckServiceImpl {
         let drawn_card_list_clone = drawn_card_list.clone();
 
         self.add_drawn_cards_to_hand(account_unique_id, drawn_card_list).await;
-
+        let mut rock_paper_scissors_waiting_timer_repository = self.rock_paper_scissors_waiting_timer_repository.lock().await;
+        rock_paper_scissors_waiting_timer_repository.set_rock_paper_scissors_waiting_timer(account_unique_id).await;
         GameDeckStartCardListResponse::new(true, drawn_card_list_clone)
     }
 

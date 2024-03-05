@@ -4,18 +4,20 @@ use async_trait::async_trait;
 use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
-use crate::rock_paper_scissors::entity::rock_paper_scissors_waiting_timer::RockPaperScissorsWaitingTimer;
+use crate::rock_paper_scissors_waiting_timer::entity::rock_paper_scissors_waiting_timer::RockPaperScissorsWaitingTimer;
 use crate::rock_paper_scissors_waiting_timer::repository::rock_paper_scissors_waiting_timer_repository::RockPaperScissorsWaitingTimerRepository;
 
 
 pub struct RockPaperScissorsWaitingTimerRepositoryImpl {
     rock_paper_scissors_waiting_timer: RockPaperScissorsWaitingTimer,
+    //rock_paper_scissors_waiting_timer: Arc<AsyncMutex<RockPaperScissorsWaitingTimer>>
 }
 
 impl RockPaperScissorsWaitingTimerRepositoryImpl {
     pub fn new() -> Self {
         RockPaperScissorsWaitingTimerRepositoryImpl {
             rock_paper_scissors_waiting_timer: RockPaperScissorsWaitingTimer::new(),
+            //rock_paper_scissors_waiting_timer: Arc::new(AsyncMutex::new(RockPaperScissorsWaitingTimer::new())),
         }
     }
 
