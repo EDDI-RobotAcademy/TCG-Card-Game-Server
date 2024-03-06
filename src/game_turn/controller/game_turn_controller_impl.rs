@@ -193,6 +193,12 @@ impl GameTurnController for GameTurnControllerImpl {
                     .to_get_current_health_point_of_all_field_unit_request(
                         account_unique_id)).await.get_current_unit_health_point().clone();
 
+        let harmful_effect_of_all_unit =
+            game_field_unit_service_guard.acquire_harmful_status_effect_of_all_unit(
+                turn_end_request_form
+                    .to_acquire_harmful_status_effect_of_all_unit_request(
+                        account_unique_id)).await.get_harmful_effect_list_of_all_unit();
+
         let judge_death_of_every_field_unit_response =
             game_field_unit_service_guard.judge_death_of_every_field_unit(
                 turn_end_request_form
@@ -333,6 +339,10 @@ impl GameTurnController for GameTurnControllerImpl {
                     .to_generate_my_multiple_unit_health_point_data_request(health_point_of_all_unit)).await;
 
         // TODO: Harmful Effect 를 Tuple 로 묶어 불러오기
+        let generate_my_multiple_unit_harmful_effect_data_response =
+            ui_data_generator_service_guard.generate_my_multiple_unit_harmful_effect_data(
+                turn_end_request_form
+                    .to_generate_my_multiple_unit_harmful_effect_data_request(harmful_effect_of_all_unit)).await;
 
         let generate_my_multiple_unit_death_data_response =
             ui_data_generator_service_guard.generate_my_multiple_unit_death_data(
@@ -349,11 +359,16 @@ impl GameTurnController for GameTurnControllerImpl {
             turn_end_request_form
                 .to_notice_my_turn_end_request(
                     opponent_unique_id,
-                    generate_draw_opponent_deck_data_response.get_player_drawn_card_list_map_for_notice().clone(),
-                    generate_opponent_field_energy_data_response.get_player_field_energy_map_for_notice().clone(),
-                    generate_my_multiple_unit_health_point_data_response.get_player_field_unit_health_point_map_for_notice().clone(),
-                    HashMap::new(),
-                    generate_my_multiple_unit_death_data_response.get_player_field_unit_death_map_for_notice().clone())).await;
+                    generate_draw_opponent_deck_data_response
+                        .get_player_drawn_card_list_map_for_notice().clone(),
+                    generate_opponent_field_energy_data_response
+                        .get_player_field_energy_map_for_notice().clone(),
+                    generate_my_multiple_unit_health_point_data_response
+                        .get_player_field_unit_health_point_map_for_notice().clone(),
+                    generate_my_multiple_unit_harmful_effect_data_response
+                        .get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                    generate_my_multiple_unit_death_data_response
+                        .get_player_field_unit_death_map_for_notice().clone())).await;
 
         drop(notify_player_action_info_service_guard);
 
@@ -361,6 +376,7 @@ impl GameTurnController for GameTurnControllerImpl {
             generate_draw_opponent_deck_data_response,
             generate_opponent_field_energy_data_response,
             generate_my_multiple_unit_health_point_data_response,
+            generate_my_multiple_unit_harmful_effect_data_response,
             generate_my_multiple_unit_death_data_response)
     }
 }

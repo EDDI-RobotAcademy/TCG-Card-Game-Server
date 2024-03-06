@@ -1,7 +1,5 @@
 use std::collections::HashMap;
-use crate::action_waiting_timer::service::action_waiting_timer_service::ActionWaitingTimerService;
 use crate::action_waiting_timer::service::request::action_waiting_timer_request::ActionWaitingTimerRequest;
-use crate::action_waiting_timer::service::response::action_waiting_timer_response::ActionWaitingTimerResponse;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::game_card_support_usage_counter::service::request::reset_support_card_usage_count_request::ResetSupportCardUsageCountRequest;
 use crate::game_card_unit::service::request::summary_unit_card_passive_default_request::SummaryUnitCardPassiveDefaultRequest;
@@ -13,6 +11,7 @@ use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyR
 use crate::game_field_energy::service::request::add_field_energy_with_amount_request::AddFieldEnergyWithAmountRequest;
 use crate::game_field_energy::service::request::get_current_field_energy_request::GetCurrentFieldEnergyRequest;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
+use crate::game_field_unit::service::request::acquire_harmful_status_effect_of_all_unit_request::AcquireHarmfulStatusEffectOfAllUnitRequest;
 use crate::game_field_unit::service::request::get_current_health_point_of_all_field_unit_request::GetCurrentHealthPointOfAllFieldUnitRequest;
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
@@ -123,6 +122,13 @@ impl TurnEndRequestForm {
             account_unique_id)
     }
 
+    pub fn to_acquire_harmful_status_effect_of_all_unit_request(
+        &self,
+        account_unique_id: i32) -> AcquireHarmfulStatusEffectOfAllUnitRequest {
+
+        AcquireHarmfulStatusEffectOfAllUnitRequest::new(
+            account_unique_id)
+    }
 
     pub fn to_get_game_field_unit_card_of_account_unique_id_request(&self, account_unique_id: i32) -> GetGameFieldUnitCardOfAccountUniqueIdRequest {
         GetGameFieldUnitCardOfAccountUniqueIdRequest::new(account_unique_id)
