@@ -1,11 +1,11 @@
 #[derive(Debug, Clone)]
-pub struct DeckCard {
+pub struct Card {
     card_id: i32,
     card_count: i32,
 }
 
-impl DeckCard {
-    pub fn new(card_id: i32, card_count: i32) -> DeckCard{ DeckCard { card_id, card_count }
+impl Card {
+    pub fn new(card_id: i32, card_count: i32) -> Card{ Card { card_id, card_count }
     }
 
     pub fn get_card(&self) -> i32 {
