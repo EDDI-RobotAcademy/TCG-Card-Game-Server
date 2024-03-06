@@ -26,7 +26,7 @@ impl BattleReadyAccountHash {
     }
 
     pub fn remove_battle_read_account_hash_status(&mut self, user_id: i32) {
-        &mut self.battle_ready_account_hash_status.remove(&user_id);
+        self.battle_ready_account_hash_status.remove(&user_id);
     }
 }
 
