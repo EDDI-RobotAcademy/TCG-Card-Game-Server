@@ -6,7 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use std::time::Duration;
 use diesel::row::NamedRow;
 use rand::prelude::{SliceRandom, StdRng};
-use rand::SeedableRng;
+use rand::{Rng, SeedableRng};
 use crate::account_card::entity::account_card::account_cards::account_id;
 use crate::battle_ready_account_hash::entity::battle_ready_account_hash_status::BattleReadyAccountHashStatus;
 
@@ -107,9 +107,35 @@ impl RockPaperScissorsService for RockPaperScissorsServiceImpl {
 
         let account_unique_id = register_rock_paper_scissors_wait_hash_request.get_account_unique_id();
         let opponent_unique_id = register_rock_paper_scissors_wait_hash_request.get_opponent_unique_id();
-        let choice = register_rock_paper_scissors_wait_hash_request.get_choice().to_string();
+        let mut choice = register_rock_paper_scissors_wait_hash_request.get_choice().to_string();
         let rock_paper_scissors_repository_guard =
             self.rock_paper_scissors_repository.lock().await;
+        if choice=="".to_string()
+        {
+            let mut rock_paper_scissors_waiting_timer_repository =
+                self.rock_paper_scissors_waiting_timer_repository.lock().await;
+            let mut is_expired=
+                rock_paper_scissors_waiting_timer_repository.
+                    check_rock_paper_scissors_waiting_timer_expired(account_unique_id,Duration::from_secs(40)).await;
+            if is_expired ==true
+            {
+                let random_choices = vec!["Rock", "Paper", "Scissors"];
+                let mut rng = StdRng::from_entropy();
+                let index = rng.gen_range(0..random_choices.len());
+                choice =random_choices[index].to_string();
+                let response =
+                    rock_paper_scissors_repository_guard
+                        .register_choice_repo(account_unique_id, choice).await;
+
+                rock_paper_scissors_repository_guard
+                    .change_draw_choices_repo(
+                        account_unique_id, opponent_unique_id).await;
+                return RegisterRockPaperScissorsWaitHashResponse::new(response)
+            }
+            drop(rock_paper_scissors_repository_guard);
+            drop(rock_paper_scissors_waiting_timer_repository);
+            return RegisterRockPaperScissorsWaitHashResponse::new(false)
+        }
 
         let response =
             rock_paper_scissors_repository_guard
@@ -138,20 +164,20 @@ impl RockPaperScissorsService for RockPaperScissorsServiceImpl {
             self.rock_paper_scissors_waiting_timer_repository.lock().await;
         let mut is_expired=
             rock_paper_scissors_waiting_timer_repository.
-            check_rock_paper_scissors_waiting_timer_expired(opponent_unique_id,Duration::from_secs(60)).await;
+            check_rock_paper_scissors_waiting_timer_expired(opponent_unique_id,Duration::from_secs(40)).await;
         let rock_paper_scissors_result =
             rock_paper_scissors_repository_guard
                 .check_result_repo(account_unique_id, opponent_unique_id).await;
-        if rock_paper_scissors_result==WAIT
-        {
-            if is_expired==true
-            {
-                drop(rock_paper_scissors_repository_guard);
-                drop(rock_paper_scissors_waiting_timer_repository);
-                return CheckRockPaperScissorsWinnerResponse::new(WIN)
-
-            }
-        }
+        // if rock_paper_scissors_result==WAIT
+        // {
+        //     if is_expired==true
+        //     {
+        //         drop(rock_paper_scissors_repository_guard);
+        //         drop(rock_paper_scissors_waiting_timer_repository);
+        //         return CheckRockPaperScissorsWinnerResponse::new(WIN)
+        //
+        //     }
+        // }
 
         drop(rock_paper_scissors_repository_guard);
         drop(rock_paper_scissors_waiting_timer_repository);
