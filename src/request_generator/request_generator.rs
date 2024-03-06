@@ -53,7 +53,7 @@ use crate::request_generator::client_program_request_generator::create_client_pr
 use crate::request_generator::account_deck_card_request_generator::{create_account_deck_card_list_request_form, create_account_deck_card_modify_request_form, create_account_deck_configuration_request_form};
 use crate::request_generator::attach_general_energy_card_request_form_generator::create_attach_general_energy_card_request_form;
 use crate::request_generator::game_deck_card_list_request_generator::create_game_deck_card_list_request;
-use crate::request_generator::mulligan_request_generator::create_mulligan_request_form;
+use crate::request_generator::mulligan_request_generator::{create_check_opponent_mulligan_status_request_form, create_mulligan_request_form};
 use crate::request_generator::session_request_generator::create_session_login_request;
 use crate::request_generator::shop_request_generator::{create_data_to_display_in_shop_request, create_event_distribute_cards_request_form, create_execute_free_gacha_request_form, create_execute_shop_gacha_request_form};
 use crate::request_generator::deploy_unit_request_form_generator::create_deploy_unit_request_form;
@@ -347,6 +347,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = battle_start_controller_mutex_guard.request_to_start_battle(request_form).await;
                     let response_type = Some(ResponseType::BATTLE_START(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            22 => {
+                // Mulligan
+                if let Some(request_form) = create_check_opponent_mulligan_status_request_form(&data) {
+                    let mulligan_controller_mutex = MulliganControllerImpl::get_instance();
+                    let mulligan_controller = mulligan_controller_mutex.lock().await;
+
+                    let response_form = mulligan_controller.check_opponent_mulligan_status(request_form).await;
+                    let response_type = Some(ResponseType::CHECK_OPPONENT_MULLIGAN(response_form));
 
                     response_type
                 } else {
