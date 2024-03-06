@@ -128,6 +128,7 @@ impl GameDeckServiceImpl {
                 }
             }
         }
+
         return true;
     }
 
