@@ -16,6 +16,7 @@ use crate::game_card_active_skill::controller::response_form::targeting_active_s
 use crate::game_card_active_skill::entity::active_skill_type::ActiveSkillType;
 use crate::game_card_active_skill::service::game_card_active_skill_service::GameCardActiveSkillService;
 use crate::game_card_active_skill::service::game_card_active_skill_service_impl::GameCardActiveSkillServiceImpl;
+use crate::game_card_unit::controller::response_form::attack_unit_response_form::AttackUnitResponseForm;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionPossibilityValidatorService;
@@ -25,9 +26,13 @@ use crate::game_protocol_validation::service::game_protocol_validation_service_i
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
 use crate::notify_player_action::service::notify_player_action_service_impl::NotifyPlayerActionServiceImpl;
+use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
+use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::redis::service::redis_in_memory_service::RedisInMemoryService;
 use crate::redis::service::redis_in_memory_service_impl::RedisInMemoryServiceImpl;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
+use crate::ui_data_generator::service::ui_data_generator_service_impl::UiDataGeneratorServiceImpl;
 
 pub struct GameCardActiveSkillControllerImpl {
     game_tomb_service: Arc<AsyncMutex<GameTombServiceImpl>>,
@@ -38,6 +43,8 @@ pub struct GameCardActiveSkillControllerImpl {
     game_card_active_skill_service: Arc<AsyncMutex<GameCardActiveSkillServiceImpl>>,
     game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
     game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
+    ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
+    notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
 }
 
 impl GameCardActiveSkillControllerImpl {
@@ -48,7 +55,9 @@ impl GameCardActiveSkillControllerImpl {
                notify_player_action_service: Arc<AsyncMutex<NotifyPlayerActionServiceImpl>>,
                game_card_active_skill_service: Arc<AsyncMutex<GameCardActiveSkillServiceImpl>>,
                game_protocol_validation_service: Arc<AsyncMutex<GameProtocolValidationServiceImpl>>,
-               game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,) -> Self {
+               game_field_unit_action_possibility_validator_service: Arc<AsyncMutex<GameFieldUnitActionPossibilityValidatorServiceImpl>>,
+               ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
+               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,) -> Self {
 
         GameCardActiveSkillControllerImpl {
             game_tomb_service,
@@ -59,6 +68,8 @@ impl GameCardActiveSkillControllerImpl {
             game_card_active_skill_service,
             game_protocol_validation_service,
             game_field_unit_action_possibility_validator_service,
+            ui_data_generator_service,
+            notify_player_action_info_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameCardActiveSkillControllerImpl>> {
@@ -74,7 +85,9 @@ impl GameCardActiveSkillControllerImpl {
                             NotifyPlayerActionServiceImpl::get_instance(),
                             GameCardActiveSkillServiceImpl::get_instance(),
                             GameProtocolValidationServiceImpl::get_instance(),
-                            GameFieldUnitActionPossibilityValidatorServiceImpl::get_instance())));
+                            GameFieldUnitActionPossibilityValidatorServiceImpl::get_instance(),
+                            UiDataGeneratorServiceImpl::get_instance(),
+                            NotifyPlayerActionInfoServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -100,7 +113,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
             self.is_valid_session(targeting_active_skill_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return TargetingActiveSkillResponseForm::new(false)
+            return TargetingActiveSkillResponseForm::default()
         }
 
         let mut game_protocol_validation_service_guard =
@@ -113,13 +126,24 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return TargetingActiveSkillResponseForm::new(false)
+            return TargetingActiveSkillResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
 
+
         let unit_card_index_string = targeting_active_skill_request_form.get_unit_card_index();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
+
+        let mut game_field_unit_service_guard =
+            self.game_field_unit_service.lock().await;
+
+        let unit_card_id =
+            game_field_unit_service_guard.find_target_unit_id_by_index(
+                targeting_active_skill_request_form
+                    .to_find_unit_id_by_index_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_found_opponent_unit_id();
 
         // TODO: 프로토콜 검증 할 때가 아니라 패스
 
@@ -134,7 +158,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
             game_card_active_skill_service_guard.summary_active_skill(
                 targeting_active_skill_request_form
                     .to_summary_active_skill_effect_response(
-                        unit_card_index,
+                        unit_card_id,
                         usage_skill_index)).await;
 
         drop(game_card_active_skill_service_guard);
@@ -161,7 +185,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                         required_energy_map)).await;
 
         if !is_using_active_skill_possible_response.is_possible() {
-            return TargetingActiveSkillResponseForm::new(false)
+            return TargetingActiveSkillResponseForm::default()
         }
 
         // 상대 고유값 찾기
@@ -177,13 +201,11 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
         // 타게팅 데미지 적용
         // TODO: 현재에는 단일 타겟팅밖에 없으나 다중 타겟팅이 존재하는 경우 추가 처리 필요
         let target_card_index_string = targeting_active_skill_request_form.get_opponent_target_card_index();
-        let target_card_index = target_card_index_string.parse::<i32>().unwrap();
+        let opponent_target_unit_card_index = target_card_index_string.parse::<i32>().unwrap();
 
         let target_skill_type = summary_active_skill_effect_response.get_skill_type();
         let target_skill_damage = summary_active_skill_effect_response.get_skill_damage();
 
-        let mut game_field_unit_service_guard =
-            self.game_field_unit_service.lock().await;
 
         let extra_effect_list_of_unit_using_skill =
             game_field_unit_service_guard.acquire_unit_extra_effect(
@@ -201,37 +223,44 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                         .to_attack_target_with_extra_effect_request(
                             opponent_unique_id,
                             target_skill_damage,
-                            extra_effect_list_of_unit_using_skill, target_card_index)).await;
+                            extra_effect_list_of_unit_using_skill, opponent_target_unit_card_index)).await;
             }
 
-            // 특수 효과가 없는 경우 일반 공격 진행
+            // 특수 효과가 없는 경우 공격 진행
             game_field_unit_service_guard.apply_damage_to_target_unit_index(
                 targeting_active_skill_request_form
                     .to_apply_damage_to_target_unit_index_request(
                         opponent_unique_id,
-                        target_card_index,
+                        opponent_target_unit_card_index,
                         target_skill_damage)).await;
 
-            let maybe_dead_unit_id =
-                game_field_unit_service_guard.judge_death_of_unit(
-                    targeting_active_skill_request_form
-                        .to_judge_death_of_unit_request(
-                            opponent_unique_id,
-                            target_card_index)).await.get_dead_unit_id();
 
-            if maybe_dead_unit_id != -1 {
-                let mut game_tomb_service_guard =
-                    self.game_tomb_service.lock().await;
-
-                game_tomb_service_guard.add_dead_unit_to_tomb(
-                    targeting_active_skill_request_form
-                        .to_add_dead_unit_to_tomb_request(
-                            opponent_unique_id,
-                            maybe_dead_unit_id)).await;
-            }
-
-            // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
         }
+        else { return TargetingActiveSkillResponseForm::default() }
+
+        // 피격 유닛이 죽었는지 판정
+        let judge_death_of_opponent_unit_response =
+            game_field_unit_service_guard.judge_death_of_unit(
+                targeting_active_skill_request_form
+                    .to_judge_death_of_unit_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await;
+
+        // 죽은 경우 묘지에 추가
+        let mut game_tomb_service_guard =
+            self.game_tomb_service.lock().await;
+
+        if judge_death_of_opponent_unit_response.get_dead_unit_id() != -1 {
+            println!("공격 당한 유닛이 사망했으므로 묘지로 이동합니다.");
+
+            game_tomb_service_guard.add_used_card_to_tomb(
+                targeting_active_skill_request_form
+                    .to_place_dead_unit_to_tomb_request(
+                        opponent_unique_id,
+                        judge_death_of_opponent_unit_response.get_dead_unit_id())).await;
+        }
+
+        drop(game_tomb_service_guard);
 
         // 12. 유닛의 이번 턴 Action 을 true 로 세팅
         game_field_unit_service_guard.execute_turn_action(
@@ -240,9 +269,115 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                     account_unique_id,
                     unit_card_index)).await;
 
+        let opponent_target_unit_health_point =
+            game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
+                targeting_active_skill_request_form
+                    .to_get_current_health_point_of_field_unit_by_index_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await.get_current_unit_health_point();
+
+        let opponent_target_unit_harmful_effect_list =
+            game_field_unit_service_guard.acquire_unit_harmful_status_effect(
+                targeting_active_skill_request_form
+                    .to_acquire_unit_harmful_status_effect_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await.get_harmful_effect_list().clone();
+
         drop(game_field_unit_service_guard);
 
-        TargetingActiveSkillResponseForm::new(true)
+        // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_opponent_specific_unit_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
+                targeting_active_skill_request_form
+                    .to_generate_opponent_specific_unit_health_point_data_request(
+                        opponent_target_unit_card_index,
+                        opponent_target_unit_health_point)).await;
+
+        let generate_opponent_specific_unit_harmful_effect_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_harmful_effect_data(
+                targeting_active_skill_request_form
+                    .to_generate_opponent_specific_unit_harmful_effect_data_request(
+                        opponent_target_unit_card_index,
+                        opponent_target_unit_harmful_effect_list)).await;
+
+        let generate_opponent_specific_unit_death_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_death_data(
+                targeting_active_skill_request_form
+                    .to_generate_opponent_specific_unit_death_data_request(
+                        judge_death_of_opponent_unit_response.get_dead_unit_index())).await;
+
+        // let generate_my_specific_unit_health_point_data_response =
+        //     ui_data_generator_service_guard.generate_my_specific_unit_health_point_data(
+        //         attack_unit_request_form
+        //             .to_generate_my_specific_unit_health_point_data_request(
+        //                 attacker_unit_card_index,
+        //                 attacker_unit_health_point)).await;
+        //
+        // let generate_my_specific_unit_harmful_effect_data_response =
+        //     ui_data_generator_service_guard.generate_my_specific_unit_harmful_effect_data(
+        //         attack_unit_request_form
+        //             .to_generate_my_specific_unit_harmful_effect_data_request(
+        //                 attacker_unit_card_index,
+        //                 attacker_unit_harmful_effect_list)).await;
+        //
+        // let generate_my_specific_unit_death_data_response =
+        //     ui_data_generator_service_guard.generate_my_specific_unit_death_data(
+        //         attack_unit_request_form
+        //             .to_generate_my_specific_unit_death_data_request(
+        //                 judge_death_of_attacker_unit_response.get_dead_unit_index())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        // TODO: Need Refactor
+        let mut combined_unit_health_point_data_for_response = HashMap::new();
+        let mut combined_unit_harmful_effect_data_for_response = HashMap::new();
+        let mut combined_unit_death_data_for_response = HashMap::new();
+        let mut combined_unit_health_point_data_for_notice = HashMap::new();
+        let mut combined_unit_harmful_effect_data_for_notice = HashMap::new();
+        let mut combined_unit_death_data_for_notice = HashMap::new();
+
+        combined_unit_health_point_data_for_response.extend(
+            generate_opponent_specific_unit_health_point_data_response
+                .get_player_field_unit_health_point_map_for_response().clone());
+        combined_unit_harmful_effect_data_for_response.extend(
+            generate_opponent_specific_unit_harmful_effect_data_response
+                .get_player_field_unit_harmful_effect_map_for_response().clone());
+        combined_unit_death_data_for_response.extend(
+            generate_opponent_specific_unit_death_data_response
+                .get_player_field_unit_death_map_for_response().clone());
+
+        combined_unit_health_point_data_for_notice.extend(
+            generate_opponent_specific_unit_health_point_data_response
+                .get_player_field_unit_health_point_map_for_notice().clone());
+        combined_unit_harmful_effect_data_for_notice.extend(
+            generate_opponent_specific_unit_harmful_effect_data_response
+                .get_player_field_unit_harmful_effect_map_for_notice().clone());
+        combined_unit_death_data_for_notice.extend(
+            generate_opponent_specific_unit_death_data_response
+                .get_player_field_unit_death_map_for_notice().clone());
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_targeting_attack_active_skill_to_unit(
+            targeting_active_skill_request_form
+                .to_notice_targeting_attack_active_skill_to_unit_request(
+                    opponent_unique_id,
+                    combined_unit_health_point_data_for_notice,
+                    combined_unit_harmful_effect_data_for_notice,
+                    combined_unit_death_data_for_notice)).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        TargetingActiveSkillResponseForm::new(
+            true,
+            combined_unit_health_point_data_for_response,
+            combined_unit_harmful_effect_data_for_response,
+            combined_unit_death_data_for_response)
+
     }
 
     async fn request_non_targeting_active_skill(
@@ -255,7 +390,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
             self.is_valid_session(non_targeting_active_skill_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return NonTargetingActiveSkillResponseForm::new(false)
+            return NonTargetingActiveSkillResponseForm::default()
         }
 
         // Action 가능한 턴인지 판별
@@ -269,7 +404,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return NonTargetingActiveSkillResponseForm::new(false)
+            return NonTargetingActiveSkillResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
@@ -316,7 +451,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                         required_energy_map)).await;
 
         if !is_using_active_skill_possible_response.is_possible() {
-            return NonTargetingActiveSkillResponseForm::new(false)
+            return NonTargetingActiveSkillResponseForm::default()
         }
 
         drop(game_field_unit_action_possibility_validator_service_guard);
@@ -392,6 +527,6 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         drop(game_field_unit_service_guard);
 
-        NonTargetingActiveSkillResponseForm::new(true)
+        NonTargetingActiveSkillResponseForm::default()
     }
 }
