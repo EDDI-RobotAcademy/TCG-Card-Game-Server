@@ -69,6 +69,7 @@ use crate::notify_player_action::entity::notify_opponent_to_field_energy_usage::
 use crate::notify_player_action::entity::notify_opponent_to_field_unit_energy_removal_item_usage::NotifyOpponentToFieldUnitEnergyRemovalItemUsage;
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_main_character::NotifyFormBasicAttackToMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_unit::NotifyFormBasicAttackToUnit;
+use crate::notify_player_action_info::entity::notify_form_deploy_targeting_attack_passive_skill::NotifyFormDeployTargetingAttackPassiveSkill;
 use crate::notify_player_action_info::entity::notify_form_deploy_unit::NotifyFormDeployUnit;
 use crate::notify_player_action_info::entity::notify_form_non_targeting_attack_active_skill::NotifyFormNonTargetingAttackActiveSkill;
 use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_unit::NotifyFormTargetingAttackActiveSkillToUnit;
@@ -201,8 +202,12 @@ pub enum ResponseType {
     NOTIFY_USE_MULTIPLE_UNIT_DAMAGE_ITEM_CARD(NotifyFormUseMultipleUnitDamageItemCard),
     NOTIFY_BASIC_ATTACK_TO_UNIT(NotifyFormBasicAttackToUnit),
     NOTIFY_BASIC_ATTACK_TO_MAIN_CHARACTER(NotifyFormBasicAttackToMainCharacter),
-    NOTIFY_TARGETING_ACTIVE_ATTACK_ACTIVE_SKILL_TO_UNIT(NotifyFormTargetingAttackActiveSkillToUnit),
+    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(NotifyFormTargetingAttackActiveSkillToUnit),
     NOTIFY_NON_TARGETING_ACTIVE_SKILL(NotifyFormNonTargetingAttackActiveSkill),
+
+    NOTIFY_DEPLOY_TARGETING_ATTACK_PASSIVE_SKILL_TO_UNIT(NotifyFormDeployTargetingAttackPassiveSkill),
+
+
     NOTIFY_TURN_END(NotifyFormTurnEnd),
 
     // Game Next Turn
