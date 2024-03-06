@@ -7,6 +7,7 @@ use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 
 use crate::ui_data_generator::service::response::generate_draw_opponent_deck_data_response::GenerateDrawOpponentDeckDataResponse;
 use crate::ui_data_generator::service::response::generate_my_multiple_unit_death_data_response::GenerateMyMultipleUnitDeathDataResponse;
+use crate::ui_data_generator::service::response::generate_my_multiple_unit_harmful_effect_data_response::GenerateMyMultipleUnitHarmfulEffectDataResponse;
 use crate::ui_data_generator::service::response::generate_my_multiple_unit_health_point_data_response::GenerateMyMultipleUnitHealthPointDataResponse;
 use crate::ui_data_generator::service::response::generate_opponent_field_energy_data_response::GenerateOpponentFieldEnergyDataResponse;
 
@@ -43,16 +44,22 @@ impl TurnEndResponseForm {
         generate_draw_opponent_deck_data_response: GenerateDrawOpponentDeckDataResponse,
         generate_opponent_field_energy_data_response: GenerateOpponentFieldEnergyDataResponse,
         generate_my_multiple_unit_health_point_data_response: GenerateMyMultipleUnitHealthPointDataResponse,
+        generate_my_multiple_unit_harmful_effect_data_response: GenerateMyMultipleUnitHarmfulEffectDataResponse,
         generate_my_multiple_unit_death_data_response: GenerateMyMultipleUnitDeathDataResponse
     ) -> TurnEndResponseForm {
 
         TurnEndResponseForm::new(
             true,
-            generate_draw_opponent_deck_data_response.get_player_drawn_card_count_map_for_response().clone(),
-            generate_opponent_field_energy_data_response.get_player_field_energy_map_for_response().clone(),
-            generate_my_multiple_unit_health_point_data_response.get_player_field_unit_health_point_map_for_response().clone(),
-            HashMap::new(),
-            generate_my_multiple_unit_death_data_response.get_player_field_unit_death_map_for_response().clone()
+            generate_draw_opponent_deck_data_response
+                .get_player_drawn_card_count_map_for_response().clone(),
+            generate_opponent_field_energy_data_response
+                .get_player_field_energy_map_for_response().clone(),
+            generate_my_multiple_unit_health_point_data_response
+                .get_player_field_unit_health_point_map_for_response().clone(),
+            generate_my_multiple_unit_harmful_effect_data_response
+                .get_player_field_unit_harmful_effect_map_for_response().clone(),
+            generate_my_multiple_unit_death_data_response
+                .get_player_field_unit_death_map_for_response().clone()
         )
     }
 
