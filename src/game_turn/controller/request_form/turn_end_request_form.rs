@@ -17,6 +17,8 @@ use crate::game_field_unit::service::request::reset_turn_action_of_all_field_uni
 use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::add_dead_unit_list_to_tomb_request::AddDeadUnitListToTombRequest;
+use crate::ui_data_generator::service::request::generate_draw_opponent_deck_data_request::GenerateDrawOpponentDeckDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_field_energy_data_request::GenerateOpponentFieldEnergyDataRequest;
 
 #[derive(Debug)]
 pub struct TurnEndRequestForm {
@@ -103,4 +105,22 @@ impl TurnEndRequestForm {
     pub fn to_action_waiting_timer(&self, opponent_account_unique_id: i32) -> ActionWaitingTimerRequest {
         ActionWaitingTimerRequest::new(opponent_account_unique_id)
     }
+
+    pub fn to_generate_draw_opponent_deck_data(
+        &self,
+        drawn_card_list: Vec<i32>) -> GenerateDrawOpponentDeckDataRequest {
+
+        GenerateDrawOpponentDeckDataRequest::new(
+            drawn_card_list)
+    }
+
+    pub fn to_generate_opponent_field_energy_data_request(
+        &self,
+        remaining_field_energy: i32) -> GenerateOpponentFieldEnergyDataRequest {
+
+        GenerateOpponentFieldEnergyDataRequest::new(
+            remaining_field_energy)
+    }
+
+    // pub fn
 }

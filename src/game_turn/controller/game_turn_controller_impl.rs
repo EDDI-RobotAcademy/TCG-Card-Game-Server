@@ -41,6 +41,9 @@ use crate::game_round::service::game_round_service::GameRoundService;
 use crate::game_round::service::game_round_service_impl::GameRoundServiceImpl;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
+use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
+use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
+use crate::ui_data_generator::service::ui_data_generator_service_impl::UiDataGeneratorServiceImpl;
 
 pub struct GameTurnControllerImpl {
     game_turn_service: Arc<AsyncMutex<GameTurnServiceImpl>>,
@@ -57,7 +60,8 @@ pub struct GameTurnControllerImpl {
     game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
     game_card_unit_service: Arc<AsyncMutex<GameCardUnitServiceImpl>>,
     action_waiting_timer_service: Arc<AsyncMutex<ActionWaitingTimerServiceImpl>>,
-
+    ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
+    notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
 }
 
 impl GameTurnControllerImpl {
@@ -75,6 +79,8 @@ impl GameTurnControllerImpl {
                game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
                game_card_unit_service: Arc<AsyncMutex<GameCardUnitServiceImpl>>,
                action_waiting_timer_service: Arc<AsyncMutex<ActionWaitingTimerServiceImpl>>,
+               ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
+               notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
              ) -> Self {
 
         GameTurnControllerImpl {
@@ -92,6 +98,8 @@ impl GameTurnControllerImpl {
             game_card_support_usage_counter_service,
             game_card_unit_service,
             action_waiting_timer_service,
+            ui_data_generator_service,
+            notify_player_action_info_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameTurnControllerImpl>> {
@@ -113,7 +121,9 @@ impl GameTurnControllerImpl {
                             GameHandServiceImpl::get_instance(),
                             GameCardSupportUsageCounterServiceImpl::get_instance(),
                             GameCardUnitServiceImpl::get_instance(),
-                            ActionWaitingTimerServiceImpl::get_instance())));
+                            ActionWaitingTimerServiceImpl::get_instance(),
+                            UiDataGeneratorServiceImpl::get_instance(),
+                            NotifyPlayerActionInfoServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -293,6 +303,12 @@ impl GameTurnController for GameTurnControllerImpl {
         //     self.action_waiting_timer_service.lock().await;
         // action_waiting_timer_service_guard.set_action_waiting_time(turn_end_request_form.to_action_waiting_timer(opponent_unique_id)).await;
         //  TODO: 턴 종료 상황에서 상태 이상으로 죽은 유닛들, 데미지 및 상대 턴 시작 등등을 알려줘야함 (Notify)
+        // let mut ui_data_generator_service_guard =
+        //     self.ui_data_generator_service.lock().await;
+        //
+        // let response =
+        //     ui_data_generator_service_guard.generate_draw_opponent_deck_data()
+
 
         TurnEndResponseForm::new(true)
     }

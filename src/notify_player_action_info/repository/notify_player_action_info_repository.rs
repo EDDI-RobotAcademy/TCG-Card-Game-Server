@@ -111,4 +111,13 @@ pub trait NotifyPlayerActionInfoRepository {
         player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
         player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> bool;
+    async fn notice_turn_end(
+        &mut self,
+        opponent_unique_id: i32,
+        player_drawn_card_list_map: HashMap<PlayerIndex, Vec<i32>>,
+        player_field_energy_map: HashMap<PlayerIndex, i32>,
+        player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
+        player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    ) -> bool;
 }
