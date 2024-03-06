@@ -6,6 +6,7 @@ use std::sync::Mutex;
 pub enum RoomStatus {
     STATUS_FREE,
     STATUS_FULL,
+    STATUS_FINISH
 }
 
 // TODO: 추후 다 대 다 전투를 진행하는 상황에 대해 고려 할 필요가 있음 (이건 1 대 1)
@@ -48,6 +49,16 @@ impl BattleRoom {
 
     pub fn is_full(&self) -> bool {
         self.player_id_list.len() >= MAX_ROOM_SIZE
+    }
+
+    pub fn remove_player_for_finish(&mut self, account_unique_id: i32) {
+        self.status = RoomStatus::STATUS_FINISH;
+        for index in (0..self.player_id_list.len()).rev() {
+            println!("index: {:?}, account_unique_id: {:?}", self.player_id_list[index], account_unique_id);
+            if Some(self.player_id_list[index]) == Some(account_unique_id) {
+                self.player_id_list.remove(index);
+            }
+        }
     }
 
     pub fn print_battle_room_status(&self) {
