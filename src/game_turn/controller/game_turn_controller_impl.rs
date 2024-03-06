@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
 use diesel::IntoSql;
@@ -41,6 +42,7 @@ use crate::game_round::service::game_round_service::GameRoundService;
 use crate::game_round::service::game_round_service_impl::GameRoundServiceImpl;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
+use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
 use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
 use crate::ui_data_generator::service::ui_data_generator_service_impl::UiDataGeneratorServiceImpl;
@@ -146,7 +148,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
         if account_unique_id == -1 {
             println!("Invalid session");
-            return TurnEndResponseForm::new(false)
+            return TurnEndResponseForm::default()
         }
 
         // opponent unique id 찾기
@@ -171,7 +173,7 @@ impl GameTurnController for GameTurnControllerImpl {
                 turn_end_request_form.to_is_this_your_turn_request(account_unique_id)).await;
 
         if !is_this_your_turn_response.is_success() {
-            return TurnEndResponseForm::new(false)
+            return TurnEndResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
@@ -185,20 +187,25 @@ impl GameTurnController for GameTurnControllerImpl {
                 .to_apply_status_effect_damage_iteratively_request(
                     account_unique_id)).await;
 
-        let dead_unit_list =
+        let health_point_of_all_unit =
+            game_field_unit_service_guard.get_current_health_point_of_all_field_unit(
+                turn_end_request_form
+                    .to_get_current_health_point_of_all_field_unit_request(
+                        account_unique_id)).await.get_current_unit_health_point().clone();
+
+        let judge_death_of_every_field_unit_response =
             game_field_unit_service_guard.judge_death_of_every_field_unit(
                 turn_end_request_form
-                    .to_judge_death_of_every_unit_request(
-                        account_unique_id)).await.get_dead_unit_id_list().clone();
+                    .to_judge_death_of_every_unit_request(account_unique_id)).await;
 
-        if !dead_unit_list.is_empty() {
+        if !judge_death_of_every_field_unit_response.get_dead_unit_id_list().is_empty() {
             let mut game_tomb_service_guard =
                 self.game_tomb_service.lock().await;
 
             game_tomb_service_guard.add_dead_unit_list_to_tomb(
                 turn_end_request_form.to_add_dead_unit_list_to_tomb_request(
                     account_unique_id,
-                    dead_unit_list)).await;
+                    judge_death_of_every_field_unit_response.get_dead_unit_id_list())).await;
 
             drop(game_tomb_service_guard);
         }
@@ -217,7 +224,7 @@ impl GameTurnController for GameTurnControllerImpl {
         let mut game_card_unit_service_guard =
             self.game_card_unit_service.lock().await;
 
-        // TODO: 일단 예외 처리로 마무리
+        // TODO: 일단 예외 처리로 마무리 <- Need Refactor
         for (unit_index, field_unit) in field_unit_list.get_game_field_unit_card().iter().enumerate() {
             let unit_card_id = field_unit.get_card();
             if unit_card_id != -1 {
@@ -286,7 +293,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
         game_hand_service_guard.add_card_list_to_hand(
             turn_end_request_form
-                .to_add_card_list_to_hand_request(opponent_unique_id, drawn_card_list)).await;
+                .to_add_card_list_to_hand_request(opponent_unique_id, drawn_card_list.clone())).await;
 
         drop(game_hand_service_guard);
 
@@ -297,19 +304,63 @@ impl GameTurnController for GameTurnControllerImpl {
         game_field_energy_service_guard.add_field_energy_with_amount(
                 turn_end_request_form.to_add_field_energy_request(opponent_unique_id)).await;
 
+        let remaining_opponent_field_energy =
+            game_field_energy_service_guard.get_current_field_energy(
+                turn_end_request_form
+                    .to_get_current_field_energy_request(
+                        opponent_unique_id)).await.get_field_energy_count();
+
         drop(game_field_energy_service_guard);
 
-        // let action_waiting_timer_service_guard=
-        //     self.action_waiting_timer_service.lock().await;
-        // action_waiting_timer_service_guard.set_action_waiting_time(turn_end_request_form.to_action_waiting_timer(opponent_unique_id)).await;
-        //  TODO: 턴 종료 상황에서 상태 이상으로 죽은 유닛들, 데미지 및 상대 턴 시작 등등을 알려줘야함 (Notify)
-        // let mut ui_data_generator_service_guard =
-        //     self.ui_data_generator_service.lock().await;
-        //
-        // let response =
-        //     ui_data_generator_service_guard.generate_draw_opponent_deck_data()
+        // TODO: Action Timer Setting
 
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
 
-        TurnEndResponseForm::new(true)
+        let generate_draw_opponent_deck_data_response =
+            ui_data_generator_service_guard.generate_draw_opponent_deck_data(
+                turn_end_request_form
+                    .to_generate_draw_opponent_deck_data(drawn_card_list.clone())).await;
+
+        let generate_opponent_field_energy_data_response =
+            ui_data_generator_service_guard.generate_opponent_field_energy_data(
+                turn_end_request_form
+                    .to_generate_opponent_field_energy_data_request(remaining_opponent_field_energy)).await;
+
+        let generate_my_multiple_unit_health_point_data_response =
+            ui_data_generator_service_guard.generate_my_multiple_unit_health_point_data(
+                turn_end_request_form
+                    .to_generate_my_multiple_unit_health_point_data_request(health_point_of_all_unit)).await;
+
+        // TODO: Harmful Effect 를 Tuple 로 묶어 불러오기
+
+        let generate_my_multiple_unit_death_data_response =
+            ui_data_generator_service_guard.generate_my_multiple_unit_death_data(
+                turn_end_request_form
+                    .to_generate_my_multiple_unit_death_data_request(
+                        judge_death_of_every_field_unit_response.get_dead_unit_index_list())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_my_turn_end(
+            turn_end_request_form
+                .to_notice_my_turn_end_request(
+                    opponent_unique_id,
+                    generate_draw_opponent_deck_data_response.get_player_drawn_card_list_map_for_notice().clone(),
+                    generate_opponent_field_energy_data_response.get_player_field_energy_map_for_notice().clone(),
+                    generate_my_multiple_unit_health_point_data_response.get_player_field_unit_health_point_map_for_notice().clone(),
+                    HashMap::new(),
+                    generate_my_multiple_unit_death_data_response.get_player_field_unit_death_map_for_notice().clone())).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        TurnEndResponseForm::from_response(
+            generate_draw_opponent_deck_data_response,
+            generate_opponent_field_energy_data_response,
+            generate_my_multiple_unit_health_point_data_response,
+            generate_my_multiple_unit_death_data_response)
     }
 }
