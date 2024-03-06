@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::time::{Instant, Duration};
 
 pub struct RockPaperScissorsWaitingTimer {
-    pub(crate) timers: HashMap<i32, Instant>,
+    timers: HashMap<i32, Instant>,
 }
 
 impl RockPaperScissorsWaitingTimer {
@@ -13,6 +13,8 @@ impl RockPaperScissorsWaitingTimer {
     }
 
     pub fn start_timer(&mut self, id: i32) {
+
+        self.timers.remove(&id);
         self.timers.insert(id, Instant::now());
     }
 
