@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::action_waiting_timer::service::action_waiting_timer_service::ActionWaitingTimerService;
 use crate::action_waiting_timer::service::request::action_waiting_timer_request::ActionWaitingTimerRequest;
 use crate::action_waiting_timer::service::response::action_waiting_timer_response::ActionWaitingTimerResponse;
@@ -10,6 +11,9 @@ use crate::game_round::service::request::next_game_turn_request::NextGameRoundRe
 use crate::game_turn::service::request::next_turn_request::NextTurnRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::game_field_energy::service::request::add_field_energy_with_amount_request::AddFieldEnergyWithAmountRequest;
+use crate::game_field_energy::service::request::get_current_field_energy_request::GetCurrentFieldEnergyRequest;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect;
+use crate::game_field_unit::service::request::get_current_health_point_of_all_field_unit_request::GetCurrentHealthPointOfAllFieldUnitRequest;
 use crate::game_field_unit::service::request::get_game_field_unit_card_of_account_uique_id_request::GetGameFieldUnitCardOfAccountUniqueIdRequest;
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
 use crate::game_field_unit::service::request::reset_all_passive_of_unit_request::ResetAllPassiveOfUnitRequest;
@@ -17,7 +21,15 @@ use crate::game_field_unit::service::request::reset_turn_action_of_all_field_uni
 use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::add_dead_unit_list_to_tomb_request::AddDeadUnitListToTombRequest;
+use crate::notify_player_action_info::service::request::notice_my_turn_end_request::NoticeMyTurnEndRequest;
+use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
+use crate::ui_data_generator::entity::field_unit_harmful_status_info::FieldUnitHarmfulStatusInfo;
+use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::ui_data_generator::service::request::generate_draw_opponent_deck_data_request::GenerateDrawOpponentDeckDataRequest;
+use crate::ui_data_generator::service::request::generate_my_multiple_unit_death_data_request::GenerateMyMultipleUnitDeathDataRequest;
+use crate::ui_data_generator::service::request::generate_my_multiple_unit_harmful_effect_data_request::GenerateMyMultipleUnitHarmfulEffectDataRequest;
+use crate::ui_data_generator::service::request::generate_my_multiple_unit_health_point_data_request::GenerateMyMultipleUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_field_energy_data_request::GenerateOpponentFieldEnergyDataRequest;
 
 #[derive(Debug)]
@@ -93,6 +105,25 @@ impl TurnEndRequestForm {
     pub fn to_add_field_energy_request(&self, opponent_account_unique_id: i32) -> AddFieldEnergyWithAmountRequest {
         AddFieldEnergyWithAmountRequest::new(opponent_account_unique_id, 1)
     }
+
+    pub fn to_get_current_field_energy_request(
+        &self,
+        opponent_account_unique_id: i32) -> GetCurrentFieldEnergyRequest {
+
+        GetCurrentFieldEnergyRequest::new(
+            opponent_account_unique_id)
+    }
+
+    pub fn to_get_current_health_point_of_all_field_unit_request(
+        &self,
+        account_unique_id: i32
+    ) -> GetCurrentHealthPointOfAllFieldUnitRequest {
+
+        GetCurrentHealthPointOfAllFieldUnitRequest::new(
+            account_unique_id)
+    }
+
+
     pub fn to_get_game_field_unit_card_of_account_unique_id_request(&self, account_unique_id: i32) -> GetGameFieldUnitCardOfAccountUniqueIdRequest {
         GetGameFieldUnitCardOfAccountUniqueIdRequest::new(account_unique_id)
     }
@@ -108,7 +139,8 @@ impl TurnEndRequestForm {
 
     pub fn to_generate_draw_opponent_deck_data(
         &self,
-        drawn_card_list: Vec<i32>) -> GenerateDrawOpponentDeckDataRequest {
+        drawn_card_list: Vec<i32>
+    ) -> GenerateDrawOpponentDeckDataRequest {
 
         GenerateDrawOpponentDeckDataRequest::new(
             drawn_card_list)
@@ -122,5 +154,49 @@ impl TurnEndRequestForm {
             remaining_field_energy)
     }
 
-    // pub fn
+    pub fn to_generate_my_multiple_unit_health_point_data_request(
+        &self,
+        my_unit_health_point_tuple_list: Vec<(i32, i32)>
+    ) -> GenerateMyMultipleUnitHealthPointDataRequest {
+
+        GenerateMyMultipleUnitHealthPointDataRequest::new(
+            my_unit_health_point_tuple_list)
+    }
+
+    pub fn to_generate_my_multiple_unit_harmful_effect_data_request(
+        &self,
+        my_unit_harmful_status_tuple_list: Vec<(i32, Vec<ExtraEffect>)>
+    ) -> GenerateMyMultipleUnitHarmfulEffectDataRequest {
+
+        GenerateMyMultipleUnitHarmfulEffectDataRequest::new(
+            my_unit_harmful_status_tuple_list)
+    }
+
+    pub fn to_generate_my_multiple_unit_death_data_request(
+        &self,
+        my_dead_unit_index_list: Vec<i32>
+    ) -> GenerateMyMultipleUnitDeathDataRequest {
+
+        GenerateMyMultipleUnitDeathDataRequest::new(
+            my_dead_unit_index_list)
+    }
+
+    pub fn to_notice_my_turn_end_request(
+        &self,
+        opponent_unique_id: i32,
+        player_drawn_card_list_map_for_notice: HashMap<PlayerIndex, Vec<i32>>,
+        player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>
+    ) -> NoticeMyTurnEndRequest {
+
+        NoticeMyTurnEndRequest::new(
+            opponent_unique_id,
+            player_drawn_card_list_map_for_notice,
+            player_field_energy_map_for_notice,
+            player_field_unit_health_point_map_for_notice,
+            player_field_unit_harmful_effect_map_for_notice,
+            player_field_unit_death_map_for_notice)
+    }
 }
