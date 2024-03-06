@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_active_skill::service::request::summary_active_skill_effect_request::SummaryActiveSkillEffectRequest;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
 use crate::game_field_unit::service::request::apply_catastrophic_damage_to_field_unit_request::ApplyCatastrophicDamageToFieldUnitRequest;
@@ -10,6 +11,7 @@ use crate::game_field_unit::service::request::attack_every_unit_with_extra_effec
 use crate::game_field_unit::service::request::execute_turn_action_request::ExecuteTurnActionRequest;
 use crate::game_field_unit::service::request::find_active_skill_usage_unit_id_by_index_request::FindActiveSkillUsageUnitIdByIndexRequest;
 use crate::game_field_unit::service::request::find_target_unit_id_by_index_request::FindTargetUnitIdByIndexRequest;
+use crate::game_field_unit::service::request::get_current_health_point_of_field_unit_by_index_request::GetCurrentHealthPointOfFieldUnitByIndexRequest;
 use crate::game_field_unit::service::request::judge_death_of_every_unit_request::JudgeDeathOfEveryUnitRequest;
 use crate::game_field_unit::service::request::judge_death_of_unit_request::JudgeDeathOfUnitRequest;
 use crate::game_field_unit_action_possibility_validator::service::request::is_using_active_skill_possible_request::IsUsingActiveSkillPossibleRequest;
@@ -17,6 +19,9 @@ use crate::game_protocol_validation::service::request::is_this_your_turn_request
 use crate::game_tomb::service::request::add_dead_unit_list_to_tomb_request::AddDeadUnitListToTombRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_death_data_request::GenerateOpponentSpecificUnitDeathDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_harmful_effect_data_request::GenerateOpponentSpecificUnitHarmfulEffectDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_specific_unit_health_point_data_request::GenerateOpponentSpecificUnitHealthPointDataRequest;
 
 pub struct NonTargetingActiveSkillRequestForm {
     session_id: String,
@@ -152,5 +157,51 @@ impl NonTargetingActiveSkillRequestForm {
         AddDeadUnitListToTombRequest::new(
             account_unique_id,
             dead_unit_list)
+    }
+    pub fn to_place_dead_unit_to_tomb_request(
+        &self,
+        account_unique_id: i32,
+        dead_unit_card_id: i32) -> PlaceToTombRequest {
+
+        PlaceToTombRequest::new(
+            account_unique_id, dead_unit_card_id)
+    }
+
+    pub fn to_get_current_health_point_of_field_unit_by_index_request(
+        &self,
+        account_unique_id: i32,
+        unit_index: i32
+    ) -> GetCurrentHealthPointOfFieldUnitByIndexRequest {
+
+        GetCurrentHealthPointOfFieldUnitByIndexRequest::new(
+            account_unique_id, unit_index)
+    }
+    pub fn to_generate_opponent_specific_unit_health_point_data_request(
+        &self,
+        opponent_unit_index: i32,
+        opponent_unit_updated_health_point: i32
+    ) -> GenerateOpponentSpecificUnitHealthPointDataRequest {
+
+        GenerateOpponentSpecificUnitHealthPointDataRequest::new(
+            opponent_unit_index, opponent_unit_updated_health_point)
+    }
+
+    pub fn to_generate_opponent_specific_unit_harmful_effect_data_request(
+        &self,
+        opponent_unit_index: i32,
+        opponent_unit_harmful_status_list: Vec<ExtraEffect>,
+    ) -> GenerateOpponentSpecificUnitHarmfulEffectDataRequest {
+
+        GenerateOpponentSpecificUnitHarmfulEffectDataRequest::new(
+            opponent_unit_index, opponent_unit_harmful_status_list)
+    }
+
+    pub fn to_generate_opponent_specific_unit_death_data_request(
+        &self,
+        opponent_dead_unit_index: i32
+    ) -> GenerateOpponentSpecificUnitDeathDataRequest {
+
+        GenerateOpponentSpecificUnitDeathDataRequest::new(
+            opponent_dead_unit_index)
     }
 }
