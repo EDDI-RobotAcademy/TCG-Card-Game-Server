@@ -8,6 +8,9 @@ use crate::notify_player_action_info::repository::notify_player_action_info_repo
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
 use crate::notify_player_action_info::service::request::notice_basic_attack_to_main_character_request::NoticeBasicAttackToMainCharacterRequest;
 use crate::notify_player_action_info::service::request::notice_basic_attack_to_unit_request::NoticeBasicAttackToUnitRequest;
+use crate::notify_player_action_info::service::request::notice_my_turn_end_request::NoticeMyTurnEndRequest;
+use crate::notify_player_action_info::service::request::notice_non_targeting_attack_active_skill_request::NoticeNonTargetingAttackActiveSkillRequest;
+use crate::notify_player_action_info::service::request::notice_targeting_attack_active_skill_to_unit_request::NoticeTargetingAttackActiveSkillToUnitRequest;
 
 use crate::notify_player_action_info::service::request::notice_use_catastrophic_damage_item_card_request::NoticeUseCatastrophicDamageItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_draw_support_card_request::NoticeUseDrawSupportCardRequest;
@@ -24,6 +27,9 @@ use crate::notify_player_action_info::service::request::notice_use_unit_card_req
 use crate::notify_player_action_info::service::request::notice_use_unit_energy_remove_item_card_request::NoticeUseUnitEnergyRemoveItemCardRequest;
 use crate::notify_player_action_info::service::response::notice_basic_attack_to_main_character_response::NoticeBasicAttackToMainCharacterResponse;
 use crate::notify_player_action_info::service::response::notice_basic_attack_to_unit_response::NoticeBasicAttackToUnitResponse;
+use crate::notify_player_action_info::service::response::notice_my_turn_end_response::NoticeMyTurnEndResponse;
+use crate::notify_player_action_info::service::response::notice_non_targeting_attack_active_skill_response::NoticeNonTargetingAttackActiveSkillResponse;
+use crate::notify_player_action_info::service::response::notice_targeting_attack_active_skill_to_unit_response::NoticeTargetingAttackActiveSkillToUnitResponse;
 
 use crate::notify_player_action_info::service::response::notice_use_catastrophic_damage_item_card_response::NoticeUseCatastrophicDamageItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_draw_support_card_response::NoticeUseDrawSupportCardResponse;
@@ -386,5 +392,69 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         drop(notify_player_action_info_repository_guard);
 
         NoticeBasicAttackToMainCharacterResponse::new(response)
+    }
+
+    async fn notice_my_turn_end(
+        &mut self, notice_my_turn_end_request: NoticeMyTurnEndRequest)
+        -> NoticeMyTurnEndResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_my_turn_end()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_turn_end(
+                notice_my_turn_end_request.get_opponent_unique_id(),
+                notice_my_turn_end_request.get_player_drawn_card_list_map_for_notice().clone(),
+                notice_my_turn_end_request.get_player_field_energy_map_for_notice().clone(),
+                notice_my_turn_end_request.get_player_field_unit_health_point_map_for_notice().clone(),
+                notice_my_turn_end_request.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                notice_my_turn_end_request.get_player_field_unit_death_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeMyTurnEndResponse::new(response)
+    }
+    async fn notice_targeting_attack_active_skill_to_unit(
+        &mut self, notice_targeting_attack_active_skill_to_unit_request: NoticeTargetingAttackActiveSkillToUnitRequest)
+        -> NoticeTargetingAttackActiveSkillToUnitResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_targeting_attack_active_skill_to_unit()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_targeting_attack_active_skill_to_unit(
+                notice_targeting_attack_active_skill_to_unit_request.get_opponent_unique_id(),
+                notice_targeting_attack_active_skill_to_unit_request.get_player_field_unit_health_point_map_for_notice().clone(),
+                notice_targeting_attack_active_skill_to_unit_request.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                notice_targeting_attack_active_skill_to_unit_request.get_player_field_unit_death_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeTargetingAttackActiveSkillToUnitResponse::new(response)
+    }
+
+    async fn notice_non_targeting_attack_active_skill(
+        &mut self, notice_non_targeting_attack_active_skill_request: NoticeNonTargetingAttackActiveSkillRequest)
+        -> NoticeNonTargetingAttackActiveSkillResponse {
+
+        println!("NotifyPlayerActionInfoServiceImpl: notice_non_targeting_attack_active_skill()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_non_targeting_attack_active_skill(
+                notice_non_targeting_attack_active_skill_request.get_opponent_unique_id(),
+                notice_non_targeting_attack_active_skill_request.get_player_field_unit_health_point_map_for_notice().clone(),
+                notice_non_targeting_attack_active_skill_request.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                notice_non_targeting_attack_active_skill_request.get_player_field_unit_death_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeNonTargetingAttackActiveSkillResponse::new(response)
     }
 }

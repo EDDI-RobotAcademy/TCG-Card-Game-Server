@@ -9,6 +9,9 @@ use crate::game_main_character::entity::status_main_character::StatusMainCharact
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_main_character::NotifyFormBasicAttackToMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_unit::NotifyFormBasicAttackToUnit;
 use crate::notify_player_action_info::entity::notify_form_deploy_unit::NotifyFormDeployUnit;
+use crate::notify_player_action_info::entity::notify_form_non_targeting_attack_active_skill::NotifyFormNonTargetingAttackActiveSkill;
+use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_unit::NotifyFormTargetingAttackActiveSkillToUnit;
+use crate::notify_player_action_info::entity::notify_form_turn_end::NotifyFormTurnEnd;
 use crate::notify_player_action_info::entity::notify_form_use_catastrophic_damage_item_card::NotifyFormUseCatastrophicDamageItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_draw_support_card::NotifyFormUseDrawSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_field_energy_increase_item_card::NotifyFormUseFieldEnergyIncreaseItemCard;
@@ -585,6 +588,119 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_BASIC_ATTACK_TO_MAIN_CHARACTER(
                         notify_form_basic_attack_to_main_character)))).await;
+
+        true
+    }
+
+    async fn notice_turn_end(
+        &mut self,
+        opponent_unique_id: i32,
+        player_drawn_card_list_map: HashMap<PlayerIndex, Vec<i32>>,
+        player_field_energy_map: HashMap<PlayerIndex, i32>,
+        player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
+        player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    ) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_turn_end()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_turn_end =
+            NotifyFormTurnEnd::new(player_drawn_card_list_map,
+                                   player_field_energy_map,
+                                   player_field_unit_health_point_map,
+                                   player_field_unit_harmful_effect_map,
+                                   player_field_unit_death_map);
+
+        // 내 턴 종료 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_TURN_END(
+                        notify_form_turn_end)))).await;
+
+        true
+    }
+
+    async fn notice_targeting_attack_active_skill_to_unit(
+        &mut self,
+        opponent_unique_id: i32,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    ) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_targeting_attack_active_skill_to_unit()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_targeting_attack_active_skill_to_unit =
+            NotifyFormTargetingAttackActiveSkillToUnit::new(
+                player_field_unit_health_point_map_for_notice,
+                player_field_unit_harmful_effect_map_for_notice,
+                player_field_unit_death_map_for_notice);
+
+        // 유닛 대상 단일 액티브 스킬 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_TARGETING_ACTIVE_ATTACK_ACTIVE_SKILL_TO_UNIT(
+                        notify_form_targeting_attack_active_skill_to_unit)))).await;
+
+        true
+    }
+    async fn notice_non_targeting_attack_active_skill(
+        &mut self,
+        opponent_unique_id: i32,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    ) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_non_targeting_attack_active_skill()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_non_targeting_active_skill =
+            NotifyFormNonTargetingAttackActiveSkill::new(
+                player_field_unit_health_point_map_for_notice,
+                player_field_unit_harmful_effect_map_for_notice,
+                player_field_unit_death_map_for_notice);
+
+        // 유닛 대상 광역 액티브 스킬 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_NON_TARGETING_ACTIVE_SKILL(
+                        notify_form_non_targeting_active_skill)))).await;
 
         true
     }

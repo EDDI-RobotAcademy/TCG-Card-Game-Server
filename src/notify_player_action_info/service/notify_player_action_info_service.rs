@@ -1,6 +1,9 @@
 use async_trait::async_trait;
 use crate::notify_player_action_info::service::request::notice_basic_attack_to_main_character_request::NoticeBasicAttackToMainCharacterRequest;
 use crate::notify_player_action_info::service::request::notice_basic_attack_to_unit_request::NoticeBasicAttackToUnitRequest;
+use crate::notify_player_action_info::service::request::notice_my_turn_end_request::NoticeMyTurnEndRequest;
+use crate::notify_player_action_info::service::request::notice_non_targeting_attack_active_skill_request::NoticeNonTargetingAttackActiveSkillRequest;
+use crate::notify_player_action_info::service::request::notice_targeting_attack_active_skill_to_unit_request::NoticeTargetingAttackActiveSkillToUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_catastrophic_damage_item_card_request::NoticeUseCatastrophicDamageItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_draw_support_card_request::NoticeUseDrawSupportCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_energy_boost_support_card_to_my_specific_unit_request::NoticeUseEnergyBoostSupportCardToSpecificUnitRequest;
@@ -16,6 +19,9 @@ use crate::notify_player_action_info::service::request::notice_use_unit_card_req
 use crate::notify_player_action_info::service::request::notice_use_unit_energy_remove_item_card_request::NoticeUseUnitEnergyRemoveItemCardRequest;
 use crate::notify_player_action_info::service::response::notice_basic_attack_to_main_character_response::NoticeBasicAttackToMainCharacterResponse;
 use crate::notify_player_action_info::service::response::notice_basic_attack_to_unit_response::NoticeBasicAttackToUnitResponse;
+use crate::notify_player_action_info::service::response::notice_my_turn_end_response::NoticeMyTurnEndResponse;
+use crate::notify_player_action_info::service::response::notice_non_targeting_attack_active_skill_response::NoticeNonTargetingAttackActiveSkillResponse;
+use crate::notify_player_action_info::service::response::notice_targeting_attack_active_skill_to_unit_response::NoticeTargetingAttackActiveSkillToUnitResponse;
 
 use crate::notify_player_action_info::service::response::notice_use_catastrophic_damage_item_card_response::NoticeUseCatastrophicDamageItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_draw_support_card_response::NoticeUseDrawSupportCardResponse;
@@ -88,4 +94,13 @@ pub trait NotifyPlayerActionInfoService {
     async fn notice_basic_attack_to_main_character(
         &mut self, notice_basic_attack_to_main_character_request: NoticeBasicAttackToMainCharacterRequest)
         -> NoticeBasicAttackToMainCharacterResponse;
+    async fn notice_my_turn_end(
+        &mut self, notice_my_turn_end_request: NoticeMyTurnEndRequest)
+        -> NoticeMyTurnEndResponse;
+    async fn notice_targeting_attack_active_skill_to_unit(
+        &mut self, notice_targeting_attack_active_skill_to_unit_request: NoticeTargetingAttackActiveSkillToUnitRequest)
+        -> NoticeTargetingAttackActiveSkillToUnitResponse;
+    async fn notice_non_targeting_attack_active_skill(
+        &mut self, notice_non_targeting_attack_active_skill_request: NoticeNonTargetingAttackActiveSkillRequest)
+        -> NoticeNonTargetingAttackActiveSkillResponse;
 }

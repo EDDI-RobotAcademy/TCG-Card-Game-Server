@@ -6,33 +6,29 @@ use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHea
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TargetingActiveSkillResponseForm {
-    is_success: bool,
+pub struct NotifyFormTurnEnd {
+    player_drawn_card_list_map: HashMap<PlayerIndex, Vec<i32>>,
+    player_field_energy_map: HashMap<PlayerIndex, i32>,
     player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
     player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
-    player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>
+    player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
 }
 
-impl TargetingActiveSkillResponseForm {
-    pub fn new(is_success: bool,
-               player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
-               player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
-               player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>
+impl NotifyFormTurnEnd {
+    pub fn new(
+        player_drawn_card_list_map: HashMap<PlayerIndex, Vec<i32>>,
+        player_field_energy_map: HashMap<PlayerIndex, i32>,
+        player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
+        player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
     ) -> Self {
-        TargetingActiveSkillResponseForm {
-            is_success,
+
+        NotifyFormTurnEnd {
+            player_drawn_card_list_map,
+            player_field_energy_map,
             player_field_unit_health_point_map,
             player_field_unit_harmful_effect_map,
             player_field_unit_death_map
         }
-    }
-
-    pub fn default() -> TargetingActiveSkillResponseForm {
-
-        TargetingActiveSkillResponseForm::new(
-            false,
-            HashMap::new(),
-            HashMap::new(),
-            HashMap::new(),)
     }
 }

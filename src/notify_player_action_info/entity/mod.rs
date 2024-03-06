@@ -13,3 +13,6 @@ pub mod notify_form_use_special_energy_card_to_unit;
 pub mod notify_form_basic_attack_to_unit;
 pub mod notify_form_basic_attack_to_main_character;
 pub mod notify_form_deploy_unit;
+pub mod notify_form_turn_end;
+pub mod notify_form_targeting_attack_active_skill_to_unit;
+pub mod notify_form_non_targeting_attack_active_skill;
