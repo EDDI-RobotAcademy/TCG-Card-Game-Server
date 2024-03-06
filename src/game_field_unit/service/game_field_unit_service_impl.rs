@@ -10,6 +10,7 @@ use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUni
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
 
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
+use crate::game_field_unit::service::request::acquire_harmful_status_effect_of_all_unit_request::AcquireHarmfulStatusEffectOfAllUnitRequest;
 use crate::game_field_unit::service::request::acquire_unit_attack_point_request::AcquireUnitAttackPointRequest;
 use crate::game_field_unit::service::request::acquire_unit_extra_effect_request::AcquireUnitExtraEffectRequest;
 use crate::game_field_unit::service::request::acquire_unit_passive_status_list_request::AcquireUnitPassiveStatusListRequest;
@@ -40,6 +41,7 @@ use crate::game_field_unit::service::request::acquire_unit_harmful_status_effect
 use crate::game_field_unit::service::request::execute_index_passive_of_unit_request::ExecuteIndexPassiveOfUnitRequest;
 use crate::game_field_unit::service::request::get_passive_skill_usable_request::GetPassiveSkillUsableRequest;
 use crate::game_field_unit::service::request::reset_all_passive_of_unit_request::ResetAllPassiveOfUnitRequest;
+use crate::game_field_unit::service::response::acquire_harmful_status_effect_of_all_unit_response::AcquireHarmfulStatusEffectOfAllUnitResponse;
 use crate::game_field_unit::service::response::acquire_unit_attack_point_response::AcquireUnitAttackPointResponse;
 use crate::game_field_unit::service::response::acquire_unit_extra_effect_response::AcquireUnitExtraEffectResponse;
 use crate::game_field_unit::service::response::acquire_unit_passive_status_list_response::AcquireUnitPassiveStatusListResponse;
@@ -473,6 +475,16 @@ impl GameFieldUnitService for GameFieldUnitServiceImpl {
 
         AcquireUnitHarmfulStatusEffectResponse::new(harmful_effect_list.clone())
     }
+
+    async fn acquire_harmful_status_effect_of_all_unit(&mut self, acquire_harmful_status_effect_of_all_unit_request: AcquireHarmfulStatusEffectOfAllUnitRequest) -> AcquireHarmfulStatusEffectOfAllUnitResponse {
+        let mut game_field_unit_repository_guard = self.game_field_unit_repository.lock().await;
+        let harmful_effect_list_of_all_unit =
+            game_field_unit_repository_guard.acquire_unit_harmful_status_effect_list_of_all_living_unit(
+                acquire_harmful_status_effect_of_all_unit_request.get_account_unique_id());
+
+        AcquireHarmfulStatusEffectOfAllUnitResponse::new(harmful_effect_list_of_all_unit)
+    }
+
     async fn reset_all_passive_of_unit(&mut self, reset_all_passive_of_unit_request: ResetAllPassiveOfUnitRequest) -> ResetAllPassiveOfUnitResponse {
         println!("GameFieldUnitServiceImpl: reset_all_passive_of_unit()");
 
