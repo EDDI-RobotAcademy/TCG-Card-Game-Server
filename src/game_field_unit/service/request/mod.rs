@@ -27,3 +27,4 @@ pub mod acquire_unit_harmful_status_effect_request;
 pub mod reset_all_passive_of_unit_request;
 pub mod execute_index_passive_of_unit_request;
 pub mod get_passive_skill_usable_request;
+pub mod acquire_harmful_status_effect_of_all_unit_request;

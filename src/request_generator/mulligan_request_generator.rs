@@ -1,4 +1,5 @@
 use serde_json::Value as JsonValue;
+use crate::mulligan::controller::request_form::check_opponent_mulligan_status_request_form::CheckOpponentMulliganStatusRequestForm;
 use crate::mulligan::controller::request_form::mulligan_request_form::MulliganRequestForm;
 
 pub fn create_mulligan_request_form(data: &JsonValue) -> Option<MulliganRequestForm> {
@@ -15,6 +16,14 @@ pub fn create_mulligan_request_form(data: &JsonValue) -> Option<MulliganRequestF
         }
 
         Some(MulliganRequestForm::new(session_id.to_string(), hand_card_list_vector))
+    } else {
+        None
+    }
+}
+
+pub fn create_check_opponent_mulligan_status_request_form(data: &JsonValue) -> Option<CheckOpponentMulliganStatusRequestForm> {
+    if let Some(session_id) = data.get("sessionInfo").and_then(|v| v.as_str()) {
+        Some(CheckOpponentMulliganStatusRequestForm::new(session_id.to_string()))
     } else {
         None
     }

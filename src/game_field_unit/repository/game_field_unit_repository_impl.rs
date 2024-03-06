@@ -616,6 +616,17 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
         return indexed_unit_card_reference.get_harmful_status_effect_list_mut();
     }
 
+    fn acquire_unit_harmful_status_effect_list_of_all_living_unit(
+        &mut self,
+        account_unique_id: i32) -> Vec<(i32, Vec<HarmfulStatusEffect>)> {
+
+        if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&account_unique_id) {
+            return game_field_unit.get_harmful_status_list_of_all_indexed_unit()
+        }
+
+        Vec::new()
+    }
+
     fn reset_all_passive_of_unit(
         &mut self,
         account_unique_id: i32,

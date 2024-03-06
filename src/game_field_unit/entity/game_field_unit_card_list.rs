@@ -5,6 +5,7 @@ use crate::game_card_unit::entity::passive_status::PassiveStatus;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
+use crate::game_field_unit::entity::harmful_status_effect::HarmfulStatusEffect;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 
 #[derive(Debug, Clone)]
@@ -142,6 +143,20 @@ impl GameFieldUnitCardList {
         if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
             unit.impose_harmful_state_list(harmful_states);
         }
+    }
+
+    pub fn get_harmful_status_list_of_all_unit(&mut self) -> Vec<(i32, Vec<HarmfulStatusEffect>)> {
+        let mut harmful_status_list_with_index = Vec::new();
+        for unit_index in 0..self.game_field_unit_card_list.len() {
+            if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_index) {
+                if unit.is_alive() {
+                    let harmful_state_list_of_unit = unit.get_harmful_status_effect_list_mut().clone();
+                    harmful_status_list_with_index.push((unit_index as i32, harmful_state_list_of_unit));
+                }
+            }
+        }
+
+        harmful_status_list_with_index
     }
 
     pub fn remove_harmful_status_of_indexed_unit(&mut self, unit_card_index: usize, extra_effect: &ExtraEffect) {

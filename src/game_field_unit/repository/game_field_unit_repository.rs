@@ -187,6 +187,10 @@ pub trait GameFieldUnitRepository {
         opponent_unique_id: i32,
         opponent_unit_index: i32) -> &Vec<HarmfulStatusEffect>;
 
+    fn acquire_unit_harmful_status_effect_list_of_all_living_unit(
+        &mut self,
+        account_unique_id: i32) -> Vec<(i32, Vec<HarmfulStatusEffect>)>;
+
     fn reset_all_passive_of_unit(
         &mut self,
         account_unique_id: i32,

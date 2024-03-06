@@ -51,6 +51,7 @@ use crate::game_field_energy::controller::response_form::attach_field_energy_to_
 use crate::game_winner_check::service::response::surrender_response::SurrenderResponse;
 use crate::mulligan::controller::response_form::mulligan_response_form::MulliganResponseForm;
 use crate::game_turn::controller::response_form::turn_end_response_form::TurnEndResponseForm;
+use crate::mulligan::controller::response_form::check_opponent_mulligan_status_response_form::CheckOpponentMulliganStatusResponseForm;
 use crate::notify_player_action::entity::notify_opponent_increase_field_energy_item_usage::NotifyOpponentIncreaseFieldEnergyItemUsage;
 use crate::notify_player_action::entity::notify_opponent_to_enhance_attack_point_tool_usage::NotifyOpponentToEnhanceAttackPointToolUsage;
 use crate::notify_player_action::entity::notify_opponent_remove_field_energy_support_usage::NotifyOpponentRemoveFieldEnergySupportUsage;
@@ -218,6 +219,7 @@ pub enum ResponseType {
 
     // Mulligan
     CHANGE_FIRST_HAND(MulliganResponseForm),
+    CHECK_OPPONENT_MULLIGAN(CheckOpponentMulliganStatusResponseForm),
 
     // Program Exit
     PROGRAM_EXIT(ClientProgramExitResponse),
