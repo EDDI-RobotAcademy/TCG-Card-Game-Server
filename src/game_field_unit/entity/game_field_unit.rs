@@ -6,6 +6,7 @@ use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::extra_status_effect::ExtraStatusEffect;
 use crate::game_field_unit::entity::game_field_unit_card::GameFieldUnitCard;
 use crate::game_field_unit::entity::game_field_unit_card_list::GameFieldUnitCardList;
+use crate::game_field_unit::entity::harmful_status_effect::HarmfulStatusEffect;
 use crate::game_field_unit::entity::race_enum_value::RaceEnumValue;
 
 #[derive(Debug, Clone)]
@@ -121,6 +122,10 @@ impl GameFieldUnit {
         );
 
         self.game_field_unit.impose_extra_effect_state_to_indexed_unit(unit_card_index, effect);
+    }
+
+    pub fn get_harmful_status_list_of_all_indexed_unit(&mut self) -> Vec<(i32, Vec<HarmfulStatusEffect>)> {
+        return self.game_field_unit.get_harmful_status_list_of_all_unit()
     }
 
     pub fn detach_energy_from_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32) {
