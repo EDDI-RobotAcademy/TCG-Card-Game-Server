@@ -2,11 +2,11 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
-use crate::account_deck_card::entity::account_deck_card_list::AccountDeckCardList;
-use crate::account_deck_card::entity::deck_card::DeckCard;
 
 use crate::account_deck_card::repository::account_deck_card_repository::AccountDeckCardRepository;
 use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
+use crate::account_card::repository::account_card_repository::AccountCardRepository;
+use crate::account_card::repository::account_card_repository_impl::AccountCardRepositoryImpl;
 use crate::common::converter::hash_to_vector_converter::HashToVectorConverter;
 use crate::game_deck::entity::game_deck_card::GameDeckCard;
 use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
@@ -37,6 +37,7 @@ use crate::rock_paper_scissors_waiting_timer::repository::rock_paper_scissors_wa
 pub struct GameDeckServiceImpl {
     game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>,
     game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
+    account_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
     account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     rock_paper_scissors_waiting_timer_repository: Arc<AsyncMutex<RockPaperScissorsWaitingTimerRepositoryImpl>>
@@ -45,6 +46,7 @@ pub struct GameDeckServiceImpl {
 impl GameDeckServiceImpl {
     pub fn new(game_deck_repository: Arc<AsyncMutex<GameDeckRepositoryImpl>>,
                game_hand_repository: Arc<AsyncMutex<GameHandRepositoryImpl>>,
+               account_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
                account_deck_card_repository: Arc<AsyncMutex<AccountDeckCardRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
                rock_paper_scissors_waiting_timer_repository: Arc<AsyncMutex<RockPaperScissorsWaitingTimerRepositoryImpl>>) -> Self {
@@ -52,6 +54,7 @@ impl GameDeckServiceImpl {
         GameDeckServiceImpl {
             game_deck_repository,
             game_hand_repository,
+            account_card_repository,
             account_deck_card_repository,
             redis_in_memory_repository,
             rock_paper_scissors_waiting_timer_repository
@@ -66,6 +69,7 @@ impl GameDeckServiceImpl {
                         GameDeckServiceImpl::new(
                             GameDeckRepositoryImpl::get_instance(),
                             GameHandRepositoryImpl::get_instance(),
+                            AccountCardRepositoryImpl::get_instance(),
                             AccountDeckCardRepositoryImpl::get_instance(),
                             RedisInMemoryRepositoryImpl::get_instance(),
                             RockPaperScissorsWaitingTimerRepositoryImpl::get_instance())));
@@ -99,9 +103,9 @@ impl GameDeckServiceImpl {
     async fn validate_game_deck_card(&self, account_unique_id: i32) -> bool {
 
         // account_deck_card data 에서 AccountDeckCardList 호출
-        let mut account_deck_card_repository_guard = self.account_deck_card_repository.lock().await;
-        let mut account_deck_card_list_validate = account_deck_card_repository_guard.get_account_deck_card_list(account_unique_id).await;
-        let mutable_vector_deck_card = account_deck_card_list_validate.get_all_card_list_mut();
+        let mut account_card_repository_guard = self.account_card_repository.lock().await;
+        let mut account_card_list_validate = account_card_repository_guard.get_account_card_list(account_unique_id).await;
+        let mutable_vector_deck_card = account_card_list_validate.get_all_card_list_mut();
 
         // initialize_game_deck 호출
         let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
@@ -112,18 +116,18 @@ impl GameDeckServiceImpl {
         for game_card_deck_card_index in game_card_list_for_validate {
             let game_card_deck_card_id = game_card_deck_card_index.get_card();
 
-            for mut account_deck_card_list_validate_index in &mut *mutable_vector_deck_card {
-                let account_deck_card_id = account_deck_card_list_validate_index.get_card();
+            for mut account_card_list_validate_index in &mut *mutable_vector_deck_card {
+                let account_deck_card_id = account_card_list_validate_index.get_card();
 
                 if game_card_deck_card_id == account_deck_card_id {
-                    let mut card_count = account_deck_card_list_validate_index.get_card_count_mut().clone();
+                    let mut card_count = account_card_list_validate_index.get_card_count_mut().clone();
                     let card_count = card_count - 1 ;
 
                     if card_count < 0 {
                         println!("validate_game_deck_card: false, card_id: {:?}", game_card_deck_card_id);
                         return false;
                     } else {
-                        account_deck_card_list_validate_index.set_card_count(card_count);
+                        account_card_list_validate_index.set_card_count(card_count);
                     }
                 }
             }
@@ -299,8 +303,8 @@ impl GameDeckService for GameDeckServiceImpl {
 mod tests {
     use super::*;
     use tokio::test;
-    use crate::account_deck_card::entity::deck_card::DeckCard;
-    use crate::account_deck_card::entity::account_deck_card_list::AccountDeckCardList;
+    use crate::account_card::entity::card::Card;
+    use crate::account_card::entity::account_card_list::AccountCardList;
     use crate::game_deck::entity::game_deck::GameDeck;
 
     #[tokio::test]
@@ -360,8 +364,8 @@ mod tests {
     #[tokio::test]
     async fn test_validate_game_deck_card() {
 
-        let account_deck_card_repository_mutex = AccountDeckCardRepositoryImpl::get_instance();
-        let account_deck_card_repository_guard = account_deck_card_repository_mutex.lock().await;
+        let account_card_repository_mutex = AccountCardRepositoryImpl::get_instance();
+        let account_card_repository_guard = account_card_repository_mutex.lock().await;
 
 
         // game_deck 초기화
@@ -385,14 +389,14 @@ mod tests {
 
         println!("mut_vec_game_deck_card: {:?}", mut_vec_game_deck_card);
 
-        // account_deck_card 초기화
-        let mut account_card_hashmap = AccountDeckCardList::new();
+        // account_card 초기화
+        let mut account_card_hashmap = AccountCardList::new();
 
-        let list1 = DeckCard::new(1,2);
-        let list2 = DeckCard::new(2,2);
-        let list3 = DeckCard::new(3,1); // 3 번 카드를 1 장 부족하게 셋팅하여 테스트 진행 (기대값 false)
-        let list4 = DeckCard::new(4,1);
-        let list5 = DeckCard::new(5,1);
+        let list1 = Card::new(1,2);
+        let list2 = Card::new(2,2);
+        let list3 = Card::new(3,1); // 3 번 카드를 1 장 부족하게 셋팅하여 테스트 진행 (기대값 false)
+        let list4 = Card::new(4,1);
+        let list5 = Card::new(5,1);
 
         account_card_hashmap.add_card(list1);
         account_card_hashmap.add_card(list2);
@@ -404,18 +408,18 @@ mod tests {
 
         println!("account_card_hashmap: {:?} ", mut_account_card_hashmap);
 
-        // game_deck_card 의 card_id 와 일치하는 account_deck_card 를 찾아서 card_count 를 삭감하며 검증
+        // game_deck_card 의 card_id 와 일치하는 account_card 를 찾아서 card_count 를 삭감하며 검증
         for game_card_deck_card_index in mut_vec_game_deck_card {
             let game_card_deck_card_id = game_card_deck_card_index.get_card();
             println!("game_card_deck_card_id: {:?}", game_card_deck_card_id);
 
-            for mut account_deck_card_list_validate_index in &mut *mut_account_card_hashmap {
-                let account_deck_card_id = account_deck_card_list_validate_index.get_card();
-                println!("account_deck_card_id: {:?}", account_deck_card_id);
+            for mut account_card_list_validate_index in &mut *mut_account_card_hashmap {
+                let account_card_id = account_card_list_validate_index.get_card();
+                println!("account_deck_card_id: {:?}", account_card_id);
 
-                if game_card_deck_card_id == account_deck_card_id {
-                    let mut card_count = account_deck_card_list_validate_index.get_card_count_mut().clone();
-                    println!("account_deck_card_list_validate_index: {:?}", account_deck_card_list_validate_index);
+                if game_card_deck_card_id == account_card_id {
+                    let mut card_count = account_card_list_validate_index.get_card_count_mut().clone();
+                    println!("account_deck_card_list_validate_index: {:?}", account_card_list_validate_index);
                     let card_count = card_count - 1 ;
                     println!("decrease_card_count");
                     println!("game_card_deck_card_id: {:?}, card_count: {:?}", game_card_deck_card_id, card_count);
@@ -423,7 +427,7 @@ mod tests {
                     if card_count < 0 {
                         println!("false: {:?}", game_card_deck_card_id);
                     } else {
-                        account_deck_card_list_validate_index.set_card_count(card_count);
+                        account_card_list_validate_index.set_card_count(card_count);
                     }
                 }
             }
