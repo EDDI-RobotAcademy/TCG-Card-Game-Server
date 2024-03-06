@@ -180,8 +180,15 @@ impl GameDeckService for GameDeckServiceImpl {
         let drawn_card_list_clone = drawn_card_list.clone();
 
         self.add_drawn_cards_to_hand(account_unique_id, drawn_card_list).await;
-        let mut rock_paper_scissors_waiting_timer_repository = self.rock_paper_scissors_waiting_timer_repository.lock().await;
-        rock_paper_scissors_waiting_timer_repository.set_rock_paper_scissors_waiting_timer(account_unique_id).await;
+
+        let mut rock_paper_scissors_waiting_timer_repository =
+            self.rock_paper_scissors_waiting_timer_repository.lock().await;
+
+        rock_paper_scissors_waiting_timer_repository
+            .set_rock_paper_scissors_waiting_timer(account_unique_id).await;
+
+        drop(rock_paper_scissors_waiting_timer_repository);
+
         GameDeckStartCardListResponse::new(true, drawn_card_list_clone)
     }
 
