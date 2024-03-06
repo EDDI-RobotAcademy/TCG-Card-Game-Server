@@ -14,3 +14,5 @@ pub mod notice_basic_attack_to_unit_response;
 pub mod notice_basic_attack_to_main_character_response;
 pub mod notice_use_unit_card_response;
 pub mod notice_my_turn_end_response;
+pub mod notice_targeting_attack_active_skill_to_unit_response;
+pub mod notice_non_targeting_attack_active_skill_response;
