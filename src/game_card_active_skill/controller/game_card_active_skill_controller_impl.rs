@@ -309,55 +309,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                     .to_generate_opponent_specific_unit_death_data_request(
                         judge_death_of_opponent_unit_response.get_dead_unit_index())).await;
 
-        // let generate_my_specific_unit_health_point_data_response =
-        //     ui_data_generator_service_guard.generate_my_specific_unit_health_point_data(
-        //         attack_unit_request_form
-        //             .to_generate_my_specific_unit_health_point_data_request(
-        //                 attacker_unit_card_index,
-        //                 attacker_unit_health_point)).await;
-        //
-        // let generate_my_specific_unit_harmful_effect_data_response =
-        //     ui_data_generator_service_guard.generate_my_specific_unit_harmful_effect_data(
-        //         attack_unit_request_form
-        //             .to_generate_my_specific_unit_harmful_effect_data_request(
-        //                 attacker_unit_card_index,
-        //                 attacker_unit_harmful_effect_list)).await;
-        //
-        // let generate_my_specific_unit_death_data_response =
-        //     ui_data_generator_service_guard.generate_my_specific_unit_death_data(
-        //         attack_unit_request_form
-        //             .to_generate_my_specific_unit_death_data_request(
-        //                 judge_death_of_attacker_unit_response.get_dead_unit_index())).await;
-
         drop(ui_data_generator_service_guard);
-
-        // TODO: Need Refactor
-        let mut combined_unit_health_point_data_for_response = HashMap::new();
-        let mut combined_unit_harmful_effect_data_for_response = HashMap::new();
-        let mut combined_unit_death_data_for_response = HashMap::new();
-        let mut combined_unit_health_point_data_for_notice = HashMap::new();
-        let mut combined_unit_harmful_effect_data_for_notice = HashMap::new();
-        let mut combined_unit_death_data_for_notice = HashMap::new();
-
-        combined_unit_health_point_data_for_response.extend(
-            generate_opponent_specific_unit_health_point_data_response
-                .get_player_field_unit_health_point_map_for_response().clone());
-        combined_unit_harmful_effect_data_for_response.extend(
-            generate_opponent_specific_unit_harmful_effect_data_response
-                .get_player_field_unit_harmful_effect_map_for_response().clone());
-        combined_unit_death_data_for_response.extend(
-            generate_opponent_specific_unit_death_data_response
-                .get_player_field_unit_death_map_for_response().clone());
-
-        combined_unit_health_point_data_for_notice.extend(
-            generate_opponent_specific_unit_health_point_data_response
-                .get_player_field_unit_health_point_map_for_notice().clone());
-        combined_unit_harmful_effect_data_for_notice.extend(
-            generate_opponent_specific_unit_harmful_effect_data_response
-                .get_player_field_unit_harmful_effect_map_for_notice().clone());
-        combined_unit_death_data_for_notice.extend(
-            generate_opponent_specific_unit_death_data_response
-                .get_player_field_unit_death_map_for_notice().clone());
 
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
@@ -366,17 +318,17 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
             targeting_active_skill_request_form
                 .to_notice_targeting_attack_active_skill_to_unit_request(
                     opponent_unique_id,
-                    combined_unit_health_point_data_for_notice,
-                    combined_unit_harmful_effect_data_for_notice,
-                    combined_unit_death_data_for_notice)).await;
+                    generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_notice().clone(),
+                    generate_opponent_specific_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                    generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_notice().clone())).await;
 
         drop(notify_player_action_info_service_guard);
 
         TargetingActiveSkillResponseForm::new(
             true,
-            combined_unit_health_point_data_for_response,
-            combined_unit_harmful_effect_data_for_response,
-            combined_unit_death_data_for_response)
+            generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_response().clone(),
+            generate_opponent_specific_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_response().clone(),
+            generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_response().clone())
 
     }
 
@@ -573,33 +525,6 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         drop(ui_data_generator_service_guard);
 
-        // TODO: Need Refactor
-        let mut combined_unit_health_point_data_for_response = HashMap::new();
-        let mut combined_unit_harmful_effect_data_for_response = HashMap::new();
-        let mut combined_unit_death_data_for_response = HashMap::new();
-        let mut combined_unit_health_point_data_for_notice = HashMap::new();
-        let mut combined_unit_harmful_effect_data_for_notice = HashMap::new();
-        let mut combined_unit_death_data_for_notice = HashMap::new();
-
-        combined_unit_health_point_data_for_response.extend(
-            generate_opponent_multiple_unit_health_point_data_response
-                .get_player_field_unit_health_point_map_for_response().clone());
-        combined_unit_harmful_effect_data_for_response.extend(
-            generate_opponent_multiple_unit_harmful_effect_data_response
-                .get_player_field_unit_harmful_effect_map_for_response().clone());
-        combined_unit_death_data_for_response.extend(
-            generate_opponent_multiple_unit_death_data_response
-                .get_player_field_unit_death_map_for_response().clone());
-
-        combined_unit_health_point_data_for_notice.extend(
-            generate_opponent_multiple_unit_health_point_data_response
-                .get_player_field_unit_health_point_map_for_notice().clone());
-        combined_unit_harmful_effect_data_for_notice.extend(
-            generate_opponent_multiple_unit_harmful_effect_data_response
-                .get_player_field_unit_harmful_effect_map_for_notice().clone());
-        combined_unit_death_data_for_notice.extend(
-            generate_opponent_multiple_unit_death_data_response
-                .get_player_field_unit_death_map_for_notice().clone());
 
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
@@ -608,17 +533,17 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
             non_targeting_active_skill_request_form
                 .to_notice_non_targeting_active_skill_request(
                     opponent_unique_id,
-                    combined_unit_health_point_data_for_notice,
-                    combined_unit_harmful_effect_data_for_notice,
-                    combined_unit_death_data_for_notice)).await;
+                    generate_opponent_multiple_unit_health_point_data_response.get_player_field_unit_health_point_map_for_notice().clone(),
+                    generate_opponent_multiple_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                    generate_opponent_multiple_unit_death_data_response.get_player_field_unit_death_map_for_notice().clone())).await;
 
         drop(notify_player_action_info_service_guard);
 
         NonTargetingActiveSkillResponseForm::new(
             true,
-            combined_unit_health_point_data_for_response,
-            combined_unit_harmful_effect_data_for_response,
-            combined_unit_death_data_for_response)
+            generate_opponent_multiple_unit_health_point_data_response.get_player_field_unit_health_point_map_for_response().clone(),
+            generate_opponent_multiple_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_response().clone(),
+            generate_opponent_multiple_unit_death_data_response.get_player_field_unit_death_map_for_response().clone())
 
     }
 }
