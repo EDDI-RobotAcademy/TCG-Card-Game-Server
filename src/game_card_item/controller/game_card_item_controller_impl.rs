@@ -796,7 +796,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
                 let mut game_winner_check_service_guard =
                     self.game_winner_check_service.lock().await;
 
-                game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
+                game_winner_check_service_guard.set_game_winner(
                     catastrophic_damage_item_request_form
                         .to_check_main_character_for_setting_game_winner_request(
                             account_unique_id,

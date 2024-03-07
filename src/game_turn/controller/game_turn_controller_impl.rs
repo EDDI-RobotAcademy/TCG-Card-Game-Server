@@ -315,7 +315,7 @@ impl GameTurnController for GameTurnControllerImpl {
             let mut game_winner_check_service_guard =
                 self.game_winner_check_service.lock().await;
 
-            game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
+            game_winner_check_service_guard.set_game_winner(
                 turn_end_request_form
                     .to_check_health_of_main_character_for_setting_game_winner(
                         account_unique_id, opponent_unique_id)).await;

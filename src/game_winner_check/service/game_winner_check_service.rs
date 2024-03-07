@@ -5,6 +5,6 @@ use crate::game_winner_check::service::response::surrender_response::SurrenderRe
 
 #[async_trait]
 pub trait GameWinnerCheckService {
-    async fn check_health_of_main_character_for_setting_game_winner(&mut self, check_main_character_request: CheckMainCharacterRequest);
+    async fn set_game_winner(&mut self, check_main_character_request: CheckMainCharacterRequest);
     async fn set_game_winner_by_surrender(&mut self, surrender_request: SurrenderRequest) -> SurrenderResponse;
 }
