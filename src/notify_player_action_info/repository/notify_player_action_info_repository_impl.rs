@@ -770,7 +770,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_TARGETING_ACTIVE_ATTACK_ACTIVE_SKILL_TO_UNIT(
+                    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(
                         notify_form_targeting_attack_active_skill_to_unit)))).await;
 
         true
@@ -837,7 +837,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_TARGETING_ACTIVE_ATTACK_ACTIVE_SKILL_TO_UNIT(
+                    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(
                         notify_form_targeting_attack_active_skill_to_unit)))).await;
 
         true
@@ -872,7 +872,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_TARGETING_ACTIVE_ATTACK_ACTIVE_SKILL_TO_UNIT(
+                    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(
                         notify_form_targeting_attack_active_skill_to_unit)))).await;
 
         true
