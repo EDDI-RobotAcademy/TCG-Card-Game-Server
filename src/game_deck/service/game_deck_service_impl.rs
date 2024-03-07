@@ -14,6 +14,7 @@ use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
 use crate::game_deck::repository::game_deck_repository_impl::GameDeckRepositoryImpl;
 use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::request::draw_cards_from_deck_request::DrawCardsFromDeckRequest;
+use crate::game_deck::service::request::find_deck_card_id_by_index_request::FindDeckCardIdByIndexRequest;
 use crate::game_deck::service::request::found_card_from_deck_request::FoundCardFromDeckRequest;
 use crate::game_deck::service::request::game_deck_card_draw_request::GameDeckCardDrawRequest;
 use crate::game_deck::service::request::game_deck_card_list_request::GameDeckCardListRequest;
@@ -21,6 +22,7 @@ use crate::game_deck::service::request::game_deck_start_card_list_request::{Game
 use crate::game_deck::service::request::game_deck_card_shuffle_request::{GameDeckCardShuffleRequest};
 use crate::game_deck::service::request::search_specific_deck_card_request::SearchSpecificDeckCardRequest;
 use crate::game_deck::service::response::draw_cards_from_deck_response::DrawCardsFromDeckResponse;
+use crate::game_deck::service::response::find_deck_card_id_by_index_response::FindDeckCardIdByIndexResponse;
 use crate::game_deck::service::response::found_card_from_deck_response::FoundCardFromDeckResponse;
 use crate::game_deck::service::response::game_deck_card_draw_list_response::GameDeckCardDrawListResponse;
 use crate::game_deck::service::response::game_deck_card_list_response::GameDeckCardListResponse;
@@ -259,23 +261,38 @@ impl GameDeckService for GameDeckServiceImpl {
         FoundCardFromDeckResponse::new(found_card_list)
     }
 
+    async fn find_deck_card_id_by_index(&self, find_deck_card_id_by_index_request: FindDeckCardIdByIndexRequest) -> FindDeckCardIdByIndexResponse {
+        println!("GameDeckServiceImpl: find_deck_card_id_by_index()");
+
+        let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
+        let found_card_id = game_deck_repository_guard.find_deck_card_id_with_index(
+            find_deck_card_id_by_index_request.get_account_unique_id(),
+            find_deck_card_id_by_index_request.get_target_card_index());
+
+        FindDeckCardIdByIndexResponse::new(found_card_id)
+    }
+
     async fn search_specific_deck_card(&self, search_specific_deck_card_request: SearchSpecificDeckCardRequest) -> SearchSpecificDeckCardResponse {
-        println!("GameDeckServiceImpl: search_specific_deck_card()");
+        println!("GameDeckServiceImpl: search_specific_deck_card_by_index()");
 
         let mut game_deck_repository_guard = self.game_deck_repository.lock().await;
 
         let account_unique_id = search_specific_deck_card_request.get_account_unique_id();
-        let will_be_found_card_list = search_specific_deck_card_request.get_target_card_id_list();
+        let mut will_be_found_card_index_list = search_specific_deck_card_request.get_target_card_index_list().clone();
+
+        // side effect 를 없애기 위한 정렬
+        will_be_found_card_index_list.sort();
+        will_be_found_card_index_list.reverse();
+
         let mut searched_card_list = Vec::new();
 
-        for will_be_found_card in will_be_found_card_list {
-            let found_card = game_deck_repository_guard
-                .find_by_card_id_with_count(account_unique_id, *will_be_found_card, 1);
-            if found_card.is_empty() {
-                return SearchSpecificDeckCardResponse::new(Vec::new());
-            } else {
-                searched_card_list.push(*will_be_found_card);
-            }
+        for will_be_found_card_index in will_be_found_card_index_list {
+            let found_card =
+                game_deck_repository_guard.get_deck_card_by_index(
+                    account_unique_id,
+                    will_be_found_card_index);
+
+            searched_card_list.push(found_card);
         }
 
         SearchSpecificDeckCardResponse::new(searched_card_list)

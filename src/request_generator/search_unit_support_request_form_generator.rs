@@ -2,14 +2,14 @@ use serde_json::Value as JsonValue;
 use crate::game_card_support::controller::request_form::search_unit_support_request_form::SearchUnitSupportRequestForm;
 
 pub fn create_search_unit_support_request_form(data: &JsonValue) -> Option<SearchUnitSupportRequestForm> {
-    if let (Some(session_id), Some(support_card_id), Some(target_unit_id_list)) = (
+    if let (Some(session_id), Some(support_card_id), Some(target_unit_index_list)) = (
         data.get("sessionInfo").and_then(|v| v.as_str()),
         data.get("supportCardId").and_then(|v| v.as_str()),
-        data.get("targetUnitCardList").and_then(|v| v.as_array())
+        data.get("targetUnitCardIndexList").and_then(|v| v.as_array())
     ) {
         let mut target_unit_card_list: Vec<String> = Vec::new();
-        for unit_card_id_value in target_unit_id_list {
-            if let Some(unit_card_id_str) = unit_card_id_value.as_str() {
+        for unit_card_index_value in target_unit_index_list {
+            if let Some(unit_card_id_str) = unit_card_index_value.as_str() {
                 let unit_card_id_string = unit_card_id_str.to_string();
                 target_unit_card_list.push(unit_card_id_string);
             }

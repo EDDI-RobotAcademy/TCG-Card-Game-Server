@@ -18,6 +18,12 @@ impl GameDeckCardList {
         self.card_list.push(card);
     }
 
+    pub fn remove_card_by_index(&mut self, index: usize) {
+        if index < self.card_list.len() {
+            self.card_list.remove(index);
+        }
+    }
+
     pub fn get_all_card_list(&self) -> &Vec<GameDeckCard> {
         &self.card_list
     }
@@ -59,7 +65,6 @@ impl GameDeckCardList {
 
             drawn_card_list
         }
-
     }
 
     pub fn find_by_card_id_with_count(&mut self, wanna_find_id: i32, count: usize) -> Vec<i32> {

@@ -625,10 +625,10 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let searching_grade_limit = card_effect_summary.get_unit_from_deck().get_grade_limit();
         let searching_card_count = card_effect_summary.get_unit_from_deck().get_unit_count();
 
-        let target_unit_card_number_list_string =
-            search_unit_support_request_form.get_target_unit_card_list().clone();
-        let target_unit_card_number_list =
-            VectorStringToVectorInteger::vector_string_to_vector_i32(target_unit_card_number_list_string);
+        let target_unit_card_index_list_string =
+            search_unit_support_request_form.get_target_unit_card_index_list().clone();
+        let target_unit_card_index_list =
+            VectorStringToVectorInteger::vector_string_to_vector_i32(target_unit_card_index_list_string);
 
         let mut game_protocol_validation_service_guard =
             self.game_protocol_validation_service.lock().await;
@@ -636,10 +636,20 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let mut card_grade_service_guard =
             self.card_grade_service.lock().await;
 
+        let mut game_deck_service_guard =
+            self.game_deck_service.lock().await;
+
         // card kind && grade check
-        for unit_card_number in target_unit_card_number_list.clone() {
+        for unit_card_index in target_unit_card_index_list.clone() {
+            let maybe_unit_card_id =
+                game_deck_service_guard.find_deck_card_id_by_index(
+                    search_unit_support_request_form
+                        .to_find_deck_card_id_by_index_request(
+                            account_unique_id,
+                            unit_card_index)).await.get_found_card_id();
+
             let is_it_unit_request =
-                search_unit_support_request_form.to_is_it_unit_card_request(unit_card_number);
+                search_unit_support_request_form.to_is_it_unit_card_request(maybe_unit_card_id);
             let is_it_unit_response =
                 game_protocol_validation_service_guard.is_it_unit_card(is_it_unit_request).await;
 
@@ -649,7 +659,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             }
 
             let grade_of_unit =
-                card_grade_service_guard.get_card_grade(&unit_card_number).await;
+                card_grade_service_guard.get_card_grade(&maybe_unit_card_id).await;
 
             if grade_of_unit as i32 > searching_grade_limit as i32 {
                 println!("Player chose too high grade unit card to search.");
@@ -662,23 +672,20 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         // target number check
         if search_unit_support_request_form
-            .get_target_unit_card_list().len() != searching_card_count as usize {
+            .get_target_unit_card_index_list().len() != searching_card_count as usize {
             println!("Player should choose {} unit(s) from deck.", searching_card_count);
             return SearchUnitSupportResponseForm::default()
         }
 
         // remove found card from deck && add it to hand && shuffle
-        let mut game_deck_service_guard =
-            self.game_deck_service.lock().await;
-
         let search_specific_deck_card_response =
             game_deck_service_guard.search_specific_deck_card(
                 search_unit_support_request_form
                     .to_search_specific_deck_card_request(
                         account_unique_id,
-                        target_unit_card_number_list.clone())).await;
+                        target_unit_card_index_list.clone())).await;
 
-        if search_specific_deck_card_response.get_found_card_list().is_empty() {
+        if search_specific_deck_card_response.get_found_card_id_list().is_empty() {
             return SearchUnitSupportResponseForm::default()
         }
 
@@ -694,7 +701,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             search_unit_support_request_form
                 .to_add_card_list_to_hand_request(
                     account_unique_id,
-                    search_specific_deck_card_response.get_found_card_list().clone())).await;
+                    search_specific_deck_card_response.get_found_card_id_list().clone())).await;
 
         drop(game_hand_service_guard);
 
@@ -725,7 +732,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             ui_data_generator_service_guard.generate_search_my_deck_data(
                 search_unit_support_request_form
                     .to_generate_search_my_deck_data_request(
-                        search_specific_deck_card_response.get_found_card_list().clone())).await;
+                        search_specific_deck_card_response.get_found_card_id_list().clone())).await;
 
         drop(ui_data_generator_service_guard);
 
