@@ -8,7 +8,7 @@ pub struct SupportCard_30_Function;
 impl GameCardSupportHandler for SupportCard_30_Function {
     unsafe fn generate_support_card_effect_summary(&self) -> GameCardSupportEffect {
         let mut game_card_support_effect = GameCardSupportEffect::new(RaceEnum::Undead, 0);
-        game_card_support_effect.set_unit_from_deck(GradeEnum::Hero, 1);
+        game_card_support_effect.set_unit_from_deck(GradeEnum::Hero, 2);
 
         game_card_support_effect
     }

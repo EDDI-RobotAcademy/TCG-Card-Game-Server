@@ -3,6 +3,7 @@ use crate::battle_room::service::request::find_opponent_by_account_id_request::F
 use crate::game_card_support::service::request::summarize_support_card_effect_request::{SummarizeSupportCardEffectRequest};
 use crate::game_card_support_usage_counter::service::request::check_support_card_usage_count_request::CheckSupportCardUsageCountRequest;
 use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
+use crate::game_deck::service::request::find_deck_card_id_by_index_request::FindDeckCardIdByIndexRequest;
 use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
 use crate::game_deck::service::request::search_specific_deck_card_request::SearchSpecificDeckCardRequest;
 use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
@@ -24,21 +25,23 @@ use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_r
 pub struct SearchUnitSupportRequestForm {
     session_id: String,
     support_card_number: String,
-    target_unit_card_list: Vec<String>,
+    target_unit_card_index_list: Vec<String>,
 }
 
 impl SearchUnitSupportRequestForm {
-    pub fn new(session_id: &str, support_card_number: &str, target_unit_card_list: Vec<String>) -> Self {
+    pub fn new(session_id: &str, support_card_number: &str, target_unit_card_index_list: Vec<String>) -> Self {
         SearchUnitSupportRequestForm {
             session_id: session_id.to_string(),
             support_card_number: support_card_number.to_string(),
-            target_unit_card_list,
+            target_unit_card_index_list,
         }
     }
 
     pub fn get_support_card_number(&self) -> &str { &self.support_card_number }
 
-    pub fn get_target_unit_card_list(&self) -> &Vec<String> { &self.target_unit_card_list }
+    pub fn get_target_unit_card_index_list(&self) -> &Vec<String> {
+        &self.target_unit_card_index_list
+    }
 
     pub fn to_session_validation_request(
         &self) -> GetValueWithKeyRequest {
@@ -81,6 +84,16 @@ impl SearchUnitSupportRequestForm {
 
         IsItSupportCardRequest::new(
             support_card_number)
+    }
+
+    pub fn to_find_deck_card_id_by_index_request(
+        &self,
+        account_unique_id: i32,
+        target_card_index: i32) -> FindDeckCardIdByIndexRequest {
+
+        FindDeckCardIdByIndexRequest::new(
+            account_unique_id,
+            target_card_index)
     }
 
     pub fn to_is_it_unit_card_request(
