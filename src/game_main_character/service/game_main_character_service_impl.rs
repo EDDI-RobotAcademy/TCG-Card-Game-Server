@@ -10,9 +10,11 @@ use crate::game_main_character::service::game_main_character_service::GameMainCh
 use crate::game_main_character::service::request::apply_damage_to_main_character_request::ApplyDamageToMainCharacterRequest;
 use crate::game_main_character::service::request::check_main_character_of_account_unique_id_request::CheckMainCharacterOfAccountUniqueIdRequest;
 use crate::game_main_character::service::request::get_current_main_character_health_point_request::GetCurrentMainCharacterHealthPointRequest;
+use crate::game_main_character::service::request::set_main_character_as_death_request::SetMainCharacterAsDeathRequest;
 use crate::game_main_character::service::response::apply_damage_to_main_character_response::ApplyDamageToMainCharacterResponse;
 use crate::game_main_character::service::response::check_main_character_of_account_unique_id_response::CheckMainCharacterOfAccountUniqueIdResponse;
 use crate::game_main_character::service::response::get_current_main_character_health_point_response::GetCurrentMainCharacterHealthPointResponse;
+use crate::game_main_character::service::response::set_main_character_as_death_response::SetMainCharacterAsDeathResponse;
 
 pub struct GameMainCharacterServiceImpl {
     game_main_character_repository: Arc<AsyncMutex<GameMainCharacterRepositoryImpl>>,
@@ -49,6 +51,7 @@ impl GameMainCharacterService for GameMainCharacterServiceImpl {
         ApplyDamageToMainCharacterResponse::new(apply_damage_result)
     }
 
+    // TODO: 덱사가 발생한 경우엔 아래의 기능을 사용하기 어려워 하나를 더 만들어야 하는 상황입니다.
     async fn check_main_character_of_account_unique_id(&mut self, check_main_character_of_account_unique_id_request: CheckMainCharacterOfAccountUniqueIdRequest) -> CheckMainCharacterOfAccountUniqueIdResponse {
 
         println!("GameMainCharacterServiceImpl: check_main_character_of_account_unique_id()");
@@ -84,5 +87,21 @@ impl GameMainCharacterService for GameMainCharacterServiceImpl {
         drop(game_main_character_repository_guard);
 
         GetCurrentMainCharacterHealthPointResponse::new(health_point)
+    }
+
+    async fn set_main_character_as_death(
+        &mut self, set_main_character_as_death_request: SetMainCharacterAsDeathRequest)
+        -> SetMainCharacterAsDeathResponse {
+
+        println!("GameMainCharacterServiceImpl: set_main_character_as_death()");
+
+        let mut game_main_character_repository_guard =
+            self.game_main_character_repository.lock().await;
+
+        let result =
+            game_main_character_repository_guard.set_main_character_status_death(
+                set_main_character_as_death_request.get_account_unique_id());
+
+        SetMainCharacterAsDeathResponse::new(result)
     }
 }
