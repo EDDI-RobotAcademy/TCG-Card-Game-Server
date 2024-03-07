@@ -174,4 +174,11 @@ pub trait NotifyPlayerActionInfoRepository {
         player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
         player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> bool;
+
+    // TODO: 도메인 분리를 고민했으면 더 좋았으나 우선 여기에 배치
+    async fn notice_mulligan_finished(
+        &mut self,
+        first_account: i32,
+        second_account: i32
+    ) -> bool;
 }

@@ -72,6 +72,7 @@ use crate::notify_player_action_info::entity::notify_form_basic_attack_to_main_c
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_unit::NotifyFormBasicAttackToUnit;
 use crate::notify_player_action_info::entity::notify_form_deploy_targeting_attack_passive_skill::NotifyFormDeployTargetingAttackPassiveSkill;
 use crate::notify_player_action_info::entity::notify_form_deploy_unit::NotifyFormDeployUnit;
+use crate::notify_player_action_info::entity::notify_form_mulligan_end::NotifyFormMulliganEnd;
 use crate::notify_player_action_info::entity::notify_form_non_targeting_attack_active_skill::NotifyFormNonTargetingAttackActiveSkill;
 use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_unit::NotifyFormTargetingAttackActiveSkillToUnit;
 use crate::notify_player_action_info::entity::notify_form_turn_end::NotifyFormTurnEnd;
@@ -208,6 +209,7 @@ pub enum ResponseType {
 
     NOTIFY_DEPLOY_TARGETING_ATTACK_PASSIVE_SKILL_TO_UNIT(NotifyFormDeployTargetingAttackPassiveSkill),
 
+    NOTIFY_MULLIGAN_END(NotifyFormMulliganEnd),
 
     NOTIFY_TURN_END(NotifyFormTurnEnd),
 
