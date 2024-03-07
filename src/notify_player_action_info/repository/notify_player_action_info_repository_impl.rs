@@ -10,6 +10,7 @@ use crate::notify_player_action_info::entity::notify_form_basic_attack_to_main_c
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_unit::NotifyFormBasicAttackToUnit;
 use crate::notify_player_action_info::entity::notify_form_deploy_targeting_attack_passive_skill::NotifyFormDeployTargetingAttackPassiveSkill;
 use crate::notify_player_action_info::entity::notify_form_deploy_unit::NotifyFormDeployUnit;
+use crate::notify_player_action_info::entity::notify_form_mulligan_end::NotifyFormMulliganEnd;
 use crate::notify_player_action_info::entity::notify_form_non_targeting_attack_active_skill::NotifyFormNonTargetingAttackActiveSkill;
 use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_unit::NotifyFormTargetingAttackActiveSkillToUnit;
 use crate::notify_player_action_info::entity::notify_form_turn_end::NotifyFormTurnEnd;
@@ -906,6 +907,48 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_BASIC_ATTACK_TO_MAIN_CHARACTER(
                         notify_form_basic_attack_to_main_character)))).await;
+
+        true
+    }
+
+    async fn notice_mulligan_finished(
+        &mut self,
+        first_account: i32,
+        second_account: i32
+    ) -> bool {
+
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_mulligan_finished()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let first_account_socket_option = connection_context_map_guard.get(&first_account);
+        let first_account_socket_mutex = first_account_socket_option.unwrap();
+        let first_account_socket_guard = first_account_socket_mutex.lock().await;
+
+        let first_account_receiver_transmitter_channel = first_account_socket_guard.each_client_receiver_transmitter_channel();
+
+        let second_account_socket_option = connection_context_map_guard.get(&second_account);
+        let second_account_socket_mutex = second_account_socket_option.unwrap();
+        let second_account_socket_guard = second_account_socket_mutex.lock().await;
+
+        let second_account_receiver_transmitter_channel = second_account_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_mulligan_end = NotifyFormMulliganEnd::new(true);
+
+        first_account_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_MULLIGAN_END(
+                        notify_form_mulligan_end.clone())))).await;
+
+        second_account_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_MULLIGAN_END(
+                        notify_form_mulligan_end.clone())))).await;
 
         true
     }
