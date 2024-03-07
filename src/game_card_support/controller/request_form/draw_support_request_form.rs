@@ -4,6 +4,7 @@ use crate::game_card_support::service::request::summarize_support_card_effect_re
 use crate::game_card_support_usage_counter::service::request::check_support_card_usage_count_request::CheckSupportCardUsageCountRequest;
 use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
 use crate::game_deck::service::request::draw_cards_from_deck_request::DrawCardsFromDeckRequest;
+use crate::game_deck::service::request::game_deck_card_list_request::GameDeckCardListRequest;
 use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
 use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
 use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
@@ -144,6 +145,13 @@ impl DrawSupportRequestForm {
         &self) -> GameDeckCardShuffleRequest {
 
         GameDeckCardShuffleRequest::new(
+            self.session_id.clone())
+    }
+
+    pub fn to_get_deck_request(
+        &self) -> GameDeckCardListRequest {
+
+        GameDeckCardListRequest::new(
             self.session_id.clone())
     }
 

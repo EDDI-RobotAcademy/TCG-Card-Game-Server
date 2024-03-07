@@ -6,6 +6,7 @@ use crate::game_card_support_usage_counter::service::request::check_support_card
 use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
 use crate::game_deck::service::request::found_card_from_deck_request::FoundCardFromDeckRequest;
+use crate::game_deck::service::request::game_deck_card_list_request::GameDeckCardListRequest;
 use crate::game_deck::service::request::game_deck_card_shuffle_request::GameDeckCardShuffleRequest;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::service::request::attach_multiple_energy_to_unit_index_request::AttachMultipleEnergyToUnitIndexRequest;
@@ -172,6 +173,13 @@ impl EnergyBoostSupportRequestForm {
         &self) -> GameDeckCardShuffleRequest {
 
         GameDeckCardShuffleRequest::new(
+            self.session_id.clone())
+    }
+
+    pub fn to_get_deck_request(
+        &self) -> GameDeckCardListRequest {
+
+        GameDeckCardListRequest::new(
             self.session_id.clone())
     }
 
