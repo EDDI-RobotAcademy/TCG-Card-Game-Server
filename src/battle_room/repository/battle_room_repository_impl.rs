@@ -91,7 +91,7 @@ impl BattleRoomRepository for BattleRoomRepositoryImpl {
         if battle_room_number < battle_room_list_guard.len() {
             return Some(battle_room_list_guard[battle_room_number].get_player_id_list().clone())
         }
-        
+
         drop(battle_room_list_guard);
 
         println!("Battle room does not exist!");
