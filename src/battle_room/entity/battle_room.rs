@@ -69,6 +69,10 @@ impl BattleRoom {
     pub fn get_room_count() -> i32 {
         *ROOM_COUNTER.lock().unwrap()
     }
+
+    pub fn get_player_id_list(&self) -> &Vec<i32> {
+        &self.player_id_list
+    }
 }
 
 #[cfg(test)]
