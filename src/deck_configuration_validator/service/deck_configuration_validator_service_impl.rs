@@ -22,7 +22,7 @@ use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepo
 pub struct DeckConfigurationValidatorServiceImpl {
     deck_configuration_repository: Arc<AsyncMutex<DeckConfigurationValidatorRepositoryImpl>>,
     card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
-    accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
+    account_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
 }
@@ -30,7 +30,7 @@ pub struct DeckConfigurationValidatorServiceImpl {
 impl DeckConfigurationValidatorServiceImpl {
     pub fn new(deck_configuration_repository: Arc<AsyncMutex<DeckConfigurationValidatorRepositoryImpl>>,
                card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
-               accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
+               account_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
 
@@ -39,7 +39,7 @@ impl DeckConfigurationValidatorServiceImpl {
         DeckConfigurationValidatorServiceImpl {
             deck_configuration_repository,
             card_grade_repository,
-            accuont_card_repository,
+            account_card_repository,
             redis_in_memory_repository,
             card_kinds_repository,
         }
