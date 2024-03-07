@@ -87,6 +87,7 @@ use crate::request_generator::targeting_active_skill_request_form_generator::cre
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::request_generator::surrender_request_generator::create_surrender_request;
 use crate::request_generator::fake_create_game_deck_card_list_request_generator::fake_create_game_deck_card_list_request;
+use crate::request_generator::fake_multi_draw_request_form_generator::create_fake_multi_draw_request_form;
 use crate::request_generator::turn_start_non_targeting_attack_passive_skill_request_generator::create_turn_start_non_targeting_attack_passive_skill_request_form;
 use crate::request_generator::turn_start_targeting_attack_passive_skill_request_generator::create_turn_start_targeting_attack_passive_skill_request_form;
 use crate::request_generator::turn_start_targeting_attack_to_game_main_character_request_generator::create_turn_start_targeting_attack_to_game_main_character_request_form;
@@ -964,9 +965,9 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 // Fake Battle Room Test
                 if let Some(request) = create_fake_battle_room_create_request_form(&data) {
                     let fake_battle_room_controller_mutex = FakeBattleRoomControllerImpl::get_instance();
-                    let mut ake_battle_room_controller = fake_battle_room_controller_mutex.lock().await;
+                    let mut fake_battle_room_controller = fake_battle_room_controller_mutex.lock().await;
 
-                    let response = ake_battle_room_controller.request_to_create_fake_battle_room(request).await;
+                    let response = fake_battle_room_controller.request_to_create_fake_battle_room(request).await;
                     let response_type = Some(ResponseType::FAKE_BATTLE_ROOM_CREATION(response));
 
                     response_type
@@ -975,6 +976,7 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             8002 => {
+                // TODO: Mocking 전용이라 8000번대에 있으면 안됨
                 //드로우 30장 하고 시작 테스트용 Game Deck Card List
                 if let Some(request) = fake_create_game_deck_card_list_request(&data) {
                     let game_deck_card_service_mutex = GameDeckServiceImpl::get_instance();
@@ -982,6 +984,19 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = game_deck_card_service.fake_create_and_shuffle_deck(request).await;
                     let response_type = Some(ResponseType::BATTLE_START_SHUFFLED_GAME_DECK_CARD_LIST(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            8003 => {
+                if let Some(request) = create_fake_multi_draw_request_form(&data) {
+                    let fake_battle_room_controller_mutex = FakeBattleRoomControllerImpl::get_instance();
+                    let mut fake_battle_room_controller = fake_battle_room_controller_mutex.lock().await;
+
+                    let response = fake_battle_room_controller.request_to_fake_multi_draw(request).await;
+                    let response_type = Some(ResponseType::FAKE_MULTI_DRAW(response));
 
                     response_type
                 } else {

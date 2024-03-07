@@ -1,1 +1,2 @@
 pub mod create_fake_battle_room_response_form;
+pub mod fake_multi_draw_response_form;
