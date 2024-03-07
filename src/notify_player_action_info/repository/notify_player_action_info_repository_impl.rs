@@ -8,6 +8,7 @@ use crate::connection_context::repository::connection_context_repository_impl::C
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_main_character::NotifyFormBasicAttackToMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_unit::NotifyFormBasicAttackToUnit;
+use crate::notify_player_action_info::entity::notify_form_deploy_targeting_attack_passive_skill::NotifyFormDeployTargetingAttackPassiveSkill;
 use crate::notify_player_action_info::entity::notify_form_deploy_unit::NotifyFormDeployUnit;
 use crate::notify_player_action_info::entity::notify_form_non_targeting_attack_active_skill::NotifyFormNonTargetingAttackActiveSkill;
 use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_unit::NotifyFormTargetingAttackActiveSkillToUnit;
@@ -663,7 +664,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_TARGETING_ACTIVE_ATTACK_ACTIVE_SKILL_TO_UNIT(
+                    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(
                         notify_form_targeting_attack_active_skill_to_unit)))).await;
 
         true
@@ -701,6 +702,210 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_NON_TARGETING_ACTIVE_SKILL(
                         notify_form_non_targeting_active_skill)))).await;
+
+        true
+    }
+    async fn notice_deploy_targeting_attack_passive_skill(
+        &mut self,
+        opponent_unique_id: i32,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    ) -> bool {
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_deploy_targeting_attack_passive_skill()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_deploy_targeting_attack_passive_skill_to_unit =
+            NotifyFormDeployTargetingAttackPassiveSkill::new(
+                player_field_unit_health_point_map_for_notice,
+                player_field_unit_harmful_effect_map_for_notice,
+                player_field_unit_death_map_for_notice);
+
+        // 소환시 유닛 대상 단일 공격 패시브 스킬 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_DEPLOY_TARGETING_ATTACK_PASSIVE_SKILL_TO_UNIT(
+                        notify_form_deploy_targeting_attack_passive_skill_to_unit)))).await;
+
+        true
+    }
+    async fn notice_deploy_non_targeting_attack_passive_skill(
+        &mut self,
+        opponent_unique_id: i32,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    ) -> bool {
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_deploy_non_targeting_attack_passive_skill()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_targeting_attack_active_skill_to_unit =
+            NotifyFormTargetingAttackActiveSkillToUnit::new(
+                player_field_unit_health_point_map_for_notice,
+                player_field_unit_harmful_effect_map_for_notice,
+                player_field_unit_death_map_for_notice);
+
+        // 소환시 유닛 대상 광역 공격 패시브 스킬 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(
+                        notify_form_targeting_attack_active_skill_to_unit)))).await;
+
+        true
+    }
+    async fn notice_deploy_targeting_attack_to_game_main_character(
+        &mut self,
+        opponent_unique_id: i32,
+        player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+    ) -> bool {
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_deploy_targeting_attack_to_game_main_character()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_basic_attack_to_main_character =
+            NotifyFormBasicAttackToMainCharacter::new(
+                player_main_character_health_point_map, player_main_character_survival_map);
+
+        // 소환시 플레이어 단일 공격 패시브 스킬 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_BASIC_ATTACK_TO_MAIN_CHARACTER(
+                        notify_form_basic_attack_to_main_character)))).await;
+
+        true
+    }
+    async fn notice_turn_start_targeting_attack_passive_skill(
+        &mut self,
+        opponent_unique_id: i32,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    ) -> bool {
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_targeting_attack_active_skill_to_unit()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_targeting_attack_active_skill_to_unit =
+            NotifyFormTargetingAttackActiveSkillToUnit::new(
+                player_field_unit_health_point_map_for_notice,
+                player_field_unit_harmful_effect_map_for_notice,
+                player_field_unit_death_map_for_notice);
+
+        // 턴 시작 시 유닛 대상 단일 공격 패시브 스킬 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(
+                        notify_form_targeting_attack_active_skill_to_unit)))).await;
+
+        true
+    }
+    async fn notice_turn_start_non_targeting_attack_passive_skill(
+        &mut self,
+        opponent_unique_id: i32,
+        player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
+        player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    ) -> bool {
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_turn_start_non_targeting_attack_passive_skill()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_targeting_attack_active_skill_to_unit =
+            NotifyFormTargetingAttackActiveSkillToUnit::new(
+                player_field_unit_health_point_map_for_notice,
+                player_field_unit_harmful_effect_map_for_notice,
+                player_field_unit_death_map_for_notice);
+
+        // 턴 시작 시 유닛 대상 광역 공격 패시브 스킬 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(
+                        notify_form_targeting_attack_active_skill_to_unit)))).await;
+
+        true
+    }
+    async fn notice_turn_start_targeting_attack_to_game_main_character(
+        &mut self,
+        opponent_unique_id: i32,
+        player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+    ) -> bool {
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_basic_attack_to_main_character()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_basic_attack_to_main_character =
+            NotifyFormBasicAttackToMainCharacter::new(
+                player_main_character_health_point_map, player_main_character_survival_map);
+
+        // 턴 시작 시 플레이어 단일 공격 패시브 스킬 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_BASIC_ATTACK_TO_MAIN_CHARACTER(
+                        notify_form_basic_attack_to_main_character)))).await;
 
         true
     }
