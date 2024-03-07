@@ -17,6 +17,10 @@ impl GameDeck {
         self.game_deck.add_card(card);
     }
 
+    pub fn remove_card_index_of_game_deck(&mut self, card_index: i32) {
+        self.game_deck.remove_card_by_index(card_index as usize);
+    }
+
     pub fn get_all_cards_in_game_deck(&self) -> &Vec<GameDeckCard> {
         self.game_deck.get_all_card_list()
     }

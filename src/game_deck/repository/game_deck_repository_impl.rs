@@ -104,17 +104,41 @@ impl GameDeckRepository for GameDeckRepositoryImpl {
         Vec::new()
     }
 
+    fn find_deck_card_id_with_index(&mut self, account_unique_id: i32, deck_card_index: i32) -> i32 {
+        println!("GameDeckRepositoryImpl: find_deck_card_id_with_index()");
 
+        if let Some(game_deck) = self.game_deck_map.get_mut(&account_unique_id) {
+            let deck_card_id_list = game_deck.get_card_ids();
+            if deck_card_index < deck_card_id_list.len() as i32 {
+                let found_card_id = deck_card_id_list[deck_card_index as usize];
+                return found_card_id
+            }
+        }
+
+        -1
+    }
+
+    fn get_deck_card_by_index(&mut self, account_unique_id: i32, deck_card_index: i32) -> i32 {
+        println!("GameDeckRepositoryImpl: get_deck_card_by_index()");
+
+        if let Some(game_deck) = self.game_deck_map.get_mut(&account_unique_id) {
+            let deck_card_id_list = game_deck.get_card_ids();
+            if deck_card_index < deck_card_id_list.len() as i32 {
+                let found_card_id = deck_card_id_list[deck_card_index as usize];
+                game_deck.remove_card_index_of_game_deck(deck_card_index);
+                return found_card_id
+            }
+        }
+
+        -1
+    }
 
     fn get_remain_deck_card_count(&self, account_id: i32) -> i32 {
-        if let Some(game_deck) = self.game_deck_map.get(&account_id)
-        {
-            game_deck.get_all_cards_in_game_deck().len() as i32
+        if let Some(game_deck) = self.game_deck_map.get(&account_id) {
+            return game_deck.get_all_cards_in_game_deck().len() as i32
         }
-        else
-        {
-            0i32
-        }
+
+        -1
     }
 
 
