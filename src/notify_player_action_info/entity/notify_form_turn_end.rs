@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
 use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
 use crate::ui_data_generator::entity::field_unit_harmful_status_info::FieldUnitHarmfulStatusInfo;
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
@@ -12,6 +13,7 @@ pub struct NotifyFormTurnEnd {
     player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
     player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
     player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
 }
 
 impl NotifyFormTurnEnd {
@@ -21,6 +23,7 @@ impl NotifyFormTurnEnd {
         player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+        player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> Self {
 
         NotifyFormTurnEnd {
@@ -28,7 +31,8 @@ impl NotifyFormTurnEnd {
             player_field_energy_map,
             player_field_unit_health_point_map,
             player_field_unit_harmful_effect_map,
-            player_field_unit_death_map
+            player_field_unit_death_map,
+            player_main_character_survival_map
         }
     }
 }

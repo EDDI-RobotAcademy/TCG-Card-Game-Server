@@ -22,6 +22,7 @@ use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitServi
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_hand::service::game_hand_service::GameHandService;
 use crate::game_hand::service::game_hand_service_impl::GameHandServiceImpl;
+use crate::game_main_character::service::game_main_character_service::GameMainCharacterService;
 use crate::game_protocol_validation::service::game_protocol_validation_service::GameProtocolValidationService;
 
 use crate::game_turn::controller::game_turn_controller::GameTurnController;
@@ -42,6 +43,8 @@ use crate::game_round::service::game_round_service::GameRoundService;
 use crate::game_round::service::game_round_service_impl::GameRoundServiceImpl;
 use crate::game_tomb::service::game_tomb_service::GameTombService;
 use crate::game_tomb::service::game_tomb_service_impl::GameTombServiceImpl;
+use crate::game_winner_check::service::game_winner_check_service::GameWinnerCheckService;
+use crate::game_winner_check::service::game_winner_check_service_impl::GameWinnerCheckServiceImpl;
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
 use crate::notify_player_action_info::service::notify_player_action_info_service_impl::NotifyPlayerActionInfoServiceImpl;
 use crate::ui_data_generator::service::ui_data_generator_service::UiDataGeneratorService;
@@ -64,6 +67,7 @@ pub struct GameTurnControllerImpl {
     action_waiting_timer_service: Arc<AsyncMutex<ActionWaitingTimerServiceImpl>>,
     ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
     notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
+    game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,
 }
 
 impl GameTurnControllerImpl {
@@ -83,6 +87,7 @@ impl GameTurnControllerImpl {
                action_waiting_timer_service: Arc<AsyncMutex<ActionWaitingTimerServiceImpl>>,
                ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
                notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
+               game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,
              ) -> Self {
 
         GameTurnControllerImpl {
@@ -101,7 +106,8 @@ impl GameTurnControllerImpl {
             game_card_unit_service,
             action_waiting_timer_service,
             ui_data_generator_service,
-            notify_player_action_info_service
+            notify_player_action_info_service,
+            game_winner_check_service
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameTurnControllerImpl>> {
@@ -125,7 +131,8 @@ impl GameTurnControllerImpl {
                             GameCardUnitServiceImpl::get_instance(),
                             ActionWaitingTimerServiceImpl::get_instance(),
                             UiDataGeneratorServiceImpl::get_instance(),
-                            NotifyPlayerActionInfoServiceImpl::get_instance())));
+                            NotifyPlayerActionInfoServiceImpl::get_instance(),
+                            GameWinnerCheckServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -293,6 +300,40 @@ impl GameTurnController for GameTurnControllerImpl {
 
         drop(game_deck_service_guard);
 
+        if drawn_card_list.is_empty() {
+            println!("계정 {}번의 덱사가 발생했습니다.", opponent_unique_id);
+
+            let mut game_main_character_service_guard =
+                self.game_main_character_service.lock().await;
+
+            game_main_character_service_guard.set_main_character_as_death(
+                turn_end_request_form
+                    .to_set_main_character_as_death_request(opponent_unique_id)).await;
+
+            drop(game_main_character_service_guard);
+
+            let mut game_winner_check_service_guard =
+                self.game_winner_check_service.lock().await;
+
+            game_winner_check_service_guard.check_health_of_main_character_for_setting_game_winner(
+                turn_end_request_form
+                    .to_check_health_of_main_character_for_setting_game_winner(
+                        account_unique_id, opponent_unique_id)).await;
+
+            drop(game_winner_check_service_guard);
+
+            let mut notify_player_action_info_service_guard =
+                self.notify_player_action_info_service.lock().await;
+
+            notify_player_action_info_service_guard.notice_my_turn_end(
+                turn_end_request_form
+                    .to_notice_my_turn_end_in_case_of_no_more_opponent_deck(opponent_unique_id)).await;
+
+            drop(notify_player_action_info_service_guard);
+
+            return TurnEndResponseForm::from_no_more_opponent_deck_response()
+        }
+
         // 상대방이 드로우한 카드 핸드에 추가
         let mut game_hand_service_guard =
             self.game_hand_service.lock().await;
@@ -338,7 +379,6 @@ impl GameTurnController for GameTurnControllerImpl {
                 turn_end_request_form
                     .to_generate_my_multiple_unit_health_point_data_request(health_point_of_all_unit)).await;
 
-        // TODO: Harmful Effect 를 Tuple 로 묶어 불러오기
         let generate_my_multiple_unit_harmful_effect_data_response =
             ui_data_generator_service_guard.generate_my_multiple_unit_harmful_effect_data(
                 turn_end_request_form

@@ -18,18 +18,24 @@ use crate::game_field_unit::service::request::judge_death_of_every_unit_request:
 use crate::game_field_unit::service::request::reset_all_passive_of_unit_request::ResetAllPassiveOfUnitRequest;
 use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
 use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
+use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
+use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum::Death;
+use crate::game_main_character::service::request::set_main_character_as_death_request::SetMainCharacterAsDeathRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::add_dead_unit_list_to_tomb_request::AddDeadUnitListToTombRequest;
+use crate::game_winner_check::service::request::check_main_character_request::CheckMainCharacterRequest;
 use crate::notify_player_action_info::service::request::notice_my_turn_end_request::NoticeMyTurnEndRequest;
 use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
 use crate::ui_data_generator::entity::field_unit_harmful_status_info::FieldUnitHarmfulStatusInfo;
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::entity::player_index_enum::PlayerIndex::You;
 use crate::ui_data_generator::service::request::generate_draw_opponent_deck_data_request::GenerateDrawOpponentDeckDataRequest;
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_death_data_request::GenerateMyMultipleUnitDeathDataRequest;
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_harmful_effect_data_request::GenerateMyMultipleUnitHarmfulEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_health_point_data_request::GenerateMyMultipleUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_field_energy_data_request::GenerateOpponentFieldEnergyDataRequest;
+use crate::ui_data_generator::service::request::generate_opponent_main_character_survival_data_request::GenerateOpponentMainCharacterSurvivalDataRequest;
 
 #[derive(Debug)]
 pub struct TurnEndRequestForm {
@@ -143,6 +149,24 @@ impl TurnEndRequestForm {
         ActionWaitingTimerRequest::new(opponent_account_unique_id)
     }
 
+    pub fn to_set_main_character_as_death_request(
+        &self,
+        account_unique_id: i32) -> SetMainCharacterAsDeathRequest {
+
+        SetMainCharacterAsDeathRequest::new(
+            account_unique_id)
+    }
+
+    pub fn to_check_health_of_main_character_for_setting_game_winner(
+        &self,
+        account_unique_id: i32,
+        opponent_unique_id: i32,) -> CheckMainCharacterRequest {
+
+        CheckMainCharacterRequest::new(
+            account_unique_id,
+            opponent_unique_id)
+    }
+
     pub fn to_generate_draw_opponent_deck_data(
         &self,
         drawn_card_list: Vec<i32>
@@ -194,7 +218,7 @@ impl TurnEndRequestForm {
         player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
-        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
     ) -> NoticeMyTurnEndRequest {
 
         NoticeMyTurnEndRequest::new(
@@ -203,6 +227,24 @@ impl TurnEndRequestForm {
             player_field_energy_map_for_notice,
             player_field_unit_health_point_map_for_notice,
             player_field_unit_harmful_effect_map_for_notice,
-            player_field_unit_death_map_for_notice)
+            player_field_unit_death_map_for_notice,
+            HashMap::new())
+    }
+
+    pub fn to_notice_my_turn_end_in_case_of_no_more_opponent_deck(
+        &self,
+        opponent_unique_id: i32,) -> NoticeMyTurnEndRequest {
+
+        let mut map_only_for_death_by_no_more_opponent_deck_card = HashMap::new();
+        map_only_for_death_by_no_more_opponent_deck_card.insert(You, Death);
+
+        NoticeMyTurnEndRequest::new(
+            opponent_unique_id,
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            map_only_for_death_by_no_more_opponent_deck_card)
     }
 }

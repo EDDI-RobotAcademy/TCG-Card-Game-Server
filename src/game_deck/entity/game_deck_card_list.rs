@@ -36,13 +36,30 @@ impl GameDeckCardList {
     }
 
     pub fn draw_deck_card_list(&mut self, draw_count: usize) -> Vec<i32> {
-        let drawn_card_list: Vec<i32> = self.card_list.iter().take(draw_count).map(|card| card.get_card()).collect();
+        let mut max_count = self.card_list.len();
 
-        let mut updated_card_list = self.card_list.clone();
-        updated_card_list.drain(0..draw_count);
-        self.card_list = updated_card_list;
+        if max_count == 0 {
+            return Vec::new()
+        }
 
-        drawn_card_list
+        return if max_count >= draw_count {
+            let drawn_card_list: Vec<i32> = self.card_list.iter().take(draw_count).map(|card| card.get_card()).collect();
+
+            let mut updated_card_list = self.card_list.clone();
+            updated_card_list.drain(0..draw_count);
+            self.card_list = updated_card_list;
+
+            drawn_card_list
+        } else {
+            let drawn_card_list: Vec<i32> = self.card_list.iter().take(max_count).map(|card| card.get_card()).collect();
+
+            let mut updated_card_list = self.card_list.clone();
+            updated_card_list.drain(0..max_count);
+            self.card_list = updated_card_list;
+
+            drawn_card_list
+        }
+
     }
 
     pub fn find_by_card_id_with_count(&mut self, wanna_find_id: i32, count: usize) -> Vec<i32> {

@@ -13,7 +13,8 @@ pub struct NoticeMyTurnEndRequest {
     player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
     player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
     player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
-    player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>
+    player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
 }
 
 impl NoticeMyTurnEndRequest {
@@ -22,7 +23,8 @@ impl NoticeMyTurnEndRequest {
                player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
                player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
                player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
-               player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>
+               player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+               player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> Self {
         NoticeMyTurnEndRequest {
             opponent_unique_id,
@@ -30,7 +32,8 @@ impl NoticeMyTurnEndRequest {
             player_field_energy_map_for_notice,
             player_field_unit_health_point_map_for_notice,
             player_field_unit_harmful_effect_map_for_notice,
-            player_field_unit_death_map_for_notice
+            player_field_unit_death_map_for_notice,
+            player_main_character_survival_map_for_notice
         }
     }
 
@@ -54,5 +57,9 @@ impl NoticeMyTurnEndRequest {
 
     pub fn get_player_field_unit_death_map_for_notice(&self) -> &HashMap<PlayerIndex, FieldUnitDeathInfo> {
         &self.player_field_unit_death_map_for_notice
+    }
+
+    pub fn get_player_main_character_survival_map_for_notice(&self) -> &HashMap<PlayerIndex, StatusMainCharacterEnum> {
+        &self.player_main_character_survival_map_for_notice
     }
 }

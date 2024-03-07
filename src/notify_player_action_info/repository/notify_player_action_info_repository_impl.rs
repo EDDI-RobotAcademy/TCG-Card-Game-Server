@@ -602,6 +602,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+        player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> bool {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notice_turn_end()");
@@ -622,7 +623,8 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                                    player_field_energy_map,
                                    player_field_unit_health_point_map,
                                    player_field_unit_harmful_effect_map,
-                                   player_field_unit_death_map);
+                                   player_field_unit_death_map,
+                                   player_main_character_survival_map);
 
         // 내 턴 종료 공지
         opponent_receiver_transmitter_channel.send(
