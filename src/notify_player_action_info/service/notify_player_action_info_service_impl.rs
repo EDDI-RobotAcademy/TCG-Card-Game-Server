@@ -8,9 +8,15 @@ use crate::notify_player_action_info::repository::notify_player_action_info_repo
 use crate::notify_player_action_info::service::notify_player_action_info_service::NotifyPlayerActionInfoService;
 use crate::notify_player_action_info::service::request::notice_basic_attack_to_main_character_request::NoticeBasicAttackToMainCharacterRequest;
 use crate::notify_player_action_info::service::request::notice_basic_attack_to_unit_request::NoticeBasicAttackToUnitRequest;
+use crate::notify_player_action_info::service::request::notice_deploy_non_targeting_attack_passive_skill_request::NoticeDeployNonTargetingAttackPassiveSkillRequest;
+use crate::notify_player_action_info::service::request::notice_deploy_targeting_attack_passive_skill_to_unit_request::NoticeDeployTargetingAttackPassiveSkillToUnitRequest;
+use crate::notify_player_action_info::service::request::notice_deploy_targeting_attack_to_game_main_character_request::NoticeDeployTargetingAttackToGameMainCharacterRequest;
 use crate::notify_player_action_info::service::request::notice_my_turn_end_request::NoticeMyTurnEndRequest;
 use crate::notify_player_action_info::service::request::notice_non_targeting_attack_active_skill_request::NoticeNonTargetingAttackActiveSkillRequest;
 use crate::notify_player_action_info::service::request::notice_targeting_attack_active_skill_to_unit_request::NoticeTargetingAttackActiveSkillToUnitRequest;
+use crate::notify_player_action_info::service::request::notice_turn_start_non_targeting_attack_passive_skill_request::NoticeTurnStartNonTargetingAttackPassiveSkillRequest;
+use crate::notify_player_action_info::service::request::notice_turn_start_targeting_attack_passive_skill_to_unit_request::NoticeTurnStartTargetingAttackPassiveSkillToUnitRequest;
+use crate::notify_player_action_info::service::request::notice_turn_start_targeting_attack_to_game_main_character_request::NoticeTurnStartTargetingAttackToGameMainCharacterRequest;
 
 use crate::notify_player_action_info::service::request::notice_use_catastrophic_damage_item_card_request::NoticeUseCatastrophicDamageItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_draw_support_card_request::NoticeUseDrawSupportCardRequest;
@@ -27,9 +33,15 @@ use crate::notify_player_action_info::service::request::notice_use_unit_card_req
 use crate::notify_player_action_info::service::request::notice_use_unit_energy_remove_item_card_request::NoticeUseUnitEnergyRemoveItemCardRequest;
 use crate::notify_player_action_info::service::response::notice_basic_attack_to_main_character_response::NoticeBasicAttackToMainCharacterResponse;
 use crate::notify_player_action_info::service::response::notice_basic_attack_to_unit_response::NoticeBasicAttackToUnitResponse;
+use crate::notify_player_action_info::service::response::notice_deploy_non_targeting_attack_passive_skill_response::NoticeDeployNonTargetingAttackPassiveSkillResponse;
+use crate::notify_player_action_info::service::response::notice_deploy_targeting_attack_passive_skill_to_unit_response::NoticeDeployTargetingAttackPassiveSkillToUnitResponse;
+use crate::notify_player_action_info::service::response::notice_deploy_targeting_attack_to_game_main_character_response::NoticeDeployTargetingAttackToGameMainCharacterResponse;
 use crate::notify_player_action_info::service::response::notice_my_turn_end_response::NoticeMyTurnEndResponse;
 use crate::notify_player_action_info::service::response::notice_non_targeting_attack_active_skill_response::NoticeNonTargetingAttackActiveSkillResponse;
 use crate::notify_player_action_info::service::response::notice_targeting_attack_active_skill_to_unit_response::NoticeTargetingAttackActiveSkillToUnitResponse;
+use crate::notify_player_action_info::service::response::notice_turn_start_non_targeting_attack_passive_skill_response::NoticeTurnStartNonTargetingAttackPassiveSkillResponse;
+use crate::notify_player_action_info::service::response::notice_turn_start_targeting_attack_passive_skill_to_unit_response::NoticeTurnStartTargetingAttackPassiveSkillToUnitResponse;
+use crate::notify_player_action_info::service::response::notice_turn_start_targeting_attack_to_game_main_character_response::NoticeTurnStartTargetingAttackToGameMainCharacterResponse;
 
 use crate::notify_player_action_info::service::response::notice_use_catastrophic_damage_item_card_response::NoticeUseCatastrophicDamageItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_draw_support_card_response::NoticeUseDrawSupportCardResponse;
@@ -457,5 +469,117 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         drop(notify_player_action_info_repository_guard);
 
         NoticeNonTargetingAttackActiveSkillResponse::new(response)
+    }
+    async fn notice_deploy_targeting_attack_passive_skill_to_unit(
+        &mut self, notice_deploy_targeting_attack_passive_skill_to_unit_request: NoticeDeployTargetingAttackPassiveSkillToUnitRequest)
+        -> NoticeDeployTargetingAttackPassiveSkillToUnitResponse{
+        println!("NotifyPlayerActionInfoServiceImpl: notice_deploy_targeting_attack_passive_skill_to_unit()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_non_targeting_attack_active_skill(
+                notice_deploy_targeting_attack_passive_skill_to_unit_request.get_opponent_unique_id(),
+                notice_deploy_targeting_attack_passive_skill_to_unit_request.get_player_field_unit_health_point_map_for_notice().clone(),
+                notice_deploy_targeting_attack_passive_skill_to_unit_request.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                notice_deploy_targeting_attack_passive_skill_to_unit_request.get_player_field_unit_death_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeDeployTargetingAttackPassiveSkillToUnitResponse::new(response)
+    }
+    async fn notice_deploy_non_targeting_attack_passive_skill(
+        &mut self, notice_deploy_non_targeting_attack_passive_skill: NoticeDeployNonTargetingAttackPassiveSkillRequest)
+        -> NoticeDeployNonTargetingAttackPassiveSkillResponse{
+        println!("NotifyPlayerActionInfoServiceImpl: notice_deploy_non_targeting_attack_passive_skill()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_non_targeting_attack_active_skill(
+                notice_deploy_non_targeting_attack_passive_skill.get_opponent_unique_id(),
+                notice_deploy_non_targeting_attack_passive_skill.get_player_field_unit_health_point_map_for_notice().clone(),
+                notice_deploy_non_targeting_attack_passive_skill.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                notice_deploy_non_targeting_attack_passive_skill.get_player_field_unit_death_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeDeployNonTargetingAttackPassiveSkillResponse::new(response)
+    }
+    async fn notice_deploy_targeting_attack_to_game_main_character(
+        &mut self, notice_deploy_targeting_attack_to_game_main_character_request: NoticeDeployTargetingAttackToGameMainCharacterRequest)
+        -> NoticeDeployTargetingAttackToGameMainCharacterResponse{
+        println!("NotifyPlayerActionInfoServiceImpl: notice_deploy_targeting_attack_to_game_main_character()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_basic_attack_to_main_character(
+                notice_deploy_targeting_attack_to_game_main_character_request.get_opponent_unique_id(),
+                notice_deploy_targeting_attack_to_game_main_character_request.get_player_main_character_health_point_map_for_notice().clone(),
+                notice_deploy_targeting_attack_to_game_main_character_request.get_player_main_character_survival_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeDeployTargetingAttackToGameMainCharacterResponse::new(response)
+    }
+    async fn notice_turn_start_targeting_attack_passive_skill_to_unit(
+        &mut self, notice_turn_start_targeting_attack_passive_skill_to_unit_request: NoticeTurnStartTargetingAttackPassiveSkillToUnitRequest)
+        -> NoticeTurnStartTargetingAttackPassiveSkillToUnitResponse{
+        println!("NotifyPlayerActionInfoServiceImpl: notice_turn_start_targeting_attack_passive_skill_to_unit()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_non_targeting_attack_active_skill(
+                notice_turn_start_targeting_attack_passive_skill_to_unit_request.get_opponent_unique_id(),
+                notice_turn_start_targeting_attack_passive_skill_to_unit_request.get_player_field_unit_health_point_map_for_notice().clone(),
+                notice_turn_start_targeting_attack_passive_skill_to_unit_request.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                notice_turn_start_targeting_attack_passive_skill_to_unit_request.get_player_field_unit_death_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeTurnStartTargetingAttackPassiveSkillToUnitResponse::new(response)
+    }
+    async fn notice_turn_start_non_targeting_attack_passive_skill(
+        &mut self, notice_turn_start_non_targeting_attack_passive_skill: NoticeTurnStartNonTargetingAttackPassiveSkillRequest)
+        -> NoticeTurnStartNonTargetingAttackPassiveSkillResponse{
+        println!("NotifyPlayerActionInfoServiceImpl: notice_turn_start_non_targeting_attack_passive_skill()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_non_targeting_attack_active_skill(
+                notice_turn_start_non_targeting_attack_passive_skill.get_opponent_unique_id(),
+                notice_turn_start_non_targeting_attack_passive_skill.get_player_field_unit_health_point_map_for_notice().clone(),
+                notice_turn_start_non_targeting_attack_passive_skill.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                notice_turn_start_non_targeting_attack_passive_skill.get_player_field_unit_death_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeTurnStartNonTargetingAttackPassiveSkillResponse::new(response)
+    }
+    async fn notice_turn_start_targeting_attack_to_game_main_character(
+        &mut self, notice_turn_start_targeting_attack_to_game_main_character_request: NoticeTurnStartTargetingAttackToGameMainCharacterRequest)
+        -> NoticeTurnStartTargetingAttackToGameMainCharacterResponse{
+        println!("NotifyPlayerActionInfoServiceImpl: notice_turn_start_targeting_attack_to_game_main_character()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_basic_attack_to_main_character(
+                notice_turn_start_targeting_attack_to_game_main_character_request.get_opponent_unique_id(),
+                notice_turn_start_targeting_attack_to_game_main_character_request.get_player_main_character_health_point_map_for_notice().clone(),
+                notice_turn_start_targeting_attack_to_game_main_character_request.get_player_main_character_survival_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeTurnStartTargetingAttackToGameMainCharacterResponse::new(response)
     }
 }

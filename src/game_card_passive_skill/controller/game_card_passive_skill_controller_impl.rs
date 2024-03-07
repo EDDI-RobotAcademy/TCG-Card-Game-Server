@@ -8,6 +8,8 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::game_card_active_skill::controller::response_form::non_targeting_active_skill_response_form::NonTargetingActiveSkillResponseForm;
+use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
 use crate::game_card_passive_skill::controller::game_card_passive_skill_controller::GameCardPassiveSkillController;
 use crate::game_card_passive_skill::controller::request_form::deploy_non_targeting_attack_passive_skill_request_form::DeployNonTargetingAttackPassiveSkillRequestForm;
 use crate::game_card_passive_skill::controller::request_form::deploy_targeting_attack_passive_skill_request_form::DeployTargetingAttackPassiveSkillRequestForm;
@@ -135,7 +137,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             self.is_valid_session(deploy_targeting_attack_passive_skill_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return DeployTargetingAttackPassiveSkillResponseForm::new(false)
+            return DeployTargetingAttackPassiveSkillResponseForm::default()
         }
 
         let mut game_protocol_validation_service_guard =
@@ -148,7 +150,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return DeployTargetingAttackPassiveSkillResponseForm::new(false)
+            return DeployTargetingAttackPassiveSkillResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
@@ -196,12 +198,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                 deploy_targeting_attack_passive_skill_request_form
                     .to_is_using_deploy_passive_skill_possible_request(
                         account_unique_id,
-                        unit_card_id,
+                        unit_card_index,
                         usage_skill_index,
                         summary_passive_skill_effect_by_index_response.get_passive_skill_casting_condition().clone())).await;
 
         if !is_using_deploy_passive_skill_possible_response.is_possible() {
-            return DeployTargetingAttackPassiveSkillResponseForm::new(false)
+            return DeployTargetingAttackPassiveSkillResponseForm::default()
         }
         drop(game_field_unit_action_possibility_validator_service_guard);
 
@@ -218,7 +220,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         // 타게팅 데미지 적용
         // TODO: 현재에는 단일 타겟팅밖에 없으나 다중 타겟팅이 존재하는 경우 추가 처리 필요
         let target_card_index_string = deploy_targeting_attack_passive_skill_request_form.get_opponent_target_card_index();
-        let target_card_index = target_card_index_string.parse::<i32>().unwrap();
+        let opponent_target_unit_card_index = target_card_index_string.parse::<i32>().unwrap();
 
         let target_skill_type = summary_passive_skill_effect_by_index_response.get_passive_skill_type();
         let target_skill_damage = summary_passive_skill_effect_by_index_response.get_skill_damage();
@@ -242,7 +244,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                         .to_attack_target_with_extra_effect_request(
                             opponent_unique_id,
                             target_skill_damage,
-                            extra_effect_list_of_unit_using_skill, target_card_index)).await;
+                            extra_effect_list_of_unit_using_skill, opponent_target_unit_card_index)).await;
             }
 
             // 특수 효과가 없는 경우 일반 공격 진행
@@ -250,30 +252,48 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                 deploy_targeting_attack_passive_skill_request_form
                     .to_apply_damage_to_target_unit_index_request(
                         opponent_unique_id,
-                        target_card_index,
+                        opponent_target_unit_card_index,
                         target_skill_damage)).await;
+        }
+        else { return DeployTargetingAttackPassiveSkillResponseForm::default() }
 
-            let maybe_dead_unit_id =
-                game_field_unit_service_guard.judge_death_of_unit(
-                    deploy_targeting_attack_passive_skill_request_form
-                        .to_judge_death_of_unit_request(
-                            opponent_unique_id,
-                            target_card_index)).await.get_dead_unit_id();
+        let opponent_target_unit_health_point =
+            game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
+                deploy_targeting_attack_passive_skill_request_form
+                    .to_get_current_health_point_of_field_unit_by_index_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await.get_current_unit_health_point();
 
-            if maybe_dead_unit_id != -1 {
-                let mut game_tomb_service_guard =
-                    self.game_tomb_service.lock().await;
+        let opponent_target_unit_harmful_effect_list =
+            game_field_unit_service_guard.acquire_unit_harmful_status_effect(
+                deploy_targeting_attack_passive_skill_request_form
+                    .to_acquire_unit_harmful_status_effect_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await.get_harmful_effect_list().clone();
 
-                game_tomb_service_guard.add_dead_unit_to_tomb(
-                    deploy_targeting_attack_passive_skill_request_form
-                        .to_add_dead_unit_to_tomb_request(
-                            opponent_unique_id,
-                            maybe_dead_unit_id)).await;
-            }
+        // 피격 유닛이 죽었는지 판정
+        let judge_death_of_opponent_unit_response =
+            game_field_unit_service_guard.judge_death_of_unit(
+                deploy_targeting_attack_passive_skill_request_form
+                    .to_judge_death_of_unit_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await;
 
-            // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
+        // 죽은 경우 묘지에 추가
+        let mut game_tomb_service_guard =
+            self.game_tomb_service.lock().await;
+
+        if judge_death_of_opponent_unit_response.get_dead_unit_id() != -1 {
+            println!("공격 당한 유닛이 사망했으므로 묘지로 이동합니다.");
+
+            game_tomb_service_guard.add_used_card_to_tomb(
+                deploy_targeting_attack_passive_skill_request_form
+                    .to_place_dead_unit_to_tomb_request(
+                        opponent_unique_id,
+                        judge_death_of_opponent_unit_response.get_dead_unit_id())).await;
         }
 
+        drop(game_tomb_service_guard);
         // 12. 유닛의 해당 패시브 스킬을 false로 세팅
         game_field_unit_service_guard.execute_index_passive_of_unit(
             deploy_targeting_attack_passive_skill_request_form
@@ -314,7 +334,52 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         }
         drop(game_card_passive_skill_service_guard);
 
-        DeployTargetingAttackPassiveSkillResponseForm::new(true)
+        // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_opponent_specific_unit_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
+                deploy_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_specific_unit_health_point_data_request(
+                        opponent_target_unit_card_index,
+                        opponent_target_unit_health_point)).await;
+
+        let generate_opponent_specific_unit_harmful_effect_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_harmful_effect_data(
+                deploy_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_specific_unit_harmful_effect_data_request(
+                        opponent_target_unit_card_index,
+                        opponent_target_unit_harmful_effect_list)).await;
+
+        let generate_opponent_specific_unit_death_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_death_data(
+                deploy_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_specific_unit_death_data_request(
+                        judge_death_of_opponent_unit_response.get_dead_unit_index())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_deploy_targeting_attack_passive_skill_to_unit(
+            deploy_targeting_attack_passive_skill_request_form
+                .to_notice_deploy_targeting_attack_passive_skill_to_unit_request(
+                    opponent_unique_id,
+                    generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_notice().clone(),
+                    generate_opponent_specific_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                    generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_notice().clone())).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        // TODO: 패시브 스킬 정보 responseform 에 넣어야함
+        DeployTargetingAttackPassiveSkillResponseForm::new(
+            true,
+            generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_response().clone(),
+            generate_opponent_specific_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_response().clone(),
+            generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_response().clone())
+
     }
 
     async fn request_deploy_non_targeting_attack_passive_skill(
@@ -327,7 +392,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             self.is_valid_session(deploy_non_targeting_attack_passive_skill_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return DeployNonTargetingAttackPassiveSkillResponseForm::new(false)
+            return DeployNonTargetingAttackPassiveSkillResponseForm::default()
         }
 
         // Action 가능한 턴인지 판별
@@ -341,14 +406,14 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return DeployNonTargetingAttackPassiveSkillResponseForm::new(false)
+            return DeployNonTargetingAttackPassiveSkillResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
 
         // TODO: 프로토콜 검증 할 때가 아니라 패스
 
-        // Active Skill Summary 획득
+        // Passive Skill Summary 획득
         let unit_card_index_string = deploy_non_targeting_attack_passive_skill_request_form.get_unit_card_index();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
 
@@ -388,12 +453,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                 deploy_non_targeting_attack_passive_skill_request_form
                     .to_is_using_deploy_passive_skill_possible_request(
                         account_unique_id,
-                        unit_card_id,
+                        unit_card_index,
                         usage_skill_index,
                         summary_passive_skill_effect_by_index_response.get_passive_skill_casting_condition().clone())).await;
 
         if !is_using_deploy_passive_skill_possible_response.is_possible() {
-            return DeployNonTargetingAttackPassiveSkillResponseForm::new(false)
+            return DeployNonTargetingAttackPassiveSkillResponseForm::default()
         }
 
         drop(game_field_unit_action_possibility_validator_service_guard);
@@ -432,32 +497,50 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                             opponent_unique_id,
                             non_target_skill_damage,
                             extra_effect_list_of_unit_using_skill)).await;
-            }
-
-            game_field_unit_service_guard.apply_catastrophic_damage_to_field_unit(
-                deploy_non_targeting_attack_passive_skill_request_form
-                    .to_apply_catastrophic_damage_to_field_unit_request(
-                        opponent_unique_id,
-                        non_target_skill_damage)).await;
-
-            let dead_unit_list =
-                game_field_unit_service_guard.judge_death_of_every_field_unit(
+            } else {
+                game_field_unit_service_guard.apply_catastrophic_damage_to_field_unit(
                     deploy_non_targeting_attack_passive_skill_request_form
-                        .to_judge_death_of_every_unit_request(
-                            opponent_unique_id)).await.get_dead_unit_id_list().clone();
-
-            if !dead_unit_list.is_empty() {
-                let mut game_tomb_service_guard =
-                    self.game_tomb_service.lock().await;
-
-                game_tomb_service_guard.add_dead_unit_list_to_tomb(
-                    deploy_non_targeting_attack_passive_skill_request_form
-                        .to_add_dead_unit_list_to_tomb_request(
+                        .to_apply_catastrophic_damage_to_field_unit_request(
                             opponent_unique_id,
-                            dead_unit_list)).await;
+                            non_target_skill_damage)).await;
             }
+        } else {
+            println!("현재 구현되지 않은 논타겟 스킬 기능입니다.");
+            return DeployNonTargetingAttackPassiveSkillResponseForm::default()
+        }
 
-            // TODO: 스킬 사용으로 인한 광역 논타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
+
+        // TODO: 사망 판정 전에 데이터를 가져와야 전송 가능하여 위치 변경 (데미지 - 데이터 - 사망판정 순서)
+        let opponent_all_unit_health_point =
+            game_field_unit_service_guard.get_current_health_point_of_all_field_unit(
+                deploy_non_targeting_attack_passive_skill_request_form
+                    .to_get_current_health_point_of_all_field_unit_request(
+                        opponent_unique_id)).await.get_current_unit_health_point().clone();
+
+        let opponent_all_unit_harmful_effect =
+            game_field_unit_service_guard.acquire_harmful_status_effect_of_all_unit(
+                deploy_non_targeting_attack_passive_skill_request_form
+                    .to_acquire_harmful_status_effect_of_all_unit_request(
+                        opponent_unique_id)).await.get_harmful_effect_list_of_all_unit();
+
+        // 유닛 사망 처리
+        let judge_death_of_every_unit_response =
+            game_field_unit_service_guard.judge_death_of_every_field_unit(
+                deploy_non_targeting_attack_passive_skill_request_form
+                    .to_judge_death_of_every_unit_request(
+                        opponent_unique_id)).await;
+
+        if !judge_death_of_every_unit_response.get_dead_unit_id_list().is_empty() {
+            let mut game_tomb_service_guard =
+                self.game_tomb_service.lock().await;
+
+            game_tomb_service_guard.add_dead_unit_list_to_tomb(
+                deploy_non_targeting_attack_passive_skill_request_form
+                    .to_add_dead_unit_list_to_tomb_request(
+                        opponent_unique_id,
+                        judge_death_of_every_unit_response.get_dead_unit_id_list())).await;
+
+            drop(game_tomb_service_guard);
         }
 
         // 유닛의 해당 패시브 스킬을 false로 세팅
@@ -499,8 +582,53 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             }
         }
         drop(game_card_passive_skill_service_guard);
+        // TODO: 스킬 사용으로 인한 광역 논타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
 
-        DeployNonTargetingAttackPassiveSkillResponseForm::new(true)
+        let generate_opponent_multiple_unit_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_multiple_unit_health_point_data(
+                deploy_non_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_multiple_unit_health_point_data_request(opponent_all_unit_health_point)).await;
+
+        let generate_opponent_multiple_unit_harmful_effect_data_response =
+            ui_data_generator_service_guard.generate_opponent_multiple_unit_harmful_effect_data(
+                deploy_non_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_multiple_unit_harmful_effect_data_request(opponent_all_unit_harmful_effect)).await;
+
+        let generate_opponent_multiple_unit_death_data_response =
+            ui_data_generator_service_guard.generate_opponent_multiple_unit_death_data(
+                deploy_non_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_multiple_unit_death_data_request(
+                        judge_death_of_every_unit_response.get_dead_unit_index_list())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_deploy_non_targeting_attack_passive_skill(
+            deploy_non_targeting_attack_passive_skill_request_form
+                .to_notice_deploy_non_targeting_attack_passive_skill_request(
+                    opponent_unique_id,
+                    generate_opponent_multiple_unit_health_point_data_response
+                        .get_player_field_unit_health_point_map_for_notice().clone(),
+                    generate_opponent_multiple_unit_harmful_effect_data_response
+                        .get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                    generate_opponent_multiple_unit_death_data_response
+                        .get_player_field_unit_death_map_for_notice().clone())).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        // TODO: 패시브 스킬 정보 responseform 에 넣어야함
+        DeployNonTargetingAttackPassiveSkillResponseForm::new(
+            true,
+            generate_opponent_multiple_unit_health_point_data_response
+                .get_player_field_unit_health_point_map_for_response().clone(),
+            generate_opponent_multiple_unit_harmful_effect_data_response
+                .get_player_field_unit_harmful_effect_map_for_response().clone(),
+            generate_opponent_multiple_unit_death_data_response
+                .get_player_field_unit_death_map_for_response().clone())
     }
 
     async fn request_deploy_targeting_attack_to_game_main_character(
@@ -691,7 +819,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             self.is_valid_session(turn_start_targeting_attack_passive_skill_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return TurnStartTargetingAttackPassiveSkillResponseForm::new(false)
+            return TurnStartTargetingAttackPassiveSkillResponseForm::default()
         }
 
         let mut game_protocol_validation_service_guard =
@@ -704,7 +832,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return TurnStartTargetingAttackPassiveSkillResponseForm::new(false)
+            return TurnStartTargetingAttackPassiveSkillResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
@@ -752,12 +880,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                 turn_start_targeting_attack_passive_skill_request_form
                     .to_is_using_turn_start_passive_skill_possible_request(
                         account_unique_id,
-                        unit_card_id,
+                        unit_card_index,
                         usage_skill_index,
                         summary_passive_skill_effect_by_index_response.get_passive_skill_casting_condition().clone())).await;
 
         if !is_using_turn_start_passive_skill_possible_response.is_possible() {
-            return TurnStartTargetingAttackPassiveSkillResponseForm::new(false)
+            return TurnStartTargetingAttackPassiveSkillResponseForm::default()
         }
         drop(game_field_unit_action_possibility_validator_service_guard);
 
@@ -774,7 +902,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         // 타게팅 데미지 적용
         // TODO: 현재에는 단일 타겟팅밖에 없으나 다중 타겟팅이 존재하는 경우 추가 처리 필요
         let target_card_index_string = turn_start_targeting_attack_passive_skill_request_form.get_opponent_target_card_index();
-        let target_card_index = target_card_index_string.parse::<i32>().unwrap();
+        let opponent_target_unit_card_index = target_card_index_string.parse::<i32>().unwrap();
 
         let target_skill_type = summary_passive_skill_effect_by_index_response.get_passive_skill_type();
         let target_skill_damage = summary_passive_skill_effect_by_index_response.get_skill_damage();
@@ -798,7 +926,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                         .to_attack_target_with_extra_effect_request(
                             opponent_unique_id,
                             target_skill_damage,
-                            extra_effect_list_of_unit_using_skill, target_card_index)).await;
+                            extra_effect_list_of_unit_using_skill, opponent_target_unit_card_index)).await;
             }
 
             // 특수 효과가 없는 경우 일반 공격 진행
@@ -806,28 +934,45 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                 turn_start_targeting_attack_passive_skill_request_form
                     .to_apply_damage_to_target_unit_index_request(
                         opponent_unique_id,
-                        target_card_index,
+                        opponent_target_unit_card_index,
                         target_skill_damage)).await;
+        }
+        else { return TurnStartTargetingAttackPassiveSkillResponseForm::default() }
 
-            let maybe_dead_unit_id =
-                game_field_unit_service_guard.judge_death_of_unit(
-                    turn_start_targeting_attack_passive_skill_request_form
-                        .to_judge_death_of_unit_request(
-                            opponent_unique_id,
-                            target_card_index)).await.get_dead_unit_id();
+        let opponent_target_unit_health_point =
+            game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
+                turn_start_targeting_attack_passive_skill_request_form
+                    .to_get_current_health_point_of_field_unit_by_index_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await.get_current_unit_health_point();
 
-            if maybe_dead_unit_id != -1 {
-                let mut game_tomb_service_guard =
-                    self.game_tomb_service.lock().await;
+        let opponent_target_unit_harmful_effect_list =
+            game_field_unit_service_guard.acquire_unit_harmful_status_effect(
+                turn_start_targeting_attack_passive_skill_request_form
+                    .to_acquire_unit_harmful_status_effect_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await.get_harmful_effect_list().clone();
 
-                game_tomb_service_guard.add_dead_unit_to_tomb(
-                    turn_start_targeting_attack_passive_skill_request_form
-                        .to_add_dead_unit_to_tomb_request(
-                            opponent_unique_id,
-                            maybe_dead_unit_id)).await;
-            }
+        // 피격 유닛이 죽었는지 판정
+        let judge_death_of_opponent_unit_response =
+            game_field_unit_service_guard.judge_death_of_unit(
+                turn_start_targeting_attack_passive_skill_request_form
+                    .to_judge_death_of_unit_request(
+                        opponent_unique_id,
+                        opponent_target_unit_card_index)).await;
 
-            // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
+        // 죽은 경우 묘지에 추가
+        let mut game_tomb_service_guard =
+            self.game_tomb_service.lock().await;
+
+        if judge_death_of_opponent_unit_response.get_dead_unit_id() != -1 {
+            println!("공격 당한 유닛이 사망했으므로 묘지로 이동합니다.");
+
+            game_tomb_service_guard.add_used_card_to_tomb(
+                turn_start_targeting_attack_passive_skill_request_form
+                    .to_place_dead_unit_to_tomb_request(
+                        opponent_unique_id,
+                        judge_death_of_opponent_unit_response.get_dead_unit_id())).await;
         }
 
         // 12. 유닛의 해당 패시브 스킬을 false로 세팅
@@ -871,8 +1016,50 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         }
         drop(game_card_passive_skill_service_guard);
 
+        // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
 
-        TurnStartTargetingAttackPassiveSkillResponseForm::new(true)
+        let generate_opponent_specific_unit_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
+                turn_start_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_specific_unit_health_point_data_request(
+                        opponent_target_unit_card_index,
+                        opponent_target_unit_health_point)).await;
+
+        let generate_opponent_specific_unit_harmful_effect_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_harmful_effect_data(
+                turn_start_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_specific_unit_harmful_effect_data_request(
+                        opponent_target_unit_card_index,
+                        opponent_target_unit_harmful_effect_list)).await;
+
+        let generate_opponent_specific_unit_death_data_response =
+            ui_data_generator_service_guard.generate_opponent_specific_unit_death_data(
+                turn_start_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_specific_unit_death_data_request(
+                        judge_death_of_opponent_unit_response.get_dead_unit_index())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_turn_start_targeting_attack_passive_skill_to_unit(
+            turn_start_targeting_attack_passive_skill_request_form
+                .to_notice_turn_start_targeting_attack_passive_skill_to_unit_request(
+                    opponent_unique_id,
+                    generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_notice().clone(),
+                    generate_opponent_specific_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                    generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_notice().clone())).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        TurnStartTargetingAttackPassiveSkillResponseForm::new(
+            true,
+            generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_response().clone(),
+            generate_opponent_specific_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_response().clone(),
+            generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_response().clone())
     }
 
     async fn request_turn_start_non_targeting_attack_passive_skill(
@@ -885,7 +1072,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             self.is_valid_session(turn_start_non_targeting_attack_passive_skill_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return TurnStartNonTargetingAttackPassiveSkillResponseForm::new(false)
+            return TurnStartNonTargetingAttackPassiveSkillResponseForm::default()
         }
 
         // Action 가능한 턴인지 판별
@@ -899,7 +1086,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return TurnStartNonTargetingAttackPassiveSkillResponseForm::new(false)
+            return TurnStartNonTargetingAttackPassiveSkillResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
@@ -935,8 +1122,6 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                         unit_card_id,
                         usage_skill_index)).await;
 
-
-
         drop(game_card_passive_skill_service_guard);
 
         // 스킬 사용 가능 여부 판정
@@ -948,12 +1133,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                 turn_start_non_targeting_attack_passive_skill_request_form
                     .to_is_using_turn_start_passive_skill_possible_request(
                         account_unique_id,
-                        unit_card_id,
+                        unit_card_index,
                         usage_skill_index,
                         summary_passive_skill_effect_by_index_response.get_passive_skill_casting_condition().clone())).await;
 
         if !is_using_turn_start_passive_skill_possible_response.is_possible() {
-            return TurnStartNonTargetingAttackPassiveSkillResponseForm::new(false)
+            return TurnStartNonTargetingAttackPassiveSkillResponseForm::default()
         }
 
         drop(game_field_unit_action_possibility_validator_service_guard);
@@ -992,32 +1177,48 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                             opponent_unique_id,
                             non_target_skill_damage,
                             extra_effect_list_of_unit_using_skill)).await;
-            }
-
-            game_field_unit_service_guard.apply_catastrophic_damage_to_field_unit(
-                turn_start_non_targeting_attack_passive_skill_request_form
-                    .to_apply_catastrophic_damage_to_field_unit_request(
-                        opponent_unique_id,
-                        non_target_skill_damage)).await;
-
-            let dead_unit_list =
-                game_field_unit_service_guard.judge_death_of_every_field_unit(
+            } else {
+                game_field_unit_service_guard.apply_catastrophic_damage_to_field_unit(
                     turn_start_non_targeting_attack_passive_skill_request_form
-                        .to_judge_death_of_every_unit_request(
-                            opponent_unique_id)).await.get_dead_unit_id_list().clone();
-
-            if !dead_unit_list.is_empty() {
-                let mut game_tomb_service_guard =
-                    self.game_tomb_service.lock().await;
-
-                game_tomb_service_guard.add_dead_unit_list_to_tomb(
-                    turn_start_non_targeting_attack_passive_skill_request_form
-                        .to_add_dead_unit_list_to_tomb_request(
+                        .to_apply_catastrophic_damage_to_field_unit_request(
                             opponent_unique_id,
-                            dead_unit_list)).await;
+                            non_target_skill_damage)).await;
             }
+        } else {
+            println!("현재 구현되지 않은 논타겟 스킬 기능입니다.");
+            return TurnStartNonTargetingAttackPassiveSkillResponseForm::default()
+        }
+        // TODO: 사망 판정 전에 데이터를 가져와야 전송 가능하여 위치 변경 (데미지 - 데이터 - 사망판정 순서)
+        let opponent_all_unit_health_point =
+            game_field_unit_service_guard.get_current_health_point_of_all_field_unit(
+                turn_start_non_targeting_attack_passive_skill_request_form
+                    .to_get_current_health_point_of_all_field_unit_request(
+                        opponent_unique_id)).await.get_current_unit_health_point().clone();
 
-            // TODO: 스킬 사용으로 인한 광역 논타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
+        let opponent_all_unit_harmful_effect =
+            game_field_unit_service_guard.acquire_harmful_status_effect_of_all_unit(
+                turn_start_non_targeting_attack_passive_skill_request_form
+                    .to_acquire_harmful_status_effect_of_all_unit_request(
+                        opponent_unique_id)).await.get_harmful_effect_list_of_all_unit();
+
+        // 유닛 사망 처리
+        let judge_death_of_every_unit_response =
+            game_field_unit_service_guard.judge_death_of_every_field_unit(
+                turn_start_non_targeting_attack_passive_skill_request_form
+                    .to_judge_death_of_every_unit_request(
+                        opponent_unique_id)).await;
+
+        if !judge_death_of_every_unit_response.get_dead_unit_id_list().is_empty() {
+            let mut game_tomb_service_guard =
+                self.game_tomb_service.lock().await;
+
+            game_tomb_service_guard.add_dead_unit_list_to_tomb(
+                turn_start_non_targeting_attack_passive_skill_request_form
+                    .to_add_dead_unit_list_to_tomb_request(
+                        opponent_unique_id,
+                        judge_death_of_every_unit_response.get_dead_unit_id_list())).await;
+
+            drop(game_tomb_service_guard);
         }
 
         // 유닛의 해당 패시브 스킬을 false로 세팅
@@ -1062,8 +1263,52 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             }
         }
         drop(game_card_passive_skill_service_guard);
+        // TODO: 스킬 사용으로 인한 광역 논타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
 
-        TurnStartNonTargetingAttackPassiveSkillResponseForm::new(true)
+        let generate_opponent_multiple_unit_health_point_data_response =
+            ui_data_generator_service_guard.generate_opponent_multiple_unit_health_point_data(
+                turn_start_non_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_multiple_unit_health_point_data_request(opponent_all_unit_health_point)).await;
+
+        let generate_opponent_multiple_unit_harmful_effect_data_response =
+            ui_data_generator_service_guard.generate_opponent_multiple_unit_harmful_effect_data(
+                turn_start_non_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_multiple_unit_harmful_effect_data_request(opponent_all_unit_harmful_effect)).await;
+
+        let generate_opponent_multiple_unit_death_data_response =
+            ui_data_generator_service_guard.generate_opponent_multiple_unit_death_data(
+                turn_start_non_targeting_attack_passive_skill_request_form
+                    .to_generate_opponent_multiple_unit_death_data_request(
+                        judge_death_of_every_unit_response.get_dead_unit_index_list())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        notify_player_action_info_service_guard.notice_turn_start_non_targeting_attack_passive_skill(
+            turn_start_non_targeting_attack_passive_skill_request_form
+                .to_notice_turn_start_non_targeting_attack_passive_skill_request(
+                    opponent_unique_id,
+                    generate_opponent_multiple_unit_health_point_data_response
+                        .get_player_field_unit_health_point_map_for_notice().clone(),
+                    generate_opponent_multiple_unit_harmful_effect_data_response
+                        .get_player_field_unit_harmful_effect_map_for_notice().clone(),
+                    generate_opponent_multiple_unit_death_data_response
+                        .get_player_field_unit_death_map_for_notice().clone())).await;
+
+        drop(notify_player_action_info_service_guard);
+
+        TurnStartNonTargetingAttackPassiveSkillResponseForm::new(
+            true,
+            generate_opponent_multiple_unit_health_point_data_response
+                .get_player_field_unit_health_point_map_for_response().clone(),
+            generate_opponent_multiple_unit_harmful_effect_data_response
+                .get_player_field_unit_harmful_effect_map_for_response().clone(),
+            generate_opponent_multiple_unit_death_data_response
+                .get_player_field_unit_death_map_for_response().clone())
     }
     async fn request_turn_start_targeting_attack_to_game_main_character(
         &self, turn_start_targeting_attack_to_game_main_character_request_form: TurnStartTargetingAttackToGameMainCharacterRequestForm)
