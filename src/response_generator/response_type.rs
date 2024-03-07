@@ -24,6 +24,7 @@ use crate::battle_wait_queue::service::response::battle_match_cancel_response::B
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::fake_battle_room::controller::response_form::create_fake_battle_room_response_form::CreateFakeBattleRoomResponseForm;
+use crate::fake_battle_room::controller::response_form::fake_multi_draw_response_form::FakeMultiDrawResponseForm;
 use crate::game_card_active_skill::controller::response_form::non_targeting_active_skill_response_form::NonTargetingActiveSkillResponseForm;
 use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
@@ -230,5 +231,6 @@ pub enum ResponseType {
     PROGRAM_EXIT(ClientProgramExitResponse),
 
     // Fake Battle Room Test
-    FAKE_BATTLE_ROOM_CREATION(CreateFakeBattleRoomResponseForm)
+    FAKE_BATTLE_ROOM_CREATION(CreateFakeBattleRoomResponseForm),
+    FAKE_MULTI_DRAW(FakeMultiDrawResponseForm)
 }
