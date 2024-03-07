@@ -14,6 +14,8 @@ use crate::battle_room::repository::battle_room_repository_impl::BattleRoomRepos
 use crate::battle_wait_queue::repository::battle_wait_queue_repository_impl::BattleWaitQueueRepositoryImpl;
 use crate::game_battle_field_monitor::controller::game_battle_field_monitor_controller::GameBattleFieldMonitorController;
 use crate::game_battle_field_monitor::controller::game_battle_field_monitor_controller_impl::GameBattleFieldMonitorControllerImpl;
+use crate::mulligan_monitor::service::mulligan_monitor_service::MulliganMonitorService;
+use crate::mulligan_monitor::service::mulligan_monitor_service_impl::MulliganMonitorServiceImpl;
 
 pub struct BattleMatchMonitorServiceImpl {
     battle_wait_queue_repository: Arc<AsyncMutex<BattleWaitQueueRepositoryImpl>>,
@@ -67,11 +69,17 @@ impl BattleMatchMonitorService for BattleMatchMonitorServiceImpl {
 
                 battle_room_repository_guard.set_players_to_battle_room(items).await.expect("전투 배치 실패");
                 let battle_room_count = battle_room_repository_guard.get_battle_room_count().await;
+                let battle_room_number = battle_room_count - 1;
                 drop(battle_room_repository_guard);
 
                 tokio::spawn(async move {
                     let game_battle_field_monitor_controller = GameBattleFieldMonitorControllerImpl::new();
                     game_battle_field_monitor_controller.battle_field_monitoring(battle_room_count).await;
+                });
+
+                tokio::spawn(async move {
+                    let mulligan_monitor_service = MulliganMonitorServiceImpl::new();
+                    mulligan_monitor_service.mulligan_monitoring(battle_room_number).await;
                 });
             }
 

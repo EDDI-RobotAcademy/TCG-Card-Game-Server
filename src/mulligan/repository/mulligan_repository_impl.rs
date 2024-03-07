@@ -69,20 +69,12 @@ impl MulliganRepository for MulliganRepositoryImpl {
         true
     }
 
-    async fn check_opponent_mulligan_finish(&self, opponent_unique_id: i32) -> bool {
+    async fn check_mulligan_finish(&self, opponent_unique_id: i32) -> bool {
         println!("MulliganRepositoryImpl: check_opponent_mulligan_finish");
 
         let mut mulligan_finished_player_list_guard =
             self.mulligan_finished_player_list.lock().await;
 
-        let is_finished =
-            mulligan_finished_player_list_guard.check(opponent_unique_id).await.unwrap();
-
-        if is_finished {
-            let mut mulligan_timer_hash_guard = self.mulligan_timer_hash.lock().await;
-            mulligan_timer_hash_guard.remove(opponent_unique_id).await;
-        }
-
-        is_finished
+        mulligan_finished_player_list_guard.check(opponent_unique_id).await.unwrap()
     }
 }

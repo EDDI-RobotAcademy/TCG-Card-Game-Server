@@ -64,7 +64,7 @@ impl MulliganService for MulliganServiceImpl {
         let mulligan_repository_guard = self.mulligan_repository.lock().await;
 
         let response =
-            mulligan_repository_guard.check_opponent_mulligan_finish(
+            mulligan_repository_guard.check_mulligan_finish(
                 is_opponent_mulligan_finished_request.get_opponent_unique_id()).await;
 
         drop(mulligan_repository_guard);

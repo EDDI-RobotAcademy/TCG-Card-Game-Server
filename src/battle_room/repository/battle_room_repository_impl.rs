@@ -75,12 +75,27 @@ impl BattleRoomRepository for BattleRoomRepositoryImpl {
         let mut battle_room = battle_room_list_guard.get_mut(room_number as usize).unwrap();
         battle_room.remove_player_for_finish(account_unique_id);
         drop(battle_room_list_guard);
-        
+
         let mut battle_room_account_hash_guard = self.battle_room_account_hash.lock().await;
         battle_room_account_hash_guard.remove(&account_unique_id);
         drop(battle_room_account_hash_guard);
 
         return false;
+    }
+
+    async fn get_players_in_battle_room(&self, battle_room_number: usize) -> Option<Vec<i32>> {
+        println!("BattleRoomRepositoryImpl: get_players_in_battle_room_number = {}", battle_room_number as i32);
+
+        let mut battle_room_list_guard = self.battle_room_list.lock().await;
+
+        if battle_room_number < battle_room_list_guard.len() {
+            return Some(battle_room_list_guard[battle_room_number].get_player_id_list().clone())
+        }
+
+        drop(battle_room_list_guard);
+
+        println!("Battle room does not exist!");
+        None
     }
 
     async fn what_is_the_room_number(&self, account_unique_id: i32) -> Option<i32> {
@@ -226,5 +241,25 @@ mod tests {
         println!("battle_room_account_hash_after_test: {:?}", battle_room_account_hash_guard);
         drop(battle_room_account_hash_guard);
 
+    }
+
+    #[tokio::test]
+    async fn test_get_players_in_battle_room() {
+        let battle_room_repository = BattleRoomRepositoryImpl::new();
+
+        let mut account_vector: Vec<i32> = Vec::new();
+        account_vector.push(1);
+        account_vector.push(2);
+
+        let result = battle_room_repository.set_players_to_battle_room(account_vector).await;
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), true);
+
+        let players_in_the_room_0_option = battle_room_repository.get_players_in_battle_room(0).await;
+        let players_in_the_room_1_option = battle_room_repository.get_players_in_battle_room(1).await;
+
+        assert_eq!(players_in_the_room_0_option.is_some(), true);
+        assert_eq!(players_in_the_room_1_option.is_none(), true);
+        println!("players_in_the_room_0: {:?}", players_in_the_room_0_option.unwrap());
     }
 }
