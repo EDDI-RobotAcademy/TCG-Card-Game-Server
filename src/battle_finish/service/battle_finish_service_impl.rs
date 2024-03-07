@@ -23,6 +23,8 @@ use crate::battle_finish::service::response::battle_finish_response::BattleFinis
 use crate::battle_ready_account_hash::entity::battle_ready_account_hash_status::BattleReadyAccountHashStatus;
 use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repository::BattleReadyAccountHashRepository;
 use crate::battle_ready_account_hash::repository::battle_ready_account_hash_repository_impl::BattleReadyAccountHashRepositoryImpl;
+use crate::battle_room::repository::battle_room_repository::BattleRoomRepository;
+use crate::battle_room::repository::battle_room_repository_impl::BattleRoomRepositoryImpl;
 use crate::game_card_support_usage_counter::repository::game_card_support_usage_counter_repository::GameCardSupportUsageCounterRepository;
 use crate::game_card_support_usage_counter::repository::game_card_support_usage_counter_repository_impl::GameCardSupportUsageCounterRepositoryImpl;
 use crate::game_deck::repository::game_deck_repository::GameDeckRepository;
@@ -62,6 +64,7 @@ pub struct BattleFinishServiceImpl {
     game_card_support_usage_counter_repository: Arc<AsyncMutex<GameCardSupportUsageCounterRepositoryImpl>>,
     account_point_repository: Arc<AsyncMutex<AccountPointRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+    battle_room_repository: Arc<AsyncMutex<BattleRoomRepositoryImpl>>,
     game_winner_check_repository: Arc<AsyncMutex<GameWinnerCheckRepositoryImpl>>,
 }
 
@@ -78,6 +81,7 @@ impl BattleFinishServiceImpl {
                game_card_support_usage_counter_repository: Arc<AsyncMutex<GameCardSupportUsageCounterRepositoryImpl>>,
                account_point_repository: Arc<AsyncMutex<AccountPointRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+               battle_room_repository: Arc<AsyncMutex<BattleRoomRepositoryImpl>>,
                game_winner_check_repository: Arc<AsyncMutex<GameWinnerCheckRepositoryImpl>>, ) -> Self {
         BattleFinishServiceImpl {
             battle_ready_account_hash_repository,
@@ -92,6 +96,7 @@ impl BattleFinishServiceImpl {
             game_card_support_usage_counter_repository,
             account_point_repository,
             redis_in_memory_repository,
+            battle_room_repository,
             game_winner_check_repository,
         }
     }
@@ -114,6 +119,7 @@ impl BattleFinishServiceImpl {
                             GameCardSupportUsageCounterRepositoryImpl::get_instance(),
                             AccountPointRepositoryImpl::get_instance(),
                             RedisInMemoryRepositoryImpl::get_instance(),
+                            BattleRoomRepositoryImpl::get_instance(),
                             GameWinnerCheckRepositoryImpl::get_instance())));
         }
         INSTANCE.clone()
@@ -220,26 +226,35 @@ pub async fn remove_player_support_card_usage_counter(user_id: i32) {
     sleep(time::Duration::from_millis(300)).await;
 }
 
-pub async fn player_battle_ready_account_hash_config_thread(user_id: i32) {
+// pub async fn player_battle_ready_account_hash_config_thread(user_id: i32) {
+//     let battle_ready_account_hash_repository_mutex = BattleReadyAccountHashRepositoryImpl::get_instance();
+//     let mut battle_ready_account_hash_repository_guard = battle_ready_account_hash_repository_mutex.lock().await;
+//     battle_ready_account_hash_repository_guard.save_battle_ready_account_hash(user_id, BattleReadyAccountHashStatus::SUCCESS).await;
+//     println!("battle_ready_account_hash: {:?}", battle_ready_account_hash_repository_guard.get_battle_ready_account_hash());
+//     drop(battle_ready_account_hash_repository_guard);
+//
+//     sleep(time::Duration::from_millis(300)).await;
+// }
+
+// TODO :: battle_ready_account_hash 삭제 기능 구현 필요
+pub async fn remove_player_battle_ready_account_hash_status(user_id: i32) {
     let battle_ready_account_hash_repository_mutex = BattleReadyAccountHashRepositoryImpl::get_instance();
     let mut battle_ready_account_hash_repository_guard = battle_ready_account_hash_repository_mutex.lock().await;
-    battle_ready_account_hash_repository_guard.save_battle_ready_account_hash(user_id, BattleReadyAccountHashStatus::SUCCESS).await;
+    battle_ready_account_hash_repository_guard.remove_battle_ready_account_hash_status_hash_by_account_unique_id(user_id);
     println!("battle_ready_account_hash: {:?}", battle_ready_account_hash_repository_guard.get_battle_ready_account_hash());
     drop(battle_ready_account_hash_repository_guard);
 
     sleep(time::Duration::from_millis(300)).await;
 }
 
-// TODO :: battle_ready_account_hash 삭제 기능 구현 필요
-// pub async fn remove_player_battle_ready_account_hash_status(user_id: i32) {
-//     let battle_ready_account_hash_repository_mutex = BattleReadyAccountHashRepositoryImpl::get_instance();
-//     let mut battle_ready_account_hash_repository_guard = battle_ready_account_hash_repository_mutex.lock().await;
-//     battle_ready_account_hash_repository_guard.remove_battle_ready_account_hash_status_hash_by_account_unique_id(user_id);
-//     println!("battle_ready_account_hash: {:?}", battle_ready_account_hash_repository_guard.get_battle_ready_account_hash());
-//     drop(battle_ready_account_hash_repository_guard);
-//
-//     sleep(time::Duration::from_millis(300)).await;
-// }
+pub async fn remove_battle_room_player(user_id: i32) {
+    let battle_room_repository_mutex = BattleRoomRepositoryImpl::get_instance();
+    let mut battle_room_repository_guard = battle_room_repository_mutex.lock().await;
+    battle_room_repository_guard.remove_battle_room_player(user_id);
+    drop(battle_room_repository_guard);
+
+    sleep(time::Duration::from_millis(300)).await;
+}
 
 pub async fn spawn_async_task_for_finish_battle(user_id: i32) {
     let task_deck_remove = tokio::spawn(remove_player_deck(user_id));
@@ -252,8 +267,8 @@ pub async fn spawn_async_task_for_finish_battle(user_id: i32) {
     let task_round_remove = tokio::spawn(remove_player_round(user_id));
     let task_turn_remove = tokio::spawn(remove_player_turn(user_id));
     let task_support_usage_counter_remove = tokio::spawn(remove_player_support_card_usage_counter(user_id));
-    // TODO :: battle_ready_account_hash 삭제 기능 구현 필요
-    // let task_battle_ready_account_hash_status_remove = tokio::spawn(player_battle_ready_account_hash_config_thread(user_id));
+    let task_battle_ready_account_hash_status_remove = tokio::spawn(remove_player_battle_ready_account_hash_status(user_id));
+    let task_remove_battle_room_player = tokio::spawn(remove_battle_room_player(user_id));
 
     let _ = tokio::try_join!(
         task_deck_remove,
@@ -266,8 +281,8 @@ pub async fn spawn_async_task_for_finish_battle(user_id: i32) {
         task_round_remove,
         task_turn_remove,
         task_support_usage_counter_remove,
-        // TODO :: battle_ready_account_hash 삭제 기능 구현 필요
-        // task_battle_ready_account_hash_status_remove,
+        task_battle_ready_account_hash_status_remove,
+        task_remove_battle_room_player,
     );
 }
 
@@ -283,7 +298,6 @@ impl BattleFinishService for BattleFinishServiceImpl {
         drop(redis_repository_guard);
 
         let mut reward_gold: i32 = 0;
-        // let mut finish_position_user_id = battle_finish_request.get_finish_position().clone();
         let mut game_winner_check_repository_guard = self.game_winner_check_repository.lock().await;
         let mut user_finish_position = game_winner_check_repository_guard.get_finish_position_enum(user_id).unwrap();
         if *user_finish_position == Winner {
@@ -298,6 +312,9 @@ impl BattleFinishService for BattleFinishServiceImpl {
         } else {
             println!("finish_position_enum_error");
         }
+        game_winner_check_repository_guard.remove_finish_position_by_account_id(user_id);
+
+        drop(game_winner_check_repository_guard);
 
         let mut account_point_repository_guard = self.account_point_repository.lock().await;
 
@@ -305,6 +322,7 @@ impl BattleFinishService for BattleFinishServiceImpl {
         let current_gold = found_account_point.gold;
         let result_gold = current_gold + reward_gold;
         let result_reward = account_point_repository_guard.update_gold(found_account_point, result_gold).await;
+        drop(account_point_repository_guard);
 
         println!("BattleFinishServiceImpl: spawn_async_task_for_finish_battle()");
         let result_task_for_finish_battle = tokio::spawn(spawn_async_task_for_finish_battle(user_id)).await;
@@ -456,6 +474,17 @@ mod tests {
 
         sleep(time::Duration::from_millis(300)).await;
 
+        // game_finish_position_map 정보 생성
+        let game_winner_check_repository_mutex = GameWinnerCheckRepositoryImpl::get_instance();
+        let mut game_winner_check_repository_guard = game_winner_check_repository_mutex.lock().await;
+        game_winner_check_repository_guard.create_finish_position_object(user_id, Winner);
+        game_winner_check_repository_guard.create_finish_position_object(20, Loser);
+        let game_finish_position_map_print = game_winner_check_repository_guard.get_game_finish_position_map();
+        println!("game_finish_position_map: {:?}", game_finish_position_map_print);
+        drop(game_winner_check_repository_guard);
+
+        sleep(time::Duration::from_millis(300)).await;
+
         // 보상 전 골드 확인
         let account_point_repository = AccountPointRepositoryImpl::get_instance();
         let account_point_repository_guard = account_point_repository.lock().await;
@@ -466,14 +495,14 @@ mod tests {
         println!("account_gold_before_reward: {:?}", account_gold_test);
         drop(account_point_repository_guard);
 
+        sleep(time::Duration::from_millis(300)).await;
+
         // battle_finish_for_player_battle 메서드 test 구동
         // Spawn the asynchronous task
         let task = tokio::spawn(async move {
             let battle_finish_service = BattleFinishServiceImpl::get_instance();
             let battle_finish_service_guard = battle_finish_service.lock().await;
-
-            let test_request = BattleFinishRequest::new(redis_token_account_id.to_string());
-            // let test_request = BattleFinishRequest::new(redis_token_account_id.to_string(), Winner);
+            let test_request = BattleFinishRequest::new(redis_token_account_id.to_string(), Winner);
             println!("test_request: {:?}", test_request);
             battle_finish_service_guard
                 .battle_finish_for_player_battle(test_request)
@@ -483,17 +512,22 @@ mod tests {
         sleep(time::Duration::from_secs(5)).await;
         task.abort();
 
+        // 보상후 승패 기록 삭제 여부 확인
+        let game_winner_check_repository_mutex = GameWinnerCheckRepositoryImpl::get_instance();
+        let mut game_winner_check_repository_guard = game_winner_check_repository_mutex.lock().await;
+        let game_finish_position_map_print = game_winner_check_repository_guard.get_game_finish_position_map();
+        println!("game_finish_position_map: {:?}", game_finish_position_map_print);
+        drop(game_winner_check_repository_guard);
+
+
         // 보상 후 gold 결과 확인
         let account_point_repository = AccountPointRepositoryImpl::get_instance();
         let account_point_repository_guard = account_point_repository.lock().await;
         let account_point_test = account_point_repository_guard.find_by_account_id(user_id).await.unwrap();
-        println!("after_user_id: {:?}", user_id);
+        println!("finished_user_id: {:?}", user_id);
         let account_gold_test_after = account_point_test.unwrap().gold;
 
         println!("account_gold_after_reward: {:?}", account_gold_test_after);
         drop(account_point_repository_guard);
-
-
-
     }
 }
