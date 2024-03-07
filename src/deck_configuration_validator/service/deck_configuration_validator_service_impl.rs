@@ -22,7 +22,7 @@ use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepo
 pub struct DeckConfigurationValidatorServiceImpl {
     deck_configuration_repository: Arc<AsyncMutex<DeckConfigurationValidatorRepositoryImpl>>,
     card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
-    accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
+    account_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
     card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
 }
@@ -30,7 +30,7 @@ pub struct DeckConfigurationValidatorServiceImpl {
 impl DeckConfigurationValidatorServiceImpl {
     pub fn new(deck_configuration_repository: Arc<AsyncMutex<DeckConfigurationValidatorRepositoryImpl>>,
                card_grade_repository: Arc<AsyncMutex<CardGradeRepositoryImpl>>,
-               accuont_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
+               account_card_repository: Arc<AsyncMutex<AccountCardRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
                card_kinds_repository: Arc<AsyncMutex<CardKindsRepositoryImpl>>,
 
@@ -39,7 +39,7 @@ impl DeckConfigurationValidatorServiceImpl {
         DeckConfigurationValidatorServiceImpl {
             deck_configuration_repository,
             card_grade_repository,
-            accuont_card_repository,
+            account_card_repository,
             redis_in_memory_repository,
             card_kinds_repository,
         }
@@ -165,7 +165,7 @@ impl DeckConfigurationValidatorService for DeckConfigurationValidatorServiceImpl
 
         let card_list_vec = VectorToHashConverter::convert_vector_to_hash(&card_list);
         //1. 해당 어카운트의 카드 가져오기
-        let account_card_repository_guard = self.accuont_card_repository.lock().await;
+        let account_card_repository_guard = self.account_card_repository.lock().await;
         let account_card_list = account_card_repository_guard.get_card_list(account_unique_id).await.unwrap().unwrap();
         //2. 어카운트의 카드 리스트와 받아온 카드리스트 비교
         for (card_id, card_count) in card_list_vec {

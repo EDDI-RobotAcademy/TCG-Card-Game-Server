@@ -68,14 +68,32 @@ impl BattleRoomRepository for BattleRoomRepositoryImpl {
         Ok(true)
     }
 
+    async fn remove_battle_room_player(&mut self, account_unique_id: i32) -> bool {
+        println!("BattleRoomRepositoryImpl: remove_battle_room_player()");
+        let room_number = self.what_is_the_room_number(account_unique_id).await.unwrap();
+        let mut battle_room_list_guard = self.battle_room_list.lock().await;
+        let mut battle_room = battle_room_list_guard.get_mut(room_number as usize).unwrap();
+        battle_room.remove_player_for_finish(account_unique_id);
+        drop(battle_room_list_guard);
+        
+        let mut battle_room_account_hash_guard = self.battle_room_account_hash.lock().await;
+        battle_room_account_hash_guard.remove(&account_unique_id);
+        drop(battle_room_account_hash_guard);
+
+        return false;
+    }
+
     async fn what_is_the_room_number(&self, account_unique_id: i32) -> Option<i32> {
         println!("BattleRoomRepositoryImpl: what_is_the_room_number()");
 
         let battle_room_account_hash_guard = self.battle_room_account_hash.lock().await;
-        match battle_room_account_hash_guard.get(&account_unique_id) {
+        let result = match battle_room_account_hash_guard.get(&account_unique_id) {
             Some(&room_number) => Some(room_number),
             None => None,
-        }
+        };
+        drop(battle_room_account_hash_guard);
+
+        return result
     }
 
     async fn find_opponent_unique_id(&self, account_unique_id: i32) -> Option<i32> {
@@ -167,5 +185,46 @@ mod tests {
 
         let result_account4 = battle_room_repository_guard.find_opponent_unique_id(account4).await;
         assert_eq!(result_account4, Some(account3));
+    }
+
+    #[tokio::test]
+    async fn test_remove_player_to_battle_room() {
+
+        let battle_room_repository = BattleRoomRepositoryImpl::get_instance();
+        let mut battle_room_repository_guard = battle_room_repository.lock().await;
+
+        let mut account_vector: Vec<i32> = Vec::new();
+        account_vector.push(1);
+        account_vector.push(2);
+        println!("account_vector: {:?}", account_vector);
+        let account_unique_id = 1;
+
+        // battle_room 셋팅
+        let result = battle_room_repository_guard.set_players_to_battle_room(account_vector).await;
+
+        let room_number = battle_room_repository_guard.what_is_the_room_number(account_unique_id).await.unwrap();
+        println!("room_number: {:?}", room_number);
+
+        let battle_room_list_guard = battle_room_repository_guard.battle_room_list.lock().await;
+        let battle_room = battle_room_list_guard.get(room_number as usize).unwrap();
+        println!("battle_room_before_test: {:?}", battle_room);
+        drop(battle_room_list_guard);
+
+        let battle_room_account_guard = battle_room_repository_guard.battle_room_account_hash.lock().await;
+        println!("battle_room_account_hash_before_test: {:?}", battle_room_account_guard);
+        drop(battle_room_account_guard);
+
+        // account_unique_id 관련하여 battle_room_list 안의 BattleRoom 정보 삭제, battle_room_account_hash 안의 계정 정보 삭제
+        let result_remove = battle_room_repository_guard.remove_battle_room_player(account_unique_id).await;
+
+        let battle_room_list_guard = battle_room_repository_guard.battle_room_list.lock().await;
+        let battle_room = battle_room_list_guard.get(room_number as usize).unwrap();
+        println!("battle_room_after_test: {:?}", battle_room_list_guard);
+        drop(battle_room_list_guard);
+
+        let battle_room_account_hash_guard = battle_room_repository_guard.battle_room_account_hash.lock().await;
+        println!("battle_room_account_hash_after_test: {:?}", battle_room_account_hash_guard);
+        drop(battle_room_account_hash_guard);
+
     }
 }

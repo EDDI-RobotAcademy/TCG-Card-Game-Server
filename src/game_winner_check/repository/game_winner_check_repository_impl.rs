@@ -67,6 +67,18 @@ impl GameWinnerCheckRepository for GameWinnerCheckRepositoryImpl {
         }
         None
     }
+
+    fn remove_finish_position_by_account_id(&mut self, account_unique_id: i32) -> bool {
+        println!("GameWinnerCheckRepository: remove_finish_position_by_account_id()");
+
+        if let Some(_) = self.game_finish_position_map.get_index_of(&account_unique_id) {
+            self.game_finish_position_map.swap_remove(&account_unique_id);
+
+            return true
+        }
+
+        false
+    }
 }
 
 #[cfg(test)]
@@ -120,5 +132,37 @@ mod cfg_test {
 
         let position_enum_account_unique_id_2 = repository.get_finish_position_enum(account_unique_id_2).unwrap();
         println!("finish position Value Of account unique id 2: {:?}", position_enum_account_unique_id_2);
+    }
+
+    #[test]
+    async fn test_remove_finish_position_by_account_id() {
+        let mut repository = GameWinnerCheckRepositoryImpl::new();
+        let account_unique_id_1 = 456;
+        let finish_position_1 = Winner;
+
+        let account_unique_id_2 = 789;
+        let finish_position_2 = Loser;
+
+        let result = repository.create_finish_position_object(account_unique_id_1, finish_position_1);
+        repository.add_finish_position_object(account_unique_id_2, finish_position_2);
+
+        assert!(result);
+        let finish_position_1_option = repository.game_finish_position_map.get(&account_unique_id_1);
+        let finish_position_2 = repository.game_finish_position_map.get(&account_unique_id_2).unwrap();
+        assert!(finish_position_1_option.is_some());
+
+        if let Some(finish_position) = finish_position_1_option {
+            println!("finish position inserted successfully!");
+            println!("finish position Value Of account unique id 1: {:?}", finish_position);
+            println!("finish position Value Of account unique id 2: {:?}", finish_position_2);
+
+        } else {
+            println!("Failed to insert Finish position!");
+        }
+        println!("game_finish_position_map_before_remove: {:?}", repository.game_finish_position_map);
+        repository.remove_finish_position_by_account_id(account_unique_id_1);
+        println!("game_finish_position_map_after_remove: {:?}", repository.game_finish_position_map);
+        repository.remove_finish_position_by_account_id(account_unique_id_2);
+        println!("game_finish_position_map_after_remove: {:?}", repository.game_finish_position_map);
     }
 }
