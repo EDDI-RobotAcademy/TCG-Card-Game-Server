@@ -58,11 +58,10 @@ impl MulliganMonitorService for MulliganMonitorServiceImpl {
             if first_account_has_finished && second_account_has_finished {
                 println!("Both players finished mulligan.");
 
-                // TODO: Notify to both players
                 let mut notify_player_action_info_guard =
                     self.notify_player_action_info.lock().await;
 
-                notify_player_action_info_guard
+                let _ = notify_player_action_info_guard
                     .notice_mulligan_finished(first_account, second_account).await;
 
                 drop(notify_player_action_info_guard);
