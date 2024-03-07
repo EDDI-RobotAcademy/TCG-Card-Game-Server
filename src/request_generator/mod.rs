@@ -46,3 +46,4 @@ pub mod turn_start_non_targeting_attack_passive_skill_request_generator;
 pub mod turn_start_targeting_attack_to_game_main_character_request_generator;
 pub mod deploy_targeting_attack_to_game_main_character_request_generator;
 pub mod battle_start_request_form_generator;
+mod fake_multi_draw_request_form_generator;
