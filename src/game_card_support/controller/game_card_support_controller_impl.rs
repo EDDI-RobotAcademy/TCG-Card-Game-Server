@@ -297,6 +297,10 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         game_deck_service_guard.shuffle_deck(
             energy_boost_support_request_form.to_shuffle_deck_request()).await;
 
+        let game_deck_card_list_response =
+            game_deck_service_guard.get_deck(
+                energy_boost_support_request_form.to_get_deck_request()).await;
+
         drop(game_deck_service_guard);
 
         // Field Unit Service 를 호출하여 배치한 에너지 부착
@@ -381,7 +385,8 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         EnergyBoostSupportResponseForm::from_response(
             generate_use_my_hand_card_data_response,
             generate_use_my_deck_card_list_data_response,
-            generate_my_field_unit_energy_data_response)
+            generate_my_field_unit_energy_data_response,
+            game_deck_card_list_response)
     }
 
     async fn request_to_use_draw_support(
@@ -482,6 +487,10 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         let drawn_cards = draw_deck_response.get_drawn_card_list().clone();
 
+        let game_deck_card_list_response =
+            game_deck_service_guard.get_deck(
+                draw_support_request_form.to_get_deck_request()).await;
+
         drop(game_deck_service_guard);
 
         let usage_hand_card = self.use_support_card(
@@ -540,7 +549,8 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         DrawSupportResponseForm::from_response(
             generate_use_my_hand_card_data_response,
-            generate_draw_my_deck_data_response)
+            generate_draw_my_deck_data_response,
+            game_deck_card_list_response)
     }
 
     async fn request_to_use_search_unit_support(
@@ -686,11 +696,16 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
                         target_unit_card_index_list.clone())).await;
 
         if search_specific_deck_card_response.get_found_card_id_list().is_empty() {
+            println!("덱에 있는 유닛을 검색해오는 과정에서 문제가 발생했습니다.");
             return SearchUnitSupportResponseForm::default()
         }
 
         game_deck_service_guard.shuffle_deck(
             search_unit_support_request_form.to_shuffle_deck_request()).await;
+
+        let game_deck_card_list_response =
+            game_deck_service_guard.get_deck(
+                search_unit_support_request_form.to_get_deck_request()).await;
 
         drop(game_deck_service_guard);
 
@@ -759,7 +774,8 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         SearchUnitSupportResponseForm::from_response(
             generate_use_my_hand_card_data_response,
-            generate_search_my_deck_data_response)
+            generate_search_my_deck_data_response,
+            game_deck_card_list_response)
     }
 
     async fn request_to_use_remove_opponent_field_energy_support(
