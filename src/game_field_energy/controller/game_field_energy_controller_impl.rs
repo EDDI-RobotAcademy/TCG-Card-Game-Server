@@ -144,21 +144,7 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
         let mut game_field_unit_service_guard =
             self.game_field_unit_service.lock().await;
 
-        if will_be_used_field_energy_quantity == 1 {
-            let attach_single_energy_to_unit_index_response =
-                game_field_unit_service_guard.attach_energy_to_field_unit_index(
-                    attach_field_energy_to_field_unit_request_form
-                        .to_attach_single_energy_to_unit_index_request(
-                            account_unique_id,
-                            unit_card_index,
-                            energy_race_enum)).await;
-
-            if !attach_single_energy_to_unit_index_response.is_success() {
-                println!("필드 에너지를 부착하는 과정에서 문제가 발생하였습니다.");
-                return AttachFieldEnergyToFieldUnitResponseForm::default()
-            }
-        }
-
+        println!("{:?} 에너지 {}개를 부착합니다.", energy_race_enum, will_be_used_field_energy_quantity);
         let attach_multiple_energy_to_unit_response =
             game_field_unit_service_guard.attach_multiple_energy_to_field_unit_index(
                 attach_field_energy_to_field_unit_request_form
