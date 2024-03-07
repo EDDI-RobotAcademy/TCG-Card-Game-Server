@@ -224,12 +224,15 @@ impl GameFieldUnitCardList {
         self.game_field_unit_card_list.get_mut(unit_card_index).unwrap().set_has_third_passive_skill(third_passive_default);
     }
     pub fn get_index_passive(&self, unit_card_index: usize, passive_index: usize) -> bool {
-        match passive_index {
-            1 => self.game_field_unit_card_list.get(unit_card_index).unwrap().get_has_first_passive_skill(),
-            2 => self.game_field_unit_card_list.get(unit_card_index).unwrap().get_has_second_passive_skill(),
-            3 => self.game_field_unit_card_list.get(unit_card_index).unwrap().get_has_third_passive_skill(),
-            _ => false
+        if let Some(unit) = self.game_field_unit_card_list.get(unit_card_index) {
+            return match passive_index {
+                1 => return unit.get_has_first_passive_skill(),
+                2 => return unit.get_has_second_passive_skill(),
+                3 => return unit.get_has_third_passive_skill(),
+                _ => false
+            };
         }
+        false
     }
     pub fn execute_index_passive(&mut self, unit_card_index: usize, passive_index: usize) {
         match passive_index {
@@ -660,5 +663,49 @@ mod tests {
         game_field_unit_card_list.impose_harmful_state_list_iteratively(harmful_state_list);
 
         println!("After imposing harmful state list: {:?}", game_field_unit_card_list);
+    }
+    #[test]
+    fn test_get_passive_index_unit() {
+        let mut game_field_unit_card_list = GameFieldUnitCardList::new();
+
+        let game_field_unit_card1 = GameFieldUnitCard::new(
+            3,
+            RaceEnum::Angel,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            true,
+            true,
+            false,
+            true
+        );
+
+        let game_field_unit_card2 = GameFieldUnitCard::new(
+            7,
+            RaceEnum::Trent,
+            GradeEnum::Hero,
+            20,
+            20,
+            1,
+            false,
+            false,
+            false,
+            true
+        );
+
+        game_field_unit_card_list.add_field_unit(game_field_unit_card1.clone());
+        game_field_unit_card_list.add_field_unit(game_field_unit_card2.clone());
+
+        let get_passive = game_field_unit_card_list.get_index_passive(0, 1);
+        let get_passive2 = game_field_unit_card_list.get_index_passive(0, 2);
+
+
+
+
+        println!("{}", get_passive);
+        println!("{}", get_passive2);
+
+
     }
 }

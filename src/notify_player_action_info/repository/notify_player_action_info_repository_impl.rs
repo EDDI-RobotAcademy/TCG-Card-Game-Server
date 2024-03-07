@@ -8,11 +8,16 @@ use crate::connection_context::repository::connection_context_repository_impl::C
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_main_character::NotifyFormBasicAttackToMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_basic_attack_to_unit::NotifyFormBasicAttackToUnit;
-use crate::notify_player_action_info::entity::notify_form_deploy_targeting_attack_passive_skill::NotifyFormDeployTargetingAttackPassiveSkill;
+use crate::notify_player_action_info::entity::notify_form_deploy_non_targeting_attack_passive_skill::NotifyFormDeployNonTargetingAttackPassiveSkill;
+use crate::notify_player_action_info::entity::notify_form_deploy_targeting_attack_passive_skill_to_unit::NotifyFormDeployTargetingAttackPassiveSkillToUnit;
+use crate::notify_player_action_info::entity::notify_form_deploy_targeting_attack_to_game_main_character::NotifyFormDeployTargetingAttackToGameMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_deploy_unit::NotifyFormDeployUnit;
 use crate::notify_player_action_info::entity::notify_form_non_targeting_attack_active_skill::NotifyFormNonTargetingAttackActiveSkill;
 use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_unit::NotifyFormTargetingAttackActiveSkillToUnit;
 use crate::notify_player_action_info::entity::notify_form_turn_end::NotifyFormTurnEnd;
+use crate::notify_player_action_info::entity::notify_form_turn_start_non_targeting_attack_passive_skill::NotifyFormTurnStartNonTargetingAttackPassiveSkill;
+use crate::notify_player_action_info::entity::notify_form_turn_start_targeting_attack_passive_skill_to_unit::NotifyFormTurnStartTargetingAttackPassiveSkillToUnit;
+use crate::notify_player_action_info::entity::notify_form_turn_start_targeting_attack_to_game_main_character::NotifyFormTurnStartTargetingAttackToGameMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_use_catastrophic_damage_item_card::NotifyFormUseCatastrophicDamageItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_draw_support_card::NotifyFormUseDrawSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_field_energy_increase_item_card::NotifyFormUseFieldEnergyIncreaseItemCard;
@@ -705,7 +710,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         true
     }
-    async fn notice_deploy_targeting_attack_passive_skill(
+    async fn notice_deploy_targeting_attack_passive_skill_to_unit(
         &mut self,
         opponent_unique_id: i32,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
@@ -726,7 +731,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
         let notify_form_deploy_targeting_attack_passive_skill_to_unit =
-            NotifyFormDeployTargetingAttackPassiveSkill::new(
+            NotifyFormDeployTargetingAttackPassiveSkillToUnit::new(
                 player_field_unit_health_point_map_for_notice,
                 player_field_unit_harmful_effect_map_for_notice,
                 player_field_unit_death_map_for_notice);
@@ -760,8 +765,8 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
-        let notify_form_targeting_attack_active_skill_to_unit =
-            NotifyFormTargetingAttackActiveSkillToUnit::new(
+        let notify_form_deploy_non_targeting_attack_passive_skill =
+            NotifyFormDeployNonTargetingAttackPassiveSkill::new(
                 player_field_unit_health_point_map_for_notice,
                 player_field_unit_harmful_effect_map_for_notice,
                 player_field_unit_death_map_for_notice);
@@ -770,8 +775,8 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(
-                        notify_form_targeting_attack_active_skill_to_unit)))).await;
+                    NOTIFY_DEPLOY_NON_TARGETING_ATTACK_PASSIVE_SKILL(
+                        notify_form_deploy_non_targeting_attack_passive_skill)))).await;
 
         true
     }
@@ -794,27 +799,27 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
-        let notify_form_basic_attack_to_main_character =
-            NotifyFormBasicAttackToMainCharacter::new(
+        let notify_form_deploy_targeting_attack_to_game_main_character =
+            NotifyFormDeployTargetingAttackToGameMainCharacter::new(
                 player_main_character_health_point_map, player_main_character_survival_map);
 
         // 소환시 플레이어 단일 공격 패시브 스킬 공지
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_BASIC_ATTACK_TO_MAIN_CHARACTER(
-                        notify_form_basic_attack_to_main_character)))).await;
+                    NOTIFY_DEPLOY_TARGETING_ATTACK_TO_GAME_MAIN_CHARACTER(
+                        notify_form_deploy_targeting_attack_to_game_main_character)))).await;
 
         true
     }
-    async fn notice_turn_start_targeting_attack_passive_skill(
+    async fn notice_turn_start_targeting_attack_passive_skill_to_unit(
         &mut self,
         opponent_unique_id: i32,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
     ) -> bool {
-        println!("NotifyPlayerActionInfoRepositoryImpl: notice_targeting_attack_active_skill_to_unit()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_turn_start_targeting_attack_passive_skill_to_unit()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -827,8 +832,8 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
-        let notify_form_targeting_attack_active_skill_to_unit =
-            NotifyFormTargetingAttackActiveSkillToUnit::new(
+        let notify_form_targeting_attack_passive_skill_to_unit =
+            NotifyFormTurnStartTargetingAttackPassiveSkillToUnit::new(
                 player_field_unit_health_point_map_for_notice,
                 player_field_unit_harmful_effect_map_for_notice,
                 player_field_unit_death_map_for_notice);
@@ -837,8 +842,8 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(
-                        notify_form_targeting_attack_active_skill_to_unit)))).await;
+                    NOTIFY_TURN_START_TARGETING_ATTACK_PASSIVE_SKILL_TO_UNIT(
+                        notify_form_targeting_attack_passive_skill_to_unit)))).await;
 
         true
     }
@@ -862,8 +867,8 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
-        let notify_form_targeting_attack_active_skill_to_unit =
-            NotifyFormTargetingAttackActiveSkillToUnit::new(
+        let notify_form_non_targeting_attack_passive_skill =
+            NotifyFormTurnStartNonTargetingAttackPassiveSkill::new(
                 player_field_unit_health_point_map_for_notice,
                 player_field_unit_harmful_effect_map_for_notice,
                 player_field_unit_death_map_for_notice);
@@ -872,8 +877,8 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(
-                        notify_form_targeting_attack_active_skill_to_unit)))).await;
+                    NOTIFY_TURN_START_NON_TARGETING_ATTACK_PASSIVE_SKILL(
+                        notify_form_non_targeting_attack_passive_skill)))).await;
 
         true
     }
@@ -896,16 +901,16 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
-        let notify_form_basic_attack_to_main_character =
-            NotifyFormBasicAttackToMainCharacter::new(
+        let notify_form_turn_start_targeting_attack_to_game_main_character =
+            NotifyFormTurnStartTargetingAttackToGameMainCharacter::new(
                 player_main_character_health_point_map, player_main_character_survival_map);
 
         // 턴 시작 시 플레이어 단일 공격 패시브 스킬 공지
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_BASIC_ATTACK_TO_MAIN_CHARACTER(
-                        notify_form_basic_attack_to_main_character)))).await;
+                    NOTIFY_TURN_START_TARGETING_ATTACK_TO_GAME_MAIN_CHARACTER(
+                        notify_form_turn_start_targeting_attack_to_game_main_character)))).await;
 
         true
     }
