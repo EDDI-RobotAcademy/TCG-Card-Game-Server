@@ -30,20 +30,21 @@ impl MulliganMonitorServiceImpl {
 #[async_trait]
 impl MulliganMonitorService for MulliganMonitorServiceImpl {
     async fn mulligan_monitoring(&self, battle_room_number: usize) {
+        
+        let mut battle_room_repository_guard =
+            self.battle_room_repository.lock().await;
+
+        let player_list =
+            battle_room_repository_guard.get_players_in_battle_room(battle_room_number).await;
+
+        drop(battle_room_repository_guard);
+
+        let account_list = player_list.unwrap();
+        let first_account = account_list[0];
+        let second_account = account_list[1];
+
         loop {
             println!("Mulligan monitoring for room number {} is on going", battle_room_number);
-
-            let mut battle_room_repository_guard =
-                self.battle_room_repository.lock().await;
-
-            let player_list =
-                battle_room_repository_guard.get_players_in_battle_room(battle_room_number).await;
-
-            drop(battle_room_repository_guard);
-
-            let account_list = player_list.unwrap();
-            let first_account = account_list[0];
-            let second_account = account_list[1];
 
             let mut mulligan_repository_guard =
                 self.mulligan_repository.lock().await;
