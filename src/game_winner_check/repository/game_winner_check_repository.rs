@@ -4,4 +4,5 @@ pub trait GameWinnerCheckRepository {
     fn create_finish_position_object(&mut self, account_unique_id: i32, finish_position_enum: FinishPositionEnum) -> bool;
     fn add_finish_position_object(&mut self, account_unique_id: i32, finish_position_enum: FinishPositionEnum) -> bool;
     fn get_finish_position_enum(&mut self, account_unique_id: i32) -> Option<&FinishPositionEnum>;
+    fn remove_finish_position_by_account_id(&mut self, account_unique_id: i32) -> bool;
 }
