@@ -60,7 +60,7 @@ impl BattleReadyAccountHashRepository for BattleReadyAccountHashRepositoryImpl {
     fn remove_battle_ready_account_hash_status_hash_by_account_unique_id(&mut self, account_unique_id: i32) -> bool {
         println!("BattleReadyAccountHashRepositoryImpl: remove_battle_ready_account_hash_status_hash()");
         if let Some(_) = self.battle_ready_account_hash_status.get_user_ready_state(account_unique_id) {
-            self.battle_ready_account_hash_status.remove_battle_read_account_hash_status(account_unique_id);
+            self.battle_ready_account_hash_status.remove_battle_ready_account_hash_status(account_unique_id);
             return true
         }
         return false
