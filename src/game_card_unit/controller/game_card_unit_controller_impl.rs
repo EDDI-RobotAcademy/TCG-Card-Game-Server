@@ -153,7 +153,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             self.is_valid_session(deploy_unit_request_form.to_session_validation_request()).await;
 
         if account_unique_id == -1 {
-            return DeployUnitResponseForm::new(false, -1)
+            return DeployUnitResponseForm::default()
         }
 
         // TODO: 세션을 제외하고 애초에 UI에서 숫자로 전송하면 더 좋다.
@@ -171,7 +171,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if !check_protocol_hacking_response.is_success() {
             println!("핸드에 존재하지 않는 유닛 소환 요청 - 해킹범을 검거합니다!");
-            return DeployUnitResponseForm::new(false, -1)
+            return DeployUnitResponseForm::default()
         }
 
         let is_this_your_turn_response =
@@ -181,7 +181,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return DeployUnitResponseForm::new(false, -1)
+            return DeployUnitResponseForm::default()
         }
 
         // 3. Card Kinds Service 를 호출하여 실제 유닛 카드가 맞는지 확인
@@ -191,7 +191,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if !is_it_unit_response.is_success() {
             println!("유닛 카드가 아닌데 요청이 왔으므로 당신도 해킹범입니다.");
-            return DeployUnitResponseForm::new(false, -1)
+            return DeployUnitResponseForm::default()
         }
 
         // 4. 신화 등급의 경우 라운드 체크하도록 함
@@ -202,7 +202,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if !can_use_card_response.is_success() {
             println!("신화 등급 카드는 5라운드부터 사용 가능합니다.");
-            return DeployUnitResponseForm::new(false, -1)
+            return DeployUnitResponseForm::default()
         }
 
         drop(game_protocol_validation_service_guard);
@@ -252,7 +252,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if add_unit_to_game_field_response.get_placed_unit_index() == -1 {
             println!("필드에 유닛 배치 중 문제가 발생하였습니다.");
-            return DeployUnitResponseForm::new(false, -1)
+            return DeployUnitResponseForm::default()
         }
 
         // 7. 유닛이 출격하자마자 발동하는 스킬이 있는지 확인하여 카운트
@@ -268,11 +268,14 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let mut passive_skill_list =
             passive_skill_response.get_passive_skill_effect_list().clone();
 
-        let mut number_of_passive_skill_triggered_by_deploying_unit = 0;
+        let mut index_of_passive_skill_triggered_by_deploying_unit = 1;
+        let mut passive_skill_index_list_to_handle = Vec::new();
+
         for passive_skill in passive_skill_list {
             if passive_skill.get_passive_skill_casting_condition().contains(&PassiveSkillCastingCondition::Deploy) {
-                number_of_passive_skill_triggered_by_deploying_unit += 1;
+                passive_skill_index_list_to_handle.push(index_of_passive_skill_triggered_by_deploying_unit);
             }
+            index_of_passive_skill_triggered_by_deploying_unit += 1;
         }
 
         // 8. 핸드에 있던 유닛 카드 사용에 대한 데이터 생성
@@ -311,7 +314,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         drop(notify_player_action_info_service_guard);
 
-        DeployUnitResponseForm::new(true, number_of_passive_skill_triggered_by_deploying_unit)
+        DeployUnitResponseForm::new(true, passive_skill_index_list_to_handle)
     }
 
     async fn request_to_attack_unit(
@@ -875,7 +878,9 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     .to_check_main_character_of_account_unique_id_request(opponent_unique_id)).await;
 
         // 사망하면 상대 패배 결정
-        if check_main_character_of_account_unique_id_response.get_status_main_character() == &StatusMainCharacterEnum::Death {
+        if check_main_character_of_account_unique_id_response
+            .get_status_main_character() == &StatusMainCharacterEnum::Death {
+
             let mut game_winner_check_service_guard =
                 self.game_winner_check_service.lock().await;
 
