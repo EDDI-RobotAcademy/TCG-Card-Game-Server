@@ -24,7 +24,6 @@ impl MulliganFinishedPlayerList {
 
         let mut list_guard = self.list.lock().await;
         if list_guard.contains(&account_unique_id) {
-
             return Some(true);
         }
 
