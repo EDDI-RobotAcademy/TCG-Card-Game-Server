@@ -217,26 +217,21 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
         if target_skill_type == &ActiveSkillType::SingleTarget {
 
             // extra effect 가 존재하는 경우 특수 효과가 가미된 공격 진행
-            if !extra_effect_list_of_unit_using_skill.is_empty() {
-                game_field_unit_service_guard.attack_target_unit_with_extra_effect(
-                    targeting_active_skill_request_form
-                        .to_attack_target_with_extra_effect_request(
-                            opponent_unique_id,
-                            target_skill_damage,
-                            extra_effect_list_of_unit_using_skill, opponent_target_unit_card_index)).await;
-            }
-
-            // 특수 효과가 없는 경우 공격 진행
-            game_field_unit_service_guard.apply_damage_to_target_unit_index(
+            let attack_target_unit_with_extra_effect_response = game_field_unit_service_guard.attack_target_unit_with_extra_effect(
                 targeting_active_skill_request_form
-                    .to_apply_damage_to_target_unit_index_request(
+                    .to_attack_target_with_extra_effect_request(
                         opponent_unique_id,
-                        opponent_target_unit_card_index,
-                        target_skill_damage)).await;
-
-
+                        target_skill_damage,
+                        extra_effect_list_of_unit_using_skill, opponent_target_unit_card_index)).await;
+            if !attack_target_unit_with_extra_effect_response.is_success() {
+                println!("필드에 존재하지 않는 유닛을 공격 대상으로 지정하여 공격에 실패했습니다.");
+                TargetingActiveSkillResponseForm::default()
+            }
         }
-        else { return TargetingActiveSkillResponseForm::default() }
+        else {
+            println!("SingleTarget 공격이 아닙니다.");
+            return TargetingActiveSkillResponseForm::default()
+        }
 
         let opponent_target_unit_health_point =
             game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
