@@ -14,6 +14,7 @@ pub struct NotifyFormTurnEnd {
     player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
     player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
     player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+    unit_index_turn_start_passive_list_map: HashMap<i32, Vec<i32>>,
 }
 
 impl NotifyFormTurnEnd {
@@ -24,6 +25,7 @@ impl NotifyFormTurnEnd {
         player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
         player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+        unit_index_turn_start_passive_list_map: HashMap<i32, Vec<i32>>,
     ) -> Self {
 
         NotifyFormTurnEnd {
@@ -32,7 +34,8 @@ impl NotifyFormTurnEnd {
             player_field_unit_health_point_map,
             player_field_unit_harmful_effect_map,
             player_field_unit_death_map,
-            player_main_character_survival_map
+            player_main_character_survival_map,
+            unit_index_turn_start_passive_list_map
         }
     }
 }

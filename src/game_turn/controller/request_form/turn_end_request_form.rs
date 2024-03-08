@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use crate::action_waiting_timer::service::request::action_waiting_timer_request::ActionWaitingTimerRequest;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
+use crate::game_card_passive_skill::service::request::summary_turn_start_passive_skill_effect_request::SummaryTurnStartPassiveSkillEffectRequest;
 use crate::game_card_support_usage_counter::service::request::reset_support_card_usage_count_request::ResetSupportCardUsageCountRequest;
 use crate::game_card_unit::service::request::summary_unit_card_passive_default_request::SummaryUnitCardPassiveDefaultRequest;
 use crate::game_deck::service::request::draw_cards_from_deck_request::DrawCardsFromDeckRequest;
@@ -18,7 +19,6 @@ use crate::game_field_unit::service::request::judge_death_of_every_unit_request:
 use crate::game_field_unit::service::request::reset_all_passive_of_unit_request::ResetAllPassiveOfUnitRequest;
 use crate::game_field_unit::service::request::reset_turn_action_of_all_field_unit_request::ResetTurnActionOfAllFieldUnitRequest;
 use crate::game_hand::service::request::add_card_list_to_hand_request::AddCardListToHandRequest;
-use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum::Death;
 use crate::game_main_character::service::request::set_main_character_as_death_request::SetMainCharacterAsDeathRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
@@ -35,7 +35,6 @@ use crate::ui_data_generator::service::request::generate_my_multiple_unit_death_
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_harmful_effect_data_request::GenerateMyMultipleUnitHarmfulEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_health_point_data_request::GenerateMyMultipleUnitHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_field_energy_data_request::GenerateOpponentFieldEnergyDataRequest;
-use crate::ui_data_generator::service::request::generate_opponent_main_character_survival_data_request::GenerateOpponentMainCharacterSurvivalDataRequest;
 
 #[derive(Debug)]
 pub struct TurnEndRequestForm {
@@ -136,17 +135,40 @@ impl TurnEndRequestForm {
             account_unique_id)
     }
 
-    pub fn to_get_game_field_unit_card_of_account_unique_id_request(&self, account_unique_id: i32) -> GetGameFieldUnitCardOfAccountUniqueIdRequest {
-        GetGameFieldUnitCardOfAccountUniqueIdRequest::new(account_unique_id)
+    pub fn to_get_game_field_unit_card_of_account_unique_id_request(
+        &self,
+        account_unique_id: i32) -> GetGameFieldUnitCardOfAccountUniqueIdRequest {
+
+        GetGameFieldUnitCardOfAccountUniqueIdRequest::new(
+            account_unique_id)
     }
-    pub fn to_summary_unit_card_passive_default_request(&self, unit_card_it: i32) -> SummaryUnitCardPassiveDefaultRequest {
-        SummaryUnitCardPassiveDefaultRequest::new(unit_card_it)
+
+    pub fn to_summary_unit_card_passive_default_request(
+        &self,
+        unit_card_it: i32) -> SummaryUnitCardPassiveDefaultRequest {
+
+        SummaryUnitCardPassiveDefaultRequest::new(
+            unit_card_it)
     }
-    pub fn to_reset_all_passive_of_unit(&self, account_unique_id: i32, unit_card_index: i32, passive_default_list: Vec<bool>) -> ResetAllPassiveOfUnitRequest {
-        ResetAllPassiveOfUnitRequest::new(account_unique_id, unit_card_index, passive_default_list)
+
+    pub fn to_reset_all_passive_of_unit(
+        &self,
+        account_unique_id: i32,
+        unit_card_index: i32,
+        passive_default_list: Vec<bool>) -> ResetAllPassiveOfUnitRequest {
+
+        ResetAllPassiveOfUnitRequest::new(
+            account_unique_id,
+            unit_card_index,
+            passive_default_list)
     }
-    pub fn to_action_waiting_timer(&self, opponent_account_unique_id: i32) -> ActionWaitingTimerRequest {
-        ActionWaitingTimerRequest::new(opponent_account_unique_id)
+
+    pub fn to_action_waiting_timer(
+        &self,
+        opponent_account_unique_id: i32) -> ActionWaitingTimerRequest {
+
+        ActionWaitingTimerRequest::new(
+            opponent_account_unique_id)
     }
 
     pub fn to_set_main_character_as_death_request(
@@ -157,7 +179,7 @@ impl TurnEndRequestForm {
             account_unique_id)
     }
 
-    pub fn to_check_health_of_main_character_for_setting_game_winner(
+    pub fn to_set_game_winner_request(
         &self,
         account_unique_id: i32,
         opponent_unique_id: i32,) -> CheckMainCharacterRequest {
@@ -165,6 +187,14 @@ impl TurnEndRequestForm {
         CheckMainCharacterRequest::new(
             account_unique_id,
             opponent_unique_id)
+    }
+
+    pub fn to_summary_turn_start_passive_skill_effect_request(
+        &self,
+        unit_card_id: i32) -> SummaryTurnStartPassiveSkillEffectRequest {
+
+        SummaryTurnStartPassiveSkillEffectRequest::new(
+            unit_card_id)
     }
 
     pub fn to_generate_draw_opponent_deck_data(
@@ -219,6 +249,7 @@ impl TurnEndRequestForm {
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+        unit_index_turn_start_passive_list_map: HashMap<i32, Vec<i32>>,
     ) -> NoticeMyTurnEndRequest {
 
         NoticeMyTurnEndRequest::new(
@@ -228,7 +259,8 @@ impl TurnEndRequestForm {
             player_field_unit_health_point_map_for_notice,
             player_field_unit_harmful_effect_map_for_notice,
             player_field_unit_death_map_for_notice,
-            HashMap::new())
+            HashMap::new(),
+            unit_index_turn_start_passive_list_map)
     }
 
     pub fn to_notice_my_turn_end_in_case_of_no_more_opponent_deck(
@@ -245,6 +277,7 @@ impl TurnEndRequestForm {
             HashMap::new(),
             HashMap::new(),
             HashMap::new(),
-            map_only_for_death_by_no_more_opponent_deck_card)
+            map_only_for_death_by_no_more_opponent_deck_card,
+            HashMap::new())
     }
 }
