@@ -88,6 +88,7 @@ use crate::request_generator::what_is_the_room_number_request_generator::create_
 use crate::request_generator::surrender_request_generator::create_surrender_request;
 use crate::request_generator::fake_create_game_deck_card_list_request_generator::fake_create_game_deck_card_list_request;
 use crate::request_generator::fake_multi_draw_request_form_generator::create_fake_multi_draw_request_form;
+use crate::request_generator::targeting_attack_active_skill_to_game_main_character_request_generator::create_targeting_attack_active_skill_to_game_main_character_request_form;
 use crate::request_generator::turn_start_non_targeting_attack_passive_skill_request_generator::create_turn_start_non_targeting_attack_passive_skill_request_form;
 use crate::request_generator::turn_start_targeting_attack_passive_skill_request_generator::create_turn_start_targeting_attack_passive_skill_request_form;
 use crate::request_generator::turn_start_targeting_attack_to_game_main_character_request_generator::create_turn_start_targeting_attack_to_game_main_character_request_form;
@@ -813,6 +814,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response_form = game_card_unit_controller.request_to_attack_game_main_character(request_form).await;
                     let response_type = Some(ResponseType::ATTACK_MAIN_CHARACTER(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            1017 => {
+                // Active Skill Targeting Attack To Game Main Character
+                if let Some(request_form) = create_targeting_attack_active_skill_to_game_main_character_request_form(&data) {
+                    let game_card_active_skill_controller_mutex = GameCardActiveSkillControllerImpl::get_instance();
+                    let game_card_active_skill_controller = game_card_active_skill_controller_mutex.lock().await;
+
+                    let response_form = game_card_active_skill_controller.request_targeting_active_skill_to_game_main_character(request_form).await;
+                    let response_type = Some(ResponseType::TARGETING_ATTACK_ACTIVE_SKILL_TO_GAME_MAIN_CHARACTER(response_form));
 
                     response_type
                 } else {
