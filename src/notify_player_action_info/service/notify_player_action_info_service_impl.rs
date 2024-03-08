@@ -479,7 +479,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notice_non_targeting_attack_active_skill(
+            notify_player_action_info_repository_guard.notice_deploy_targeting_attack_passive_skill_to_unit(
                 notice_deploy_targeting_attack_passive_skill_to_unit_request.get_opponent_unique_id(),
                 notice_deploy_targeting_attack_passive_skill_to_unit_request.get_player_field_unit_health_point_map_for_notice().clone(),
                 notice_deploy_targeting_attack_passive_skill_to_unit_request.get_player_field_unit_harmful_effect_map_for_notice().clone(),
@@ -498,7 +498,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notice_non_targeting_attack_active_skill(
+            notify_player_action_info_repository_guard.notice_deploy_non_targeting_attack_passive_skill(
                 notice_deploy_non_targeting_attack_passive_skill.get_opponent_unique_id(),
                 notice_deploy_non_targeting_attack_passive_skill.get_player_field_unit_health_point_map_for_notice().clone(),
                 notice_deploy_non_targeting_attack_passive_skill.get_player_field_unit_harmful_effect_map_for_notice().clone(),
@@ -517,7 +517,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notice_basic_attack_to_main_character(
+            notify_player_action_info_repository_guard.notice_deploy_targeting_attack_to_game_main_character(
                 notice_deploy_targeting_attack_to_game_main_character_request.get_opponent_unique_id(),
                 notice_deploy_targeting_attack_to_game_main_character_request.get_player_main_character_health_point_map_for_notice().clone(),
                 notice_deploy_targeting_attack_to_game_main_character_request.get_player_main_character_survival_map_for_notice().clone()).await;
@@ -535,7 +535,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notice_non_targeting_attack_active_skill(
+            notify_player_action_info_repository_guard.notice_turn_start_targeting_attack_passive_skill_to_unit(
                 notice_turn_start_targeting_attack_passive_skill_to_unit_request.get_opponent_unique_id(),
                 notice_turn_start_targeting_attack_passive_skill_to_unit_request.get_player_field_unit_health_point_map_for_notice().clone(),
                 notice_turn_start_targeting_attack_passive_skill_to_unit_request.get_player_field_unit_harmful_effect_map_for_notice().clone(),
@@ -554,7 +554,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notice_non_targeting_attack_active_skill(
+            notify_player_action_info_repository_guard.notice_turn_start_non_targeting_attack_passive_skill(
                 notice_turn_start_non_targeting_attack_passive_skill.get_opponent_unique_id(),
                 notice_turn_start_non_targeting_attack_passive_skill.get_player_field_unit_health_point_map_for_notice().clone(),
                 notice_turn_start_non_targeting_attack_passive_skill.get_player_field_unit_harmful_effect_map_for_notice().clone(),
@@ -573,7 +573,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notice_basic_attack_to_main_character(
+            notify_player_action_info_repository_guard.notice_turn_start_targeting_attack_to_game_main_character(
                 notice_turn_start_targeting_attack_to_game_main_character_request.get_opponent_unique_id(),
                 notice_turn_start_targeting_attack_to_game_main_character_request.get_player_main_character_health_point_map_for_notice().clone(),
                 notice_turn_start_targeting_attack_to_game_main_character_request.get_player_main_character_survival_map_for_notice().clone()).await;
