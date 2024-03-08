@@ -22,6 +22,8 @@ use crate::game_main_character::entity::status_main_character::StatusMainCharact
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_winner_check::service::request::check_main_character_request::CheckMainCharacterRequest;
 use crate::notify_player_action_info::service::request::notice_basic_attack_to_main_character_request::NoticeBasicAttackToMainCharacterRequest;
+use crate::notify_player_action_info::service::request::notice_deploy_targeting_attack_to_game_main_character_request::NoticeDeployTargetingAttackToGameMainCharacterRequest;
+use crate::notify_player_action_info::service::response::notice_deploy_targeting_attack_to_game_main_character_response::NoticeDeployTargetingAttackToGameMainCharacterResponse;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::ui_data_generator::service::request::generate_opponent_main_character_health_point_data_request::GenerateOpponentMainCharacterHealthPointDataRequest;
@@ -161,14 +163,14 @@ impl DeployTargetingAttackToGameMainCharacterRequestForm {
             main_character_status)
     }
 
-    pub fn to_notice_basic_attack_to_main_character_request(
+    pub fn to_notice_deploy_targeting_attack_to_game_main_character_request (
         &self,
         opponent_unique_id: i32,
         player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
         player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>
-    ) -> NoticeBasicAttackToMainCharacterRequest {
+    ) -> NoticeDeployTargetingAttackToGameMainCharacterRequest {
 
-        NoticeBasicAttackToMainCharacterRequest::new(
+        NoticeDeployTargetingAttackToGameMainCharacterRequest::new(
             opponent_unique_id,
             player_main_character_health_point_map_for_notice,
             player_main_character_survival_map_for_notice)
