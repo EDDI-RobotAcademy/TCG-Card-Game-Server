@@ -27,6 +27,7 @@ use crate::fake_battle_room::controller::response_form::create_fake_battle_room_
 use crate::fake_battle_room::controller::response_form::fake_multi_draw_response_form::FakeMultiDrawResponseForm;
 use crate::game_card_active_skill::controller::response_form::non_targeting_active_skill_response_form::NonTargetingActiveSkillResponseForm;
 use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
+use crate::game_card_active_skill::controller::response_form::targeting_attack_active_skill_to_game_main_character_response_form::TargetingAttackActiveSkillToGameMainCharacterResponseForm;
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_card_energy::controller::response_form::attach_special_energy_card_response_form::AttachSpecialEnergyCardResponseForm;
 use crate::game_card_item::controller::response_form::add_field_energy_with_field_unit_health_point_item_response_form::AddFieldEnergyWithFieldUnitHealthPointResponseForm;
@@ -76,6 +77,7 @@ use crate::notify_player_action_info::entity::notify_form_deploy_targeting_attac
 use crate::notify_player_action_info::entity::notify_form_deploy_unit::NotifyFormDeployUnit;
 use crate::notify_player_action_info::entity::notify_form_mulligan_end::NotifyFormMulliganEnd;
 use crate::notify_player_action_info::entity::notify_form_non_targeting_attack_active_skill::NotifyFormNonTargetingAttackActiveSkill;
+use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_game_main_character::NotifyFormTargetingAttackActiveSkillToGameMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_unit::NotifyFormTargetingAttackActiveSkillToUnit;
 use crate::notify_player_action_info::entity::notify_form_turn_end::NotifyFormTurnEnd;
 use crate::notify_player_action_info::entity::notify_form_turn_start_non_targeting_attack_passive_skill::NotifyFormTurnStartNonTargetingAttackPassiveSkill;
@@ -166,6 +168,7 @@ pub enum ResponseType {
     ATTACK_UNIT(AttackUnitResponseForm),
     TARGETING_ACTIVE_SKILL(TargetingActiveSkillResponseForm),
     NON_TARGETING_ACTIVE_SKILL(NonTargetingActiveSkillResponseForm),
+    TARGETING_ATTACK_ACTIVE_SKILL_TO_GAME_MAIN_CHARACTER(TargetingAttackActiveSkillToGameMainCharacterResponseForm),
     ATTACH_FIELD_ENERGY_TO_UNIT(AttachFieldEnergyToFieldUnitResponseForm),
     ATTACK_MAIN_CHARACTER(AttackGameMainCharacterResponseForm),
 
@@ -211,6 +214,7 @@ pub enum ResponseType {
     NOTIFY_BASIC_ATTACK_TO_MAIN_CHARACTER(NotifyFormBasicAttackToMainCharacter),
     NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_UNIT(NotifyFormTargetingAttackActiveSkillToUnit),
     NOTIFY_NON_TARGETING_ACTIVE_SKILL(NotifyFormNonTargetingAttackActiveSkill),
+    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_GAME_MAIN_CHARACTER(NotifyFormTargetingAttackActiveSkillToGameMainCharacter),
 
     NOTIFY_DEPLOY_TARGETING_ATTACK_PASSIVE_SKILL_TO_UNIT(NotifyFormDeployTargetingAttackPassiveSkillToUnit),
     NOTIFY_DEPLOY_NON_TARGETING_ATTACK_PASSIVE_SKILL(NotifyFormDeployNonTargetingAttackPassiveSkill),

@@ -14,6 +14,7 @@ use crate::notify_player_action_info::entity::notify_form_deploy_targeting_attac
 use crate::notify_player_action_info::entity::notify_form_deploy_unit::NotifyFormDeployUnit;
 use crate::notify_player_action_info::entity::notify_form_mulligan_end::NotifyFormMulliganEnd;
 use crate::notify_player_action_info::entity::notify_form_non_targeting_attack_active_skill::NotifyFormNonTargetingAttackActiveSkill;
+use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_game_main_character::NotifyFormTargetingAttackActiveSkillToGameMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_unit::NotifyFormTargetingAttackActiveSkillToUnit;
 use crate::notify_player_action_info::entity::notify_form_turn_end::NotifyFormTurnEnd;
 use crate::notify_player_action_info::entity::notify_form_turn_start_non_targeting_attack_passive_skill::NotifyFormTurnStartNonTargetingAttackPassiveSkill;
@@ -712,6 +713,38 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
                 AsyncMutex::new(
                     NOTIFY_NON_TARGETING_ACTIVE_SKILL(
                         notify_form_non_targeting_active_skill)))).await;
+
+        true
+    }
+    async fn notice_targeting_attack_active_skill_to_game_main_character(
+        &mut self,
+        opponent_unique_id: i32,
+        player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+    ) -> bool {
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_targeting_attack_active_skill_to_game_main_character()");
+
+        let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
+        let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
+        let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
+        let connection_context_map_guard = connection_context_map_mutex.lock().await;
+
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
+
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
+
+        let notify_form_targeting_attack_active_skill_to_game_main_character =
+            NotifyFormTargetingAttackActiveSkillToGameMainCharacter::new(
+                player_main_character_health_point_map, player_main_character_survival_map);
+
+        // 플레이어 단일 공격 액티브 스킬 공지
+        opponent_receiver_transmitter_channel.send(
+            Arc::new(
+                AsyncMutex::new(
+                    NOTIFY_TARGETING_ATTACK_ACTIVE_SKILL_TO_GAME_MAIN_CHARACTER(
+                        notify_form_targeting_attack_active_skill_to_game_main_character)))).await;
 
         true
     }
