@@ -15,6 +15,7 @@ pub struct NoticeMyTurnEndRequest {
     player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
     player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
     player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+    unit_index_turn_start_passive_list_map: HashMap<i32, Vec<i32>>,
 }
 
 impl NoticeMyTurnEndRequest {
@@ -25,6 +26,7 @@ impl NoticeMyTurnEndRequest {
                player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
                player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
                player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+               unit_index_turn_start_passive_list_map: HashMap<i32, Vec<i32>>,
     ) -> Self {
         NoticeMyTurnEndRequest {
             opponent_unique_id,
@@ -33,7 +35,8 @@ impl NoticeMyTurnEndRequest {
             player_field_unit_health_point_map_for_notice,
             player_field_unit_harmful_effect_map_for_notice,
             player_field_unit_death_map_for_notice,
-            player_main_character_survival_map_for_notice
+            player_main_character_survival_map_for_notice,
+            unit_index_turn_start_passive_list_map
         }
     }
 
@@ -61,5 +64,9 @@ impl NoticeMyTurnEndRequest {
 
     pub fn get_player_main_character_survival_map_for_notice(&self) -> &HashMap<PlayerIndex, StatusMainCharacterEnum> {
         &self.player_main_character_survival_map_for_notice
+    }
+
+    pub fn get_unit_index_turn_start_passive_list_map(&self) -> &HashMap<i32, Vec<i32>> {
+        &self.unit_index_turn_start_passive_list_map
     }
 }

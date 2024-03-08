@@ -120,6 +120,7 @@ pub trait NotifyPlayerActionInfoRepository {
         player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
         player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+        unit_index_turn_start_passive_list_map: HashMap<i32, Vec<i32>>,
     ) -> bool;
     async fn notice_targeting_attack_active_skill_to_unit(
         &mut self,

@@ -423,7 +423,8 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
                 notice_my_turn_end_request.get_player_field_unit_health_point_map_for_notice().clone(),
                 notice_my_turn_end_request.get_player_field_unit_harmful_effect_map_for_notice().clone(),
                 notice_my_turn_end_request.get_player_field_unit_death_map_for_notice().clone(),
-                notice_my_turn_end_request.get_player_main_character_survival_map_for_notice().clone()).await;
+                notice_my_turn_end_request.get_player_main_character_survival_map_for_notice().clone(),
+                notice_my_turn_end_request.get_unit_index_turn_start_passive_list_map().clone()).await;
 
         drop(notify_player_action_info_repository_guard);
 

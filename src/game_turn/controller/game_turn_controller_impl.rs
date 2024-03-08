@@ -9,6 +9,9 @@ use crate::action_waiting_timer::service::action_waiting_timer_service::ActionWa
 use crate::action_waiting_timer::service::action_waiting_timer_service_impl::ActionWaitingTimerServiceImpl;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::game_card_passive_skill::entity::passive_skill_casting_condition::PassiveSkillCastingCondition::TurnStart;
+use crate::game_card_passive_skill::service::game_card_passive_skill_service::GameCardPassiveSkillService;
+use crate::game_card_passive_skill::service::game_card_passive_skill_service_impl::GameCardPassiveSkillServiceImpl;
 use crate::game_card_support_usage_counter::service::game_card_support_usage_counter_service::GameCardSupportUsageCounterService;
 use crate::game_card_support_usage_counter::service::game_card_support_usage_counter_service_impl::GameCardSupportUsageCounterServiceImpl;
 use crate::game_card_unit::service::game_card_unit_service::GameCardUnitService;
@@ -68,6 +71,7 @@ pub struct GameTurnControllerImpl {
     ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
     notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
     game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,
+    game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
 }
 
 impl GameTurnControllerImpl {
@@ -88,6 +92,7 @@ impl GameTurnControllerImpl {
                ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
                notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
                game_winner_check_service: Arc<AsyncMutex<GameWinnerCheckServiceImpl>>,
+               game_card_passive_skill_service: Arc<AsyncMutex<GameCardPassiveSkillServiceImpl>>,
              ) -> Self {
 
         GameTurnControllerImpl {
@@ -107,7 +112,8 @@ impl GameTurnControllerImpl {
             action_waiting_timer_service,
             ui_data_generator_service,
             notify_player_action_info_service,
-            game_winner_check_service
+            game_winner_check_service,
+            game_card_passive_skill_service,
         }
     }
     pub fn get_instance() -> Arc<AsyncMutex<GameTurnControllerImpl>> {
@@ -132,7 +138,8 @@ impl GameTurnControllerImpl {
                             ActionWaitingTimerServiceImpl::get_instance(),
                             UiDataGeneratorServiceImpl::get_instance(),
                             NotifyPlayerActionInfoServiceImpl::get_instance(),
-                            GameWinnerCheckServiceImpl::get_instance())));
+                            GameWinnerCheckServiceImpl::get_instance(),
+                            GameCardPassiveSkillServiceImpl::get_instance())));
         }
         INSTANCE.clone()
     }
@@ -229,7 +236,8 @@ impl GameTurnController for GameTurnControllerImpl {
                 .to_reset_turn_action_of_all_field_unit_request(account_unique_id)).await;
 
         // 패시브 스킬 사용 여부 초기화
-        let field_unit_list =
+        // TODO: Need Refactor
+        let my_field_unit_list =
             game_field_unit_service_guard.get_game_field_unit_card_of_account_unique_id(
                 turn_end_request_form
                     .to_get_game_field_unit_card_of_account_unique_id_request(account_unique_id)).await;
@@ -237,17 +245,17 @@ impl GameTurnController for GameTurnControllerImpl {
         let mut game_card_unit_service_guard =
             self.game_card_unit_service.lock().await;
 
-        // TODO: 일단 예외 처리로 마무리 <- Need Refactor
-        for (unit_index, field_unit) in field_unit_list.get_game_field_unit_card().iter().enumerate() {
-            let unit_card_id = field_unit.get_card();
-            if unit_card_id != -1 {
+        for (unit_index, field_unit) in my_field_unit_list.get_game_field_unit_card().iter().enumerate() {
+            if field_unit.is_alive() {
+                let unit_card_id = field_unit.get_card();
                 println!("Passive Skill Reset Target: index - {}, card_id - {}", unit_index, unit_card_id);
                 let get_summary_passive_default =
                     game_card_unit_service_guard.summary_unit_card_passive_default(
                         turn_end_request_form
                             .to_summary_unit_card_passive_default_request(unit_card_id)).await;
 
-                let passive_default_list = get_summary_passive_default.get_passive_default_list().clone();
+                let passive_default_list =
+                    get_summary_passive_default.get_passive_default_list().clone();
 
                 game_field_unit_service_guard.reset_all_passive_of_unit(
                     turn_end_request_form
@@ -259,6 +267,42 @@ impl GameTurnController for GameTurnControllerImpl {
         }
 
         drop(game_card_unit_service_guard);
+
+        // 상대 필드 위 턴 시작 시 패시브를 발동하는 유닛들에 대한 정보 알려주기
+        // TODO: Need Refactor
+        let opponent_field_unit_list =
+            game_field_unit_service_guard.get_game_field_unit_card_of_account_unique_id(
+                turn_end_request_form
+                    .to_get_game_field_unit_card_of_account_unique_id_request(opponent_unique_id)).await;
+
+        let mut turn_start_passive_skill_list_of_unit_index_map = HashMap::new();
+
+        let mut game_card_passive_skill_guard =
+            self.game_card_passive_skill_service.lock().await;
+
+        for (unit_index, field_unit) in opponent_field_unit_list.get_game_field_unit_card().iter().enumerate() {
+            let mut turn_start_passive_skill_index_list_of_unit = Vec::new();
+            if field_unit.is_alive() {
+                let passive_skill_effect_list =
+                    game_card_passive_skill_guard.summary_turn_start_passive_skill(
+                        turn_end_request_form
+                            .to_summary_turn_start_passive_skill_effect_request(
+                                field_unit.get_card())).await.get_passive_skill_effect_list();
+
+                let mut passive_skill_index = 1;
+                for passive_skill_effect in passive_skill_effect_list {
+                    if passive_skill_effect.get_passive_skill_casting_condition().contains(&TurnStart) {
+                        turn_start_passive_skill_index_list_of_unit.push(passive_skill_index);
+                        passive_skill_index += 1;
+                    }
+                }
+            }
+
+            turn_start_passive_skill_list_of_unit_index_map
+                .insert(unit_index as i32, turn_start_passive_skill_index_list_of_unit);
+        }
+
+        drop(game_card_passive_skill_guard);
         drop(game_field_unit_service_guard);
 
         let mut game_card_support_usage_counter_service_guard =
@@ -317,7 +361,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
             game_winner_check_service_guard.set_game_winner(
                 turn_end_request_form
-                    .to_check_health_of_main_character_for_setting_game_winner(
+                    .to_set_game_winner_request(
                         account_unique_id, opponent_unique_id)).await;
 
             drop(game_winner_check_service_guard);
@@ -408,7 +452,8 @@ impl GameTurnController for GameTurnControllerImpl {
                     generate_my_multiple_unit_harmful_effect_data_response
                         .get_player_field_unit_harmful_effect_map_for_notice().clone(),
                     generate_my_multiple_unit_death_data_response
-                        .get_player_field_unit_death_map_for_notice().clone())).await;
+                        .get_player_field_unit_death_map_for_notice().clone(),
+                    turn_start_passive_skill_list_of_unit_index_map)).await;
 
         drop(notify_player_action_info_service_guard);
 
