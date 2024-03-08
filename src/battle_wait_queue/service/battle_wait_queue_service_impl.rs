@@ -89,16 +89,24 @@ impl BattleWaitQueueService for BattleWaitQueueServiceImpl {
 
     async fn dequeue_player_id_from_wait_queue(&self, battle_match_cancel_request: BattleMatchCancelRequest) -> BattleMatchCancelResponse {
         println!("BattleWaitQueueServiceImpl: battle_match_cancel()");
+
         let account_unique_id = self.parse_account_unique_id(battle_match_cancel_request.get_session_id()).await;
 
-        let battle_wait_queue_repository = self.battle_wait_queue_repository.lock().await;
-
         let mut battle_ready_account_hash_repository = self.battle_ready_account_hash_repository.lock().await;
-        battle_ready_account_hash_repository.save_battle_ready_account_hash(account_unique_id, BattleReadyAccountHashStatus::FAIL).await;
+        let ready_status_removed_successfully =
+            battle_ready_account_hash_repository
+                .remove_battle_ready_account_hash_status_hash_by_account_unique_id(account_unique_id);
 
-        let response = battle_wait_queue_repository.dequeue_player_id_from_wait_queue(account_unique_id).await.unwrap();
+        drop(battle_ready_account_hash_repository);
 
-        if response==true {
+        let battle_wait_queue_repository = self.battle_wait_queue_repository.lock().await;
+        let dequeue_player_id_successfully =
+            battle_wait_queue_repository
+                .dequeue_player_id_from_wait_queue(account_unique_id).await.unwrap();
+
+        drop(battle_wait_queue_repository);
+
+        if ready_status_removed_successfully && dequeue_player_id_successfully {
             return BattleMatchCancelResponse::new(true)
         }
 

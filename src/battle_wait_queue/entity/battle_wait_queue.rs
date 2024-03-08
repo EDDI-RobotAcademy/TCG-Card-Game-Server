@@ -20,24 +20,15 @@ impl BattleWaitQueue {
         println!("player_id_list: {:?}", guard);
     }
 
-    pub async fn dequeue_player(&self, player_id: i32)->bool{
+    pub async fn dequeue_player(&self, player_id: i32) -> bool {
         let mut guard = self.player_id_list.lock().await;
-        let mut match_cancel_player=None;
-
         if guard.contains(&player_id) {
-             match_cancel_player=guard.pop();
+            guard.retain(|id| id != &player_id);
+            return true
         }
 
-        println!("match_cancel_player--->>>{:?}",match_cancel_player);
-        if match_cancel_player==None
-        {
-            false
-        }
-        else
-        {
-            true
-        }
-
+        println!("Player is NOT in waiting queue!");
+        false
     }
 
     pub async fn process_queue(&self, max_players: usize) {
