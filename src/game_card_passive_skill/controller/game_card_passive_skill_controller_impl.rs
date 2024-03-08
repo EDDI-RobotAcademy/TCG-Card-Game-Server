@@ -322,14 +322,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                     .to_summary_deploy_passive_skill_effect_request(
                         unit_card_id)).await.get_passive_skill_effect_list();
 
-        let mut passive_type_list = Vec::new();
+        let mut passive_skill_index_list_to_handle = Vec::new();
 
         for i in 0..3 {
             if passive_usable_list[i] == true && summary_deploy_passive_skill_effect_list[i].get_passive_skill_type() != &PassiveSkillType::Dummy {
-                passive_type_list.push(summary_deploy_passive_skill_effect_list[i].get_passive_skill_type());
-            }
-            else {
-                passive_type_list.push(&PassiveSkillType::Dummy);
+                let passive_index :i32 = (i + 1) as i32;
+                passive_skill_index_list_to_handle.push(passive_index);
             }
         }
         drop(game_card_passive_skill_service_guard);
@@ -378,7 +376,8 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             true,
             generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_response().clone(),
             generate_opponent_specific_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_response().clone(),
-            generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_response().clone())
+            generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_response().clone(),
+            passive_skill_index_list_to_handle)
 
     }
 
@@ -570,15 +569,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                     .to_summary_deploy_passive_skill_effect_request(
                         unit_card_id)).await.get_passive_skill_effect_list();
 
-        let mut passive_type_list = Vec::new();
+        let mut passive_skill_index_list_to_handle = Vec::new();
 
         for i in 0..3 {
             if passive_usable_list[i] == true && summary_deploy_passive_skill_effect_list[i].get_passive_skill_type() != &PassiveSkillType::Dummy {
-                passive_type_list.push(summary_deploy_passive_skill_effect_list[i].get_passive_skill_type());
-            }
-            else {
-                passive_type_list.push(&PassiveSkillType::Dummy);
-
+                let passive_index :i32 = (i + 1) as i32;
+                passive_skill_index_list_to_handle.push(passive_index);
             }
         }
         drop(game_card_passive_skill_service_guard);
@@ -628,7 +624,8 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             generate_opponent_multiple_unit_harmful_effect_data_response
                 .get_player_field_unit_harmful_effect_map_for_response().clone(),
             generate_opponent_multiple_unit_death_data_response
-                .get_player_field_unit_death_map_for_response().clone())
+                .get_player_field_unit_death_map_for_response().clone(),
+            passive_skill_index_list_to_handle)
     }
 
     async fn request_deploy_targeting_attack_to_game_main_character(
@@ -743,13 +740,21 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                     opponent_unique_id,
                     attacker_unit_attack_point)).await;
 
-        // 액션 완료 설정
+        // 패시브 스킬 완료 설정
         game_field_unit_service_guard.execute_index_passive_of_unit(
             deploy_targeting_attack_to_game_main_character_request_form
                 .to_execute_index_passive_of_unit_request(
                     account_unique_id,
                     unit_card_index,
                     usage_skill_index)).await;
+
+        // 13. 해당 유닛의 소환시 발동되는 패시브 스킬이 더 있는지 알려줘야함 .
+        let passive_usable_list =
+            game_field_unit_service_guard.get_passive_skill_usable(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_get_passive_skill_usable_list_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_passive_skill_usable_list();
 
         drop(game_field_unit_service_guard);
 
@@ -773,6 +778,24 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         }
 
         drop(game_main_character_service_guard);
+
+        let mut game_card_passive_skill_service_guard =
+            self.game_card_passive_skill_service.lock().await;
+
+        let summary_deploy_passive_skill_effect_list =
+            game_card_passive_skill_service_guard.summary_deploy_passive_skill(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_summary_deploy_passive_skill_effect_request(
+                        unit_card_id)).await.get_passive_skill_effect_list();
+
+        let mut passive_skill_index_list_to_handle = Vec::new();
+
+        for i in 0..3 {
+            if passive_usable_list[i] == true && summary_deploy_passive_skill_effect_list[i].get_passive_skill_type() != &PassiveSkillType::Dummy {
+                let passive_index :i32 = (i + 1) as i32;
+                passive_skill_index_list_to_handle.push(passive_index);
+            }
+        }
 
         let mut ui_data_generator_service_guard =
             self.ui_data_generator_service.lock().await;
@@ -807,7 +830,8 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
 
         DeployTargetingAttackToGameMainCharacterResponseForm::from_response(
             generate_opponent_main_character_health_point_data_response,
-            generate_opponent_main_character_survival_data_response)
+            generate_opponent_main_character_survival_data_response,
+            passive_skill_index_list_to_handle)
     }
 
     async fn request_turn_start_targeting_attack_passive_skill(
@@ -1003,15 +1027,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                     .to_summary_turn_start_passive_skill_effect_request(
                         unit_card_id)).await.get_passive_skill_effect_list();
 
-        let mut passive_type_list = Vec::new();
+        let mut passive_skill_index_list_to_handle = Vec::new();
 
         for i in 0..3 {
             if passive_usable_list[i] == true && summary_turn_start_passive_skill_effect_list[i].get_passive_skill_type() != &PassiveSkillType::Dummy {
-                passive_type_list.push(summary_turn_start_passive_skill_effect_list[i].get_passive_skill_type());
-            }
-            else {
-                passive_type_list.push(&PassiveSkillType::Dummy);
-
+                let passive_index :i32 = (i + 1) as i32;
+                passive_skill_index_list_to_handle.push(passive_index);
             }
         }
         drop(game_card_passive_skill_service_guard);
@@ -1059,7 +1080,8 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             true,
             generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_response().clone(),
             generate_opponent_specific_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_response().clone(),
-            generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_response().clone())
+            generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_response().clone(),
+            passive_skill_index_list_to_handle)
     }
 
     async fn request_turn_start_non_targeting_attack_passive_skill(
@@ -1251,15 +1273,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                     .to_summary_turn_start_passive_skill_effect_request(
                         unit_card_id)).await.get_passive_skill_effect_list();
 
-        let mut passive_type_list = Vec::new();
+        let mut passive_skill_index_list_to_handle = Vec::new();
 
         for i in 0..3 {
             if passive_usable_list[i] == true && summary_turn_start_passive_skill_effect_list[i].get_passive_skill_type() != &PassiveSkillType::Dummy {
-                passive_type_list.push(summary_turn_start_passive_skill_effect_list[i].get_passive_skill_type());
-            }
-            else {
-                passive_type_list.push(&PassiveSkillType::Dummy);
-
+                let passive_index :i32 = (i + 1) as i32;
+                passive_skill_index_list_to_handle.push(passive_index);
             }
         }
         drop(game_card_passive_skill_service_guard);
@@ -1308,7 +1327,8 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             generate_opponent_multiple_unit_harmful_effect_data_response
                 .get_player_field_unit_harmful_effect_map_for_response().clone(),
             generate_opponent_multiple_unit_death_data_response
-                .get_player_field_unit_death_map_for_response().clone())
+                .get_player_field_unit_death_map_for_response().clone(),
+            passive_skill_index_list_to_handle)
     }
     async fn request_turn_start_targeting_attack_to_game_main_character(
         &self, turn_start_targeting_attack_to_game_main_character_request_form: TurnStartTargetingAttackToGameMainCharacterRequestForm)
@@ -1430,6 +1450,14 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
                     unit_card_index,
                     usage_skill_index)).await;
 
+        // 13. 해당 유닛의 소환시 발동되는 패시브 스킬이 더 있는지 알려줘야함 .
+        let passive_usable_list =
+            game_field_unit_service_guard.get_passive_skill_usable(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_get_passive_skill_usable_list_request(
+                        account_unique_id,
+                        unit_card_index)).await.get_passive_skill_usable_list();
+
         drop(game_field_unit_service_guard);
 
         let check_main_character_of_account_unique_id_response =
@@ -1452,6 +1480,24 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         }
 
         drop(game_main_character_service_guard);
+
+        let mut game_card_passive_skill_service_guard =
+            self.game_card_passive_skill_service.lock().await;
+
+        let summary_turn_start_passive_skill_effect_list =
+            game_card_passive_skill_service_guard.summary_turn_start_passive_skill(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_summary_turn_start_passive_skill_effect_request(
+                        unit_card_id)).await.get_passive_skill_effect_list();
+
+        let mut passive_skill_index_list_to_handle = Vec::new();
+
+        for i in 0..3 {
+            if passive_usable_list[i] == true && summary_turn_start_passive_skill_effect_list[i].get_passive_skill_type() != &PassiveSkillType::Dummy {
+                let passive_index :i32 = (i + 1) as i32;
+                passive_skill_index_list_to_handle.push(passive_index);
+            }
+        }
 
         let mut ui_data_generator_service_guard =
             self.ui_data_generator_service.lock().await;
@@ -1486,6 +1532,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
 
         TurnStartTargetingAttackToGameMainCharacterResponseForm::from_response(
             generate_opponent_main_character_health_point_data_response,
-            generate_opponent_main_character_survival_data_response)
+            generate_opponent_main_character_survival_data_response,
+            passive_skill_index_list_to_handle)
     }
 }

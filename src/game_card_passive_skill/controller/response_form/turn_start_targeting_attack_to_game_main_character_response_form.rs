@@ -9,26 +9,33 @@ use crate::ui_data_generator::service::response::generate_opponent_main_characte
 pub struct TurnStartTargetingAttackToGameMainCharacterResponseForm {
     is_success: bool,
     player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
-    player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>
+    player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+    index_list_of_passive_skill_to_handle: Vec<i32>
+
 }
 
 impl TurnStartTargetingAttackToGameMainCharacterResponseForm {
     pub fn new(
         is_success: bool,
         player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
-        player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>
+        player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+        index_list_of_passive_skill_to_handle: Vec<i32>
+
     ) -> Self {
 
         TurnStartTargetingAttackToGameMainCharacterResponseForm {
             is_success,
             player_main_character_health_point_map_for_notice,
-            player_main_character_survival_map_for_notice
+            player_main_character_survival_map_for_notice,
+            index_list_of_passive_skill_to_handle
         }
     }
 
     pub fn from_response(
         generate_opponent_main_character_health_point_data_response: GenerateOpponentMainCharacterHealthPointDataResponse,
-        generate_opponent_main_character_survival_data_response: GenerateOpponentMainCharacterSurvivalDataResponse
+        generate_opponent_main_character_survival_data_response: GenerateOpponentMainCharacterSurvivalDataResponse,
+        index_list_of_passive_skill_to_handle: Vec<i32>
+
     ) -> TurnStartTargetingAttackToGameMainCharacterResponseForm {
 
         TurnStartTargetingAttackToGameMainCharacterResponseForm::new(
@@ -36,11 +43,12 @@ impl TurnStartTargetingAttackToGameMainCharacterResponseForm {
             generate_opponent_main_character_health_point_data_response
                 .get_player_main_character_health_point_map_for_response().clone(),
             generate_opponent_main_character_survival_data_response
-                .get_player_main_character_survival_map_for_response().clone())
+                .get_player_main_character_survival_map_for_response().clone(),
+            index_list_of_passive_skill_to_handle)
     }
 
     pub fn default() -> TurnStartTargetingAttackToGameMainCharacterResponseForm {
 
-        TurnStartTargetingAttackToGameMainCharacterResponseForm::new(false, HashMap::new(), HashMap::new())
+        TurnStartTargetingAttackToGameMainCharacterResponseForm::new(false, HashMap::new(), HashMap::new(), Vec::new())
     }
 }

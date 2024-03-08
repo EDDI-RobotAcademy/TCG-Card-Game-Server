@@ -10,20 +10,23 @@ pub struct DeployTargetingAttackPassiveSkillResponseForm {
     is_success: bool,
     player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
     player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
-    player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>
+    player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+    index_list_of_passive_skill_to_handle: Vec<i32>
 }
 
 impl DeployTargetingAttackPassiveSkillResponseForm {
     pub fn new(is_success: bool,
                player_field_unit_health_point_map: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
                player_field_unit_harmful_effect_map: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
-               player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>
+               player_field_unit_death_map: HashMap<PlayerIndex, FieldUnitDeathInfo>,
+               index_list_of_passive_skill_to_handle: Vec<i32>
     ) -> Self {
         DeployTargetingAttackPassiveSkillResponseForm {
             is_success,
             player_field_unit_health_point_map,
             player_field_unit_harmful_effect_map,
-            player_field_unit_death_map
+            player_field_unit_death_map,
+            index_list_of_passive_skill_to_handle
         }
     }
 
@@ -33,6 +36,7 @@ impl DeployTargetingAttackPassiveSkillResponseForm {
             false,
             HashMap::new(),
             HashMap::new(),
-            HashMap::new(),)
+            HashMap::new(),
+            Vec::new())
     }
 }
