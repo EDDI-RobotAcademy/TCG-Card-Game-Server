@@ -50,12 +50,22 @@ impl MulliganRepository for MulliganRepositoryImpl {
         true
     }
 
-    async fn check_opponent_mulligan_timer_over(&self, opponent_unique_id: i32) -> bool {
-        println!("MulliganRepositoryImpl: check_opponent_mulligan_timer_over");
+    async fn check_mulligan_timer_over(&self, account_unique_id: i32) -> bool {
+        println!("MulliganRepositoryImpl: check_mulligan_timer_over");
 
         let mut mulligan_timer_hash_guard = self.mulligan_timer_hash.lock().await;
 
-        mulligan_timer_hash_guard.check(opponent_unique_id, Duration::from_secs(30)).await.unwrap()
+        mulligan_timer_hash_guard.check(account_unique_id, Duration::from_secs(30)).await.unwrap()
+    }
+
+    async fn remove_mulligan_timer(&self, account_unique_id: i32) -> bool {
+        println!("MulliganRepositoryImpl: remove_mulligan_timer");
+
+        let mut mulligan_timer_hash_guard = self.mulligan_timer_hash.lock().await;
+
+        mulligan_timer_hash_guard.remove(account_unique_id).await;
+
+        true
     }
 
     async fn record_mulligan_finish(&self, account_unique_id: i32) -> bool {
@@ -69,12 +79,23 @@ impl MulliganRepository for MulliganRepositoryImpl {
         true
     }
 
-    async fn check_mulligan_finish(&self, opponent_unique_id: i32) -> bool {
-        println!("MulliganRepositoryImpl: check_opponent_mulligan_finish");
+    async fn check_mulligan_finish(&self, account_unique_id: i32) -> bool {
+        println!("MulliganRepositoryImpl: check_mulligan_finish");
 
         let mut mulligan_finished_player_list_guard =
             self.mulligan_finished_player_list.lock().await;
 
-        mulligan_finished_player_list_guard.check(opponent_unique_id).await.unwrap()
+        mulligan_finished_player_list_guard.check(account_unique_id).await.unwrap()
+    }
+
+    async fn remove_mulligan_finish_record(&self, account_unique_id: i32) -> bool {
+        println!("MulliganRepositoryImpl: remove_mulligan_finish_record");
+
+        let mut mulligan_finished_player_list_guard =
+            self.mulligan_finished_player_list.lock().await;
+
+        mulligan_finished_player_list_guard.remove(account_unique_id).await;
+
+        true
     }
 }

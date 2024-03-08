@@ -63,13 +63,18 @@ impl MulliganService for MulliganServiceImpl {
 
         let mulligan_repository_guard = self.mulligan_repository.lock().await;
 
-        let response =
+        let opponent_mulligan_is_finished =
             mulligan_repository_guard.check_mulligan_finish(
                 is_opponent_mulligan_finished_request.get_opponent_unique_id()).await;
 
+        if opponent_mulligan_is_finished {
+            mulligan_repository_guard.remove_mulligan_finish_record(
+                is_opponent_mulligan_finished_request.get_opponent_unique_id()).await;
+        }
+
         drop(mulligan_repository_guard);
 
-        IsOpponentMulliganFinishedResponse::new(response)
+        IsOpponentMulliganFinishedResponse::new(opponent_mulligan_is_finished)
     }
 
     async fn check_opponent_mulligan_timer(
@@ -81,7 +86,7 @@ impl MulliganService for MulliganServiceImpl {
         let mulligan_repository_guard = self.mulligan_repository.lock().await;
 
         let response =
-            mulligan_repository_guard.check_opponent_mulligan_timer_over(
+            mulligan_repository_guard.check_mulligan_timer_over(
                 check_opponent_mulligan_timer_request.get_opponent_unique_id()).await;
 
         drop(mulligan_repository_guard);

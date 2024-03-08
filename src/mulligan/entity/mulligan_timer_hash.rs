@@ -29,7 +29,7 @@ impl MulliganTimerHash {
         let mut timer_map_guard = self.timer_map.lock().await;
         for (key, value) in timer_map_guard.iter() {
             if key == &account_unique_id && (check_time - *value) > duration {
-                println!("Mulligan Time limit over");
+                println!("Mulligan Time limit over for account {}", account_unique_id);
                 return Some(false);
             }
         }
