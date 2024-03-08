@@ -114,35 +114,20 @@ impl RockPaperScissorsService for RockPaperScissorsServiceImpl {
 
         if choice == "".to_string()
         {
-            let mut rock_paper_scissors_waiting_timer_repository =
-                self.rock_paper_scissors_waiting_timer_repository.lock().await;
+            let random_choices = vec!["Rock", "Paper", "Scissors"];
+            let mut rng = StdRng::from_entropy();
+            let index = rng.gen_range(0..random_choices.len());
+            choice = random_choices[index].to_string();
 
-            let mut is_expired=
-                rock_paper_scissors_waiting_timer_repository.
-                    check_rock_paper_scissors_waiting_timer_expired(
-                        account_unique_id, Duration::from_secs(40)).await;
-
-            if is_expired {
-                let random_choices = vec!["Rock", "Paper", "Scissors"];
-                let mut rng = StdRng::from_entropy();
-                let index = rng.gen_range(0..random_choices.len());
-                choice = random_choices[index].to_string();
-
-                let response =
-                    rock_paper_scissors_repository_guard
-                        .register_choice_repo(account_unique_id, choice).await;
-
+            let response =
                 rock_paper_scissors_repository_guard
-                    .change_draw_choices_repo(
-                        account_unique_id, opponent_unique_id).await;
+                    .register_choice_repo(account_unique_id, choice).await;
 
-                return RegisterRockPaperScissorsWaitHashResponse::new(response)
-            }
-
+            rock_paper_scissors_repository_guard
+                .change_draw_choices_repo(
+                    account_unique_id, opponent_unique_id).await;
             drop(rock_paper_scissors_repository_guard);
-            drop(rock_paper_scissors_waiting_timer_repository);
-
-            return RegisterRockPaperScissorsWaitHashResponse::new(false)
+            return RegisterRockPaperScissorsWaitHashResponse::new(response)
         }
 
         let response =
@@ -152,7 +137,7 @@ impl RockPaperScissorsService for RockPaperScissorsServiceImpl {
         rock_paper_scissors_repository_guard
             .change_draw_choices_repo(
                 account_unique_id, opponent_unique_id).await;
-
+        drop(rock_paper_scissors_repository_guard);
         RegisterRockPaperScissorsWaitHashResponse::new(response)
     }
 
