@@ -8,8 +8,6 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
-use crate::game_card_active_skill::controller::response_form::non_targeting_active_skill_response_form::NonTargetingActiveSkillResponseForm;
-use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
 use crate::game_card_passive_skill::controller::game_card_passive_skill_controller::GameCardPassiveSkillController;
 use crate::game_card_passive_skill::controller::request_form::deploy_non_targeting_attack_passive_skill_request_form::DeployNonTargetingAttackPassiveSkillRequestForm;
 use crate::game_card_passive_skill::controller::request_form::deploy_targeting_attack_passive_skill_request_form::DeployTargetingAttackPassiveSkillRequestForm;
@@ -381,7 +379,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
     async fn request_deploy_non_targeting_attack_passive_skill(
         &self, deploy_non_targeting_attack_passive_skill_request_form: DeployNonTargetingAttackPassiveSkillRequestForm) -> DeployNonTargetingAttackPassiveSkillResponseForm {
 
-        println!("GameCardActiveSkillControllerImpl: request_deploy_non_targeting_attack_passive_skill()");
+        println!("GameCardPassiveSkillControllerImpl: request_deploy_non_targeting_attack_passive_skill()");
 
         // 세션 아이디를 검증합니다.
         let account_unique_id =
@@ -653,6 +651,8 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             return DeployTargetingAttackToGameMainCharacterResponseForm::default()
         }
 
+        drop(game_protocol_validation_service_guard);
+
         // Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
         let unit_card_index_string = deploy_targeting_attack_to_game_main_character_request_form.get_attacker_unit_index();
         let unit_card_index = unit_card_index_string.parse::<i32>().unwrap();
@@ -814,9 +814,9 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        notify_player_action_info_service_guard.notice_basic_attack_to_main_character(
+        notify_player_action_info_service_guard.notice_deploy_targeting_attack_to_game_main_character(
             deploy_targeting_attack_to_game_main_character_request_form
-                .to_notice_basic_attack_to_main_character_request(
+                .to_notice_deploy_targeting_attack_to_game_main_character_request(
                     opponent_unique_id,
                     generate_opponent_main_character_health_point_data_response
                         .get_player_main_character_health_point_map_for_notice().clone(),
@@ -1081,7 +1081,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
     async fn request_turn_start_non_targeting_attack_passive_skill(
         &self, turn_start_non_targeting_attack_passive_skill_request_form: TurnStartNonTargetingAttackPassiveSkillRequestForm) -> TurnStartNonTargetingAttackPassiveSkillResponseForm {
 
-        println!("GameCardActiveSkillControllerImpl: request_deploy_non_targeting_attack_passive_skill()");
+        println!("GameCardPassiveSkillControllerImpl: request_deploy_non_targeting_attack_passive_skill()");
 
         // 세션 아이디를 검증합니다.
         let account_unique_id =
@@ -1351,6 +1351,8 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             println!("당신의 턴이 아닙니다.");
             return TurnStartTargetingAttackToGameMainCharacterResponseForm::default()
         }
+        drop(game_protocol_validation_service_guard);
+
 
         // Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
         let unit_card_index_string = turn_start_targeting_attack_to_game_main_character_request_form.get_attacker_unit_index();
@@ -1513,9 +1515,9 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         let mut notify_player_action_info_service_guard =
             self.notify_player_action_info_service.lock().await;
 
-        notify_player_action_info_service_guard.notice_basic_attack_to_main_character(
+        notify_player_action_info_service_guard.notice_turn_start_targeting_attack_to_game_main_character(
             turn_start_targeting_attack_to_game_main_character_request_form
-                .to_notice_basic_attack_to_main_character_request(
+                .to_notice_turn_start_targeting_attack_to_game_main_character_request(
                     opponent_unique_id,
                     generate_opponent_main_character_health_point_data_response
                         .get_player_main_character_health_point_map_for_notice().clone(),

@@ -1,2 +1,3 @@
 pub mod targeting_active_skill_response_form;
 pub mod non_targeting_active_skill_response_form;
+pub mod targeting_attack_active_skill_to_game_main_character_response_form;

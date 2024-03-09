@@ -13,6 +13,7 @@ use crate::notify_player_action_info::service::request::notice_deploy_targeting_
 use crate::notify_player_action_info::service::request::notice_deploy_targeting_attack_to_game_main_character_request::NoticeDeployTargetingAttackToGameMainCharacterRequest;
 use crate::notify_player_action_info::service::request::notice_my_turn_end_request::NoticeMyTurnEndRequest;
 use crate::notify_player_action_info::service::request::notice_non_targeting_attack_active_skill_request::NoticeNonTargetingAttackActiveSkillRequest;
+use crate::notify_player_action_info::service::request::notice_targeting_attack_active_skill_to_game_main_character_request::NoticeTargetingAttackActiveSkillToGameMainCharacterRequest;
 use crate::notify_player_action_info::service::request::notice_targeting_attack_active_skill_to_unit_request::NoticeTargetingAttackActiveSkillToUnitRequest;
 use crate::notify_player_action_info::service::request::notice_turn_start_non_targeting_attack_passive_skill_request::NoticeTurnStartNonTargetingAttackPassiveSkillRequest;
 use crate::notify_player_action_info::service::request::notice_turn_start_targeting_attack_passive_skill_to_unit_request::NoticeTurnStartTargetingAttackPassiveSkillToUnitRequest;
@@ -38,6 +39,7 @@ use crate::notify_player_action_info::service::response::notice_deploy_targeting
 use crate::notify_player_action_info::service::response::notice_deploy_targeting_attack_to_game_main_character_response::NoticeDeployTargetingAttackToGameMainCharacterResponse;
 use crate::notify_player_action_info::service::response::notice_my_turn_end_response::NoticeMyTurnEndResponse;
 use crate::notify_player_action_info::service::response::notice_non_targeting_attack_active_skill_response::NoticeNonTargetingAttackActiveSkillResponse;
+use crate::notify_player_action_info::service::response::notice_targeting_attack_active_skill_to_game_main_character_response::NoticeTargetingAttackActiveSkillToGameMainCharacterResponse;
 use crate::notify_player_action_info::service::response::notice_targeting_attack_active_skill_to_unit_response::NoticeTargetingAttackActiveSkillToUnitResponse;
 use crate::notify_player_action_info::service::response::notice_turn_start_non_targeting_attack_passive_skill_response::NoticeTurnStartNonTargetingAttackPassiveSkillResponse;
 use crate::notify_player_action_info::service::response::notice_turn_start_targeting_attack_passive_skill_to_unit_response::NoticeTurnStartTargetingAttackPassiveSkillToUnitResponse;
@@ -470,6 +472,24 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         drop(notify_player_action_info_repository_guard);
 
         NoticeNonTargetingAttackActiveSkillResponse::new(response)
+    }
+    async fn notice_targeting_attack_active_skill_to_game_main_character(
+        &mut self, notice_targeting_attack_active_skill_to_game_main_character_request: NoticeTargetingAttackActiveSkillToGameMainCharacterRequest)
+        -> NoticeTargetingAttackActiveSkillToGameMainCharacterResponse {
+        println!("NotifyPlayerActionInfoServiceImpl: notice_targeting_attack_active_skill_to_game_main_character()");
+
+        let mut notify_player_action_info_repository_guard =
+            self.notify_player_action_info_repository.lock().await;
+
+        let response =
+            notify_player_action_info_repository_guard.notice_targeting_attack_active_skill_to_game_main_character(
+                notice_targeting_attack_active_skill_to_game_main_character_request.get_opponent_unique_id(),
+                notice_targeting_attack_active_skill_to_game_main_character_request.get_player_main_character_health_point_map_for_notice().clone(),
+                notice_targeting_attack_active_skill_to_game_main_character_request.get_player_main_character_survival_map_for_notice().clone()).await;
+
+        drop(notify_player_action_info_repository_guard);
+
+        NoticeTargetingAttackActiveSkillToGameMainCharacterResponse::new(response)
     }
     async fn notice_deploy_targeting_attack_passive_skill_to_unit(
         &mut self, notice_deploy_targeting_attack_passive_skill_to_unit_request: NoticeDeployTargetingAttackPassiveSkillToUnitRequest)
