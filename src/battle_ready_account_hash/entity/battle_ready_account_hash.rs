@@ -51,7 +51,7 @@ mod tests {
         let mut battle_room_ready_hash = BattleReadyAccountHash::new();
 
         battle_room_ready_hash.set_user_ready_state(1, BattleReadyAccountHashStatus::WAIT);
-        battle_room_ready_hash.remove_battle_read_account_hash_status(1);
+        battle_room_ready_hash.remove_battle_ready_account_hash_status(1);
 
         assert_eq!(battle_room_ready_hash.get_user_ready_state(1), None);
     }
