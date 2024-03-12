@@ -77,16 +77,19 @@ impl RockPaperScissorsRepository for RockPaperScissorsRepositoryImpl {
         println!("RockPaperScissorsRepositoryImpl: check_result_repo()");
 
         let mut result_hashmap_guard = self.result_hashmap.lock().await;
+        let mut waiting_hashmap_guard = self.wait_hashmap.lock().await;
         let my_result = result_hashmap_guard.get_result(account_unique_id).await;
 
         // 1. 내 결과가 이미 나와 있는 경우
         if my_result.is_some() {
             match my_result.unwrap() {
                 WIN => {
+                    waiting_hashmap_guard.remove_choice(opponent_unique_id).await;
                     result_hashmap_guard.save_result(opponent_unique_id, LOSE).await;
                     return WIN
                 },
                 LOSE => {
+                    waiting_hashmap_guard.remove_choice(opponent_unique_id).await;
                     result_hashmap_guard.save_result(opponent_unique_id, WIN).await;
                     return LOSE
                 }
@@ -95,7 +98,6 @@ impl RockPaperScissorsRepository for RockPaperScissorsRepositoryImpl {
         }
 
         // 2. 상대와 내 가위바위보 choice 가 모두 존재하는 경우
-        let mut waiting_hashmap_guard = self.wait_hashmap.lock().await;
         let my_choice = waiting_hashmap_guard.get_choice(account_unique_id).await;
         let opponent_choice = waiting_hashmap_guard.get_choice(opponent_unique_id).await;
 

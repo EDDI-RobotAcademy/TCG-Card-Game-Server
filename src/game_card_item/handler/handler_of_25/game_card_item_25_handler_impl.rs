@@ -10,8 +10,8 @@ impl GameCardItemHandler for ItemCard_25_Function {
         println!("ItemCard_25_Function: summary_item_card()");
 
         let mut game_card_item_effect = GameCardItemEffect::new(RaceEnum::Undead, 0, 0, GradeEnum::Legend);
-        game_card_item_effect.set_catastrophic_damage_for_field_unit(10);
-        game_card_item_effect.set_catastrophic_damage_for_main_character(10);
+        game_card_item_effect.set_catastrophic_damage_for_field_unit(15);
+        game_card_item_effect.set_catastrophic_damage_for_main_character(15);
         game_card_item_effect.set_will_be_lost_deck_card_count(1);
 
         game_card_item_effect
