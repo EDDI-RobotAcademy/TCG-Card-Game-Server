@@ -290,7 +290,8 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
             notify_player_action_info_repository_guard.notice_use_field_energy_increase_item(
                 notice_use_field_energy_increase_item_card_request.get_opponent_unique_id(),
                 notice_use_field_energy_increase_item_card_request.get_player_hand_use_map_for_notice().clone(),
-                notice_use_field_energy_increase_item_card_request.get_player_field_energy_map_for_notice().clone()).await;
+                notice_use_field_energy_increase_item_card_request.get_player_field_energy_map_for_notice().clone(),
+                notice_use_field_energy_increase_item_card_request.get_player_field_unit_death_map_for_notice().clone()).await;
 
         drop(notify_player_action_info_repository_guard);
 
