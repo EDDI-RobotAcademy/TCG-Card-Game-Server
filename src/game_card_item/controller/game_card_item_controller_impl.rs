@@ -553,7 +553,36 @@ impl GameCardItemController for GameCardItemControllerImpl {
             return AddFieldEnergyWithFieldUnitHealthPointResponseForm::default()
         }
 
+        let apply_instant_death_to_target_unit_index =
+            game_field_unit_service_guard.apply_instant_death_to_target_unit_index(
+                add_field_energy_with_field_unit_health_point_request_form
+                    .to_apply_instant_death_to_target_unit_index_request(
+                        account_unique_id,
+                        field_unit_index)).await;
+
+        if !apply_instant_death_to_target_unit_index.is_success() {
+            println!("해당 유닛을 희생시키는 데에 실패하였습니다.");
+            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::default()
+        }
+
+        let judge_death_of_unit_response =
+            game_field_unit_service_guard.judge_death_of_unit(
+                add_field_energy_with_field_unit_health_point_request_form
+                    .to_judge_death_of_unit_request(
+                        account_unique_id,
+                        field_unit_index)).await;
+
         drop(game_field_unit_service_guard);
+
+        let mut game_tomb_service_guard = self.game_tomb_service.lock().await;
+
+        game_tomb_service_guard.add_dead_unit_to_tomb(
+            add_field_energy_with_field_unit_health_point_request_form
+                .to_place_to_tomb_request(
+                    account_unique_id,
+                    judge_death_of_unit_response.get_dead_unit_id())).await;
+
+        drop(game_tomb_service_guard);
 
         let mut summarized_item_effect_response = self.get_summary_of_item_card(
             add_field_energy_with_field_unit_health_point_request_form
@@ -618,6 +647,12 @@ impl GameCardItemController for GameCardItemControllerImpl {
                 add_field_energy_with_field_unit_health_point_request_form
                     .to_generate_my_field_energy_data_request(updated_field_energy)).await;
 
+        let generate_my_specific_unit_death_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_death_data(
+                add_field_energy_with_field_unit_health_point_request_form
+                    .to_generate_my_specific_field_unit_death_data_request(
+                        judge_death_of_unit_response.get_dead_unit_index())).await;
+
         drop(ui_data_generator_service_guard);
 
         let mut notify_player_action_info_service_guard =
@@ -631,7 +666,9 @@ impl GameCardItemController for GameCardItemControllerImpl {
                         generate_use_my_hand_card_data_response
                             .get_player_hand_use_map_for_notice().clone(),
                         generate_my_field_energy_data_response
-                            .get_player_field_energy_map_for_notice().clone())).await;
+                            .get_player_field_energy_map_for_notice().clone(),
+                        generate_my_specific_unit_death_data_response
+                            .get_player_field_unit_death_map_for_notice().clone())).await;
 
         println!("notice_response: {:?}", notice_response);
 
@@ -639,7 +676,8 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         AddFieldEnergyWithFieldUnitHealthPointResponseForm::from_response(
             generate_use_my_hand_card_data_response,
-            generate_my_field_energy_data_response)
+            generate_my_field_energy_data_response,
+            generate_my_specific_unit_death_data_response)
     }
 
     async fn request_to_use_catastrophic_damage_item(

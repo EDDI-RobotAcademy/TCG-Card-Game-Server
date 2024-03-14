@@ -379,7 +379,8 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         &mut self,
         opponent_unique_id: i32,
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
-        player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>
+        player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
+        player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
     ) -> bool {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_field_energy_increase_item()");
@@ -398,7 +399,8 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         let notify_form_use_field_energy_increase_item_card =
             NotifyFormUseFieldEnergyIncreaseItemCard::new(
                 player_hand_use_map_for_notice,
-                player_field_energy_map_for_notice);
+                player_field_energy_map_for_notice,
+                player_field_unit_death_map_for_notice);
 
         // 상대 즉사 아이템 사용 공지
         opponent_receiver_transmitter_channel.send(
