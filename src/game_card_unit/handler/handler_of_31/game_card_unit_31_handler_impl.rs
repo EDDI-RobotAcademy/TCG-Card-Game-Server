@@ -29,11 +29,11 @@ impl GameCardUnitHandler for UnitCard_31_Function {
             GradeEnum::Common,
             10,
             10,
-            0,
+            1,
             -1,
             -1,
             -1,
-            true,
+            false,
             false,
             false,
             -1);
@@ -42,6 +42,6 @@ impl GameCardUnitHandler for UnitCard_31_Function {
     }
 
     unsafe fn summary_unit_card_passive_default(&self) -> Vec<bool> {
-        vec![true, false, false]
+        vec![false, false, false]
     }
 }
