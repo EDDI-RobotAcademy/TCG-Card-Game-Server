@@ -102,7 +102,7 @@ mod mulligan;
 mod rock_paper_scissors_waiting_timer;
 mod battle_start;
 mod mulligan_monitor;
-mod connect_monitor;
+mod check_connecting;
 
 #[tokio::main]
 async fn main() {
