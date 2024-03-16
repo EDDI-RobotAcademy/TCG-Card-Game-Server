@@ -29,3 +29,4 @@ pub mod generate_opponent_multiple_unit_extra_effect_data_response;
 pub mod generate_opponent_specific_unit_harmful_effect_data_response;
 pub mod generate_opponent_multiple_unit_harmful_effect_data_response;
 pub mod generate_my_specific_unit_basic_attack_data_response;
+pub mod generate_my_specific_unit_active_skill_use_data_response;

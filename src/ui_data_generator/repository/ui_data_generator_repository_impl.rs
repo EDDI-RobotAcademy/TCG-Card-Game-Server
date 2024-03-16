@@ -86,7 +86,7 @@ impl UiDataGeneratorRepositoryImpl {
         FieldUnitAttackInfo::new(map)
     }
 
-    fn get_field_unit_active_skill_attack_to_unit_info(
+    fn get_field_unit_active_skill_attack_info(
         &self,
         attacker_unit_index: i32,
         target_player_index: PlayerIndex,
@@ -996,6 +996,30 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
             self.get_player_field_unit_attack_info(You, field_unit_basic_attack_info_for_response);
         let player_field_unit_attack_info_for_notice =
             self.get_player_field_unit_attack_info(Opponent, field_unit_basic_attack_info_for_notice);
+
+        (player_field_unit_attack_info_for_response,
+         player_field_unit_attack_info_for_notice)
+    }
+
+    async fn generate_my_specific_unit_active_skill_use_data(
+        &mut self,
+        attacker_unit_index: i32,
+        target_unit_index: i32,
+        active_skill_index: i32,
+    ) -> (PlayerFieldUnitAttackInfo,
+          PlayerFieldUnitAttackInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_my_specific_unit_active_skill_use_data()");
+
+        let field_unit_active_skill_attack_info_for_response =
+            self.get_field_unit_active_skill_attack_info(attacker_unit_index, Opponent, target_unit_index, active_skill_index);
+        let field_unit_active_skill_attack_info_for_notice =
+            self.get_field_unit_active_skill_attack_info(attacker_unit_index, You, target_unit_index, active_skill_index);
+
+        let player_field_unit_attack_info_for_response =
+            self.get_player_field_unit_attack_info(You, field_unit_active_skill_attack_info_for_response);
+        let player_field_unit_attack_info_for_notice =
+            self.get_player_field_unit_attack_info(Opponent, field_unit_active_skill_attack_info_for_notice);
 
         (player_field_unit_attack_info_for_response,
          player_field_unit_attack_info_for_notice)
