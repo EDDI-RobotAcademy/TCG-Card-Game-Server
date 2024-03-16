@@ -9,8 +9,10 @@ use crate::account::service::account_service::AccountService;
 use crate::account::service::account_service_impl::AccountServiceImpl;
 use crate::fake_battle_room::controller::fake_battle_room_controller::FakeBattleRoomController;
 use crate::fake_battle_room::controller::request_form::create_fake_battle_room_request_form::CreateFakeBattleRoomRequestForm;
+use crate::fake_battle_room::controller::request_form::fake_get_nether_from_deck_request_form::FakeGetNetherFromDeckRequestForm;
 use crate::fake_battle_room::controller::request_form::fake_multi_draw_request_form::FakeMultiDrawRequestForm;
 use crate::fake_battle_room::controller::response_form::create_fake_battle_room_response_form::CreateFakeBattleRoomResponseForm;
+use crate::fake_battle_room::controller::response_form::fake_get_nether_from_deck_response_form::FakeGetNetherFromDeckResponseForm;
 use crate::fake_battle_room::controller::response_form::fake_multi_draw_response_form::FakeMultiDrawResponseForm;
 use crate::fake_battle_room::service::fake_battle_room_service::FakeBattleRoomService;
 use crate::fake_battle_room::service::fake_battle_room_service_impl::FakeBattleRoomServiceImpl;
@@ -179,5 +181,63 @@ impl FakeBattleRoomController for FakeBattleRoomControllerImpl {
         return FakeMultiDrawResponseForm::from_response(
             generate_draw_my_deck_data_response)
 
+    }
+
+    async fn request_to_get_nether_from_deck(
+        &self, fake_get_nether_from_deck_request_form: FakeGetNetherFromDeckRequestForm)
+        -> FakeGetNetherFromDeckResponseForm {
+
+        println!("FakeBattleRoomControllerImpl: request_to_get_nether_from_deck()");
+
+        let account_unique_id = self.is_valid_session(
+            fake_get_nether_from_deck_request_form
+                .to_session_validation_request()).await;
+
+        if account_unique_id == -1 {
+            println!("Invalid session");
+            return FakeGetNetherFromDeckResponseForm::default()
+        }
+
+        let mut game_deck_service_guard =
+            self.game_deck_service.lock().await;
+
+        let find_by_card_id_with_count_response =
+            game_deck_service_guard.find_by_card_id_with_count(
+                fake_get_nether_from_deck_request_form
+                    .to_find_card_from_deck_with_count_request(
+                        account_unique_id,
+                    19,
+                        1)).await;
+
+        drop(game_deck_service_guard);
+
+        if !find_by_card_id_with_count_response.found_card_list().contains(&19) {
+            println!("Nether Blade is not found.");
+            return FakeGetNetherFromDeckResponseForm::default()
+        }
+
+        let mut game_hand_service_guard =
+            self.game_hand_service.lock().await;
+
+        game_hand_service_guard.add_card_list_to_hand(
+            fake_get_nether_from_deck_request_form
+                .to_add_card_list_to_hand_request(
+                    account_unique_id,
+                    find_by_card_id_with_count_response.found_card_list().clone())).await;
+
+        drop(game_hand_service_guard);
+
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_search_my_deck_data_response =
+            ui_data_generator_service_guard.generate_search_my_deck_data(
+                fake_get_nether_from_deck_request_form
+                    .to_generate_search_my_deck_data_request(
+                        find_by_card_id_with_count_response.found_card_list().clone())).await;
+
+        drop(ui_data_generator_service_guard);
+
+        FakeGetNetherFromDeckResponseForm::from_response(generate_search_my_deck_data_response)
     }
 }
