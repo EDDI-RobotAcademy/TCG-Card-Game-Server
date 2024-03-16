@@ -511,6 +511,13 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             let mut ui_data_generator_service_guard =
                 self.ui_data_generator_service.lock().await;
 
+            let generate_my_specific_unit_basic_attack_data_response =
+                ui_data_generator_service_guard.generate_my_specific_unit_basic_attack_data(
+                    attack_unit_request_form
+                        .to_generate_my_specific_unit_basic_attack_to_unit_data_request(
+                            attacker_unit_card_index,
+                            opponent_target_unit_card_index)).await;
+
             let generate_opponent_specific_unit_health_point_data_response =
                 ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
                     attack_unit_request_form
@@ -540,6 +547,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                 attack_unit_request_form
                     .to_notice_basic_attack_to_unit_request(
                         opponent_unique_id,
+                        generate_my_specific_unit_basic_attack_data_response
+                            .get_player_field_unit_attack_map_for_notice().clone(),
                         generate_opponent_specific_unit_health_point_data_response
                             .get_player_field_unit_health_point_map_for_notice().clone(),
                         generate_opponent_specific_unit_harmful_effect_data_response
@@ -651,6 +660,13 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let mut ui_data_generator_service_guard =
             self.ui_data_generator_service.lock().await;
 
+        let generate_my_specific_unit_basic_attack_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_basic_attack_data(
+                attack_unit_request_form
+                    .to_generate_my_specific_unit_basic_attack_to_unit_data_request(
+                        attacker_unit_card_index,
+                        opponent_target_unit_card_index)).await;
+
         let generate_opponent_specific_unit_health_point_data_response =
             ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
                 attack_unit_request_form
@@ -746,6 +762,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             attack_unit_request_form
                 .to_notice_basic_attack_to_unit_request(
                     opponent_unique_id,
+                    generate_my_specific_unit_basic_attack_data_response
+                        .get_player_field_unit_attack_map_for_notice().clone(),
                     combined_unit_health_point_data_for_notice,
                     combined_unit_harmful_effect_data_for_notice,
                     combined_unit_death_data_for_notice)).await;
@@ -898,6 +916,12 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
         let mut ui_data_generator_service_guard =
             self.ui_data_generator_service.lock().await;
 
+        let generate_my_specific_unit_basic_attack_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_basic_attack_data(
+                attack_game_main_character_request_form
+                    .to_generate_my_specific_unit_basic_attack_to_main_character_data_request(
+                        attacker_unit_card_index)).await;
+
         let generate_opponent_main_character_health_point_data_response =
             ui_data_generator_service_guard.generate_opponent_main_character_health_point_data(
                 attack_game_main_character_request_form
@@ -919,6 +943,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
             attack_game_main_character_request_form
                 .to_notice_basic_attack_to_main_character_request(
                     opponent_unique_id,
+                    generate_my_specific_unit_basic_attack_data_response
+                        .get_player_field_unit_attack_map_for_notice().clone(),
                     generate_opponent_main_character_health_point_data_response
                         .get_player_main_character_health_point_map_for_notice().clone(),
                     generate_opponent_main_character_survival_data_response

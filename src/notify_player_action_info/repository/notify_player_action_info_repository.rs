@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use async_trait::async_trait;
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
+use crate::ui_data_generator::entity::field_unit_basic_attack_info::FieldUnitAttackInfo;
 use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::field_unit_death_info::{FieldUnitDeathInfo};
@@ -102,6 +103,7 @@ pub trait NotifyPlayerActionInfoRepository {
     async fn notice_basic_attack_to_unit(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
@@ -109,8 +111,9 @@ pub trait NotifyPlayerActionInfoRepository {
     async fn notice_basic_attack_to_main_character(
         &mut self,
         opponent_unique_id: i32,
-        player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
-        player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
+        player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> bool;
     async fn notice_turn_end(
         &mut self,
