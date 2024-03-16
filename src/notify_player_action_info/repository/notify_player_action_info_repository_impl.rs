@@ -39,6 +39,7 @@ use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
 use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
 use crate::response_generator::response_type::ResponseType::*;
+use crate::ui_data_generator::entity::field_unit_basic_attack_info::FieldUnitAttackInfo;
 use crate::ui_data_generator::entity::field_unit_extra_effect_info::FieldUnitExtraEffectInfo;
 use crate::ui_data_generator::entity::field_unit_harmful_status_info::FieldUnitHarmfulStatusInfo;
 
@@ -534,6 +535,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notice_basic_attack_to_unit(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
@@ -554,6 +556,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let notify_form_basic_attack_to_unit =
             NotifyFormBasicAttackToUnit::new(
+                player_field_unit_attack_map_for_notice,
                 player_field_unit_health_point_map_for_notice,
                 player_field_unit_harmful_effect_map_for_notice,
                 player_field_unit_death_map_for_notice);
@@ -571,8 +574,9 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notice_basic_attack_to_main_character(
         &mut self,
         opponent_unique_id: i32,
-        player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
-        player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
+        player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> bool {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notice_basic_attack_to_main_character()");
@@ -590,7 +594,9 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let notify_form_basic_attack_to_main_character =
             NotifyFormBasicAttackToMainCharacter::new(
-                player_main_character_health_point_map, player_main_character_survival_map);
+                player_field_unit_attack_map_for_notice,
+                player_main_character_health_point_map_for_notice,
+                player_main_character_survival_map_for_notice);
 
         // 상대 본체 대상 기본 공격 공지
         opponent_receiver_transmitter_channel.send(
