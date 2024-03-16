@@ -330,6 +330,13 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
         let mut ui_data_generator_service_guard =
             self.ui_data_generator_service.lock().await;
+        let generate_my_specific_unit_passive_skill_use_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_passive_skill_use_data(
+                deploy_targeting_attack_passive_skill_request_form
+                    .to_generate_my_specific_unit_passive_skill_use_data_request(
+                        unit_card_index,
+                        opponent_target_unit_card_index,
+                        usage_skill_index)).await;
 
         let generate_opponent_specific_unit_health_point_data_response =
             ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
@@ -360,6 +367,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             deploy_targeting_attack_passive_skill_request_form
                 .to_notice_deploy_targeting_attack_passive_skill_to_unit_request(
                     opponent_unique_id,
+                    generate_my_specific_unit_passive_skill_use_data_response.get_player_field_unit_attack_map_for_notice().clone(),
                     generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_notice().clone(),
                     generate_opponent_specific_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_notice().clone(),
                     generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_notice().clone())).await;
@@ -576,7 +584,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         // TODO: 스킬 사용으로 인한 광역 논타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
         let mut ui_data_generator_service_guard =
             self.ui_data_generator_service.lock().await;
-
+        let generate_my_specific_unit_passive_skill_use_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_passive_skill_use_data(
+                deploy_non_targeting_attack_passive_skill_request_form
+                    .to_generate_my_specific_unit_passive_skill_use_data_request(
+                        unit_card_index,
+                        usage_skill_index)).await;
         let generate_opponent_multiple_unit_health_point_data_response =
             ui_data_generator_service_guard.generate_opponent_multiple_unit_health_point_data(
                 deploy_non_targeting_attack_passive_skill_request_form
@@ -602,6 +615,8 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             deploy_non_targeting_attack_passive_skill_request_form
                 .to_notice_deploy_non_targeting_attack_passive_skill_request(
                     opponent_unique_id,
+                    generate_my_specific_unit_passive_skill_use_data_response
+                        .get_player_field_unit_attack_map_for_notice().clone(),
                     generate_opponent_multiple_unit_health_point_data_response
                         .get_player_field_unit_health_point_map_for_notice().clone(),
                     generate_opponent_multiple_unit_harmful_effect_data_response
@@ -796,6 +811,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
 
         let mut ui_data_generator_service_guard =
             self.ui_data_generator_service.lock().await;
+        let generate_my_specific_unit_passive_skill_use_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_passive_skill_use_data(
+                deploy_targeting_attack_to_game_main_character_request_form
+                    .to_generate_my_specific_unit_passive_skill_use_data_request(
+                        unit_card_index,
+                        usage_skill_index)).await;
 
         let generate_opponent_main_character_health_point_data_response =
             ui_data_generator_service_guard.generate_opponent_main_character_health_point_data(
@@ -818,6 +839,8 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             deploy_targeting_attack_to_game_main_character_request_form
                 .to_notice_deploy_targeting_attack_to_game_main_character_request(
                     opponent_unique_id,
+                    generate_my_specific_unit_passive_skill_use_data_response
+                        .get_player_field_unit_attack_map_for_notice().clone(),
                     generate_opponent_main_character_health_point_data_response
                         .get_player_main_character_health_point_map_for_notice().clone(),
                     generate_opponent_main_character_survival_data_response
@@ -1034,7 +1057,13 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         // TODO: 스킬 사용으로 인한 단일 타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
         let mut ui_data_generator_service_guard =
             self.ui_data_generator_service.lock().await;
-
+        let generate_my_specific_unit_passive_skill_use_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_passive_skill_use_data(
+                turn_start_targeting_attack_passive_skill_request_form
+                    .to_generate_my_specific_unit_passive_skill_use_data_request(
+                        unit_card_index,
+                        opponent_target_unit_card_index,
+                        usage_skill_index)).await;
         let generate_opponent_specific_unit_health_point_data_response =
             ui_data_generator_service_guard.generate_opponent_specific_unit_health_point_data(
                 turn_start_targeting_attack_passive_skill_request_form
@@ -1064,6 +1093,7 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             turn_start_targeting_attack_passive_skill_request_form
                 .to_notice_turn_start_targeting_attack_passive_skill_to_unit_request(
                     opponent_unique_id,
+                    generate_my_specific_unit_passive_skill_use_data_response.get_player_field_unit_attack_map_for_notice().clone(),
                     generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_notice().clone(),
                     generate_opponent_specific_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_notice().clone(),
                     generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_notice().clone())).await;
@@ -1279,6 +1309,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
         // TODO: 스킬 사용으로 인한 광역 논타켓 데미지 알림 + 남은 체력 알림 + 사망 사실 알림 각각 따로따로
         let mut ui_data_generator_service_guard =
             self.ui_data_generator_service.lock().await;
+        let generate_my_specific_unit_passive_skill_use_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_passive_skill_use_data(
+                turn_start_non_targeting_attack_passive_skill_request_form
+                    .to_generate_my_specific_unit_passive_skill_use_data_request(
+                        unit_card_index,
+                        usage_skill_index)).await;
 
         let generate_opponent_multiple_unit_health_point_data_response =
             ui_data_generator_service_guard.generate_opponent_multiple_unit_health_point_data(
@@ -1305,6 +1341,8 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             turn_start_non_targeting_attack_passive_skill_request_form
                 .to_notice_turn_start_non_targeting_attack_passive_skill_request(
                     opponent_unique_id,
+                    generate_my_specific_unit_passive_skill_use_data_response
+                        .get_player_field_unit_attack_map_for_notice().clone(),
                     generate_opponent_multiple_unit_health_point_data_response
                         .get_player_field_unit_health_point_map_for_notice().clone(),
                     generate_opponent_multiple_unit_harmful_effect_data_response
@@ -1497,6 +1535,12 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
 
         let mut ui_data_generator_service_guard =
             self.ui_data_generator_service.lock().await;
+        let generate_my_specific_unit_passive_skill_use_data_response =
+            ui_data_generator_service_guard.generate_my_specific_unit_passive_skill_use_data(
+                turn_start_targeting_attack_to_game_main_character_request_form
+                    .to_generate_my_specific_unit_passive_skill_use_data_request(
+                        unit_card_index,
+                        usage_skill_index)).await;
 
         let generate_opponent_main_character_health_point_data_response =
             ui_data_generator_service_guard.generate_opponent_main_character_health_point_data(
@@ -1519,6 +1563,8 @@ impl GameCardPassiveSkillController for GameCardPassiveSkillControllerImpl {
             turn_start_targeting_attack_to_game_main_character_request_form
                 .to_notice_turn_start_targeting_attack_to_game_main_character_request(
                     opponent_unique_id,
+                    generate_my_specific_unit_passive_skill_use_data_response
+                        .get_player_field_unit_attack_map_for_notice().clone(),
                     generate_opponent_main_character_health_point_data_response
                         .get_player_main_character_health_point_map_for_notice().clone(),
                     generate_opponent_main_character_survival_data_response
