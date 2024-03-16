@@ -1,2 +1,3 @@
 pub mod create_fake_battle_room_request_form;
 pub mod fake_multi_draw_request_form;
+pub mod fake_get_nether_from_deck_request_form;
