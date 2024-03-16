@@ -25,7 +25,9 @@ use crate::notify_player_action_info::service::request::notice_basic_attack_to_m
 use crate::notify_player_action_info::service::request::notice_deploy_targeting_attack_to_game_main_character_request::NoticeDeployTargetingAttackToGameMainCharacterRequest;
 use crate::notify_player_action_info::service::response::notice_deploy_targeting_attack_to_game_main_character_response::NoticeDeployTargetingAttackToGameMainCharacterResponse;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::entity::field_unit_basic_attack_info::FieldUnitAttackInfo;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_passive_skill_use_data_request::GenerateMySpecificUnitPassiveSkillUseDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_main_character_health_point_data_request::GenerateOpponentMainCharacterHealthPointDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_main_character_survival_data_request::GenerateOpponentMainCharacterSurvivalDataRequest;
 
@@ -144,7 +146,14 @@ impl DeployTargetingAttackToGameMainCharacterRequestForm {
 
         CheckMainCharacterRequest::new(account_unique_id, opponent_unique_id)
     }
+    pub fn to_generate_my_specific_unit_passive_skill_use_data_request(
+        &self,
+        attacker_unit_index: i32,
+        passive_skill_index: i32) -> GenerateMySpecificUnitPassiveSkillUseDataRequest {
 
+        GenerateMySpecificUnitPassiveSkillUseDataRequest::new(
+            attacker_unit_index, -1, passive_skill_index)
+    }
     pub fn to_generate_opponent_main_character_health_point_data_request(
         &self,
         main_character_health_point: i32
@@ -166,12 +175,14 @@ impl DeployTargetingAttackToGameMainCharacterRequestForm {
     pub fn to_notice_deploy_targeting_attack_to_game_main_character_request (
         &self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
         player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>
     ) -> NoticeDeployTargetingAttackToGameMainCharacterRequest {
 
         NoticeDeployTargetingAttackToGameMainCharacterRequest::new(
             opponent_unique_id,
+            player_field_unit_attack_map_for_notice,
             player_main_character_health_point_map_for_notice,
             player_main_character_survival_map_for_notice)
     }
