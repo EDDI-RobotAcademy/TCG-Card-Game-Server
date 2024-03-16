@@ -447,6 +447,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         let response =
             notify_player_action_info_repository_guard.notice_targeting_attack_active_skill_to_unit(
                 notice_targeting_attack_active_skill_to_unit_request.get_opponent_unique_id(),
+                notice_targeting_attack_active_skill_to_unit_request.get_player_field_unit_attack_map_for_notice().clone(),
                 notice_targeting_attack_active_skill_to_unit_request.get_player_field_unit_health_point_map_for_notice().clone(),
                 notice_targeting_attack_active_skill_to_unit_request.get_player_field_unit_harmful_effect_map_for_notice().clone(),
                 notice_targeting_attack_active_skill_to_unit_request.get_player_field_unit_death_map_for_notice().clone()).await;
@@ -468,6 +469,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         let response =
             notify_player_action_info_repository_guard.notice_non_targeting_attack_active_skill(
                 notice_non_targeting_attack_active_skill_request.get_opponent_unique_id(),
+                notice_non_targeting_attack_active_skill_request.get_player_field_unit_attack_map_for_notice().clone(),
                 notice_non_targeting_attack_active_skill_request.get_player_field_unit_health_point_map_for_notice().clone(),
                 notice_non_targeting_attack_active_skill_request.get_player_field_unit_harmful_effect_map_for_notice().clone(),
                 notice_non_targeting_attack_active_skill_request.get_player_field_unit_death_map_for_notice().clone()).await;
@@ -487,6 +489,7 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         let response =
             notify_player_action_info_repository_guard.notice_targeting_attack_active_skill_to_game_main_character(
                 notice_targeting_attack_active_skill_to_game_main_character_request.get_opponent_unique_id(),
+                notice_targeting_attack_active_skill_to_game_main_character_request.get_player_field_unit_attack_map_for_notice().clone(),
                 notice_targeting_attack_active_skill_to_game_main_character_request.get_player_main_character_health_point_map_for_notice().clone(),
                 notice_targeting_attack_active_skill_to_game_main_character_request.get_player_main_character_survival_map_for_notice().clone()).await;
 
