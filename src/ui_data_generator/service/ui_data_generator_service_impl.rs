@@ -901,7 +901,7 @@ impl UiDataGeneratorService for UiDataGeneratorServiceImpl {
             ui_data_generator_repository_guard.generate_my_specific_unit_passive_skill_use_data(
                 generate_my_specific_unit_passive_skill_use_data_request.get_attacker_unit_index(),
                 generate_my_specific_unit_passive_skill_use_data_request.get_target_unit_index(),
-                generate_my_specific_unit_passive_skill_use_data_request.get_active_skill_index()).await;
+                generate_my_specific_unit_passive_skill_use_data_request.get_passive_skill_index()).await;
 
         drop(ui_data_generator_repository_guard);
 
