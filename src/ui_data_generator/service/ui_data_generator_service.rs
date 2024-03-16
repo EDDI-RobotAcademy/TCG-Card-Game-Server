@@ -12,6 +12,8 @@ use crate::ui_data_generator::service::request::generate_my_multiple_unit_death_
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_extra_effect_data_request::GenerateMyMultipleUnitExtraEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_harmful_effect_data_request::GenerateMyMultipleUnitHarmfulEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_my_multiple_unit_health_point_data_request::GenerateMyMultipleUnitHealthPointDataRequest;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_active_skill_use_data_request::GenerateMySpecificUnitActiveSkillUseDataRequest;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_basic_attack_data_request::GenerateMySpecificUnitBasicAttackDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_death_data_request::GenerateMySpecificUnitDeathDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_extra_effect_data_request::GenerateMySpecificUnitExtraEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_harmful_effect_data_request::GenerateMySpecificUnitHarmfulEffectDataRequest;
@@ -42,6 +44,8 @@ use crate::ui_data_generator::service::response::generate_my_multiple_unit_death
 use crate::ui_data_generator::service::response::generate_my_multiple_unit_extra_effect_data_response::GenerateMyMultipleUnitExtraEffectDataResponse;
 use crate::ui_data_generator::service::response::generate_my_multiple_unit_harmful_effect_data_response::GenerateMyMultipleUnitHarmfulEffectDataResponse;
 use crate::ui_data_generator::service::response::generate_my_multiple_unit_health_point_data_response::GenerateMyMultipleUnitHealthPointDataResponse;
+use crate::ui_data_generator::service::response::generate_my_specific_unit_active_skill_use_data_response::GenerateMySpecificUnitActiveSkillUseDataResponse;
+use crate::ui_data_generator::service::response::generate_my_specific_unit_basic_attack_data_response::GenerateMySpecificUnitBasicAttackDataResponse;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_death_data_response::GenerateMySpecificUnitDeathDataResponse;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_extra_effect_data_response::GenerateMySpecificUnitExtraEffectDataResponse;
 use crate::ui_data_generator::service::response::generate_my_specific_unit_harmful_effect_data_response::GenerateMySpecificUnitHarmfulEffectDataResponse;
@@ -170,4 +174,10 @@ pub trait UiDataGeneratorService {
     async fn generate_opponent_deck_card_lost_data(
         &mut self, generate_opponent_deck_card_lost_data_request: GenerateOpponentDeckCardLostDataRequest)
         -> GenerateOpponentDeckCardLostDataResponse;
+    async fn generate_my_specific_unit_basic_attack_data(
+        &mut self, generate_my_specific_unit_basic_attack_data_request: GenerateMySpecificUnitBasicAttackDataRequest)
+        -> GenerateMySpecificUnitBasicAttackDataResponse;
+    async fn generate_my_specific_unit_active_skill_use_data(
+        &mut self, generate_my_specific_unit_active_skill_use_data_request: GenerateMySpecificUnitActiveSkillUseDataRequest)
+        -> GenerateMySpecificUnitActiveSkillUseDataResponse;
 }

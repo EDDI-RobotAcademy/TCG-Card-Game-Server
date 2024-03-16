@@ -18,10 +18,12 @@ use crate::game_protocol_validation::service::request::is_this_your_turn_request
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
 use crate::notify_player_action_info::service::request::notice_basic_attack_to_unit_request::NoticeBasicAttackToUnitRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::entity::field_unit_basic_attack_info::FieldUnitAttackInfo;
 use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
 use crate::ui_data_generator::entity::field_unit_harmful_status_info::FieldUnitHarmfulStatusInfo;
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_basic_attack_data_request::GenerateMySpecificUnitBasicAttackDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_death_data_request::GenerateMySpecificUnitDeathDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_harmful_effect_data_request::GenerateMySpecificUnitHarmfulEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_my_specific_unit_health_point_data_request::GenerateMySpecificUnitHealthPointDataRequest;
@@ -195,6 +197,16 @@ impl AttackUnitRequestForm {
             account_unique_id, dead_unit_card_id)
     }
 
+    pub fn to_generate_my_specific_unit_basic_attack_to_unit_data_request(
+        &self,
+        attacker_unit_index: i32,
+        target_unit_index: i32
+    ) -> GenerateMySpecificUnitBasicAttackDataRequest {
+
+        GenerateMySpecificUnitBasicAttackDataRequest::new(
+            attacker_unit_index, target_unit_index)
+    }
+
     pub fn to_generate_opponent_specific_unit_health_point_data_request(
         &self,
         opponent_unit_index: i32,
@@ -256,6 +268,7 @@ impl AttackUnitRequestForm {
     pub fn to_notice_basic_attack_to_unit_request(
         &self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>
@@ -263,6 +276,7 @@ impl AttackUnitRequestForm {
 
         NoticeBasicAttackToUnitRequest::new(
             opponent_unique_id,
+            player_field_unit_attack_map_for_notice,
             player_field_unit_health_point_map_for_notice,
             player_field_unit_harmful_effect_map_for_notice,
             player_field_unit_death_map_for_notice)
