@@ -28,3 +28,6 @@ pub mod player_main_character_damage_info;
 pub mod player_main_character_survival_info;
 pub mod player_field_unit_extra_effect_info;
 pub mod player_field_unit_harmful_effect_info;
+pub mod field_unit_basic_attack_info;
+pub mod basic_attack_info;
+pub mod player_field_unit_basic_attack_info;

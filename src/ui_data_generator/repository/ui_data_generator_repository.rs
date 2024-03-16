@@ -8,6 +8,7 @@ use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeck
 use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::ui_data_generator::entity::player_field_energy_info::PlayerFieldEnergyInfo;
+use crate::ui_data_generator::entity::player_field_unit_basic_attack_info::PlayerFieldUnitAttackInfo;
 use crate::ui_data_generator::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
 use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
 use crate::ui_data_generator::entity::player_field_unit_extra_effect_info::PlayerFieldUnitExtraEffectInfo;
@@ -182,4 +183,10 @@ pub trait UiDataGeneratorRepository {
         opponent_lost_deck_card_list: Vec<i32>
     ) -> (PlayerDeckCardLostListInfo,
           PlayerDeckCardLostListInfo);
+    async fn generate_my_specific_unit_basic_attack_data(
+        &mut self,
+        attacker_unit_index: i32,
+        target_unit_index: i32,
+    ) -> (PlayerFieldUnitAttackInfo,
+          PlayerFieldUnitAttackInfo);
 }

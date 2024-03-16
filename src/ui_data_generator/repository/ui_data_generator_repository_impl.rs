@@ -8,7 +8,9 @@ use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum;
 use crate::game_field_unit::entity::attached_energy_map::AttachedEnergyMap;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_main_character::entity::status_main_character::StatusMainCharacterEnum;
+use crate::ui_data_generator::entity::basic_attack_info::AttackInfo;
 use crate::ui_data_generator::entity::extra_effect_info::ExtraEffectInfo;
+use crate::ui_data_generator::entity::field_unit_basic_attack_info::FieldUnitAttackInfo;
 use crate::ui_data_generator::entity::field_unit_damage_info::FieldUnitDamageInfo;
 use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
 use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
@@ -21,6 +23,7 @@ use crate::ui_data_generator::entity::player_deck_card_use_list_info::PlayerDeck
 use crate::ui_data_generator::entity::player_draw_count_info::PlayerDrawCountInfo;
 use crate::ui_data_generator::entity::player_drawn_card_list_info::PlayerDrawnCardListInfo;
 use crate::ui_data_generator::entity::player_field_energy_info::PlayerFieldEnergyInfo;
+use crate::ui_data_generator::entity::player_field_unit_basic_attack_info::PlayerFieldUnitAttackInfo;
 use crate::ui_data_generator::entity::player_field_unit_damage_info::PlayerFieldUnitDamageInfo;
 use crate::ui_data_generator::entity::player_field_unit_death_info::PlayerFieldUnitDeathInfo;
 use crate::ui_data_generator::entity::player_field_unit_energy_info::PlayerFieldUnitEnergyInfo;
@@ -65,6 +68,56 @@ impl UiDataGeneratorRepositoryImpl {
         map.insert(unit_index, attached_energy_map.to_attached_energy_info());
 
         FieldUnitEnergyInfo::new(map)
+    }
+
+    fn get_field_unit_basic_attack_info(
+        &self,
+        attacker_unit_index: i32,
+        target_player_index: PlayerIndex,
+        target_unit_index: i32) -> FieldUnitAttackInfo {
+
+        let mut map = HashMap::new();
+        map.insert(attacker_unit_index,
+                   AttackInfo::new(target_player_index,
+                                   target_unit_index,
+                                   -1,
+                                   -1));
+
+        FieldUnitAttackInfo::new(map)
+    }
+
+    fn get_field_unit_active_skill_attack_to_unit_info(
+        &self,
+        attacker_unit_index: i32,
+        target_player_index: PlayerIndex,
+        target_unit_index: i32,
+        active_skill_index: i32) -> FieldUnitAttackInfo {
+
+        let mut map = HashMap::new();
+        map.insert(attacker_unit_index,
+                   AttackInfo::new(target_player_index,
+                                   target_unit_index,
+                                   active_skill_index,
+                                   -1));
+
+        FieldUnitAttackInfo::new(map)
+    }
+
+    fn get_field_unit_active_passive_attack_to_unit_info(
+        &self,
+        attacker_unit_index: i32,
+        target_player_index: PlayerIndex,
+        target_unit_index: i32,
+        passive_skill_index: i32) -> FieldUnitAttackInfo {
+
+        let mut map = HashMap::new();
+        map.insert(attacker_unit_index,
+                   AttackInfo::new(target_player_index,
+                                   target_unit_index,
+                                   -1,
+                                   passive_skill_index));
+
+        FieldUnitAttackInfo::new(map)
     }
 
     fn get_field_unit_death_info(
@@ -232,6 +285,17 @@ impl UiDataGeneratorRepositoryImpl {
         player_field_energy_map.insert(notify_player_index, field_energy_count);
 
         PlayerFieldEnergyInfo::new(player_field_energy_map)
+    }
+
+    fn get_player_field_unit_attack_info(&self,
+                                         notify_player_index: PlayerIndex,
+                                         field_unit_attack_info: FieldUnitAttackInfo
+    ) -> PlayerFieldUnitAttackInfo {
+
+        let mut player_field_unit_attack_map = HashMap::new();
+        player_field_unit_attack_map.insert(notify_player_index, field_unit_attack_info);
+
+        PlayerFieldUnitAttackInfo::new(player_field_unit_attack_map)
     }
 
     fn get_player_field_unit_damage_info(&self,
@@ -912,5 +976,28 @@ impl UiDataGeneratorRepository for UiDataGeneratorRepositoryImpl {
 
         (player_deck_card_lost_list_info_for_response,
          player_deck_card_lost_list_info_for_notice)
+    }
+
+    async fn generate_my_specific_unit_basic_attack_data(
+        &mut self,
+        attacker_unit_index: i32,
+        target_unit_index: i32,
+    ) -> (PlayerFieldUnitAttackInfo,
+          PlayerFieldUnitAttackInfo) {
+
+        println!("UiDataGeneratorRepositoryImpl: generate_my_specific_unit_basic_attack_data()");
+
+        let field_unit_basic_attack_info_for_response =
+            self.get_field_unit_basic_attack_info(attacker_unit_index, Opponent, target_unit_index);
+        let field_unit_basic_attack_info_for_notice =
+            self.get_field_unit_basic_attack_info(attacker_unit_index, You, target_unit_index);
+
+        let player_field_unit_attack_info_for_response =
+            self.get_player_field_unit_attack_info(You, field_unit_basic_attack_info_for_response);
+        let player_field_unit_attack_info_for_notice =
+            self.get_player_field_unit_attack_info(Opponent, field_unit_basic_attack_info_for_notice);
+
+        (player_field_unit_attack_info_for_response,
+         player_field_unit_attack_info_for_notice)
     }
 }
