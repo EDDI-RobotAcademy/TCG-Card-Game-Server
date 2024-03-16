@@ -129,6 +129,7 @@ pub trait NotifyPlayerActionInfoRepository {
     async fn notice_targeting_attack_active_skill_to_unit(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
@@ -136,6 +137,7 @@ pub trait NotifyPlayerActionInfoRepository {
     async fn notice_non_targeting_attack_active_skill(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
@@ -143,6 +145,7 @@ pub trait NotifyPlayerActionInfoRepository {
     async fn notice_targeting_attack_active_skill_to_game_main_character(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
         player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> bool;
