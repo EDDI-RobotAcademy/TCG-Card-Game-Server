@@ -49,3 +49,4 @@ pub mod battle_start_request_form_generator;
 mod fake_multi_draw_request_form_generator;
 pub mod targeting_attack_active_skill_to_game_main_character_request_generator;
 pub mod fake_get_nether_from_deck_request_form_generator;
+mod fake_get_all_specific_kind_cards_from_deck_request_form_generator;

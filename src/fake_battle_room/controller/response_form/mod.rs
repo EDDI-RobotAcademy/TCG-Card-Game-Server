@@ -1,3 +1,4 @@
 pub mod create_fake_battle_room_response_form;
 pub mod fake_multi_draw_response_form;
 pub mod fake_get_nether_from_deck_response_form;
+pub mod fake_get_all_cards_of_specific_kind_from_deck_response_form;
