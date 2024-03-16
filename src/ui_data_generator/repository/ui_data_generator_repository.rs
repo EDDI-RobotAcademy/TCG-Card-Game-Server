@@ -189,4 +189,11 @@ pub trait UiDataGeneratorRepository {
         target_unit_index: i32,
     ) -> (PlayerFieldUnitAttackInfo,
           PlayerFieldUnitAttackInfo);
+    async fn generate_my_specific_unit_active_skill_use_data(
+        &mut self,
+        attacker_unit_index: i32,
+        target_unit_index: i32,
+        active_skill_index: i32,
+    ) -> (PlayerFieldUnitAttackInfo,
+          PlayerFieldUnitAttackInfo);
 }
