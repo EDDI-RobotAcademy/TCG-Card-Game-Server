@@ -1,15 +1,14 @@
 use serde::{Deserialize, Serialize};
-use crate::check_connecting::entity::check_connecting_status::ConnectStatus;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CheckConnectingMessageForm {
-    connect_status: ConnectStatus
+    address: String,
 }
 
 impl CheckConnectingMessageForm {
-    pub fn new(connect_status: ConnectStatus) -> Self {
+    pub fn new(address: &str) -> Self {
         CheckConnectingMessageForm {
-            connect_status,
+            address: address.to_string(),
         }
     }
 }
