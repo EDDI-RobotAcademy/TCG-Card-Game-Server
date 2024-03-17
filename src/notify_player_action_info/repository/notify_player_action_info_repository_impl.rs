@@ -655,6 +655,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notice_targeting_attack_active_skill_to_unit(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
@@ -675,6 +676,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let notify_form_targeting_attack_active_skill_to_unit =
             NotifyFormTargetingAttackActiveSkillToUnit::new(
+                player_field_unit_attack_map_for_notice,
                 player_field_unit_health_point_map_for_notice,
                 player_field_unit_harmful_effect_map_for_notice,
                 player_field_unit_death_map_for_notice);
@@ -691,6 +693,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notice_non_targeting_attack_active_skill(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
@@ -711,6 +714,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let notify_form_non_targeting_active_skill =
             NotifyFormNonTargetingAttackActiveSkill::new(
+                player_field_unit_attack_map_for_notice,
                 player_field_unit_health_point_map_for_notice,
                 player_field_unit_harmful_effect_map_for_notice,
                 player_field_unit_death_map_for_notice);
@@ -727,6 +731,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notice_targeting_attack_active_skill_to_game_main_character(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
         player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> bool {
@@ -745,7 +750,9 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let notify_form_targeting_attack_active_skill_to_game_main_character =
             NotifyFormTargetingAttackActiveSkillToGameMainCharacter::new(
-                player_main_character_health_point_map, player_main_character_survival_map);
+                player_field_unit_attack_map_for_notice,
+                player_main_character_health_point_map,
+                player_main_character_survival_map);
 
         // 플레이어 단일 공격 액티브 스킬 공지
         opponent_receiver_transmitter_channel.send(
@@ -759,6 +766,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notice_deploy_targeting_attack_passive_skill_to_unit(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
@@ -778,6 +786,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let notify_form_deploy_targeting_attack_passive_skill_to_unit =
             NotifyFormDeployTargetingAttackPassiveSkillToUnit::new(
+                player_field_unit_attack_map_for_notice,
                 player_field_unit_health_point_map_for_notice,
                 player_field_unit_harmful_effect_map_for_notice,
                 player_field_unit_death_map_for_notice);
@@ -794,6 +803,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notice_deploy_non_targeting_attack_passive_skill(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
@@ -813,6 +823,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let notify_form_deploy_non_targeting_attack_passive_skill =
             NotifyFormDeployNonTargetingAttackPassiveSkill::new(
+                player_field_unit_attack_map_for_notice,
                 player_field_unit_health_point_map_for_notice,
                 player_field_unit_harmful_effect_map_for_notice,
                 player_field_unit_death_map_for_notice);
@@ -829,6 +840,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notice_deploy_targeting_attack_to_game_main_character(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
         player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> bool {
@@ -847,7 +859,9 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let notify_form_deploy_targeting_attack_to_game_main_character =
             NotifyFormDeployTargetingAttackToGameMainCharacter::new(
-                player_main_character_health_point_map, player_main_character_survival_map);
+                player_field_unit_attack_map_for_notice,
+                player_main_character_health_point_map,
+                player_main_character_survival_map);
 
         // 소환시 플레이어 단일 공격 패시브 스킬 공지
         opponent_receiver_transmitter_channel.send(
@@ -861,6 +875,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notice_turn_start_targeting_attack_passive_skill_to_unit(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
@@ -880,6 +895,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let notify_form_targeting_attack_passive_skill_to_unit =
             NotifyFormTurnStartTargetingAttackPassiveSkillToUnit::new(
+                player_field_unit_attack_map_for_notice,
                 player_field_unit_health_point_map_for_notice,
                 player_field_unit_harmful_effect_map_for_notice,
                 player_field_unit_death_map_for_notice);
@@ -896,6 +912,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notice_turn_start_non_targeting_attack_passive_skill(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>,
@@ -915,6 +932,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let notify_form_non_targeting_attack_passive_skill =
             NotifyFormTurnStartNonTargetingAttackPassiveSkill::new(
+                player_field_unit_attack_map_for_notice,
                 player_field_unit_health_point_map_for_notice,
                 player_field_unit_harmful_effect_map_for_notice,
                 player_field_unit_death_map_for_notice);
@@ -931,6 +949,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
     async fn notice_turn_start_targeting_attack_to_game_main_character(
         &mut self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
         player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     ) -> bool {
@@ -949,7 +968,9 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let notify_form_turn_start_targeting_attack_to_game_main_character =
             NotifyFormTurnStartTargetingAttackToGameMainCharacter::new(
-                player_main_character_health_point_map, player_main_character_survival_map);
+                player_field_unit_attack_map_for_notice,
+                player_main_character_health_point_map,
+                player_main_character_survival_map);
 
         // 턴 시작 시 플레이어 단일 공격 패시브 스킬 공지
         opponent_receiver_transmitter_channel.send(

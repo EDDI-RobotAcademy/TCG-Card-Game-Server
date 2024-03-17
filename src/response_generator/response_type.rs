@@ -24,6 +24,8 @@ use crate::battle_wait_queue::service::response::battle_match_cancel_response::B
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::fake_battle_room::controller::response_form::create_fake_battle_room_response_form::CreateFakeBattleRoomResponseForm;
+use crate::fake_battle_room::controller::response_form::fake_get_all_cards_of_specific_kind_from_deck_response_form::FakeGetAllCardsOfSpecificKindFromDeckResponseForm;
+use crate::fake_battle_room::controller::response_form::fake_get_nether_from_deck_response_form::FakeGetNetherFromDeckResponseForm;
 use crate::fake_battle_room::controller::response_form::fake_multi_draw_response_form::FakeMultiDrawResponseForm;
 use crate::game_card_active_skill::controller::response_form::non_targeting_active_skill_response_form::NonTargetingActiveSkillResponseForm;
 use crate::game_card_active_skill::controller::response_form::targeting_active_skill_response_form::TargetingActiveSkillResponseForm;
@@ -248,5 +250,7 @@ pub enum ResponseType {
 
     // Fake Battle Room Test
     FAKE_BATTLE_ROOM_CREATION(CreateFakeBattleRoomResponseForm),
-    FAKE_MULTI_DRAW(FakeMultiDrawResponseForm)
+    FAKE_MULTI_DRAW(FakeMultiDrawResponseForm),
+    FAKE_GET_NETHER(FakeGetNetherFromDeckResponseForm),
+    FAKE_GET_SPECIFIC_KIND_DECK_CARD(FakeGetAllCardsOfSpecificKindFromDeckResponseForm),
 }

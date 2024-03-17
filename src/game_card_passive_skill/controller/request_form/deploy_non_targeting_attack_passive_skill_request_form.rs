@@ -28,10 +28,13 @@ use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombReques
 use crate::notify_player_action_info::service::request::notice_deploy_non_targeting_attack_passive_skill_request::NoticeDeployNonTargetingAttackPassiveSkillRequest;
 use crate::notify_player_action_info::service::request::notice_non_targeting_attack_active_skill_request::NoticeNonTargetingAttackActiveSkillRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
+use crate::ui_data_generator::entity::field_unit_basic_attack_info::FieldUnitAttackInfo;
 use crate::ui_data_generator::entity::field_unit_death_info::FieldUnitDeathInfo;
 use crate::ui_data_generator::entity::field_unit_harmful_status_info::FieldUnitHarmfulStatusInfo;
 use crate::ui_data_generator::entity::field_unit_health_point_info::FieldUnitHealthPointInfo;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_active_skill_use_data_request::GenerateMySpecificUnitActiveSkillUseDataRequest;
+use crate::ui_data_generator::service::request::generate_my_specific_unit_passive_skill_use_data_request::GenerateMySpecificUnitPassiveSkillUseDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_death_data_request::GenerateOpponentMultipleUnitDeathDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_harmful_effect_data_request::GenerateOpponentMultipleUnitHarmfulEffectDataRequest;
 use crate::ui_data_generator::service::request::generate_opponent_multiple_unit_health_point_data_request::GenerateOpponentMultipleUnitHealthPointDataRequest;
@@ -236,6 +239,15 @@ impl DeployNonTargetingAttackPassiveSkillRequestForm {
         AcquireUnitHarmfulStatusEffectRequest::new(
             opponent_unique_id, opponent_unit_index)
     }
+    pub fn to_generate_my_specific_unit_passive_skill_use_data_request(
+        &self,
+        attacker_unit_index: i32,
+        passive_skill_index: i32) -> GenerateMySpecificUnitPassiveSkillUseDataRequest {
+
+        GenerateMySpecificUnitPassiveSkillUseDataRequest::new(
+            attacker_unit_index, -1, passive_skill_index)
+    }
+
     pub fn to_generate_opponent_multiple_unit_health_point_data_request(
         &self,
         opponent_unit_updated_health_point_list: Vec<(i32, i32)>
@@ -265,6 +277,7 @@ impl DeployNonTargetingAttackPassiveSkillRequestForm {
     pub fn to_notice_deploy_non_targeting_attack_passive_skill_request(
         &self,
         opponent_unique_id: i32,
+        player_field_unit_attack_map_for_notice: HashMap<PlayerIndex, FieldUnitAttackInfo>,
         player_field_unit_health_point_map_for_notice: HashMap<PlayerIndex, FieldUnitHealthPointInfo>,
         player_field_unit_harmful_effect_map_for_notice: HashMap<PlayerIndex, FieldUnitHarmfulStatusInfo>,
         player_field_unit_death_map_for_notice: HashMap<PlayerIndex, FieldUnitDeathInfo>
@@ -272,6 +285,7 @@ impl DeployNonTargetingAttackPassiveSkillRequestForm {
 
         NoticeDeployNonTargetingAttackPassiveSkillRequest::new(
             opponent_unique_id,
+            player_field_unit_attack_map_for_notice,
             player_field_unit_health_point_map_for_notice,
             player_field_unit_harmful_effect_map_for_notice,
             player_field_unit_death_map_for_notice)
