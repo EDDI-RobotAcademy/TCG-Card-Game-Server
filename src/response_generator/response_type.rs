@@ -22,6 +22,8 @@ use crate::battle_room::service::response::what_is_the_room_number_response::Wha
 use crate::battle_start::controller::response_form::battle_start_response_form::BattleStartResponseForm;
 use crate::battle_wait_queue::service::response::battle_match_cancel_response::BattleMatchCancelResponse;
 use crate::battle_wait_queue::service::response::battle_wait_queue_response::BattleWaitQueueResponse;
+use crate::check_connecting::entity::check_connecting_message_form::CheckConnectingMessageForm;
+use crate::check_connecting::service::response::checked_response_response::CheckedResponseResponse;
 use crate::client_program::service::response::client_program_exit_response::ClientProgramExitResponse;
 use crate::fake_battle_room::controller::response_form::create_fake_battle_room_response_form::CreateFakeBattleRoomResponseForm;
 use crate::fake_battle_room::controller::response_form::fake_get_all_cards_of_specific_kind_from_deck_response_form::FakeGetAllCardsOfSpecificKindFromDeckResponseForm;
@@ -234,6 +236,10 @@ pub enum ResponseType {
 
     // Battle Start
     BATTLE_START(BattleStartResponseForm),
+
+    // Check Connecting
+    SEND_MESSAGE_CHECK_CONNECTING(CheckConnectingMessageForm),
+    CHECK_CONNECTING(CheckedResponseResponse),
 
     // Battle Finish
     BATTLE_FINISH(BattleFinishResponse),

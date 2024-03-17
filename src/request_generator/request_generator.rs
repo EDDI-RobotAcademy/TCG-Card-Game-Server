@@ -21,6 +21,8 @@ use crate::battle_start::controller::battle_start_controller::BattleStartControl
 use crate::battle_start::controller::battle_start_controller_impl::BattleStartControllerImpl;
 use crate::battle_wait_queue::service::battle_wait_queue_service::BattleWaitQueueService;
 use crate::battle_wait_queue::service::battle_wait_queue_service_impl::BattleWaitQueueServiceImpl;
+use crate::check_connecting::service::check_connecting_service::CheckConnectingService;
+use crate::check_connecting::service::check_connecting_service_impl::CheckConnectingServiceImpl;
 use crate::client_program::service::client_program_service::ClientProgramService;
 use crate::client_program::service::client_program_service_impl::ClientProgramServiceImpl;
 use crate::fake_battle_room::controller::fake_battle_room_controller::FakeBattleRoomController;
@@ -70,6 +72,7 @@ use crate::request_generator::attack_game_main_character_request_form_generator:
 use crate::request_generator::battle_finish_generator::create_battle_finish_request;
 use crate::request_generator::battle_match_cancel_request_generator::create_battle_match_cancel_request;
 use crate::request_generator::battle_start_request_form_generator::create_battle_start_request_form;
+use crate::request_generator::check_connecting_request_generator::create_check_connecting_request;
 use crate::request_generator::check_rockpaperscissors_winner_request_generator::create_check_rockpaperscissors_winner_request_form;
 use crate::request_generator::deploy_non_targeting_attack_passive_skill_request_generator::create_deploy_non_targeting_attack_passive_skill_request_form;
 use crate::request_generator::deploy_targeting_attack_passive_skill_request_generator::create_deploy_targeting_attack_passive_skill_request_form;
@@ -929,6 +932,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
 
                     let response = game_turn_controller.request_turn_end(request).await;
                     let response_type = Some(ResponseType::GAME_NEXT_TURN(response));
+
+                    response_type
+                } else {
+                    None
+                }
+            },
+            4441 => {
+                // Check Connecting
+                if let Some(request) = create_check_connecting_request(&data) {
+                    let check_connecting_service_mutex = CheckConnectingServiceImpl::get_instance();
+                    let mut check_connecting_service = check_connecting_service_mutex.lock().await;
+
+                    let response = check_connecting_service.checked_response(request).await;
+                    let response_type = Some(ResponseType::CHECK_CONNECTING(response));
 
                     response_type
                 } else {
