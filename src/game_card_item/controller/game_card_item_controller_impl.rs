@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use async_trait::async_trait;
 
@@ -1093,14 +1093,17 @@ impl GameCardItemController for GameCardItemControllerImpl {
         let mut updated_health_point_list = Vec::new();
         let mut dead_unit_index_list = Vec::new();
 
-        for opponent_unit_index in reversed_opponent_target_unit_index_list {
+        let filter_set: HashSet<_> = reversed_opponent_target_unit_index_list.clone().into_iter().collect();
+        let unique_reversed_opponent_target_unit_index_list: Vec<_> = filter_set.into_iter().collect();
+
+        if unique_reversed_opponent_target_unit_index_list.len() == 1 {
             let apply_damage_to_target_unit_index_response =
                 game_field_unit_service_guard.apply_damage_to_target_unit_index(
                     multiple_target_damage_by_field_unit_death_item_request_form
                         .to_apply_damage_to_target_unit_request(
                             opponent_unique_id,
-                            opponent_unit_index,
-                            health_point_of_sacrifice)).await;
+                            unique_reversed_opponent_target_unit_index_list[0],
+                            health_point_of_sacrifice * 2)).await;
 
             if !apply_damage_to_target_unit_index_response.is_success() {
                 println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 당신도 해킹범입니다!");
@@ -1112,19 +1115,55 @@ impl GameCardItemController for GameCardItemControllerImpl {
                     multiple_target_damage_by_field_unit_death_item_request_form
                         .to_get_current_health_point_of_field_unit_by_index_request(
                             opponent_unique_id,
-                            opponent_unit_index)).await.get_current_unit_health_point();
+                            unique_reversed_opponent_target_unit_index_list[0])).await.get_current_unit_health_point();
 
-            updated_health_point_list.push((opponent_unit_index, health_point_of_damaged_unit));
+            updated_health_point_list.push((
+                unique_reversed_opponent_target_unit_index_list[0], health_point_of_damaged_unit));
 
             let judge_death_of_unit_response =
                 game_field_unit_service_guard.judge_death_of_unit(
                     multiple_target_damage_by_field_unit_death_item_request_form
                         .to_judge_death_of_unit_request(
                             opponent_unique_id,
-                            opponent_unit_index)).await;
+                            unique_reversed_opponent_target_unit_index_list[0])).await;
 
             if judge_death_of_unit_response.get_dead_unit_id() != -1 {
                 dead_unit_index_list.push(judge_death_of_unit_response.get_dead_unit_index());
+            }
+        } else {
+            for opponent_unit_index in unique_reversed_opponent_target_unit_index_list {
+                let apply_damage_to_target_unit_index_response =
+                    game_field_unit_service_guard.apply_damage_to_target_unit_index(
+                        multiple_target_damage_by_field_unit_death_item_request_form
+                            .to_apply_damage_to_target_unit_request(
+                                opponent_unique_id,
+                                opponent_unit_index,
+                                health_point_of_sacrifice)).await;
+
+                if !apply_damage_to_target_unit_index_response.is_success() {
+                    println!("필드에 존재하지 않는 유닛을 지정하여 보냈으므로 당신도 해킹범입니다!");
+                    return MultipleTargetDamageByFieldUnitDeathItemResponseForm::default()
+                }
+
+                let health_point_of_damaged_unit =
+                    game_field_unit_service_guard.get_current_health_point_of_field_unit_by_index(
+                        multiple_target_damage_by_field_unit_death_item_request_form
+                            .to_get_current_health_point_of_field_unit_by_index_request(
+                                opponent_unique_id,
+                                opponent_unit_index)).await.get_current_unit_health_point();
+
+                updated_health_point_list.push((opponent_unit_index, health_point_of_damaged_unit));
+
+                let judge_death_of_unit_response =
+                    game_field_unit_service_guard.judge_death_of_unit(
+                        multiple_target_damage_by_field_unit_death_item_request_form
+                            .to_judge_death_of_unit_request(
+                                opponent_unique_id,
+                                opponent_unit_index)).await;
+
+                if judge_death_of_unit_response.get_dead_unit_id() != -1 {
+                    dead_unit_index_list.push(judge_death_of_unit_response.get_dead_unit_index());
+                }
             }
         }
 
