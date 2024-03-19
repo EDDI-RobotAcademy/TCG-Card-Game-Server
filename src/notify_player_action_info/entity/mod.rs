@@ -24,3 +24,4 @@ pub mod notify_form_turn_start_non_targeting_attack_passive_skill;
 pub mod notify_form_turn_start_targeting_attack_to_game_main_character;
 pub mod notify_form_mulligan_end;
 pub mod notify_form_targeting_attack_active_skill_to_game_main_character;
+pub mod notify_form_surrender;
