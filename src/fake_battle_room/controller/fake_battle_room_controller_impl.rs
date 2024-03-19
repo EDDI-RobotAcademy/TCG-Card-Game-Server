@@ -152,7 +152,7 @@ impl FakeBattleRoomController for FakeBattleRoomControllerImpl {
 
         if account_unique_id == -1 {
             println!("Invalid session");
-            return FakeMultiDrawResponseForm::new(HashMap::new())
+            return FakeMultiDrawResponseForm::default()
         }
 
         let mut game_deck_service_guard =
@@ -166,6 +166,12 @@ impl FakeBattleRoomController for FakeBattleRoomControllerImpl {
                         20)).await;
 
         let drawn_card_list = draw_deck_response.get_drawn_card_list().clone();
+
+        let get_deck_response =
+            game_deck_service_guard.get_deck(
+                fake_multi_draw_request_form
+                    .to_get_deck_request()).await;
+
         drop(game_deck_service_guard);
 
         let mut game_hand_service_guard =
@@ -188,8 +194,7 @@ impl FakeBattleRoomController for FakeBattleRoomControllerImpl {
         drop(ui_data_generator_service_guard);
 
         return FakeMultiDrawResponseForm::from_response(
-            generate_draw_my_deck_data_response)
-
+            generate_draw_my_deck_data_response, get_deck_response)
     }
 
     async fn request_to_get_nether_from_deck(
