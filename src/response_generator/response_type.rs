@@ -80,6 +80,7 @@ use crate::notify_player_action_info::entity::notify_form_deploy_targeting_attac
 use crate::notify_player_action_info::entity::notify_form_deploy_targeting_attack_to_game_main_character::NotifyFormDeployTargetingAttackToGameMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_deploy_unit::NotifyFormDeployUnit;
 use crate::notify_player_action_info::entity::notify_form_mulligan_end::NotifyFormMulliganEnd;
+use crate::notify_player_action_info::entity::notify_form_surrender::NotifyFormSurrender;
 use crate::notify_player_action_info::entity::notify_form_non_targeting_attack_active_skill::NotifyFormNonTargetingAttackActiveSkill;
 use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_game_main_character::NotifyFormTargetingAttackActiveSkillToGameMainCharacter;
 use crate::notify_player_action_info::entity::notify_form_targeting_attack_active_skill_to_unit::NotifyFormTargetingAttackActiveSkillToUnit;
@@ -228,6 +229,7 @@ pub enum ResponseType {
     NOTIFY_TURN_START_TARGETING_ATTACK_TO_GAME_MAIN_CHARACTER(NotifyFormTurnStartTargetingAttackToGameMainCharacter),
 
     NOTIFY_MULLIGAN_END(NotifyFormMulliganEnd),
+    NOTIFY_SURRENDER(NotifyFormSurrender),
 
     NOTIFY_TURN_END(NotifyFormTurnEnd),
 

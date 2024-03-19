@@ -202,4 +202,10 @@ pub trait NotifyPlayerActionInfoRepository {
         first_account: i32,
         second_account: i32
     ) -> bool;
+
+    async fn notice_surrender(
+        &mut self,
+        first_account: i32,
+        second_account: i32
+    ) -> bool;
 }
