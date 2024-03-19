@@ -61,7 +61,9 @@ impl GameFieldEnergyRepository for GameFieldEnergyRepositoryImpl {
 
         if let Some(game_field_energy) = self.game_field_energy_map.get_mut(&account_unique_id) {
             for _ in 0..amount {
-                game_field_energy.remove_energy_count();
+                if game_field_energy.get_energy_count() != 0 {
+                    game_field_energy.remove_energy_count();
+                }
             }
             return true
         }
