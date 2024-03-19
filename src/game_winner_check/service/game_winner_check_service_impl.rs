@@ -15,6 +15,9 @@ use crate::game_winner_check::service::game_winner_check_service::GameWinnerChec
 use crate::game_winner_check::service::request::check_main_character_request::CheckMainCharacterRequest;
 use crate::game_winner_check::service::request::surrender_request::SurrenderRequest;
 use crate::game_winner_check::service::response::surrender_response::SurrenderResponse;
+use crate::notify_player_action_info::repository::notify_player_action_info_repository_impl::NotifyPlayerActionInfoRepositoryImpl;
+use crate::notify_player_action_info::entity::notify_form_surrender::NotifyFormSurrender;
+use crate::notify_player_action_info::repository::notify_player_action_info_repository::NotifyPlayerActionInfoRepository;
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 use crate::redis::repository::redis_in_memory_repository_impl::RedisInMemoryRepositoryImpl;
 
@@ -23,6 +26,7 @@ pub struct GameWinnerCheckServiceImpl {
     battle_room_repository: Arc<AsyncMutex<BattleRoomRepositoryImpl>>,
     game_main_character_repository: Arc<AsyncMutex<GameMainCharacterRepositoryImpl>>,
     redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+    notify_player_action_info: Arc<AsyncMutex<NotifyPlayerActionInfoRepositoryImpl>>,
 }
 
 impl GameWinnerCheckServiceImpl {
@@ -30,12 +34,15 @@ impl GameWinnerCheckServiceImpl {
                battle_room_repository: Arc<AsyncMutex<BattleRoomRepositoryImpl>>,
                game_main_character_repository: Arc<AsyncMutex<GameMainCharacterRepositoryImpl>>,
                redis_in_memory_repository: Arc<AsyncMutex<RedisInMemoryRepositoryImpl>>,
+               notify_player_action_info: Arc<AsyncMutex<NotifyPlayerActionInfoRepositoryImpl>>
+
     ) -> Self {
         GameWinnerCheckServiceImpl {
             game_winner_check_repository,
             battle_room_repository,
             game_main_character_repository,
             redis_in_memory_repository,
+            notify_player_action_info,
         }
     }
 
@@ -49,6 +56,7 @@ impl GameWinnerCheckServiceImpl {
                             BattleRoomRepositoryImpl::get_instance(),
                             GameMainCharacterRepositoryImpl::get_instance(),
                             RedisInMemoryRepositoryImpl::get_instance(),
+                            NotifyPlayerActionInfoRepositoryImpl::get_instance(),
                        )));
         }
         INSTANCE.clone()
@@ -89,7 +97,11 @@ impl GameWinnerCheckService for GameWinnerCheckServiceImpl {
         game_winner_check_guard.add_finish_position_object(opponent_unique_id, Winner);
         drop(game_winner_check_guard);
 
-         return SurrenderResponse::new(true)
+        let mut notify_player_action_info_guard = self.notify_player_action_info.lock().await;
+        notify_player_action_info_guard.notice_surrender(account_unique_id, opponent_unique_id).await;
+        drop(notify_player_action_info_guard);
+
+        return SurrenderResponse::new(true)
     }
 }
 
