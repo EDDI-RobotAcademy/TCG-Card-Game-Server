@@ -8,8 +8,8 @@ use crate::ui_data_generator::service::response::generate_opponent_main_characte
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeployTargetingAttackToGameMainCharacterResponseForm {
     is_success: bool,
-    player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
-    player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+    player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
+    player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
     index_list_of_passive_skill_to_handle: Vec<i32>
 
 }
@@ -17,16 +17,16 @@ pub struct DeployTargetingAttackToGameMainCharacterResponseForm {
 impl DeployTargetingAttackToGameMainCharacterResponseForm {
     pub fn new(
         is_success: bool,
-        player_main_character_health_point_map_for_notice: HashMap<PlayerIndex, i32>,
-        player_main_character_survival_map_for_notice: HashMap<PlayerIndex, StatusMainCharacterEnum>,
+        player_main_character_health_point_map: HashMap<PlayerIndex, i32>,
+        player_main_character_survival_map: HashMap<PlayerIndex, StatusMainCharacterEnum>,
         index_list_of_passive_skill_to_handle: Vec<i32>
 
     ) -> Self {
 
         DeployTargetingAttackToGameMainCharacterResponseForm {
             is_success,
-            player_main_character_health_point_map_for_notice,
-            player_main_character_survival_map_for_notice,
+            player_main_character_health_point_map,
+            player_main_character_survival_map,
             index_list_of_passive_skill_to_handle
         }
     }
