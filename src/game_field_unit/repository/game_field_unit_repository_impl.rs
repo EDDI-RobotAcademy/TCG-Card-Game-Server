@@ -182,6 +182,11 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&opponent_unique_id) {
             let target_unit_index = opponent_target_unit_index as usize;
+
+            if game_field_unit.check_unit_alive(target_unit_index) {
+                return false
+            }
+
             if target_unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
                 game_field_unit.apply_damage_to_indexed_unit(target_unit_index, damage);
                 return true
@@ -196,6 +201,11 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         if let Some(game_field_unit) = self.game_field_unit_map.get_mut(&opponent_unique_id) {
             let target_unit_index = opponent_target_unit_index as usize;
+
+            if game_field_unit.check_unit_alive(target_unit_index) {
+                return false
+            }
+
             if target_unit_index < game_field_unit.get_all_unit_list_in_game_field().len() {
                 game_field_unit.apply_death_to_indexed_unit(target_unit_index);
                 return true
