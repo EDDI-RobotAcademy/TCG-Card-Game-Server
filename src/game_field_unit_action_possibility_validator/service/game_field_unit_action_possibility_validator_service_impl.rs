@@ -5,6 +5,8 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
 use crate::game_card_passive_skill::entity::passive_skill_casting_condition::PassiveSkillCastingCondition;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect;
+use crate::game_field_unit::entity::harmful_status_effect::HarmfulStatusEffect;
 use crate::game_field_unit::repository::game_field_unit_repository::GameFieldUnitRepository;
 use crate::game_field_unit::repository::game_field_unit_repository_impl::GameFieldUnitRepositoryImpl;
 use crate::game_field_unit_action_possibility_validator::service::game_field_unit_action_possibility_validator_service::GameFieldUnitActionPossibilityValidatorService;
@@ -99,6 +101,19 @@ impl GameFieldUnitActionPossibilityValidatorServiceImpl {
                                                                        race_enum))
     }
 
+    async fn get_field_unit_harmful_effect(&self,
+                                           account_unique_id: i32,
+                                           field_unit_index: i32) -> Option<Vec<HarmfulStatusEffect>> {
+        let mut game_field_unit_repository_guard =
+            self.game_field_unit_repository.lock().await;
+
+        game_field_unit_repository_guard
+            .get_game_field_unit_map()
+            .get_mut(&account_unique_id)
+            .map(|mut field_unit| field_unit
+                .get_harmful_status_list_of_indexed_unit(field_unit_index as usize))
+    }
+
     async fn get_player_round(&self,
                               account_unique_id: i32) -> Option<i32> {
         let mut game_round_repository_guard =
@@ -166,6 +181,17 @@ impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossi
             return IsUnitBasicAttackPossibleResponse::new(false)
         }
 
+        let harmful_status_effect_list = self.get_field_unit_harmful_effect(
+            is_unit_basic_attack_possible_request.get_account_unique_id(),
+            is_unit_basic_attack_possible_request.get_field_unit_index()).await.unwrap_or(Vec::new());
+
+        for harmful_status in harmful_status_effect_list {
+            if harmful_status.get_harmful_effect() == &ExtraEffect::Freeze {
+                println!("빙결 상태의 유닛은 공격이 불가합니다.");
+                return IsUnitBasicAttackPossibleResponse::new(false)
+            }
+        }
+
         IsUnitBasicAttackPossibleResponse::new(true)
     }
 
@@ -210,6 +236,17 @@ impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossi
 
             if required_energy_count > attached_race_energy_count {
                 println!("액티브 스킬 사용에 필요한 에너지가 충분하지 않습니다.");
+                return IsUsingActiveSkillPossibleResponse::new(false)
+            }
+        }
+
+        let harmful_status_effect_list = self.get_field_unit_harmful_effect(
+            is_using_active_skill_possible_request.get_account_unique_id(),
+            is_using_active_skill_possible_request.get_field_unit_index()).await.unwrap_or(Vec::new());
+
+        for harmful_status in harmful_status_effect_list {
+            if harmful_status.get_harmful_effect() == &ExtraEffect::Freeze {
+                println!("빙결 상태의 유닛은 공격이 불가합니다.");
                 return IsUsingActiveSkillPossibleResponse::new(false)
             }
         }

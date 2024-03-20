@@ -128,6 +128,10 @@ impl GameFieldUnit {
         return self.game_field_unit.get_harmful_status_list_of_all_unit()
     }
 
+    pub fn get_harmful_status_list_of_indexed_unit(&mut self, unit_card_index: usize) -> Vec<HarmfulStatusEffect> {
+        return self.game_field_unit.get_harmful_status_list_of_indexed_unit(unit_card_index)
+    }
+
     pub fn detach_energy_from_unit(&mut self, unit_card_index: usize, race_enum: RaceEnumValue, quantity: i32) {
         self.game_field_unit.remove_energy_from_indexed_unit(unit_card_index, race_enum, quantity);
     }

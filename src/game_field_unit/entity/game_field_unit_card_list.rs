@@ -159,6 +159,14 @@ impl GameFieldUnitCardList {
         harmful_status_list_with_index
     }
 
+    pub fn get_harmful_status_list_of_indexed_unit(&mut self, unit_card_index: usize) -> Vec<HarmfulStatusEffect> {
+        if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
+            return unit.get_harmful_status_effect_list_mut().clone()
+        }
+
+        Vec::new()
+    }
+
     pub fn remove_harmful_status_of_indexed_unit(&mut self, unit_card_index: usize, extra_effect: &ExtraEffect) {
         if let Some(unit) = self.game_field_unit_card_list.get_mut(unit_card_index) {
             unit.remove_harmful_effect(extra_effect);
