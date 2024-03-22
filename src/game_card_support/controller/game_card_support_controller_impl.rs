@@ -9,6 +9,7 @@ use crate::battle_room::service::request::find_opponent_by_account_id_request::F
 use crate::card_grade::service::card_grade_service::CardGradeService;
 use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
+use crate::common::message::false_message_enum::FalseMessage::{MythicalCardRoundLimit, NotYourTurn, SupportUsageOver};
 use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
 use crate::game_card_support::controller::request_form::draw_support_request_form::DrawSupportRequestForm;
 use crate::game_card_support::controller::request_form::energy_boost_support_request_form::EnergyBoostSupportRequestForm;
@@ -414,7 +415,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return DrawSupportResponseForm::default()
+            return DrawSupportResponseForm::from_response_with_message(NotYourTurn)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -446,7 +447,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !can_use_card_response {
             println!("A mythical grade card can be used after round 4.");
-            return DrawSupportResponseForm::default()
+            return DrawSupportResponseForm::from_response_with_message(MythicalCardRoundLimit)
         }
 
         let mut game_card_support_usage_counter_service =
@@ -459,7 +460,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if check_support_card_usage_count_response.get_used_count() > 0 {
             println!("Support card usage limit over");
-            return DrawSupportResponseForm::default()
+            return DrawSupportResponseForm::from_response_with_message(SupportUsageOver)
         }
 
         let support_card_effect_summary = self.get_summary_of_support_card(

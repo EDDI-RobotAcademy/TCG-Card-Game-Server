@@ -5,3 +5,4 @@ pub mod csv;
 pub mod converter;
 pub mod path;
 pub mod card_attributes;
+pub mod message;
