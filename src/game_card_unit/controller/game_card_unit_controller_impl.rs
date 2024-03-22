@@ -8,6 +8,7 @@ use tokio::sync::Mutex as AsyncMutex;
 
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::common::message::false_message_enum::FalseMessage::{MythicalCardRoundLimit, NotYourTurn, UnattackableUnit};
 use crate::game_card_passive_skill::entity::passive_skill_casting_condition::PassiveSkillCastingCondition;
 
 use crate::game_card_passive_skill::service::game_card_passive_skill_service::GameCardPassiveSkillService;
@@ -181,7 +182,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return DeployUnitResponseForm::default()
+            return DeployUnitResponseForm::from_response_with_message(NotYourTurn)
         }
 
         // 3. Card Kinds Service 를 호출하여 실제 유닛 카드가 맞는지 확인
@@ -202,7 +203,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if !can_use_card_response.is_success() {
             println!("신화 등급 카드는 5라운드부터 사용 가능합니다.");
-            return DeployUnitResponseForm::default()
+            return DeployUnitResponseForm::from_response_with_message(MythicalCardRoundLimit)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -314,7 +315,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         drop(notify_player_action_info_service_guard);
 
-        DeployUnitResponseForm::new(true, passive_skill_index_list_to_handle)
+        DeployUnitResponseForm::new(true, -1, passive_skill_index_list_to_handle)
     }
 
     async fn request_to_attack_unit(
@@ -341,7 +342,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return AttackUnitResponseForm::default()
+            return AttackUnitResponseForm::from_response_with_message(NotYourTurn)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -385,7 +386,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                     account_unique_id, attacker_unit_card_index, attacker_unit_required_energy)).await;
 
         if !is_unit_basic_attack_possible_response.is_possible() {
-            return AttackUnitResponseForm::default()
+            return AttackUnitResponseForm::from_response_with_message(
+                is_unit_basic_attack_possible_response.false_message_enum())
         }
 
         drop(game_field_unit_action_possibility_validator_service_guard);
@@ -431,7 +433,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if opponent_target_unit_passive_status_list.contains(&PassiveStatus::PhysicalImmunity) {
             println!("기본 공격 면역 패시브로 인해 공격을 가할 수 없습니다.");
-            return AttackUnitResponseForm::default()
+            return AttackUnitResponseForm::from_response_with_message(UnattackableUnit)
         }
 
         // 적 타겟 유닛을 효과를 가지고 공격
@@ -560,6 +562,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
             return AttackUnitResponseForm::new(
                 true,
+                -1,
                 generate_opponent_specific_unit_health_point_data_response
                     .get_player_field_unit_health_point_map_for_response().clone(),
                 generate_opponent_specific_unit_harmful_effect_data_response
@@ -772,6 +775,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         AttackUnitResponseForm::new(
             true,
+            -1,
             combined_unit_health_point_data_for_response,
             combined_unit_harmful_effect_data_for_response,
             combined_unit_death_data_for_response)
@@ -802,7 +806,7 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return AttackGameMainCharacterResponseForm::default()
+            return AttackGameMainCharacterResponseForm::from_response_with_message(NotYourTurn)
         }
 
         // Battle Field 에서 공격하는 유닛의 index 를 토대로 id 값 확보
@@ -847,7 +851,8 @@ impl GameCardUnitController for GameCardUnitControllerImpl {
                         attacker_unit_required_energy)).await;
 
         if !is_unit_basic_attack_possible_response.is_possible() {
-            return AttackGameMainCharacterResponseForm::default()
+            return AttackGameMainCharacterResponseForm::from_response_with_message(
+                is_unit_basic_attack_possible_response.false_message_enum())
         }
 
         drop(game_field_unit_action_possibility_validator_service_guard);
