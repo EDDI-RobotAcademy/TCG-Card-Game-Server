@@ -206,7 +206,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return EnergyBoostSupportResponseForm::default()
+            return EnergyBoostSupportResponseForm::from_false_response_with_message(NotYourTurn)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -241,7 +241,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !can_use_card_response {
             println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
-            return EnergyBoostSupportResponseForm::default()
+            return EnergyBoostSupportResponseForm::from_false_response_with_message(MythicalCardRoundLimit)
         }
 
         // 서포트 카드 사용 횟수 카운트
@@ -255,7 +255,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if check_support_card_usage_count_response.get_used_count() > 0 {
             println!("Support card usage limit over");
-            return EnergyBoostSupportResponseForm::default()
+            return EnergyBoostSupportResponseForm::from_false_response_with_message(SupportUsageOver)
         }
 
         // Hand Service 호출하여 카드 사용
