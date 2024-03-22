@@ -8,6 +8,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::common::message::false_message_enum::FalseMessage::{Dummy, NotYourTurn};
 use crate::game_card_active_skill::controller::game_card_active_skill_controller::GameCardActiveSkillController;
 use crate::game_card_active_skill::controller::request_form::non_targeting_active_skill_request_form::NonTargetingActiveSkillRequestForm;
 use crate::game_card_active_skill::controller::request_form::targeting_active_skill_request_form::TargetingActiveSkillRequestForm;
@@ -141,7 +142,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return TargetingActiveSkillResponseForm::default()
+            return TargetingActiveSkillResponseForm::from_response_with_message(NotYourTurn)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -205,7 +206,8 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                         required_energy_map)).await;
 
         if !is_using_active_skill_possible_response.is_possible() {
-            return TargetingActiveSkillResponseForm::default()
+            return TargetingActiveSkillResponseForm::from_response_with_message(
+                is_using_active_skill_possible_response.false_message_enum())
         }
 
         // 상대 고유값 찾기
@@ -356,6 +358,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         TargetingActiveSkillResponseForm::new(
             true,
+            -1,
             generate_opponent_specific_unit_health_point_data_response.get_player_field_unit_health_point_map_for_response().clone(),
             generate_opponent_specific_unit_harmful_effect_data_response.get_player_field_unit_harmful_effect_map_for_response().clone(),
             generate_opponent_specific_unit_death_data_response.get_player_field_unit_death_map_for_response().clone())
@@ -387,7 +390,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return NonTargetingActiveSkillResponseForm::default()
+            return NonTargetingActiveSkillResponseForm::from_response_with_message(NotYourTurn)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -449,7 +452,8 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                         required_energy_map)).await;
 
         if !is_using_active_skill_possible_response.is_possible() {
-            return NonTargetingActiveSkillResponseForm::default()
+            return NonTargetingActiveSkillResponseForm::from_response_with_message(
+                is_using_active_skill_possible_response.false_message_enum())
         }
 
         drop(game_field_unit_action_possibility_validator_service_guard);
@@ -588,6 +592,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         NonTargetingActiveSkillResponseForm::new(
             true,
+            -1,
             generate_opponent_multiple_unit_health_point_data_response
                 .get_player_field_unit_health_point_map_for_response().clone(),
             generate_opponent_multiple_unit_harmful_effect_data_response
@@ -619,7 +624,7 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return TargetingAttackActiveSkillToGameMainCharacterResponseForm::default()
+            return TargetingAttackActiveSkillToGameMainCharacterResponseForm::from_response_with_message(NotYourTurn)
         }
         drop(game_protocol_validation_service_guard);
 
@@ -683,7 +688,8 @@ impl GameCardActiveSkillController for GameCardActiveSkillControllerImpl {
                         required_energy_map)).await;
 
         if !is_using_active_skill_possible_response.is_possible() {
-            return TargetingAttackActiveSkillToGameMainCharacterResponseForm::default()
+            return TargetingAttackActiveSkillToGameMainCharacterResponseForm::from_response_with_message(
+                is_using_active_skill_possible_response.false_message_enum())
         }
 
         drop(game_field_unit_action_possibility_validator_service_guard);

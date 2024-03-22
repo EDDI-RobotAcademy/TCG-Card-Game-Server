@@ -4,6 +4,8 @@ use lazy_static::lazy_static;
 
 use tokio::sync::Mutex as AsyncMutex;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::common::message::false_message_enum::FalseMessage;
+use crate::common::message::false_message_enum::FalseMessage::{DeployedRoundAttack, Dummy, NotEnoughSkillEnergy, UnitActionLimitOver, UnitFrozen};
 use crate::game_card_passive_skill::entity::passive_skill_casting_condition::PassiveSkillCastingCondition;
 use crate::game_field_unit::entity::extra_effect::ExtraEffect;
 use crate::game_field_unit::entity::harmful_status_effect::HarmfulStatusEffect;
@@ -154,7 +156,7 @@ impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossi
 
         if turn_action == true {
             println!("이번 턴에 더 이상 액션이 불가능합니다.");
-            return IsUnitBasicAttackPossibleResponse::new(false)
+            return IsUnitBasicAttackPossibleResponse::new(false, UnitActionLimitOver)
         }
 
         // 2. check round
@@ -167,7 +169,7 @@ impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossi
 
         if player_current_round == field_unit_deployed_round {
             println!("소환된 턴에는 액션이 불가합니다.");
-            return IsUnitBasicAttackPossibleResponse::new(false)
+            return IsUnitBasicAttackPossibleResponse::new(false, DeployedRoundAttack)
         }
 
         // 3. check energy enough
@@ -178,7 +180,7 @@ impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossi
         if is_unit_basic_attack_possible_request
             .get_basic_attack_required_energy_count() > total_energy_count_of_field_unit {
             println!("기본 공격에 필요한 에너지가 충분하지 않습니다.");
-            return IsUnitBasicAttackPossibleResponse::new(false)
+            return IsUnitBasicAttackPossibleResponse::new(false, NotEnoughSkillEnergy)
         }
 
         let harmful_status_effect_list = self.get_field_unit_harmful_effect(
@@ -188,11 +190,11 @@ impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossi
         for harmful_status in harmful_status_effect_list {
             if harmful_status.get_harmful_effect() == &ExtraEffect::Freeze {
                 println!("빙결 상태의 유닛은 공격이 불가합니다.");
-                return IsUnitBasicAttackPossibleResponse::new(false)
+                return IsUnitBasicAttackPossibleResponse::new(false, UnitFrozen)
             }
         }
 
-        IsUnitBasicAttackPossibleResponse::new(true)
+        IsUnitBasicAttackPossibleResponse::new(true, Dummy)
     }
 
     async fn is_using_active_skill_possible(
@@ -208,7 +210,7 @@ impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossi
 
         if turn_action == true {
             println!("이번 턴에 더 이상 액션이 불가능합니다.");
-            return IsUsingActiveSkillPossibleResponse::new(false)
+            return IsUsingActiveSkillPossibleResponse::new(false, UnitActionLimitOver)
         }
 
         // 2. check round
@@ -221,7 +223,7 @@ impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossi
 
         if player_current_round == field_unit_deployed_round {
             println!("소환된 턴에는 액션이 불가합니다.");
-            return IsUsingActiveSkillPossibleResponse::new(false)
+            return IsUsingActiveSkillPossibleResponse::new(false, DeployedRoundAttack)
         }
 
         // 3. energy enough
@@ -236,7 +238,7 @@ impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossi
 
             if required_energy_count > attached_race_energy_count {
                 println!("액티브 스킬 사용에 필요한 에너지가 충분하지 않습니다.");
-                return IsUsingActiveSkillPossibleResponse::new(false)
+                return IsUsingActiveSkillPossibleResponse::new(false, NotEnoughSkillEnergy)
             }
         }
 
@@ -247,11 +249,11 @@ impl GameFieldUnitActionPossibilityValidatorService for GameFieldUnitActionPossi
         for harmful_status in harmful_status_effect_list {
             if harmful_status.get_harmful_effect() == &ExtraEffect::Freeze {
                 println!("빙결 상태의 유닛은 공격이 불가합니다.");
-                return IsUsingActiveSkillPossibleResponse::new(false)
+                return IsUsingActiveSkillPossibleResponse::new(false, UnitFrozen)
             }
         }
 
-        IsUsingActiveSkillPossibleResponse::new(true)
+        IsUsingActiveSkillPossibleResponse::new(true, Dummy)
     }
 
     async fn is_using_deploy_passive_skill_possible(

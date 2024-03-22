@@ -7,6 +7,8 @@ pub enum FalseMessage {
     UnitActionLimitOver = 2,
     NotYourTurn = 3,
     SupportUsageOver = 4,
+    UnitFrozen = 5,
+    UnattackableUnit = 6,
 
     NotEnoughBasicAttackEnergy = 11,
     MythicalCardRoundLimit = 12,
