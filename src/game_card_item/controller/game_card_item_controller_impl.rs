@@ -14,6 +14,7 @@ use crate::card_race::service::card_race_service::CardRaceService;
 use crate::card_race::service::card_race_service_impl::CardRaceServiceImpl;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
+use crate::common::message::false_message_enum::FalseMessage::{MythicalCardRoundLimit, NotYourTurn};
 
 use crate::game_card_item::controller::game_card_item_controller::GameCardItemController;
 use crate::game_card_item::controller::request_form::add_field_energy_with_field_unit_health_point_item_request_form::AddFieldEnergyWithFieldUnitHealthPointRequestForm;
@@ -228,7 +229,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return TargetDeathItemResponseForm::default()
+            return TargetDeathItemResponseForm::from_false_response_with_message(NotYourTurn)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -263,7 +264,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !can_use_card_response {
             println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
-            return TargetDeathItemResponseForm::default()
+            return TargetDeathItemResponseForm::from_false_response_with_message(MythicalCardRoundLimit)
         }
 
         // 6. 효과를 적용하기 위해 Game Card Item Service 호출하여 필요 효과 설정
@@ -496,7 +497,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::default()
+            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::from_false_response_with_message(NotYourTurn)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -530,7 +531,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !can_use_card_response {
             println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
-            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::default()
+            return AddFieldEnergyWithFieldUnitHealthPointResponseForm::from_false_response_with_message(MythicalCardRoundLimit)
         }
 
         let field_unit_index_string =
@@ -704,7 +705,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return CatastrophicDamageItemResponseForm::default()
+            return CatastrophicDamageItemResponseForm::from_false_response_with_message(NotYourTurn)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -738,7 +739,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !can_use_card_response {
             println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
-            return CatastrophicDamageItemResponseForm::default()
+            return CatastrophicDamageItemResponseForm::from_false_response_with_message(MythicalCardRoundLimit)
         }
 
         let mut summarized_item_effect_response =
@@ -981,7 +982,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::default()
+            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::from_false_response_with_message(NotYourTurn)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -1018,7 +1019,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !can_use_card_response {
             println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
-            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::default()
+            return MultipleTargetDamageByFieldUnitDeathItemResponseForm::from_false_response_with_message(MythicalCardRoundLimit)
         }
 
         let my_field_unit_index_string =
@@ -1280,7 +1281,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return RemoveOpponentFieldUnitEnergyItemResponseForm::default()
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::from_false_response_with_message(NotYourTurn)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -1316,7 +1317,7 @@ impl GameCardItemController for GameCardItemControllerImpl {
 
         if !can_use_card_response {
             println!("신화 카드는 4라운드 이후부터 사용 할 수 있습니다!");
-            return RemoveOpponentFieldUnitEnergyItemResponseForm::default()
+            return RemoveOpponentFieldUnitEnergyItemResponseForm::from_false_response_with_message(MythicalCardRoundLimit)
         }
 
         let opponent_field_unit_index_string =
