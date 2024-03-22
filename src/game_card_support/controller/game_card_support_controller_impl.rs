@@ -804,7 +804,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return RemoveOpponentFieldEnergySupportResponseForm::default()
+            return RemoveOpponentFieldEnergySupportResponseForm::from_false_response_with_message(NotYourTurn)
         }
 
         drop(game_protocol_validation_service_guard);
@@ -838,7 +838,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if !can_use_card_response {
             println!("A mythical grade card can be used after round 4.");
-            return RemoveOpponentFieldEnergySupportResponseForm::default()
+            return RemoveOpponentFieldEnergySupportResponseForm::from_false_response_with_message(MythicalCardRoundLimit)
         }
 
         let mut game_card_support_usage_counter_service =
@@ -851,7 +851,7 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
 
         if check_support_card_usage_count_response.get_used_count() > 0 {
             println!("Support card usage limit over");
-            return RemoveOpponentFieldEnergySupportResponseForm::default()
+            return RemoveOpponentFieldEnergySupportResponseForm::from_false_response_with_message(SupportUsageOver)
         }
 
         let card_effect_summary = self.get_summary_of_support_card(
