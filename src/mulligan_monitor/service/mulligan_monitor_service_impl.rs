@@ -58,14 +58,14 @@ impl MulliganMonitorService for MulliganMonitorServiceImpl {
                 println!("Both players finished mulligan.");
 
                 // TODO: UI 에서 Notify 로만 대응하는 것이 확정일 경우 살리면 됨
-                // let first_account_record_removed =
-                //     mulligan_repository_guard.remove_mulligan_finish_record(first_account).await;
-                // let second_account_record_removed =
-                //     mulligan_repository_guard.remove_mulligan_finish_record(second_account).await;
-                //
-                // if first_account_record_removed && second_account_record_removed {
-                //     println!("Mulligan record removed successfully");
-                // }
+                let first_account_record_removed =
+                    mulligan_repository_guard.remove_mulligan_finish_record(first_account).await;
+                let second_account_record_removed =
+                    mulligan_repository_guard.remove_mulligan_finish_record(second_account).await;
+
+                if first_account_record_removed && second_account_record_removed {
+                    println!("Mulligan record removed successfully");
+                }
 
                 // TODO: Timer 까지 Server 에서 감지할 경우 살리면 됨
                 // let first_account_mulligan_timer_removed =
