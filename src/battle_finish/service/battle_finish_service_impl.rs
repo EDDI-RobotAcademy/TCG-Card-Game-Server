@@ -250,7 +250,7 @@ pub async fn remove_player_battle_ready_account_hash_status(user_id: i32) {
 pub async fn remove_battle_room_player(user_id: i32) {
     let battle_room_repository_mutex = BattleRoomRepositoryImpl::get_instance();
     let mut battle_room_repository_guard = battle_room_repository_mutex.lock().await;
-    battle_room_repository_guard.remove_battle_room_player(user_id);
+    battle_room_repository_guard.remove_battle_room_player(user_id).await;
     drop(battle_room_repository_guard);
 
     sleep(time::Duration::from_millis(300)).await;
