@@ -71,19 +71,15 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
     }
 
 
-    async fn check_same_card(&self, get_card_list: Vec<i32>, account_card_list: Vec<HashMap<i32, i32>>) -> HashMap<i32, i32> {
+    async fn check_same_card(&self, get_card_id : i32, account_card_list: Vec<HashMap<i32, i32>>) -> i32 {
 
-        let mut account_card_check : HashMap<i32, i32> = Default::default();
-
-        for get_card in get_card_list {
-            account_card_check.insert(get_card, 0);
-            for account_card in &account_card_list{
-                if(account_card.contains_key(&get_card)){
-                    account_card_check.insert(get_card, *account_card.get(&get_card).unwrap());
-                }
+        for account_card in &account_card_list{
+            if(account_card.contains_key(&get_card_id)){
+                return *account_card.get(&get_card_id).unwrap()
             }
         }
-        account_card_check
+
+        return 0;
 
     }
 
