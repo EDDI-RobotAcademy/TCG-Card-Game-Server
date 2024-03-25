@@ -5,6 +5,7 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
+use crate::common::message::false_message_enum::FalseMessage::NotYourTurn;
 
 use crate::game_card_energy::controller::game_card_energy_controller::GameCardEnergyController;
 use crate::game_card_energy::controller::request_form::attach_general_energy_card_request_form::AttachGeneralEnergyCardRequestForm;
@@ -129,7 +130,7 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return AttachGeneralEnergyCardResponseForm::default()
+            return AttachGeneralEnergyCardResponseForm::from_response_with_message(NotYourTurn)
         }
 
         let energy_card_id_string = attach_energy_request_form.get_energy_card_id();
@@ -297,7 +298,7 @@ impl GameCardEnergyController for GameCardEnergyControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return AttachSpecialEnergyCardResponseForm::default()
+            return AttachSpecialEnergyCardResponseForm::from_response_with_message(NotYourTurn)
         }
 
         let check_protocol_hacking_response =
