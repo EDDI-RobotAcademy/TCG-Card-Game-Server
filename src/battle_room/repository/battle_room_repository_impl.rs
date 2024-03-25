@@ -74,6 +74,10 @@ impl BattleRoomRepository for BattleRoomRepositoryImpl {
         let mut battle_room_list_guard = self.battle_room_list.lock().await;
         let mut battle_room = battle_room_list_guard.get_mut(room_number as usize).unwrap();
         battle_room.remove_player_for_finish(account_unique_id);
+        println!("battle_room: {:?}", battle_room);
+            if battle_room.is_empty() {
+                battle_room_list_guard.remove(room_number as usize);
+            }
         drop(battle_room_list_guard);
 
         let mut battle_room_account_hash_guard = self.battle_room_account_hash.lock().await;
@@ -208,16 +212,29 @@ mod tests {
         let battle_room_repository = BattleRoomRepositoryImpl::get_instance();
         let mut battle_room_repository_guard = battle_room_repository.lock().await;
 
-        let mut account_vector: Vec<i32> = Vec::new();
-        account_vector.push(1);
-        account_vector.push(2);
-        println!("account_vector: {:?}", account_vector);
-        let account_unique_id = 1;
+        let mut account_vector_1: Vec<i32> = Vec::new();
+        let mut account_vector_2: Vec<i32> = Vec::new();
+        let mut account_vector_3: Vec<i32> = Vec::new();
+
+        account_vector_1.push(11);
+        account_vector_1.push(12);
+        account_vector_2.push(13);
+        account_vector_2.push(14);
+        account_vector_3.push(15);
+        account_vector_3.push(16);
+
+        println!("account_vector: {:?}", account_vector_1);
+        println!("account_vector: {:?}", account_vector_2);
+
+        let account_unique_id_1 = 11;
+        let account_unique_id_2 = 12;
 
         // battle_room 셋팅
-        let result = battle_room_repository_guard.set_players_to_battle_room(account_vector).await;
+        let result = battle_room_repository_guard.set_players_to_battle_room(account_vector_1).await;
+        let result = battle_room_repository_guard.set_players_to_battle_room(account_vector_2).await;
 
-        let room_number = battle_room_repository_guard.what_is_the_room_number(account_unique_id).await.unwrap();
+        println!("battle_room_list_before_test: {:?}", battle_room_repository_guard.battle_room_list);
+        let room_number = battle_room_repository_guard.what_is_the_room_number(account_unique_id_1).await.unwrap();
         println!("room_number: {:?}", room_number);
 
         let battle_room_list_guard = battle_room_repository_guard.battle_room_list.lock().await;
@@ -230,16 +247,21 @@ mod tests {
         drop(battle_room_account_guard);
 
         // account_unique_id 관련하여 battle_room_list 안의 BattleRoom 정보 삭제, battle_room_account_hash 안의 계정 정보 삭제
-        let result_remove = battle_room_repository_guard.remove_battle_room_player(account_unique_id).await;
+        let result_remove = battle_room_repository_guard.remove_battle_room_player(account_unique_id_1).await;
+        let result_remove = battle_room_repository_guard.remove_battle_room_player(account_unique_id_2).await;
+        println!("battle_room_list_after_remove_players: {:?}", battle_room_repository_guard.battle_room_list);
 
         let battle_room_list_guard = battle_room_repository_guard.battle_room_list.lock().await;
-        let battle_room = battle_room_list_guard.get(room_number as usize).unwrap();
         println!("battle_room_after_test: {:?}", battle_room_list_guard);
         drop(battle_room_list_guard);
 
         let battle_room_account_hash_guard = battle_room_repository_guard.battle_room_account_hash.lock().await;
         println!("battle_room_account_hash_after_test: {:?}", battle_room_account_hash_guard);
         drop(battle_room_account_hash_guard);
+
+        println!("account_vector: {:?}", account_vector_3);
+        let result = battle_room_repository_guard.set_players_to_battle_room(account_vector_3).await;
+        println!("battle_room_list_after_test: {:?}", battle_room_repository_guard.battle_room_list);
 
     }
 

@@ -51,6 +51,14 @@ impl BattleRoom {
         self.player_id_list.len() >= MAX_ROOM_SIZE
     }
 
+    pub fn is_empty(&self) -> bool {
+        if self.player_id_list.len() <= 0 {
+            println!("It is empty.");
+            return true;
+        }
+        return false;
+    }
+
     pub fn remove_player_for_finish(&mut self, account_unique_id: i32) {
         self.status = RoomStatus::STATUS_FINISH;
         for index in (0..self.player_id_list.len()).rev() {
