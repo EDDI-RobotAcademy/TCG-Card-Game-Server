@@ -90,6 +90,15 @@ impl GameFieldUnitCard {
         &mut self.harmful_status_effect_list
     }
 
+    pub fn get_harmful_status_list(&self) -> Vec<ExtraEffect> {
+        let mut harmful_status_list = Vec::new();
+        for harmful_status_effect in &self.harmful_status_effect_list {
+            harmful_status_list.push(harmful_status_effect.get_harmful_effect().clone());
+        }
+
+        harmful_status_list
+    }
+
     pub fn is_alive(&self) -> bool {
         self.is_alive
     }
