@@ -29,10 +29,13 @@ use crate::account::service::response::account_modify_response::AccountModifyRes
 use crate::account::service::response::account_login_response::AccountLoginResponse;
 use crate::account_card::repository::account_card_repository::AccountCardRepository;
 use crate::account_card::repository::account_card_repository_impl::AccountCardRepositoryImpl;
+use crate::account_deck::entity::account_deck::AccountDeck;
 use crate::account_deck::repository::account_deck_repository::AccountDeckRepository;
 use crate::account_deck::repository::account_deck_repository_impl::AccountDeckRepositoryImpl;
+use crate::account_deck_card::entity::account_deck_card::AccountDeckCard;
 use crate::account_deck_card::repository::account_deck_card_repository::AccountDeckCardRepository;
 use crate::account_deck_card::repository::account_deck_card_repository_impl::AccountDeckCardRepositoryImpl;
+use crate::common::converter::vector_to_hash_converter::VectorToHashConverter;
 
 use crate::redis::repository::redis_in_memory_repository::RedisInMemoryRepository;
 
@@ -104,6 +107,35 @@ impl AccountService for AccountServiceImpl {
         let found_account_id = found_account.unwrap().id;
         let set_account_point_id = account_point_repository.set_account_point(found_account_id).await;
         let result_account_point = account_point_repository.save_account_points(set_account_point_id).await;
+        drop(account_point_repository);
+        drop(account_repository);
+
+        // 배포카드 생성
+        let account_card_repository = self.account_card_repository.lock().await;
+        let distribute_cards = vec![19,8,8,8,9,9,25,25,25,27,27,27,151,20,20,20,2,2,2,26,26,26,
+                                    30,31,31,31,32,32,32,33,33,35,35,36,36,93,93,93,93,93];
+        for card_index in distribute_cards.clone() {
+            account_card_repository.save_new_card(found_account_id,card_index).await.expect("e");
+        }
+        drop(account_card_repository);
+
+        // 배포덱 생성
+        let account_deck_repository = self.account_deck_repository.lock().await;
+        let deck_name = "오프닝 기념 언데드 신화 마검의 지배자 네더 블레이드 스타트 덱";
+        let account_deck = AccountDeck::new(found_account_id, deck_name).unwrap();
+        account_deck_repository.save(account_deck).await.expect("e");
+        let deck_id = account_deck_repository.find_deck_id_by_deck_name(found_account_id, deck_name).await;
+        drop(account_deck_repository);
+
+        // 배포덱에 카드 저장
+        let account_deck_card_repository = self.account_deck_card_repository.lock().await;
+        let deck_card_hash = VectorToHashConverter::convert_vector_to_hash(&distribute_cards);
+        let deck_card_list: Vec<AccountDeckCard> = deck_card_hash
+            .iter()
+            .map(|(card_id, card_count)| AccountDeckCard::new(deck_id, *card_id, *card_count).unwrap())
+            .collect();
+        account_deck_card_repository.save_deck_card_list(deck_card_list).await.unwrap();
+        drop(account_deck_card_repository);
 
         if result_account.is_ok() && result_account_point.is_ok() {
             return AccountRegisterResponse::new(true)
@@ -280,5 +312,19 @@ mod tests {
         let register_request = AccountRegisterRequest::new("test_id2", "test_password".to_string());
 
         account_service.account_register(register_request).await;
+    }
+
+    #[test]
+    async fn test_account_register_and_save_deck_card() {
+        let mut account_service_mutex = AccountServiceImpl::get_instance();
+        let mut account_service_guard = account_service_mutex.lock().await;
+
+        let test_id = "test_account_and_deck_card8";
+        let test_pw = "test_account_and_deck_card8";
+        let string_test_pw = test_pw.to_string();
+
+        //test_account 저장
+        let test_account = AccountRegisterRequest::new(test_id, string_test_pw);
+        account_service_guard.account_register(test_account).await;
     }
 }

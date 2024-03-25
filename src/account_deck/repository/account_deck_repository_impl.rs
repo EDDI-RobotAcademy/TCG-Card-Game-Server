@@ -125,6 +125,20 @@ impl AccountDeckRepository for AccountDeckRepositoryImpl {
         Ok(Option::from(deck_list))
     }
 
+    async fn find_deck_id_by_deck_name(&self, account_id: i32, deck_name: &str) -> i32 {
+        println!("AccountDeckRepositoryImpl: find_deck_id_by_deck_name()");
+
+        let deck_list = self.get_list_by_user_int_id(account_id).await.expect("e").unwrap();
+        for deck_id_index in deck_list {
+            for (key, value) in deck_id_index {
+                if value == deck_name {
+                    return key;
+                }
+            }
+        }
+        -1
+    }
+
     async fn update(&self, modify_deck: AccountDeckModifyRequest, int_id: i32) -> Result<(), Error> {
         use crate::account_deck::entity::account_deck::account_decks::dsl::*;
         use diesel::prelude::*;
@@ -207,4 +221,19 @@ impl AccountDeckRepository for AccountDeckRepositoryImpl {
         valid_deck_owner
     }
 
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::test;
+    
+    #[test]
+    async fn test_find_deck_id_by_deck_name() {
+        let account_deck_repository_mutex = AccountDeckRepositoryImpl::get_instance();
+        let account_deck_repository_guard = account_deck_repository_mutex.lock().await;
+
+        let find_deck_id = account_deck_repository_guard.find_deck_id_by_deck_name(20, "60").await;
+        println!("find_deck_id: {:?}", find_deck_id);
+    }
 }
