@@ -27,6 +27,7 @@ use crate::account::service::response::account_logout_response::AccountLogoutRes
 use crate::account::service::response::account_delete_response::AccountDeleteResponse;
 use crate::account::service::response::account_modify_response::AccountModifyResponse;
 use crate::account::service::response::account_login_response::AccountLoginResponse;
+use crate::account_card::entity::account_card::AccountCard;
 use crate::account_card::repository::account_card_repository::AccountCardRepository;
 use crate::account_card::repository::account_card_repository_impl::AccountCardRepositoryImpl;
 use crate::account_deck::entity::account_deck::AccountDeck;
@@ -110,12 +111,20 @@ impl AccountService for AccountServiceImpl {
         drop(account_point_repository);
         drop(account_repository);
 
-        // 배포카드 생성
-        let account_card_repository = self.account_card_repository.lock().await;
+        // 배포카드 id
         let distribute_cards = vec![19,8,8,8,9,9,25,25,25,27,27,27,151,20,20,20,2,2,2,26,26,26,
                                     30,31,31,31,32,32,32,33,33,35,35,36,36,93,93,93,93,93];
-        for card_index in distribute_cards.clone() {
-            account_card_repository.save_new_card(found_account_id,card_index).await.expect("e");
+
+        // 배포카드 생성
+        let account_card_repository = self.account_card_repository.lock().await;
+        type CardId = i32;
+        type CardCount = i32;
+        type DistributeCards = (CardId, CardCount);
+        let card_id_and_card_count_vec: Vec<DistributeCards> = VectorToHashConverter::convert_vector_to_hash(&distribute_cards);
+
+        for card_id_and_card_count in card_id_and_card_count_vec{
+            let distribute_card = AccountCard::new(found_account_id, card_id_and_card_count.0, card_id_and_card_count.1).unwrap();
+            account_card_repository.save_account_card(distribute_card).await;
         }
         drop(account_card_repository);
 
