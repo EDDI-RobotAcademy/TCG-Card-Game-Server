@@ -6,6 +6,7 @@ use tokio::sync::Mutex as AsyncMutex;
 use crate::battle_room::service::battle_room_service::BattleRoomService;
 use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl;
 use crate::common::card_attributes::card_race::card_race_enum::RaceEnum;
+use crate::common::message::false_message_enum::FalseMessage::{NotYourTurn, NotYourTurnFieldEnergy};
 use crate::game_field_energy::controller::game_field_energy_controller::GameFieldEnergyController;
 use crate::game_field_energy::controller::request_form::attach_field_energy_to_field_unit_request_form::AttachFieldEnergyToFieldUnitRequestForm;
 use crate::game_field_energy::controller::response_form::attach_field_energy_to_field_unit_response_form::AttachFieldEnergyToFieldUnitResponseForm;
@@ -106,7 +107,7 @@ impl GameFieldEnergyController for GameFieldEnergyControllerImpl {
 
         if !is_this_your_turn_response.is_success() {
             println!("당신의 턴이 아닙니다.");
-            return AttachFieldEnergyToFieldUnitResponseForm::default()
+            return AttachFieldEnergyToFieldUnitResponseForm::from_response_with_message(NotYourTurnFieldEnergy)
         }
 
         drop(game_protocol_validation_service_guard);
