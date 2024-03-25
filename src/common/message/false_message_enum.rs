@@ -12,6 +12,7 @@ pub enum FalseMessage {
 
     NotEnoughBasicAttackEnergy = 11,
     MythicalCardRoundLimit = 12,
+    NotYourTurnFieldEnergy = 13,
 }
 
 impl From<i32> for FalseMessage {

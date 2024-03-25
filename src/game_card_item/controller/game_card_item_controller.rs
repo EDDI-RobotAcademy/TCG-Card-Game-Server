@@ -2,11 +2,13 @@ use async_trait::async_trait;
 use crate::game_card_item::controller::request_form::add_field_energy_with_field_unit_health_point_item_request_form::AddFieldEnergyWithFieldUnitHealthPointRequestForm;
 use crate::game_card_item::controller::request_form::multiple_target_damage_by_field_unit_death_item_request_form::{MultipleTargetDamageByFieldUnitDeathItemRequestForm};
 use crate::game_card_item::controller::request_form::catastrophic_damage_item_request_form::CatastrophicDamageItemRequestForm;
+use crate::game_card_item::controller::request_form::remove_opponent_field_energy_item_request_form::RemoveOpponentFieldEnergyItemRequestForm;
 use crate::game_card_item::controller::request_form::remove_opponent_field_unit_energy_item_request_form::RemoveOpponentFieldUnitEnergyItemRequestForm;
 use crate::game_card_item::controller::request_form::target_death_item_request_form::TargetDeathItemRequestForm;
 use crate::game_card_item::controller::response_form::add_field_energy_with_field_unit_health_point_item_response_form::AddFieldEnergyWithFieldUnitHealthPointResponseForm;
 use crate::game_card_item::controller::response_form::multiple_target_damage_by_field_unit_death_item_response_form::{MultipleTargetDamageByFieldUnitDeathItemResponseForm};
 use crate::game_card_item::controller::response_form::catastrophic_damage_item_response_form::CatastrophicDamageItemResponseForm;
+use crate::game_card_item::controller::response_form::remove_opponent_field_energy_item_response_form::RemoveOpponentFieldEnergyItemResponseForm;
 use crate::game_card_item::controller::response_form::remove_opponent_field_unit_energy_item_response_form::RemoveOpponentFieldUnitEnergyItemResponseForm;
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 
@@ -35,4 +37,8 @@ pub trait GameCardItemController {
     async fn request_to_use_opponent_field_unit_energy_removal_item(
         &self, remove_opponent_field_unit_energy_item_request_form: RemoveOpponentFieldUnitEnergyItemRequestForm)
         -> RemoveOpponentFieldUnitEnergyItemResponseForm;
+    async fn request_to_use_remove_opponent_field_energy_item(
+        &self, remove_opponent_field_energy_item_request_form: RemoveOpponentFieldEnergyItemRequestForm)
+        -> RemoveOpponentFieldEnergyItemResponseForm;
+
 }

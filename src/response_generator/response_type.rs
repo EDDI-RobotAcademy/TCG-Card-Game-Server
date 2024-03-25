@@ -34,9 +34,11 @@ use crate::game_card_active_skill::controller::response_form::targeting_active_s
 use crate::game_card_active_skill::controller::response_form::targeting_attack_active_skill_to_game_main_character_response_form::TargetingAttackActiveSkillToGameMainCharacterResponseForm;
 use crate::game_card_energy::controller::response_form::attach_general_energy_card_response_form::AttachGeneralEnergyCardResponseForm;
 use crate::game_card_energy::controller::response_form::attach_special_energy_card_response_form::AttachSpecialEnergyCardResponseForm;
+use crate::game_card_item::controller::request_form::remove_opponent_field_energy_item_request_form::RemoveOpponentFieldEnergyItemRequestForm;
 use crate::game_card_item::controller::response_form::add_field_energy_with_field_unit_health_point_item_response_form::AddFieldEnergyWithFieldUnitHealthPointResponseForm;
 use crate::game_card_item::controller::response_form::catastrophic_damage_item_response_form::CatastrophicDamageItemResponseForm;
 use crate::game_card_item::controller::response_form::multiple_target_damage_by_field_unit_death_item_response_form::MultipleTargetDamageByFieldUnitDeathItemResponseForm;
+use crate::game_card_item::controller::response_form::remove_opponent_field_energy_item_response_form::RemoveOpponentFieldEnergyItemResponseForm;
 use crate::game_card_item::controller::response_form::remove_opponent_field_unit_energy_item_response_form::RemoveOpponentFieldUnitEnergyItemResponseForm;
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_card_passive_skill::controller::response_form::deploy_non_targeting_attack_passive_skill_response_form::DeployNonTargetingAttackPassiveSkillResponseForm;
@@ -47,7 +49,6 @@ use crate::game_card_passive_skill::controller::response_form::turn_start_target
 use crate::game_card_passive_skill::controller::response_form::turn_start_targeting_attack_to_game_main_character_response_form::TurnStartTargetingAttackToGameMainCharacterResponseForm;
 use crate::game_card_support::controller::response_form::draw_support_response_form::DrawSupportResponseForm;
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
-use crate::game_card_support::controller::response_form::remove_opponent_field_energy_support_response_form::RemoveOpponentFieldEnergySupportResponseForm;
 use crate::game_card_support::controller::response_form::search_unit_support_response_form::SearchUnitSupportResponseForm;
 use crate::game_card_unit::controller::response_form::attack_game_main_character_response_form::AttackGameMainCharacterResponseForm;
 use crate::game_card_unit::controller::response_form::deploy_unit_response_form::DeployUnitResponseForm;
@@ -92,7 +93,7 @@ use crate::notify_player_action_info::entity::notify_form_use_catastrophic_damag
 use crate::notify_player_action_info::entity::notify_form_use_draw_support_card::NotifyFormUseDrawSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_field_energy_increase_item_card::NotifyFormUseFieldEnergyIncreaseItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_unit_energy_boost_support_card::NotifyFormUseUnitEnergyBoostSupportCard;
-use crate::notify_player_action_info::entity::notify_form_use_field_energy_remove_support_card::NotifyFormUseFieldEnergyRemoveSupportCard;
+use crate::notify_player_action_info::entity::notify_form_use_field_energy_remove_item_card::NotifyFormUseFieldEnergyRemoveItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_field_energy_to_unit::NotifyFormUseFieldEnergyToUnit;
 use crate::notify_player_action_info::entity::notify_form_use_general_energy_card_to_unit::NotifyFormUseGeneralEnergyCardToUnit;
 use crate::notify_player_action_info::entity::notify_form_use_instant_unit_death_item_card::NotifyFormUseInstantUnitDeathItemCard;
@@ -164,12 +165,12 @@ pub enum ResponseType {
     ATTACH_SPECIAL_ENERGY(AttachSpecialEnergyCardResponseForm),
     GENERAL_DRAW_SUPPORT_USAGE(DrawSupportResponseForm),
     SEARCH_UNIT_SUPPORT_USAGE(SearchUnitSupportResponseForm),
-    REMOVE_OPPONENT_FIELD_ENERGY_SUPPORT_USAGE(RemoveOpponentFieldEnergySupportResponseForm),
     ADD_FIELD_ENERGY_BY_FIELD_UNIT_HEALTH_POINT_ITEM_USAGE(AddFieldEnergyWithFieldUnitHealthPointResponseForm),
     TARGET_DEATH_ITEM_USAGE(TargetDeathItemResponseForm),
     CATASTROPHIC_DAMAGE_ITEM_USAGE(CatastrophicDamageItemResponseForm),
     MULTIPLE_TARGET_DAMAGE_BY_FIELD_UNIT_SACRIFICE_ITEM_USAGE(MultipleTargetDamageByFieldUnitDeathItemResponseForm),
     OPPONENT_FIElD_UNIT_ENERGY_REMOVAL_ITEM_USAGE(RemoveOpponentFieldUnitEnergyItemResponseForm),
+    REMOVE_OPPONENT_FIELD_ENERGY_ITEM_USAGE(RemoveOpponentFieldEnergyItemResponseForm),
     ATTACK_UNIT(AttackUnitResponseForm),
     TARGETING_ACTIVE_SKILL(TargetingActiveSkillResponseForm),
     NON_TARGETING_ACTIVE_SKILL(NonTargetingActiveSkillResponseForm),
@@ -208,7 +209,7 @@ pub enum ResponseType {
     NOTIFY_USE_UNIT_ENERGY_BOOST_SUPPORT_CARD(NotifyFormUseUnitEnergyBoostSupportCard),
     NOTIFY_USE_DRAW_SUPPORT_CARD(NotifyFormUseDrawSupportCard),
     NOTIFY_USE_SEARCH_DECK_SUPPORT_CARD(NotifyFormUseSearchDeckSupportCard),
-    NOTIFY_USE_FIELD_ENERGY_REMOVE_SUPPORT_CARD(NotifyFormUseFieldEnergyRemoveSupportCard),
+    NOTIFY_USE_FIELD_ENERGY_REMOVE_ITEM_CARD(NotifyFormUseFieldEnergyRemoveItemCard),
     NOTIFY_USE_INSTANT_UNIT_DEATH_ITEM_CARD(NotifyFormUseInstantUnitDeathItemCard),
     NOTIFY_USE_FIELD_ENERGY_TO_UNIT(NotifyFormUseFieldEnergyToUnit),
     NOTIFY_USE_FIELD_ENERGY_INCREASE_ITEM_CARD(NotifyFormUseFieldEnergyIncreaseItemCard),

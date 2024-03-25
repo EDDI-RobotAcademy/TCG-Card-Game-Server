@@ -23,7 +23,7 @@ use crate::notify_player_action_info::service::request::notice_use_catastrophic_
 use crate::notify_player_action_info::service::request::notice_use_draw_support_card_request::NoticeUseDrawSupportCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_energy_boost_support_card_to_my_specific_unit_request::NoticeUseEnergyBoostSupportCardToSpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_field_energy_increase_item_card_request::NoticeUseFieldEnergyIncreaseItemCardRequest;
-use crate::notify_player_action_info::service::request::notice_use_field_energy_remove_support_card_request::NoticeUseFieldEnergyRemoveSupportCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_field_energy_remove_item_card_request::NoticeUseFieldEnergyRemoveItemCardRequest;
 use crate::notify_player_action_info::service::request::notice_use_field_energy_to_my_specific_unit_request::NoticeUseFieldEnergyToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_general_energy_card_to_my_specific_unit_request::NoticeUseGeneralEnergyCardToMySpecificUnitRequest;
 use crate::notify_player_action_info::service::request::notice_use_instant_unit_death_item_card_request::NoticeUseInstantUnitDeathItemCardRequest;
@@ -49,7 +49,7 @@ use crate::notify_player_action_info::service::response::notice_use_catastrophic
 use crate::notify_player_action_info::service::response::notice_use_draw_support_card_response::NoticeUseDrawSupportCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_energy_boost_support_card_to_my_specific_unit_response::{NoticeUseEnergyBoostSupportCardToSpecificUnitResponse};
 use crate::notify_player_action_info::service::response::notice_use_field_energy_increase_item_card_response::NoticeUseFieldEnergyIncreaseItemCardResponse;
-use crate::notify_player_action_info::service::response::notice_use_field_energy_remove_support_card_response::NoticeUseFieldEnergyRemoveSupportCardResponse;
+use crate::notify_player_action_info::service::response::notice_use_field_energy_remove_item_card_response::NoticeUseFieldEnergyRemoveItemCardResponse;
 use crate::notify_player_action_info::service::response::notice_use_field_energy_to_my_specific_unit_response::NoticeUseFieldEnergyToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_general_energy_card_to_my_specific_unit_response::NoticeUseGeneralEnergyCardToMySpecificUnitResponse;
 use crate::notify_player_action_info::service::response::notice_use_instant_unit_death_item_card_response::NoticeUseInstantUnitDeathItemCardResponse;
@@ -233,25 +233,25 @@ impl NotifyPlayerActionInfoService for NotifyPlayerActionInfoServiceImpl {
         NoticeUseSearchDeckSupportCardResponse::new(response)
     }
 
-    async fn notice_use_field_energy_remove_support_card(
+    async fn notice_use_field_energy_remove_item_card(
         &mut self,
-        notice_use_field_energy_remove_support_card_request: NoticeUseFieldEnergyRemoveSupportCardRequest)
-        -> NoticeUseFieldEnergyRemoveSupportCardResponse {
+        notice_use_field_energy_remove_support_card_request: NoticeUseFieldEnergyRemoveItemCardRequest)
+        -> NoticeUseFieldEnergyRemoveItemCardResponse {
 
-        println!("NotifyPlayerActionInfoServiceImpl: notice_use_field_energy_remove_support_card()");
+        println!("NotifyPlayerActionInfoServiceImpl: notice_use_field_energy_remove_item_card()");
 
         let mut notify_player_action_info_repository_guard =
             self.notify_player_action_info_repository.lock().await;
 
         let response =
-            notify_player_action_info_repository_guard.notice_use_field_energy_remove_support(
+            notify_player_action_info_repository_guard.notice_use_field_energy_remove_item(
                 notice_use_field_energy_remove_support_card_request.get_opponent_unique_id(),
                 notice_use_field_energy_remove_support_card_request.get_player_hand_use_map_for_notice().clone(),
                 notice_use_field_energy_remove_support_card_request.get_player_field_energy_map_for_notice().clone()).await;
 
         drop(notify_player_action_info_repository_guard);
 
-        NoticeUseFieldEnergyRemoveSupportCardResponse::new(response)
+        NoticeUseFieldEnergyRemoveItemCardResponse::new(response)
     }
 
     async fn notice_use_instant_unit_death_item_card(

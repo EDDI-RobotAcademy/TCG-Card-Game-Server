@@ -11,7 +11,6 @@ use crate::game_card_support::handler::game_card_support_handler::GameCardSuppor
 use crate::game_card_support::handler::handler_of_20::game_card_support_20_handler_impl::SupportCard_20_Function;
 use crate::game_card_support::handler::handler_of_2::game_card_support_2_handler_impl::SupportCard_2_Function;
 use crate::game_card_support::handler::handler_of_30::game_card_support_30_handler_impl::SupportCard_30_Function;
-use crate::game_card_support::handler::handler_of_36::game_card_support_36_handler_impl::SupportCard_36_Function;
 
 use crate::game_card_support::repository::game_card_support_repository::GameCardSupportRepository;
 
@@ -44,7 +43,6 @@ impl GameCardSupportRepositoryImpl {
         support_card_functions.insert(28, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(29, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(30, Box::new(SupportCard_30_Function) as Box<dyn GameCardSupportHandler>);
-        support_card_functions.insert(36, Box::new(SupportCard_36_Function) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(41, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(47, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);
         support_card_functions.insert(65, Box::new(NoneFunction) as Box<dyn GameCardSupportHandler>);

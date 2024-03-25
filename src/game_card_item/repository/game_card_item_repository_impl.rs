@@ -11,6 +11,7 @@ use crate::game_card_item::handler::game_card_item_handler::GameCardItemHandler;
 use crate::game_card_item::handler::handler_of_25::game_card_item_25_handler_impl::ItemCard_25_Function;
 use crate::game_card_item::handler::handler_of_33::game_card_item_33_handler_impl::ItemCard_33_Function;
 use crate::game_card_item::handler::handler_of_35::game_card_item_35_handler_impl::ItemCard_35_Function;
+use crate::game_card_item::handler::handler_of_36::game_card_item_36_handler_impl::ItemCard_36_Function;
 use crate::game_card_item::handler::handler_of_8::game_card_item_8_handler_impl::ItemCard_8_Function;
 use crate::game_card_item::handler::handler_of_9::game_card_item_9_handler_impl::ItemCard_9_Function;
 use crate::game_card_item::repository::game_card_item_repository::GameCardItemRepository;
@@ -43,6 +44,7 @@ impl GameCardItemRepositoryImpl {
         item_card_functions.insert(30, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(33, Box::new(ItemCard_33_Function) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(35, Box::new(ItemCard_35_Function) as Box<dyn GameCardItemHandler>);
+        item_card_functions.insert(36, Box::new(ItemCard_36_Function) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(45, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(54, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);
         item_card_functions.insert(66, Box::new(NoneFunction) as Box<dyn GameCardItemHandler>);

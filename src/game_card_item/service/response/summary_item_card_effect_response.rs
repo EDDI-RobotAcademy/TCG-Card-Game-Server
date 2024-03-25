@@ -17,6 +17,7 @@ pub struct SummaryItemCardEffectResponse {
     target_count_that_can_be_damaged: i32,
     unit_list_that_can_be_sacrificed: Vec<i32>,
     will_be_removed_energy_count: i32,
+    removal_amount_of_opponent_field_energy: i32,
 }
 
 impl SummaryItemCardEffectResponse {
@@ -31,7 +32,8 @@ impl SummaryItemCardEffectResponse {
         will_be_lost_deck_card_count: i32,
         target_count_that_can_be_damaged: i32,
         unit_list_that_can_be_sacrificed: Vec<i32>,
-        will_be_removed_energy_count: i32,) -> Self {
+        will_be_removed_energy_count: i32,
+        removal_amount_of_opponent_field_energy: i32, ) -> Self {
 
             Self {
                 required_energy_race,
@@ -44,7 +46,8 @@ impl SummaryItemCardEffectResponse {
                 will_be_lost_deck_card_count,
                 target_count_that_can_be_damaged,
                 unit_list_that_can_be_sacrificed,
-                will_be_removed_energy_count, }
+                will_be_removed_energy_count,
+                removal_amount_of_opponent_field_energy, }
     }
 
     pub fn get_required_energy_race(&self) -> RaceEnum {
@@ -77,6 +80,9 @@ impl SummaryItemCardEffectResponse {
 
     pub fn get_will_be_removed_energy_count(&self) -> i32 { self.will_be_removed_energy_count }
 
+    pub fn get_removal_amount_of_opponent_field_energy(&self) -> i32 { self.removal_amount_of_opponent_field_energy }
+
+
     pub fn from_summary_item_card_effect(game_card_item_effect: GameCardItemEffect) -> SummaryItemCardEffectResponse {
         let required_energy = game_card_item_effect.get_required_energy();
         SummaryItemCardEffectResponse::new(
@@ -90,6 +96,7 @@ impl SummaryItemCardEffectResponse {
             game_card_item_effect.get_will_be_lost_deck_card_count(),
             game_card_item_effect.get_target_count_that_can_be_damaged(),
             game_card_item_effect.get_unit_list_that_can_be_sacrificed(),
-            game_card_item_effect.get_will_be_removed_energy_count(),)
+            game_card_item_effect.get_will_be_removed_energy_count(),
+            game_card_item_effect.get_removal_amount_of_opponent_field_energy(), )
     }
 }

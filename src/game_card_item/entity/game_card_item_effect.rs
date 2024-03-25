@@ -16,6 +16,8 @@ pub struct GameCardItemEffect {
     target_count_that_can_be_damaged: i32,
     unit_list_that_can_be_sacrificed: Vec<i32>,
     will_be_removed_energy_count: i32,
+    removal_amount_of_opponent_field_energy: i32,
+
 }
 
 impl GameCardItemEffect {
@@ -35,6 +37,7 @@ impl GameCardItemEffect {
             target_count_that_can_be_damaged: -1,
             unit_list_that_can_be_sacrificed: Vec::new(),
             will_be_removed_energy_count: -1,
+            removal_amount_of_opponent_field_energy: -1,
         }
     }
 
@@ -108,6 +111,12 @@ impl GameCardItemEffect {
 
     pub fn get_will_be_removed_energy_count(&self) -> i32 {
         self.will_be_removed_energy_count
+    }
+
+    // removal of opponent field energy
+    pub fn get_removal_amount_of_opponent_field_energy(&self) -> i32 { self.removal_amount_of_opponent_field_energy }
+    pub fn set_removal_amount_of_opponent_field_energy(&mut self, amount: i32) {
+        self.removal_amount_of_opponent_field_energy = amount;
     }
 }
 
