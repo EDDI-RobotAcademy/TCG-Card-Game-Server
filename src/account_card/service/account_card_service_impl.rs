@@ -71,15 +71,17 @@ impl AccountCardService for AccountCardServiceImpl {
 
     async fn update_account_card_db(&self, update_account_card_db_request: UpdateAccountCardDbRequest) -> UpdateAccountCardDbResponse{
         let account_card_repository = self.repository.lock().await;
-        let get_account_card_list = account_card_repository.get_card_list(update_account_card_db_request.account_unique_id()).await.unwrap().unwrap();
-        let account_card_check = account_card_repository.check_same_card(update_account_card_db_request.update_card_list().clone(), get_account_card_list).await;
 
-        for checked_card in account_card_check {
-            if (checked_card.1 != 0){
-                account_card_repository.update_card_count(update_account_card_db_request.account_unique_id(), checked_card).await;
+        let card_list = update_account_card_db_request.update_card_list().clone();
+
+        for checked_card in card_list {
+            let get_account_card_list = account_card_repository.get_card_list(update_account_card_db_request.account_unique_id()).await.unwrap().unwrap();
+            let account_card_count = account_card_repository.check_same_card(checked_card, get_account_card_list).await;
+            if (account_card_count != 0){
+                account_card_repository.update_card_count(update_account_card_db_request.account_unique_id(), (checked_card, account_card_count)).await;
             }
-            if (checked_card.1 == 0){
-                account_card_repository.save_new_card(update_account_card_db_request.account_unique_id(), checked_card.0).await;
+            if (account_card_count == 0){
+                account_card_repository.save_new_card(update_account_card_db_request.account_unique_id(), checked_card).await;
             }
         }
         UpdateAccountCardDbResponse::new(true)
