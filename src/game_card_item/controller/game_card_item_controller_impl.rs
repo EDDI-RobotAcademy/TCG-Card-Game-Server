@@ -14,17 +14,19 @@ use crate::card_race::service::card_race_service::CardRaceService;
 use crate::card_race::service::card_race_service_impl::CardRaceServiceImpl;
 use crate::common::card_attributes::card_grade::card_grade_enum::GradeEnum;
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
-use crate::common::message::false_message_enum::FalseMessage::{MythicalCardRoundLimit, NotYourTurn};
+use crate::common::message::false_message_enum::FalseMessage::{MythicalCardRoundLimit, NotYourTurn, SupportUsageOver};
 
 use crate::game_card_item::controller::game_card_item_controller::GameCardItemController;
 use crate::game_card_item::controller::request_form::add_field_energy_with_field_unit_health_point_item_request_form::AddFieldEnergyWithFieldUnitHealthPointRequestForm;
 use crate::game_card_item::controller::request_form::multiple_target_damage_by_field_unit_death_item_request_form::MultipleTargetDamageByFieldUnitDeathItemRequestForm;
 use crate::game_card_item::controller::request_form::catastrophic_damage_item_request_form::CatastrophicDamageItemRequestForm;
+use crate::game_card_item::controller::request_form::remove_opponent_field_energy_item_request_form::RemoveOpponentFieldEnergyItemRequestForm;
 use crate::game_card_item::controller::request_form::remove_opponent_field_unit_energy_item_request_form::RemoveOpponentFieldUnitEnergyItemRequestForm;
 use crate::game_card_item::controller::request_form::target_death_item_request_form::TargetDeathItemRequestForm;
 use crate::game_card_item::controller::response_form::add_field_energy_with_field_unit_health_point_item_response_form::AddFieldEnergyWithFieldUnitHealthPointResponseForm;
 use crate::game_card_item::controller::response_form::multiple_target_damage_by_field_unit_death_item_response_form::MultipleTargetDamageByFieldUnitDeathItemResponseForm;
 use crate::game_card_item::controller::response_form::catastrophic_damage_item_response_form::CatastrophicDamageItemResponseForm;
+use crate::game_card_item::controller::response_form::remove_opponent_field_energy_item_response_form::RemoveOpponentFieldEnergyItemResponseForm;
 use crate::game_card_item::controller::response_form::remove_opponent_field_unit_energy_item_response_form::RemoveOpponentFieldUnitEnergyItemResponseForm;
 use crate::game_card_item::controller::response_form::target_death_item_response_form::TargetDeathItemResponseForm;
 use crate::game_card_item::service::game_card_item_service::GameCardItemService;
@@ -1521,5 +1523,153 @@ impl GameCardItemController for GameCardItemControllerImpl {
         RemoveOpponentFieldUnitEnergyItemResponseForm::from_response(
             generate_use_my_hand_card_data_response,
             generate_opponent_field_unit_energy_data_response)
+    }
+
+
+    async fn request_to_use_remove_opponent_field_energy_item(
+        &self, remove_opponent_field_energy_item_request_form: RemoveOpponentFieldEnergyItemRequestForm)
+        -> RemoveOpponentFieldEnergyItemResponseForm {
+
+        println!("GameCardItemControllerImpl: request_to_use_remove_opponent_field_energy_item()");
+
+        let account_unique_id = self.is_valid_session(
+            remove_opponent_field_energy_item_request_form
+                .to_session_validation_request()).await;
+
+        if account_unique_id == -1 {
+            println!("Invalid session error");
+            return RemoveOpponentFieldEnergyItemResponseForm::default()
+        }
+
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                remove_opponent_field_energy_item_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return RemoveOpponentFieldEnergyItemResponseForm::from_false_response_with_message(NotYourTurn)
+        }
+
+        drop(game_protocol_validation_service_guard);
+
+        let item_card_number_string =
+            remove_opponent_field_energy_item_request_form.get_item_card_id().to_string();
+        let item_card_number =
+            item_card_number_string.parse::<i32>().unwrap();
+
+        let check_hand_hacking_response = self.is_valid_protocol(
+            remove_opponent_field_energy_item_request_form
+                .to_check_protocol_hacking_request(account_unique_id, item_card_number)).await;
+
+        if !check_hand_hacking_response {
+            println!("Hand hacking detected - account unique id : {}", account_unique_id);
+            return RemoveOpponentFieldEnergyItemResponseForm::default()
+        }
+
+        let is_it_item_response = self.is_it_item_card(
+            remove_opponent_field_energy_item_request_form
+                .to_is_it_item_card_request(item_card_number)).await;
+
+        if !is_it_item_response {
+            println!("Item card hacking detected - account unique id : {}", account_unique_id);
+            return RemoveOpponentFieldEnergyItemResponseForm::default()
+        }
+
+        let can_use_card_response = self.is_able_to_use(
+            remove_opponent_field_energy_item_request_form
+                .to_can_use_card_request(account_unique_id, item_card_number)).await;
+
+        if !can_use_card_response {
+            println!("A mythical grade card can be used after round 4.");
+            return RemoveOpponentFieldEnergyItemResponseForm::from_false_response_with_message(MythicalCardRoundLimit)
+        }
+
+
+        let card_effect_summary = self.get_summary_of_item_card(
+            remove_opponent_field_energy_item_request_form
+                .to_summary_item_effect_request(item_card_number)).await;
+
+        let mut battle_room_service_guard =
+            self.battle_room_service.lock().await;
+
+        let opponent_unique_id = battle_room_service_guard
+            .find_opponent_by_account_unique_id(
+                remove_opponent_field_energy_item_request_form
+                    .to_find_opponent_by_account_id_request(
+                        account_unique_id)).await.get_opponent_unique_id();
+
+        drop(battle_room_service_guard);
+
+        let mut game_field_energy_service_guard =
+            self.game_field_energy_service.lock().await;
+
+        let remove_field_energy_with_amount_response =
+            game_field_energy_service_guard.remove_field_energy_with_amount(
+                remove_opponent_field_energy_item_request_form
+                    .to_remove_field_energy_with_amount_request(
+                        opponent_unique_id,
+                        card_effect_summary.get_removal_amount_of_opponent_field_energy())).await;
+
+        if !remove_field_energy_with_amount_response.get_is_success() {
+            println!("Failed to remove opponent's field energy.");
+            return RemoveOpponentFieldEnergyItemResponseForm::default()
+        }
+
+        let updated_field_energy_count_of_opponent =
+            game_field_energy_service_guard.get_current_field_energy(
+                remove_opponent_field_energy_item_request_form
+                    .to_get_current_field_energy_request(
+                        opponent_unique_id)).await.get_field_energy_count();
+
+        drop(game_field_energy_service_guard);
+
+        let usage_hand_card = self.use_item_card(
+            remove_opponent_field_energy_item_request_form
+                .to_use_game_hand_item_card_request(account_unique_id, item_card_number)).await;
+
+        self.place_used_card_to_tomb(
+            remove_opponent_field_energy_item_request_form
+                .to_place_to_tomb_request(account_unique_id, usage_hand_card)).await;
+
+        let mut ui_data_generator_service_guard =
+            self.ui_data_generator_service.lock().await;
+
+        let generate_use_my_hand_card_data_response =
+            ui_data_generator_service_guard.generate_use_my_hand_card_data(
+                remove_opponent_field_energy_item_request_form
+                    .to_generate_use_my_hand_card_data_request(usage_hand_card)).await;
+
+        let generate_opponent_field_energy_data_response =
+            ui_data_generator_service_guard.generate_opponent_field_energy_data(
+                remove_opponent_field_energy_item_request_form
+                    .to_generate_opponent_field_energy_data_request(
+                        updated_field_energy_count_of_opponent)).await;
+
+        drop(ui_data_generator_service_guard);
+
+        let mut notify_player_action_info_service_guard =
+            self.notify_player_action_info_service.lock().await;
+
+        let notice_response =
+            notify_player_action_info_service_guard.notice_use_field_energy_remove_item_card(
+                remove_opponent_field_energy_item_request_form
+                    .to_notice_use_field_energy_remove_support_card_request(
+                        opponent_unique_id,
+                        generate_use_my_hand_card_data_response
+                            .get_player_hand_use_map_for_notice().clone(),
+                        generate_opponent_field_energy_data_response
+                            .get_player_field_energy_map_for_notice().clone())).await;
+
+        println!("notice_response: {:?}", notice_response);
+
+        drop(notify_player_action_info_service_guard);
+
+        RemoveOpponentFieldEnergyItemResponseForm::from_response(
+            generate_use_my_hand_card_data_response,
+            generate_opponent_field_energy_data_response)
     }
 }

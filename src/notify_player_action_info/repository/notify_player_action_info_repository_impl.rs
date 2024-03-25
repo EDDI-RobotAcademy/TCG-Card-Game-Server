@@ -24,7 +24,7 @@ use crate::notify_player_action_info::entity::notify_form_use_catastrophic_damag
 use crate::notify_player_action_info::entity::notify_form_use_draw_support_card::NotifyFormUseDrawSupportCard;
 use crate::notify_player_action_info::entity::notify_form_use_field_energy_increase_item_card::NotifyFormUseFieldEnergyIncreaseItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_unit_energy_boost_support_card::NotifyFormUseUnitEnergyBoostSupportCard;
-use crate::notify_player_action_info::entity::notify_form_use_field_energy_remove_support_card::NotifyFormUseFieldEnergyRemoveSupportCard;
+use crate::notify_player_action_info::entity::notify_form_use_field_energy_remove_item_card::NotifyFormUseFieldEnergyRemoveItemCard;
 use crate::notify_player_action_info::entity::notify_form_use_field_energy_to_unit::NotifyFormUseFieldEnergyToUnit;
 use crate::notify_player_action_info::entity::notify_form_surrender::NotifyFormSurrender;
 use crate::ui_data_generator::entity::field_unit_energy_info::FieldUnitEnergyInfo;
@@ -307,14 +307,14 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         true
     }
 
-    async fn notice_use_field_energy_remove_support(
+    async fn notice_use_field_energy_remove_item(
         &mut self,
         opponent_unique_id: i32,
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
         player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>,
     ) -> bool {
 
-        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_field_energy_remove_support()");
+        println!("NotifyPlayerActionInfoRepositoryImpl: notice_use_field_energy_remove_item()");
 
         let connection_context_repository_mutex = ConnectionContextRepositoryImpl::get_instance();
         let connection_context_repository_guard = connection_context_repository_mutex.lock().await;
@@ -327,16 +327,16 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
         let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
-        let notify_form_use_field_energy_remove_support_card =
-            NotifyFormUseFieldEnergyRemoveSupportCard::new(player_hand_use_map_for_notice,
-                                                           player_field_energy_map_for_notice);
+        let notify_form_use_field_energy_remove_item_card =
+            NotifyFormUseFieldEnergyRemoveItemCard::new(player_hand_use_map_for_notice,
+                                                        player_field_energy_map_for_notice);
 
         // 상대에게 필드 에너지 파괴 서포트 카드 사용 공지 (동시 파괴인 경우에도 활용 가능)
         opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
-                    NOTIFY_USE_FIELD_ENERGY_REMOVE_SUPPORT_CARD(
-                        notify_form_use_field_energy_remove_support_card)))).await;
+                    NOTIFY_USE_FIELD_ENERGY_REMOVE_ITEM_CARD(
+                        notify_form_use_field_energy_remove_item_card)))).await;
 
         true
     }

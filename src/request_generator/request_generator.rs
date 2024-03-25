@@ -82,7 +82,7 @@ use crate::request_generator::game_card_item_request_form_generator::{create_add
 use crate::request_generator::game_next_turn_request_generator::create_game_turn_request_form;
 use crate::request_generator::general_draw_support_request_form_generator::create_general_draw_support_request_form;
 use crate::request_generator::non_targeting_active_skill_request_form_generator::create_non_targeting_active_skill_request_form;
-use crate::request_generator::opponent_field_energy_remove_support_request_form_generator::create_opponent_field_energy_remove_support_request_form;
+use crate::request_generator::opponent_field_energy_remove_item_request_form_generator::create_opponent_field_energy_remove_item_request_form;
 use crate::request_generator::remain_deck_card_count_request_generator::create_remain_deck_card_count_request;
 use crate::request_generator::rockpaperscissors_request_generator::create_rockpaperscissors_request_form;
 use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
@@ -700,14 +700,13 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 }
             },
             1008 => {
-                // Remove Opponent Field Energy Support Usage
-                if let Some(request_form) = create_opponent_field_energy_remove_support_request_form(&data) {
-                    let game_card_support_controller_mutex = GameCardSupportControllerImpl::get_instance();
-                    let game_card_support_controller = game_card_support_controller_mutex.lock().await;
+                // Remove Opponent Field Energy Support->Item Usage
+                if let Some(request_form) = create_opponent_field_energy_remove_item_request_form(&data) {
+                    let game_card_item_controller_mutex = GameCardItemControllerImpl::get_instance();
+                    let game_card_item_controller = game_card_item_controller_mutex.lock().await;
 
-                    let response_form = game_card_support_controller.request_to_use_remove_opponent_field_energy_support(request_form).await;
-                    let response_type = Some(ResponseType::REMOVE_OPPONENT_FIELD_ENERGY_SUPPORT_USAGE(response_form));
-
+                    let response_form = game_card_item_controller.request_to_use_remove_opponent_field_energy_item(request_form).await;
+                    let response_type = Some(ResponseType::REMOVE_OPPONENT_FIELD_ENERGY_ITEM_USAGE(response_form));
                     response_type
                 } else {
                     None

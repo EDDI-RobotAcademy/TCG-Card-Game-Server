@@ -1,17 +1,15 @@
 use std::collections::HashMap;
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
-use crate::game_card_support::service::request::summarize_support_card_effect_request::SummarizeSupportCardEffectRequest;
-use crate::game_card_support_usage_counter::service::request::check_support_card_usage_count_request::CheckSupportCardUsageCountRequest;
-use crate::game_card_support_usage_counter::service::request::update_support_card_usage_count_request::UpdateSupportCardUsageCountRequest;
+use crate::game_card_item::service::request::summary_item_card_effect_request::SummaryItemCardEffectRequest;
 use crate::game_field_energy::service::request::get_current_field_energy_request::GetCurrentFieldEnergyRequest;
 use crate::game_field_energy::service::request::remove_field_energy_with_amount_request::RemoveFieldEnergyWithAmountRequest;
-use crate::game_hand::service::request::use_game_hand_support_card_request::UseGameHandSupportCardRequest;
+use crate::game_hand::service::request::use_game_hand_item_card_request::UseGameHandItemCardRequest;
 use crate::game_protocol_validation::service::request::can_use_card_request::CanUseCardRequest;
 use crate::game_protocol_validation::service::request::check_protocol_hacking_request::CheckProtocolHackingRequest;
-use crate::game_protocol_validation::service::request::is_it_support_card_request::IsItSupportCardRequest;
+use crate::game_protocol_validation::service::request::is_it_item_card_request::IsItItemCardRequest;
 use crate::game_protocol_validation::service::request::is_this_your_turn_request::IsThisYourTurnRequest;
 use crate::game_tomb::service::request::place_to_tomb_request::PlaceToTombRequest;
-use crate::notify_player_action_info::service::request::notice_use_field_energy_remove_support_card_request::NoticeUseFieldEnergyRemoveSupportCardRequest;
+use crate::notify_player_action_info::service::request::notice_use_field_energy_remove_item_card_request::NoticeUseFieldEnergyRemoveItemCardRequest;
 use crate::redis::service::request::get_value_with_key_request::GetValueWithKeyRequest;
 use crate::ui_data_generator::entity::player_index_enum::PlayerIndex;
 use crate::ui_data_generator::entity::used_hand_card_info::UsedHandCardInfo;
@@ -19,19 +17,19 @@ use crate::ui_data_generator::service::request::generate_opponent_field_energy_d
 use crate::ui_data_generator::service::request::generate_use_my_hand_card_data_request::GenerateUseMyHandCardDataRequest;
 
 #[derive(Debug)]
-pub struct RemoveOpponentFieldEnergySupportRequestForm {
+pub struct RemoveOpponentFieldEnergyItemRequestForm {
     session_id: String,
-    support_card_id: String,
+    item_card_id: String,
 }
 
-impl RemoveOpponentFieldEnergySupportRequestForm {
-    pub fn new(session_id: &str, support_card_number: &str) -> Self {
-        RemoveOpponentFieldEnergySupportRequestForm {
+impl RemoveOpponentFieldEnergyItemRequestForm {
+    pub fn new(session_id: &str, item_card_number: &str) -> Self {
+        RemoveOpponentFieldEnergyItemRequestForm {
             session_id: session_id.to_string(),
-            support_card_id: support_card_number.to_string(),
+            item_card_id: item_card_number.to_string(),
         }
     }
-    pub fn get_support_card_id(&self) -> &str { &self.support_card_id }
+    pub fn get_item_card_id(&self) -> &str { &self.item_card_id }
 
     pub fn to_session_validation_request(
         &self) -> GetValueWithKeyRequest {
@@ -51,56 +49,38 @@ impl RemoveOpponentFieldEnergySupportRequestForm {
     pub fn to_check_protocol_hacking_request(
         &self,
         account_unique_id: i32,
-        support_card_number: i32) -> CheckProtocolHackingRequest {
+        item_card_number: i32) -> CheckProtocolHackingRequest {
 
         CheckProtocolHackingRequest::new(
             account_unique_id,
-            support_card_number)
+            item_card_number)
     }
 
+    pub fn to_is_it_item_card_request(&self,
+                                      item_card_id: i32) -> IsItItemCardRequest {
+        IsItItemCardRequest::new(item_card_id)
+    }
     pub fn to_can_use_card_request(
         &self,
         account_unique_id: i32,
-        support_card_number: i32) -> CanUseCardRequest {
+        item_card_number: i32) -> CanUseCardRequest {
 
         CanUseCardRequest::new(
             account_unique_id,
-            support_card_number)
+            item_card_number)
     }
 
-    pub fn to_is_it_support_card_request(
-        &self,
-        support_card_number: i32) -> IsItSupportCardRequest {
-
-        IsItSupportCardRequest::new(
-            support_card_number)
+    pub fn to_summary_item_effect_request(&self,
+                                          item_card_id: i32) -> SummaryItemCardEffectRequest {
+        SummaryItemCardEffectRequest::new(item_card_id)
     }
 
-    pub fn to_check_support_card_usage_count_request(
-        &self,
-        account_unique_id: i32) -> CheckSupportCardUsageCountRequest {
-
-        CheckSupportCardUsageCountRequest::new(
-            account_unique_id)
+    pub fn to_use_game_hand_item_card_request(&self,
+                                              account_unique_id: i32,
+                                              item_card_id: i32) -> UseGameHandItemCardRequest {
+        UseGameHandItemCardRequest::new(account_unique_id,
+                                        item_card_id)
     }
-
-    pub fn to_update_support_card_usage_count_request(
-        &self,
-        account_unique_id: i32) -> UpdateSupportCardUsageCountRequest {
-
-        UpdateSupportCardUsageCountRequest::new(
-            account_unique_id)
-    }
-    pub fn to_use_game_hand_support_card_request(
-        &self,
-        account_unique_id: i32,
-        support_card_number: i32) -> UseGameHandSupportCardRequest {
-
-        UseGameHandSupportCardRequest::new(
-            account_unique_id,
-            support_card_number)
-    }
-
     pub fn to_place_to_tomb_request(
         &self,
         account_unique_id: i32,
@@ -109,14 +89,6 @@ impl RemoveOpponentFieldEnergySupportRequestForm {
         PlaceToTombRequest::new(
             account_unique_id,
             used_card_id)
-    }
-
-    pub fn to_summarize_support_card_effect_request(
-        &self,
-        support_card_number: i32) -> SummarizeSupportCardEffectRequest {
-
-        SummarizeSupportCardEffectRequest::new(
-            support_card_number)
     }
 
     pub fn to_find_opponent_by_account_id_request(
@@ -166,9 +138,9 @@ impl RemoveOpponentFieldEnergySupportRequestForm {
         &self,
         opponent_unique_id: i32,
         player_hand_use_map_for_notice: HashMap<PlayerIndex, UsedHandCardInfo>,
-        player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>) -> NoticeUseFieldEnergyRemoveSupportCardRequest {
+        player_field_energy_map_for_notice: HashMap<PlayerIndex, i32>) -> NoticeUseFieldEnergyRemoveItemCardRequest {
 
-        NoticeUseFieldEnergyRemoveSupportCardRequest::new(
+        NoticeUseFieldEnergyRemoveItemCardRequest::new(
             opponent_unique_id,
             player_hand_use_map_for_notice,
             player_field_energy_map_for_notice)
