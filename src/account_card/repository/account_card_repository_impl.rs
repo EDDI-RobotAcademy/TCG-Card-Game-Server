@@ -6,10 +6,12 @@ use lazy_static::lazy_static;
 use tokio::sync::Mutex as AsyncMutex;
 use diesel::query_dsl::methods::{FilterDsl, FindDsl};
 use diesel::{Connection, MysqlConnection, QueryDsl, ExpressionMethods, RunQueryDsl, OptionalExtension, Insertable};
+use diesel::associations::HasTable;
 use diesel::result::Error;
 
 use crate::common::env::env_detector::EnvDetector;
 use crate::account_card::entity::account_card::account_cards::{account_id, columns};
+use crate::account_card::entity::account_card::account_cards::dsl::account_cards;
 use crate::mysql_config::mysql_connection::MysqlDatabaseConnection;
 
 use crate::account_card::entity::card::Card;
@@ -200,6 +202,19 @@ impl AccountCardRepository for AccountCardRepositoryImpl {
             account_card_hashmap.add_card(card_list);
         }
         account_card_hashmap
+    }
+
+    async fn save_account_card(&self, account_card: AccountCard) {
+        use crate::account_card::entity::account_card::account_cards::dsl::*;
+        println!("AccountDeckCardRepositoryImpl: save()");
+
+        let database_url = EnvDetector::get_mysql_url().expect("DATABASE_URL이 설정되어 있어야 합니다.");
+        let mut connection = MysqlConnection::establish(&database_url)
+            .expect("Failed to establish a new connection");
+
+        diesel::insert_into(account_cards::table())
+            .values(account_card)
+            .execute(&mut connection).expect("덱 저장 실패!");
     }
 }
 
