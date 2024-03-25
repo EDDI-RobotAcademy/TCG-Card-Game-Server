@@ -21,6 +21,7 @@ use crate::game_deck::service::game_deck_service::GameDeckService;
 use crate::game_deck::service::game_deck_service_impl::GameDeckServiceImpl;
 use crate::game_field_energy::service::game_field_energy_service::GameFieldEnergyService;
 use crate::game_field_energy::service::game_field_energy_service_impl::GameFieldEnergyServiceImpl;
+use crate::game_field_unit::entity::extra_effect::ExtraEffect::Freeze;
 use crate::game_field_unit::service::game_field_unit_service::GameFieldUnitService;
 use crate::game_field_unit::service::game_field_unit_service_impl::GameFieldUnitServiceImpl;
 use crate::game_hand::service::game_hand_service::GameHandService;
@@ -282,7 +283,7 @@ impl GameTurnController for GameTurnControllerImpl {
 
         for (unit_index, field_unit) in opponent_field_unit_list.get_game_field_unit_card().iter().enumerate() {
             let mut turn_start_passive_skill_index_list_of_unit = Vec::new();
-            if field_unit.is_alive() {
+            if field_unit.is_alive() && !field_unit.get_harmful_status_list().contains(&Freeze){
                 let passive_skill_effect_list =
                     game_card_passive_skill_guard.summary_turn_start_passive_skill(
                         turn_end_request_form
