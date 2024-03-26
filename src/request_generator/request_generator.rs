@@ -85,7 +85,7 @@ use crate::request_generator::non_targeting_active_skill_request_form_generator:
 use crate::request_generator::opponent_field_energy_remove_item_request_form_generator::create_opponent_field_energy_remove_item_request_form;
 use crate::request_generator::remain_deck_card_count_request_generator::create_remain_deck_card_count_request;
 use crate::request_generator::rockpaperscissors_request_generator::create_rockpaperscissors_request_form;
-use crate::request_generator::search_unit_support_request_form_generator::create_search_unit_support_request_form;
+use crate::request_generator::search_unit_support_request_form_generator::{create_check_search_unit_support_available_request_form, create_search_unit_support_request_form};
 use crate::request_generator::targeting_active_skill_request_form_generator::create_targeting_active_skill_request_form;
 use crate::request_generator::what_is_the_room_number_request_generator::create_what_is_the_room_number_request;
 use crate::request_generator::surrender_request_generator::create_surrender_request;
@@ -585,7 +585,20 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                 {
                     None
                 }
+            },
+            501 => {
+                // Check Search Unit Support Usage
+                if let Some(request_form) = create_check_search_unit_support_available_request_form(&data) {
+                    let game_card_support_controller_mutex = GameCardSupportControllerImpl::get_instance();
+                    let game_card_support_controller = game_card_support_controller_mutex.lock().await;
 
+                    let response_form = game_card_support_controller.check_search_unit_support_available(request_form).await;
+                    let response_type = Some(ResponseType::CHECK_SEARCH_UNIT_SUPPORT_USAGE(response_form));
+
+                    response_type
+                } else {
+                    None
+                }
             },
             1000 => {
                 // Unit attack
@@ -993,7 +1006,6 @@ pub async fn create_request_and_call_service(data: &JsonValue) -> Option<Respons
                     None
                 }
             },
-
             8001 => {
                 // Fake Battle Room Test
                 if let Some(request) = create_fake_battle_room_create_request_form(&data) {
