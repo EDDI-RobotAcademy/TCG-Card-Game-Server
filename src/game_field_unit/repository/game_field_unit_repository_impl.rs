@@ -443,9 +443,44 @@ impl GameFieldUnitRepository for GameFieldUnitRepositoryImpl {
 
         if let Some(game_field_unit) = self.get_game_field_unit_map().get_mut(&opponent_unique_id) {
             for unit_index in (0..game_field_unit.get_all_unit_list_in_game_field().len()).rev() {
-                game_field_unit.apply_damage_to_indexed_unit(unit_index, damage);
-                game_field_unit.impose_harmful_states_to_indexed_unit(unit_index, extra_status_effect_list.clone())
+                let mut will_be_applied_effect_list = extra_status_effect_list.clone();
+
+                if game_field_unit.check_unit_alive(unit_index) {
+                    let opponent_field_unit_list =
+                        game_field_unit.get_all_field_unit_list_mut();
+                    let current_opponent_target_unit_harmful_status_effect_list =
+                        opponent_field_unit_list[unit_index].get_harmful_status_effect_list_mut();
+
+                    let target_has_freeze_as_harmful =
+                        current_opponent_target_unit_harmful_status_effect_list.iter()
+                            .any(|effect| effect.get_harmful_effect() == &Freeze);
+
+                    if target_has_freeze_as_harmful {
+                        will_be_applied_effect_list
+                            .retain(|effect| effect.get_extra_effect() != &Freeze);
+                    }
+
+                    let target_has_dark_fire_as_harmful = current_opponent_target_unit_harmful_status_effect_list
+                        .iter()
+                        .any(|effect| effect.get_harmful_effect() == &DarkFire);
+                    let attacker_has_dark_fire_as_extra = will_be_applied_effect_list
+                        .iter()
+                        .any(|effect| effect.get_extra_effect() == &DarkFire);
+
+                    if target_has_dark_fire_as_harmful && attacker_has_dark_fire_as_extra {
+                        game_field_unit
+                            .remove_harmful_status_of_indexed_unit(unit_index, &DarkFire);
+                    }
+
+                    game_field_unit
+                        .apply_damage_to_indexed_unit(
+                            unit_index, damage);
+                    game_field_unit
+                        .impose_harmful_states_to_indexed_unit(
+                            unit_index, will_be_applied_effect_list);
+                }
             }
+
             return true
         }
 
