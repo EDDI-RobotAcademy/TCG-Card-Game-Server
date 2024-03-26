@@ -202,10 +202,12 @@ impl AccountService for AccountServiceImpl {
     async fn account_session_login(&self, account_session_login_request: AccountSessionLoginRequest) -> AccountLoginResponse {
         println!("AccountServiceImpl: account_session_login()");
 
-        let mut redis_repository_gaurd = self.redis_in_memory_repository.lock().await;
-        let account_unique_id = redis_repository_gaurd.get(account_session_login_request.get_session_id()).await;
+        let mut redis_repository_guard = self.redis_in_memory_repository.lock().await;
+        let account_unique_id = redis_repository_guard.get(account_session_login_request.get_session_id()).await;
 
         if let Some(id) = account_unique_id {
+            let id_str = id.as_str();
+            redis_repository_guard.update_expired_time(account_session_login_request.get_session_id(), id_str).await;
             AccountLoginResponse::new(account_session_login_request.get_session_id().to_string())
         } else {
             AccountLoginResponse::new("".to_string())

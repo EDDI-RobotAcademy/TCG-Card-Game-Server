@@ -69,16 +69,12 @@ impl RedisInMemoryRepository for RedisInMemoryRepositoryImpl {
             .arg(key)
             .query(&mut self.connection)
             .expect("Failed to get key");
-
-        // sessionId 갱신
-        if Some(result.clone()).is_some() {
-            println!("sessionId 의 expired_time 갱신");
-            let result_clone = result.clone().unwrap();
-            let value = result_clone.as_str();
-            self.set_with_expired_time(key, value, Some(3600) ).await;
-        }
-
         result
+    }
+
+    async fn update_expired_time(&mut self, key: &str, value: &str) {
+        println!("RedisInMemoryRepositoryImpl: update_expired_time()");
+        self.set_with_expired_time(key, value, Some(3600)).await;
     }
 
     async fn del(&mut self, key: &str) {
