@@ -47,6 +47,7 @@ use crate::game_card_passive_skill::controller::response_form::deploy_targeting_
 use crate::game_card_passive_skill::controller::response_form::turn_start_non_targeting_attack_passive_skill_response_form::TurnStartNonTargetingAttackPassiveSkillResponseForm;
 use crate::game_card_passive_skill::controller::response_form::turn_start_targeting_attack_passive_skill_response_form::TurnStartTargetingAttackPassiveSkillResponseForm;
 use crate::game_card_passive_skill::controller::response_form::turn_start_targeting_attack_to_game_main_character_response_form::TurnStartTargetingAttackToGameMainCharacterResponseForm;
+use crate::game_card_support::controller::response_form::check_search_unit_support_available_response_form::CheckSearchUnitSupportAvailableResponseForm;
 use crate::game_card_support::controller::response_form::draw_support_response_form::DrawSupportResponseForm;
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_card_support::controller::response_form::search_unit_support_response_form::SearchUnitSupportResponseForm;
@@ -164,6 +165,7 @@ pub enum ResponseType {
     ATTACH_GENERAL_ENERGY(AttachGeneralEnergyCardResponseForm),
     ATTACH_SPECIAL_ENERGY(AttachSpecialEnergyCardResponseForm),
     GENERAL_DRAW_SUPPORT_USAGE(DrawSupportResponseForm),
+    CHECK_SEARCH_UNIT_SUPPORT_USAGE(CheckSearchUnitSupportAvailableResponseForm),
     SEARCH_UNIT_SUPPORT_USAGE(SearchUnitSupportResponseForm),
     ADD_FIELD_ENERGY_BY_FIELD_UNIT_HEALTH_POINT_ITEM_USAGE(AddFieldEnergyWithFieldUnitHealthPointResponseForm),
     TARGET_DEATH_ITEM_USAGE(TargetDeathItemResponseForm),
