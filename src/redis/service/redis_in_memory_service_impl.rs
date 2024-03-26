@@ -59,6 +59,9 @@ impl RedisInMemoryService for RedisInMemoryServiceImpl {
         let mut redis_in_memory_repository_guard = self.redis_in_memory_repository.lock().await;
         let result_redis = redis_in_memory_repository_guard.get(get_value_with_key_request.key()).await;
         if result_redis.clone().is_some() {
+            let id_string = result_redis.clone().expect("session_id ERROR");
+            let id_str = id_string.as_str();
+            redis_in_memory_repository_guard.update_expired_time(get_value_with_key_request.key(), id_str).await;
             return GetValueWithKeyResponse::new(result_redis.unwrap_or("".to_string()))
         }
         println!("The key does not exist.");
