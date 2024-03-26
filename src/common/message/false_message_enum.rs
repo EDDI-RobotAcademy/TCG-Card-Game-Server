@@ -7,12 +7,14 @@ pub enum FalseMessage {
     UnitActionLimitOver = 2,
     NotYourTurn = 3,
     SupportUsageOver = 4,
-    UnitFrozen = 5,
-    UnattackableUnit = 6,
 
     NotEnoughBasicAttackEnergy = 11,
     MythicalCardRoundLimit = 12,
     NotYourTurnFieldEnergy = 13,
+    UnattackableUnit = 14,
+    UnitFrozen = 15,
+
+
 }
 
 impl From<i32> for FalseMessage {
