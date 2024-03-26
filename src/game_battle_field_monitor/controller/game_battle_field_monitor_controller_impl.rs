@@ -15,7 +15,7 @@ impl GameBattleFieldMonitorControllerImpl {
 impl GameBattleFieldMonitorController for GameBattleFieldMonitorControllerImpl {
     async fn battle_field_monitoring(&self, battle_room_number: usize) {
         loop {
-            println!("Battle Field Monitor -> Room number: {}", battle_room_number);
+            // println!("Battle Field Monitor -> Room number: {}", battle_room_number);
 
             tokio::time::sleep(tokio::time::Duration::from_millis(1000)).await;
         }
