@@ -70,6 +70,14 @@ impl RedisInMemoryRepository for RedisInMemoryRepositoryImpl {
             .query(&mut self.connection)
             .expect("Failed to get key");
 
+        // sessionId 갱신
+        if Some(result.clone()).is_some() {
+            println!("sessionId 의 expired_time 갱신");
+            let result_clone = result.clone().unwrap();
+            let value = result_clone.as_str();
+            self.set_with_expired_time(key, value, Some(3600) ).await;
+        }
+
         result
     }
 
@@ -92,23 +100,23 @@ impl RedisInMemoryRepository for RedisInMemoryRepositoryImpl {
             let difference_time = target_time - now();
             let difference_seconds = difference_time.num_seconds();
                 // 협정세계시의 일자가 대한민국의 일자 보다 늦을 경우, 일자를 +1(86400 초) 조정함 (참고: 대한민국 00 시 ~ 09 시 일 때 해당함)
-                let mut result_differnce_seconts;
+                let mut result_difference_seconds;
                 if  Some(difference_seconds) < Some(1) {
-                    result_differnce_seconts = difference_seconds + 86400;
+                    result_difference_seconds = difference_seconds + 86400;
                 } else {
-                result_differnce_seconts = difference_seconds;
+                    result_difference_seconds = difference_seconds;
                 }
             // 잔여시간을 시, 분, 초 으로 표현
-            let hours = result_differnce_seconts / 3600;
-            let minutes = (result_differnce_seconts % 3600) / 60;
-            let remaining_seconds = result_differnce_seconts % 60;
+            let hours = result_difference_seconds / 3600;
+            let minutes = (result_difference_seconds % 3600) / 60;
+            let remaining_seconds = result_difference_seconds % 60;
 
             println!("remaining_time: {:?} hours {:?} minutes {:?} seconds", hours, minutes, remaining_seconds);
 
             redis::cmd("SET")
                 .arg(key)
                 .arg(value)
-                .arg("EX").arg(result_differnce_seconts)
+                .arg("EX").arg(result_difference_seconds)
                 .query::<()>(&mut self.connection)
                 .expect("Failed to set key");
     }
@@ -123,11 +131,11 @@ mod tests {
     // #[cfg(feature = "redis_integration_test")]
     async fn test_set_and_get_from_redis() {
         let redis_in_memory_repository_mutex = RedisInMemoryRepositoryImpl::get_instance();
-        let mut redis_in_memory_repository_gaurd = redis_in_memory_repository_mutex.lock().await;
+        let mut redis_in_memory_repository_guard = redis_in_memory_repository_mutex.lock().await;
 
-        redis_in_memory_repository_gaurd.set_permanent("test_key2", "test_value2").await;
+        redis_in_memory_repository_guard.set_permanent("test_key2", "test_value2").await;
 
-        let result = redis_in_memory_repository_gaurd.get("test_key2").await;
+        let result = redis_in_memory_repository_guard.get("test_key2").await;
         println!("result value: {:?}", result);
 
         assert_eq!(result, Some("test_value2".to_string()));
@@ -137,13 +145,26 @@ mod tests {
     // #[cfg(feature = "redis_integration_test")]
     async fn test_set_with_expired_target_time() {
         let redis_in_memory_repository_mutex = RedisInMemoryRepositoryImpl::get_instance();
-        let mut redis_in_memory_repository_gaurd = redis_in_memory_repository_mutex.lock().await;
+        let mut redis_in_memory_repository_guard = redis_in_memory_repository_mutex.lock().await;
 
-        redis_in_memory_repository_gaurd.set_with_expired_target_time("test_key4", "test_account_delete5").await;
+        redis_in_memory_repository_guard.set_with_expired_target_time("test_key4", "test_account_delete5").await;
 
-        let result = redis_in_memory_repository_gaurd.get("test_key4").await;
+        let result = redis_in_memory_repository_guard.get("test_key4").await;
         println!("result value: {:?}", result);
         assert_eq!(result, Some("test_account_delete5".to_string()));
+    }
+
+    #[test]
+    async fn test_update_expired_time_by_get_redis_token() {
+        let redis_in_memory_repository_mutex = RedisInMemoryRepositoryImpl::get_instance();
+        let mut redis_in_memory_repository_guard = redis_in_memory_repository_mutex.lock().await;
+
+        let set_key = "test_update";
+        let set_value = "test_update_value";
+        let set_expired_time = 3000;
+
+        redis_in_memory_repository_guard.set_with_expired_time(set_key, set_value, Some(set_expired_time)).await;
+        redis_in_memory_repository_guard.get("test_update").await;
     }
 
     #[tokio::test]
