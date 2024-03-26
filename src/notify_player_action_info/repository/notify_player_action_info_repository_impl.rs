@@ -1027,8 +1027,7 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
 
     async fn notice_surrender(
         &mut self,
-        first_account: i32,
-        second_account: i32
+        opponent_unique_id: i32
     ) -> bool {
 
         println!("NotifyPlayerActionInfoRepositoryImpl: notice_surrender()");
@@ -1038,27 +1037,15 @@ impl NotifyPlayerActionInfoRepository for NotifyPlayerActionInfoRepositoryImpl {
         let connection_context_map_mutex = connection_context_repository_guard.connection_context_map();
         let connection_context_map_guard = connection_context_map_mutex.lock().await;
 
-        let first_account_socket_option = connection_context_map_guard.get(&first_account);
-        let first_account_socket_mutex = first_account_socket_option.unwrap();
-        let first_account_socket_guard = first_account_socket_mutex.lock().await;
+        let opponent_socket_option = connection_context_map_guard.get(&opponent_unique_id);
+        let opponent_socket_mutex = opponent_socket_option.unwrap();
+        let opponent_socket_guard = opponent_socket_mutex.lock().await;
 
-        let first_account_receiver_transmitter_channel = first_account_socket_guard.each_client_receiver_transmitter_channel();
-
-        let second_account_socket_option = connection_context_map_guard.get(&second_account);
-        let second_account_socket_mutex = second_account_socket_option.unwrap();
-        let second_account_socket_guard = second_account_socket_mutex.lock().await;
-
-        let second_account_receiver_transmitter_channel = second_account_socket_guard.each_client_receiver_transmitter_channel();
+        let opponent_receiver_transmitter_channel = opponent_socket_guard.each_client_receiver_transmitter_channel();
 
         let notify_form_surrender = NotifyFormSurrender::new(true);
 
-        first_account_receiver_transmitter_channel.send(
-            Arc::new(
-                AsyncMutex::new(
-                    NOTIFY_SURRENDER(
-                        notify_form_surrender.clone())))).await;
-
-        second_account_receiver_transmitter_channel.send(
+        opponent_receiver_transmitter_channel.send(
             Arc::new(
                 AsyncMutex::new(
                     NOTIFY_SURRENDER(
