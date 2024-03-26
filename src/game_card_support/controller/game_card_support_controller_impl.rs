@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
@@ -8,12 +9,17 @@ use crate::battle_room::service::battle_room_service_impl::BattleRoomServiceImpl
 use crate::battle_room::service::request::find_opponent_by_account_id_request::FindOpponentByAccountIdRequest;
 use crate::card_grade::service::card_grade_service::CardGradeService;
 use crate::card_grade::service::card_grade_service_impl::CardGradeServiceImpl;
+use crate::card_kinds::service::card_kinds_service::CardKindsService;
+use crate::card_kinds::service::card_kinds_service_impl::CardKindsServiceImpl;
+use crate::common::card_attributes::card_kinds::card_kinds_enum::KindsEnum::Unit;
 use crate::common::converter::vector_string_to_vector_integer::VectorStringToVectorInteger;
 use crate::common::message::false_message_enum::FalseMessage::{MythicalCardRoundLimit, NotYourTurn, SupportUsageOver};
 use crate::game_card_support::controller::game_card_support_controller::GameCardSupportController;
+use crate::game_card_support::controller::request_form::check_search_unit_support_available_request_form::CheckSearchUnitSupportAvailableRequestForm;
 use crate::game_card_support::controller::request_form::draw_support_request_form::DrawSupportRequestForm;
 use crate::game_card_support::controller::request_form::energy_boost_support_request_form::EnergyBoostSupportRequestForm;
 use crate::game_card_support::controller::request_form::search_unit_support_request_form::SearchUnitSupportRequestForm;
+use crate::game_card_support::controller::response_form::check_search_unit_support_available_response_form::CheckSearchUnitSupportAvailableResponseForm;
 use crate::game_card_support::controller::response_form::draw_support_response_form::DrawSupportResponseForm;
 use crate::game_card_support::controller::response_form::energy_boost_support_response_form::EnergyBoostSupportResponseForm;
 use crate::game_card_support::controller::response_form::search_unit_support_response_form::SearchUnitSupportResponseForm;
@@ -60,6 +66,7 @@ pub struct GameCardSupportControllerImpl {
     game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
     redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
     card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
+    card_kind_service: Arc<AsyncMutex<CardKindsServiceImpl>>,
     game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
     notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
     ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,
@@ -76,6 +83,7 @@ impl GameCardSupportControllerImpl {
                game_field_energy_service: Arc<AsyncMutex<GameFieldEnergyServiceImpl>>,
                redis_in_memory_service: Arc<AsyncMutex<RedisInMemoryServiceImpl>>,
                card_grade_service: Arc<AsyncMutex<CardGradeServiceImpl>>,
+               card_kind_service: Arc<AsyncMutex<CardKindsServiceImpl>>,
                game_card_support_usage_counter_service: Arc<AsyncMutex<GameCardSupportUsageCounterServiceImpl>>,
                notify_player_action_info_service: Arc<AsyncMutex<NotifyPlayerActionInfoServiceImpl>>,
                ui_data_generator_service: Arc<AsyncMutex<UiDataGeneratorServiceImpl>>,) -> Self {
@@ -91,6 +99,7 @@ impl GameCardSupportControllerImpl {
             game_field_energy_service,
             redis_in_memory_service,
             card_grade_service,
+            card_kind_service,
             game_card_support_usage_counter_service,
             notify_player_action_info_service,
             ui_data_generator_service
@@ -112,6 +121,7 @@ impl GameCardSupportControllerImpl {
                             GameFieldEnergyServiceImpl::get_instance(),
                             RedisInMemoryServiceImpl::get_instance(),
                             CardGradeServiceImpl::get_instance(),
+                            CardKindsServiceImpl::get_instance(),
                             GameCardSupportUsageCounterServiceImpl::get_instance(),
                             NotifyPlayerActionInfoServiceImpl::get_instance(),
                             UiDataGeneratorServiceImpl::get_instance())));
@@ -550,6 +560,119 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             generate_use_my_hand_card_data_response,
             generate_draw_my_deck_data_response,
             game_deck_card_list_response)
+    }
+
+    async fn check_search_unit_support_available(
+        &self, check_search_unit_support_available_request_form: CheckSearchUnitSupportAvailableRequestForm)
+        -> CheckSearchUnitSupportAvailableResponseForm {
+
+        println!("GameCardSupportControllerImpl: check_search_unit_support_available()");
+
+        let account_unique_id = self.is_valid_session(
+            check_search_unit_support_available_request_form
+                .to_session_validation_request()).await;
+
+        if account_unique_id == -1 {
+            println!("Invalid session error");
+            return CheckSearchUnitSupportAvailableResponseForm::default()
+        }
+
+        let mut game_protocol_validation_service_guard =
+            self.game_protocol_validation_service.lock().await;
+
+        let is_this_your_turn_response =
+            game_protocol_validation_service_guard.is_this_your_turn(
+                check_search_unit_support_available_request_form
+                    .to_is_this_your_turn_request(account_unique_id)).await;
+
+        if !is_this_your_turn_response.is_success() {
+            println!("당신의 턴이 아닙니다.");
+            return CheckSearchUnitSupportAvailableResponseForm::from_false_response_with_message(NotYourTurn)
+        }
+
+        drop(game_protocol_validation_service_guard);
+
+        let support_card_number_string =
+            check_search_unit_support_available_request_form.get_support_card_number().to_string();
+        let support_card_number =
+            support_card_number_string.parse::<i32>().unwrap();
+
+        let check_hand_hacking_response = self.is_valid_protocol(
+            check_search_unit_support_available_request_form
+                .to_check_protocol_hacking_request(account_unique_id, support_card_number)).await;
+
+        if !check_hand_hacking_response {
+            println!("Hand hacking detected - account unique id : {}", account_unique_id);
+            return CheckSearchUnitSupportAvailableResponseForm::default()
+        }
+
+        let is_it_support_response = self.is_it_support_card(
+            check_search_unit_support_available_request_form
+                .to_is_it_support_card_request(support_card_number)).await;
+
+        if !is_it_support_response {
+            println!("Support card hacking detected - account unique id : {}", account_unique_id);
+            return CheckSearchUnitSupportAvailableResponseForm::default()
+        }
+
+        let can_use_card_response = self.is_able_to_use(
+            check_search_unit_support_available_request_form
+                .to_can_use_card_request(account_unique_id, support_card_number)).await;
+
+        if !can_use_card_response {
+            println!("A mythical grade card can be used after round 4.");
+            return CheckSearchUnitSupportAvailableResponseForm::from_false_response_with_message(MythicalCardRoundLimit)
+        }
+
+        let mut game_card_support_usage_counter_service =
+            self.game_card_support_usage_counter_service.lock().await;
+
+        let check_support_card_usage_count_response =
+            game_card_support_usage_counter_service.check_support_card_usage_count(
+                check_search_unit_support_available_request_form
+                    .to_check_support_card_usage_count_request(account_unique_id)).await;
+
+        if check_support_card_usage_count_response.get_used_count() > 0 {
+            println!("Support card usage limit over");
+            return CheckSearchUnitSupportAvailableResponseForm::from_false_response_with_message(SupportUsageOver)
+        }
+
+        let card_effect_summary = self.get_summary_of_support_card(
+            check_search_unit_support_available_request_form
+                .to_summarize_support_card_effect_request(support_card_number)).await;
+
+        let searching_grade_limit = card_effect_summary.get_unit_from_deck().get_grade_limit();
+
+        let mut card_grade_service_guard =
+            self.card_grade_service.lock().await;
+
+        let mut card_kind_service_guard =
+            self.card_kind_service.lock().await;
+
+        let mut game_deck_service_guard =
+            self.game_deck_service.lock().await;
+
+        let game_deck_card_list =
+            game_deck_service_guard.get_deck(
+                check_search_unit_support_available_request_form
+                    .to_get_deck_request()).await.get_deck_card_list().clone();
+
+        drop(game_deck_service_guard);
+
+        let mut accessible_deck_card_list = HashMap::new();
+
+        for (deck_card_index, deck_card_id) in game_deck_card_list.into_iter().enumerate() {
+            if !(card_kind_service_guard.get_card_kind(&deck_card_id).await == Unit) {
+                continue
+            }
+            if !(card_grade_service_guard.get_card_grade(&deck_card_id).await as i32 <= searching_grade_limit as i32) {
+                continue
+            }
+            accessible_deck_card_list.insert(deck_card_index as i32, deck_card_id);
+        }
+
+        CheckSearchUnitSupportAvailableResponseForm::new(
+            true, -1, accessible_deck_card_list)
     }
 
     async fn request_to_use_search_unit_support(
