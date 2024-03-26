@@ -13,6 +13,7 @@ use crate::battle_ready_account_hash::service::request::battle_ready_account_has
 use crate::battle_ready_account_hash::service::request::check_battle_prepare_request::CheckBattlePrepareRequest;
 use crate::battle_ready_account_hash::service::response::battle_ready_account_hash_response::BattleReadyAccountHashResponse;
 use crate::battle_ready_account_hash::service::response::check_battle_prepare_response::CheckBattlePrepareResponse;
+use crate::battle_wait_queue::repository::battle_wait_queue_repository::BattleWaitQueueRepository;
 use crate::battle_wait_queue::repository::battle_wait_queue_repository_impl::BattleWaitQueueRepositoryImpl;
 
 use crate::match_waiting_timer::repository::match_waiting_timer_repository::MatchWaitingTimerRepository;
@@ -82,6 +83,8 @@ impl BattleReadyAccountHashService for BattleReadyAccountHashServiceImpl {
         if is_expired {
             let mut battle_ready_account_hash_repository_mutex = self.battle_ready_account_hash_repository.lock().await;
             battle_ready_account_hash_repository_mutex.save_battle_ready_account_hash(account_unique_id, BattleReadyAccountHashStatus::FAIL).await;
+            let mut battle_wait_queue_repository_guard = self.battle_wait_queue_repository.lock().await;
+            battle_wait_queue_repository_guard.dequeue_player_id_from_wait_queue(account_unique_id).await.expect("Wait queue 에서 제거 실패");
         }
 
         // 현재 사용자 배틀 매칭 상태값을 획득
