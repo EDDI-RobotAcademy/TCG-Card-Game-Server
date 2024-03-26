@@ -1,4 +1,5 @@
 use serde_json::Value as JsonValue;
+use crate::game_card_support::controller::request_form::check_search_unit_support_available_request_form::CheckSearchUnitSupportAvailableRequestForm;
 use crate::game_card_support::controller::request_form::search_unit_support_request_form::SearchUnitSupportRequestForm;
 
 pub fn create_search_unit_support_request_form(data: &JsonValue) -> Option<SearchUnitSupportRequestForm> {
@@ -15,6 +16,17 @@ pub fn create_search_unit_support_request_form(data: &JsonValue) -> Option<Searc
             }
         }
         Some(SearchUnitSupportRequestForm::new(session_id, support_card_id, target_unit_card_list))
+    } else {
+        None
+    }
+}
+
+pub fn create_check_search_unit_support_available_request_form(data: &JsonValue) -> Option<CheckSearchUnitSupportAvailableRequestForm> {
+    if let (Some(session_id), Some(support_card_id)) = (
+        data.get("sessionInfo").and_then(|v| v.as_str()),
+        data.get("supportCardId").and_then(|v| v.as_str()),
+    ) {
+        Some(CheckSearchUnitSupportAvailableRequestForm::new(session_id, support_card_id))
     } else {
         None
     }
