@@ -98,7 +98,7 @@ impl GameWinnerCheckService for GameWinnerCheckServiceImpl {
         drop(game_winner_check_guard);
 
         let mut notify_player_action_info_guard = self.notify_player_action_info.lock().await;
-        notify_player_action_info_guard.notice_surrender(account_unique_id, opponent_unique_id).await;
+        notify_player_action_info_guard.notice_surrender(opponent_unique_id).await;
         drop(notify_player_action_info_guard);
 
         return SurrenderResponse::new(true)
