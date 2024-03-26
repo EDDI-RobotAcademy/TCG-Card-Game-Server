@@ -662,14 +662,17 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let mut accessible_deck_card_list = HashMap::new();
 
         for (deck_card_index, deck_card_id) in game_deck_card_list.into_iter().enumerate() {
-            if !(card_kind_service_guard.get_card_kind(&deck_card_id).await == Unit) {
+            if card_kind_service_guard.get_card_kind(&deck_card_id).await != Unit {
                 continue
             }
-            if !(card_grade_service_guard.get_card_grade(&deck_card_id).await as i32 <= searching_grade_limit as i32) {
+            if card_grade_service_guard.get_card_grade(&deck_card_id).await as i32 > searching_grade_limit as i32 {
                 continue
             }
             accessible_deck_card_list.insert(deck_card_index as i32, deck_card_id);
         }
+
+        drop(card_grade_service_guard);
+        drop(card_kind_service_guard);
 
         CheckSearchUnitSupportAvailableResponseForm::new(
             true, -1, accessible_deck_card_list)
@@ -690,71 +693,71 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
             return SearchUnitSupportResponseForm::default()
         }
 
-        let mut game_protocol_validation_service_guard =
-            self.game_protocol_validation_service.lock().await;
-
-        let is_this_your_turn_response =
-            game_protocol_validation_service_guard.is_this_your_turn(
-                search_unit_support_request_form
-                    .to_is_this_your_turn_request(account_unique_id)).await;
-
-        if !is_this_your_turn_response.is_success() {
-            println!("당신의 턴이 아닙니다.");
-            return SearchUnitSupportResponseForm::from_false_response_with_message(NotYourTurn)
-        }
-
-        drop(game_protocol_validation_service_guard);
-
+        // let mut game_protocol_validation_service_guard =
+        //     self.game_protocol_validation_service.lock().await;
+        //
+        // let is_this_your_turn_response =
+        //     game_protocol_validation_service_guard.is_this_your_turn(
+        //         search_unit_support_request_form
+        //             .to_is_this_your_turn_request(account_unique_id)).await;
+        //
+        // if !is_this_your_turn_response.is_success() {
+        //     println!("당신의 턴이 아닙니다.");
+        //     return SearchUnitSupportResponseForm::from_false_response_with_message(NotYourTurn)
+        // }
+        //
+        // drop(game_protocol_validation_service_guard);
+        //
         let support_card_number_string =
             search_unit_support_request_form.get_support_card_number().to_string();
         let support_card_number =
             support_card_number_string.parse::<i32>().unwrap();
-
-        let check_hand_hacking_response = self.is_valid_protocol(
-            search_unit_support_request_form
-                .to_check_protocol_hacking_request(account_unique_id, support_card_number)).await;
-
-        if !check_hand_hacking_response {
-            println!("Hand hacking detected - account unique id : {}", account_unique_id);
-            return SearchUnitSupportResponseForm::default()
-        }
-
-        let is_it_support_response = self.is_it_support_card(
-            search_unit_support_request_form
-                .to_is_it_support_card_request(support_card_number)).await;
-
-        if !is_it_support_response {
-            println!("Support card hacking detected - account unique id : {}", account_unique_id);
-            return SearchUnitSupportResponseForm::default()
-        }
-
-        let can_use_card_response = self.is_able_to_use(
-            search_unit_support_request_form
-                .to_can_use_card_request(account_unique_id, support_card_number)).await;
-
-        if !can_use_card_response {
-            println!("A mythical grade card can be used after round 4.");
-            return SearchUnitSupportResponseForm::from_false_response_with_message(MythicalCardRoundLimit)
-        }
+        //
+        // let check_hand_hacking_response = self.is_valid_protocol(
+        //     search_unit_support_request_form
+        //         .to_check_protocol_hacking_request(account_unique_id, support_card_number)).await;
+        //
+        // if !check_hand_hacking_response {
+        //     println!("Hand hacking detected - account unique id : {}", account_unique_id);
+        //     return SearchUnitSupportResponseForm::default()
+        // }
+        //
+        // let is_it_support_response = self.is_it_support_card(
+        //     search_unit_support_request_form
+        //         .to_is_it_support_card_request(support_card_number)).await;
+        //
+        // if !is_it_support_response {
+        //     println!("Support card hacking detected - account unique id : {}", account_unique_id);
+        //     return SearchUnitSupportResponseForm::default()
+        // }
+        //
+        // let can_use_card_response = self.is_able_to_use(
+        //     search_unit_support_request_form
+        //         .to_can_use_card_request(account_unique_id, support_card_number)).await;
+        //
+        // if !can_use_card_response {
+        //     println!("A mythical grade card can be used after round 4.");
+        //     return SearchUnitSupportResponseForm::from_false_response_with_message(MythicalCardRoundLimit)
+        // }
 
         let mut game_card_support_usage_counter_service =
             self.game_card_support_usage_counter_service.lock().await;
 
-        let check_support_card_usage_count_response =
-            game_card_support_usage_counter_service.check_support_card_usage_count(
-                search_unit_support_request_form
-                    .to_check_support_card_usage_count_request(account_unique_id)).await;
-
-        if check_support_card_usage_count_response.get_used_count() > 0 {
-            println!("Support card usage limit over");
-            return SearchUnitSupportResponseForm::from_false_response_with_message(SupportUsageOver)
-        }
+        // let check_support_card_usage_count_response =
+        //     game_card_support_usage_counter_service.check_support_card_usage_count(
+        //         search_unit_support_request_form
+        //             .to_check_support_card_usage_count_request(account_unique_id)).await;
+        //
+        // if check_support_card_usage_count_response.get_used_count() > 0 {
+        //     println!("Support card usage limit over");
+        //     return SearchUnitSupportResponseForm::from_false_response_with_message(SupportUsageOver)
+        // }
 
         let card_effect_summary = self.get_summary_of_support_card(
             search_unit_support_request_form
                 .to_summarize_support_card_effect_request(support_card_number)).await;
-
-        let searching_grade_limit = card_effect_summary.get_unit_from_deck().get_grade_limit();
+        //
+        // let searching_grade_limit = card_effect_summary.get_unit_from_deck().get_grade_limit();
         let searching_card_count = card_effect_summary.get_unit_from_deck().get_unit_count();
 
         let target_unit_card_index_list_string =
@@ -762,50 +765,50 @@ impl GameCardSupportController for GameCardSupportControllerImpl {
         let target_unit_card_index_list =
             VectorStringToVectorInteger::vector_string_to_vector_i32(target_unit_card_index_list_string);
 
-        let mut game_protocol_validation_service_guard =
-            self.game_protocol_validation_service.lock().await;
-
-        let mut card_grade_service_guard =
-            self.card_grade_service.lock().await;
+        // let mut game_protocol_validation_service_guard =
+        //     self.game_protocol_validation_service.lock().await;
+        //
+        // let mut card_grade_service_guard =
+        //     self.card_grade_service.lock().await;
 
         let mut game_deck_service_guard =
             self.game_deck_service.lock().await;
 
         // card kind && grade check
-        for unit_card_index in target_unit_card_index_list.clone() {
-            let maybe_unit_card_id =
-                game_deck_service_guard.find_deck_card_id_by_index(
-                    search_unit_support_request_form
-                        .to_find_deck_card_id_by_index_request(
-                            account_unique_id,
-                            unit_card_index)).await.get_found_card_id();
+        // for unit_card_index in target_unit_card_index_list.clone() {
+        //     let maybe_unit_card_id =
+        //         game_deck_service_guard.find_deck_card_id_by_index(
+        //             search_unit_support_request_form
+        //                 .to_find_deck_card_id_by_index_request(
+        //                     account_unique_id,
+        //                     unit_card_index)).await.get_found_card_id();
+        //
+        //     let is_it_unit_request =
+        //         search_unit_support_request_form.to_is_it_unit_card_request(maybe_unit_card_id);
+        //     let is_it_unit_response =
+        //         game_protocol_validation_service_guard.is_it_unit_card(is_it_unit_request).await;
+        //
+        //     if !is_it_unit_response.is_success() {
+        //         println!("Target is not unit.");
+        //         return SearchUnitSupportResponseForm::default()
+        //     }
+        //
+        //     let grade_of_unit =
+        //         card_grade_service_guard.get_card_grade(&maybe_unit_card_id).await;
+        //
+        //     if grade_of_unit as i32 > searching_grade_limit as i32 {
+        //         println!("Player chose too high grade unit card to search.");
+        //         return SearchUnitSupportResponseForm::default()
+        //     }
+        // }
 
-            let is_it_unit_request =
-                search_unit_support_request_form.to_is_it_unit_card_request(maybe_unit_card_id);
-            let is_it_unit_response =
-                game_protocol_validation_service_guard.is_it_unit_card(is_it_unit_request).await;
-
-            if !is_it_unit_response.is_success() {
-                println!("Target is not unit.");
-                return SearchUnitSupportResponseForm::default()
-            }
-
-            let grade_of_unit =
-                card_grade_service_guard.get_card_grade(&maybe_unit_card_id).await;
-
-            if grade_of_unit as i32 > searching_grade_limit as i32 {
-                println!("Player chose too high grade unit card to search.");
-                return SearchUnitSupportResponseForm::default()
-            }
-        }
-
-        drop(game_protocol_validation_service_guard);
-        drop(card_grade_service_guard);
+        // drop(game_protocol_validation_service_guard);
+        // drop(card_grade_service_guard);
 
         // target number check
         if search_unit_support_request_form
-            .get_target_unit_card_index_list().len() != searching_card_count as usize {
-            println!("Player should choose {} unit(s) from deck.", searching_card_count);
+            .get_target_unit_card_index_list().len() > searching_card_count as usize {
+            println!("Player chose too many target - hacking detected.");
             return SearchUnitSupportResponseForm::default()
         }
 
